@@ -1,0 +1,186 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+
+
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/s-rating/s-rating.html">
+
+<link rel="import" href="beer-icons.html">
+
+<dom-module id="beer-allbeers-card">
+
+  <template>
+
+    <style>
+
+
+     a{
+        color: var(--app-primary-color);
+        text-decoration: none;
+        }
+
+      .card{
+     
+        margin: 10px;
+        padding: 10px;
+      }
+
+
+     
+
+      .rating{
+         @apply(--layout-horizontal);
+         @apply(--layout-end-justified));
+        font-size: 1em;
+        /*color: var(--app-accent-color);*/
+        
+      }
+
+
+
+      .brewery {
+        font-size: 1.5em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .beer {
+        font-size: 1.2em;
+        font-weight: 600;
+        color: var(--app-primary-color);
+      }
+
+      .style {
+        font-size: 1.0em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+       
+      }
+
+      .location {
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+       .footer{
+         @apply(--layout-horizontal);
+         @apply(--layout-justified));
+         margin: 10px 0 0 0;
+         font-size: 1.1em;
+      }
+
+     
+      .footer-abv{
+        text-align: right;
+        margin: 0 20px 0 0;
+        font-weight: 500;
+      }
+
+
+      @media (max-width: 767px) {
+        .logo{
+          visibility: hidden
+        }
+
+        h3 {
+          margin: 24px 0;
+        }
+
+      }
+
+    </style>
+
+    <!--<firebase-auth app-name="beer" user="{{user}}"></firebase-auth>  -->
+
+<!--[[_test(user)]]-->
+
+     <paper-material class='card' elevation="1" animated-shadow="false">
+
+        <div>
+          <s-rating id="rating"  class="rating"></s-rating>
+          <a href="/[[_computeNameForUrl(beer.breweryName)]]/main?orgid=[[beer.place_id]]"> 
+          <div class="brewery">[[beer.breweryName]]</div>
+            <div class="beer">[[beer.name]]</div>
+            <div class="style">[[beer.style.name]]</div>   
+              <div class="location">[[beer.breweryCity]],  [[beer.breweryState]]</div>        
+            <div class="footer">
+              <div>[[beer.available.description]]</div>
+              <div class="footer-abv" hidden="[[!item.abv]]">ABV: [[beer.abv]]</div>
+            </div>
+          </a>
+        </div>
+        
+      </paper-material>
+     
+
+     <!--</template>-->
+     
+      
+    
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-allbeers-card',
+       properties: {
+        user:{
+          type: Object
+        }
+
+       },
+       
+       observers: ['_observeUserStatus(user)'],
+
+    _observeUserStatus: function (user) {
+        if(user){
+          console.log('YES')
+          this.$.rating.disabled = false;
+        }else{
+          console.log('NO')
+          this.$.rating.disabled = true;
+        }
+
+    },
+      _computeNameForUrl: function (name) {
+         'use strict';
+          if (name) {
+            name = name.replace(/\s/g, '-')
+            return name.replace(/[^a-zA-Z\d\s:]/g, '');
+          } else {
+            return 'pub-name-missing'
+          }
+      },
+
+
+      _sortByBreweryName: function(a,b){
+        'use strict';
+        if (a.breweryName < b.breweryName)
+          return -1;
+        if (a.breweryName > b.breweryName)
+          return 1;
+        return 0;
+      },
+
+     
+
+       close: function (){
+        this.toggle = false;
+        // console.log(this.selectedCategory);
+      },
+
+    
+      _test: function (obj) {
+        console.log(obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

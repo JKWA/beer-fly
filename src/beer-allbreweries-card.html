@@ -1,0 +1,145 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+
+
+
+
+<dom-module id="beer-allbreweries-card">
+
+  <template>
+
+    <style>
+
+      a{
+      color: var(--app-primary-color);
+      text-decoration: none;
+    }
+
+      .card{
+        padding: 10px;
+        margin: 10px;
+      }
+
+      /*.wrapper{
+         @apply(--layout-horizontal);
+         @apply(--layout-start-justified);
+         @apply(--layout-wrap);
+         max-width: 800px
+      }*/
+
+      .name {
+        font-size: 1.25em;
+        font-weight: 300;
+         color: var(--app-primary-color);
+
+      }
+
+      .motto {
+        font-size: 1.0em;
+        font-weight: 500;
+        color: var(--app-primary-color);
+   
+      }
+
+      .address {
+        font-size: 1.0em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+ 
+      }
+      .distance {
+        font-size: 1.0em;
+        font-weight: 300;
+        color: var(--app-secondary-color);
+      }
+
+
+
+
+      @media (max-width: 767px) {
+        
+
+        h3 {
+          margin: 24px 0;
+        }
+
+      }
+
+    </style>
+    <firebase-document
+      app-name="beer"
+      path="organization/[[placeId]]"
+      data="{{organization}}">
+   </firebase-document>
+
+
+    <a aria-label$="[[organization.name]]" href="/[[_urlName]]/main?orgid=[[organization.place_id]]">
+      <paper-material class='card' elevation="1" animated-shadow="false">
+   
+            <div>
+                <div class="name">[[organization.name]]</div>
+                <!--<div class="motto">[[organization.motto]]</div>-->
+                <div class="address">[[organization.city]], [[organization.state]]</div>
+                <div class="distance">[[_computeDisplayDistance(distance)]] miles from you</div>
+                <!--<div>
+                  <a href="[[organization.url]]" target="_blank">
+                    Map LINK (NOT WORKING YET)
+                  </a>
+                </div>-->
+            </div>
+           
+      </paper-material>
+  </a>
+    
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-allbreweries-card',
+
+       properties: {
+
+        organization:{
+          type: Object
+        },
+        distance:{
+          type:Number
+        },
+
+        // displayDistance:{
+        //   type: Number,
+        //   compute: '_computeDisplayDistance(distance)'
+        // },
+        
+         _urlName:{
+             type: String,
+             computed: '_computeNameForUrl(organization.name)'
+         }
+        },
+
+        _computeDisplayDistance: function (distance){
+          
+          return Math.round(distance*10)/10
+
+        },
+        _computeNameForUrl: function (name) {
+         'use strict';
+          if (name) {
+            name = name.replace(/\s/g, '-')
+            return name.replace(/[^a-zA-Z\d\s:]/g, '');
+          } else {
+            return 'pub-name-missing'
+          }
+      },
+
+    });
+
+  </script>
+
+</dom-module>

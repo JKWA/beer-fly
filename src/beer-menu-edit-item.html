@@ -1,0 +1,228 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/swipe-action/swipe-action.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+
+<link rel="import" href="beer-menu-meta.html">
+
+<link rel="import" href="beer-fab.html">
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-button.html">
+<link rel="import" href="beer-menu-edit-item-tag.html">
+
+
+<dom-module id="beer-menu-edit-item">
+
+  <template>
+
+    <style>
+      .add{
+        color: green;
+        margin: 20px 0 20px 20px;
+      }
+      .delete{
+        color:red;
+        margin: 20px 0 0 20px;
+        width:40px
+      }
+
+      .actual-delete{
+        background-color: red;
+        color: white
+      }
+
+      .menu-item{
+        padding: 12px;
+        margin: 10px;
+        width:92%;
+        background-color: white;
+      }
+
+      .menu-area{
+        background-color: #F8F8F8;
+      }
+    
+
+      .price{
+        width: 70px
+      }
+
+      .menu-category{
+         @apply(--layout-vertical);
+         @apply(--layout-start-justified);
+         
+      }
+
+      .motto {
+        font-size: 2.0em;
+        font-weight: 500;
+        margin: 40px 5px 0 20px;
+      }
+
+      .description {
+        font-size: 1.2em;
+        font-weight: 300;
+        margin: 10px 5px 0 20px;
+      }
+
+
+
+    </style>
+
+    <firebase-query
+          id="menu"
+          app-name="beer"
+          path="organization/[[orgId]]/category/MENU/menu/[[menuKey]]/items"
+          data="{{menuItems}}">
+    </firebase-query>
+
+    <firebase-document
+          id="category"
+          app-name="beer"
+          path="organization/[[orgId]]/category/MENU/menu/[[menuKey]]"
+          data="{{category}}">
+    </firebase-document>
+
+    <div class="menu-area">
+      <iron-label>
+        <toggle-icon 
+              animation="flip-vertical"
+              class="delete" 
+              icon="beer-icons:remove"
+              class="menu-button"
+              checked="{{toggle}}"
+              noink>
+        </toggle-icon>
+          REMOVE MENU ITEMS
+      </iron-label>
+
+      <template is="dom-repeat" items="{{menuItems}}" as="menuItem" strip-whitespace>
+        <!--<beer-menu-meta menu-item="[[menuItem]]" org-id="[[orgId]]"></beer-menu-meta>-->
+
+         <paper-material elevation="2" class="menu-item">
+            <div class="menu-category">
+
+              <iron-collapse opened={{toggle}}>
+
+              <div class="actual-delete">
+                  <iron-label>
+                    <paper-icon-button 
+                      icon="beer-icons:delete-forever" 
+                      menu-item-key="[[menuItem.$key]]"
+                      on-tap="_deleteMenuItem">
+                    </paper-icon-button>
+                    DELETE THIS MENU ITEM
+                  </iron-label>
+              </div>
+              </iron-collapse>
+              <div>
+          
+              <paper-input 
+                  label="Item Name" 
+                  value="{{menuItem.name}}"
+                  maxlength=100 >
+              </paper-input>
+
+              <paper-textarea 
+                label="Description" 
+                value="{{menuItem.description}}"
+                maxlength=1000 >
+              </paper-textarea>
+              <paper-input 
+                  class="price" 
+                  label="Price" 
+                  value="{{menuItem.price}}"
+                  maxlength=6 
+                  auto-validate 
+                  allowed-pattern="[0-9.,]"
+                 error-message="Must be a number">
+                <div prefix>$</div>
+              </paper-input>
+
+              <beer-menu-edit-item-tag
+                  org-id="[[orgId]]"
+                  menu-key="[[menuKey]]"
+                  menu-item-key="[[menuItem.$key]]">
+              </beer-menu-edit-item-tag>
+              </div>
+           </paper-material>
+             
+           
+        <!--</div>-->
+      </template>
+     
+      <div class="delete-swipe">
+        <iron-label >
+          <paper-icon-button 
+              class="add" 
+              icon="beer-icons:add" 
+              on-tap="_addMenuItem"></paper-icon-button>
+          ADD A MENU ITEM
+        </iron-label>
+      </div>
+</div>
+
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-menu-edit-item',
+
+       properties: {
+        category: {
+          type: Object
+        }
+       },
+
+      _addMenuItem: function (){
+        
+        var category = this.category;
+        console.log(category);
+        var obj = {};
+
+        if(category.category) {obj.category = category.category};
+        if(category.title) {obj.categoryTitle = category.title};
+        if(category.name) {obj.categoryName = category.name};
+        if(category.order) {obj.categoryOrder = category.order};
+      
+          obj.type = 'menu-item';
+          this.$.menu.ref.push(obj);
+      },
+
+      _deleteMenuItem:function (e){
+        var target = e.currentTarget;
+        var key = target.menuItemKey;
+         this.$.menu.ref.child(key).remove();
+      },
+
+      _sortOrder: function(a,b){  
+      'use strict';
+      if (a.order < b.order)
+        return -1;
+      if (a.order > b.order)
+        return 1;
+      return 0;
+    },
+
+      _test: function (obj) {
+        console.log('ITEMS', obj);
+      }
+
+      
+    });
+
+  </script>
+
+</dom-module>

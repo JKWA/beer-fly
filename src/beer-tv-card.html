@@ -1,0 +1,174 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+
+<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+
+
+
+<dom-module id="beer-tv-card">
+  <template>
+    <style>
+
+    
+
+      .card{
+        
+        margin: 5px;
+        padding: 10px;
+        height: 80px;
+        background-color: white;
+       
+      }
+
+       
+      .title{
+        @apply(--layout-horizontal);
+        @apply(--layout-justified);
+        
+        font-weight: 400;
+        color: var(--app-primary-color);
+        height: 50px;
+      }
+
+       .title > div{
+        padding: 0 5px 0 0;
+      }
+     
+
+
+      
+
+      .tapped{
+        color: green;
+        font-size: 2em;
+      }
+
+
+      .name {
+        font-size: 3vw;
+        line-height: 1.2em;
+        font-weight: 500;
+        white-space:nowrap;
+        overflow: hidden;
+        color: var(--app-primary-color);
+      }
+
+      .style {
+        font-size: 2vw;
+        line-height: 1.5em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+       
+      }
+
+      .brewery {
+        font-size: 2vw;
+        line-height: 1.5em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+  
+      .location{
+        @apply(--layout-horizontal);
+        @apply(--layout-start-justified);
+        @apply(--layout-wrap);
+        font-size: 2vw;
+        line-height: 1.5em;
+       
+        color: var(--app-primary-color);
+      }
+
+       .location > div{
+        padding: 0 5px 0 0;
+      }
+
+      .footer{
+        @apply(--layout-horizontal);
+        @apply(--layout-justified);
+        font-size: 2vw;
+        line-height: 1.5em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+
+      
+      .abv{
+        text-align: right;
+        font-size: 2vw;
+        line-height: 1.5em;
+        margin: 0 20px 0 0;
+        font-weight: 500;
+      }
+
+
+      @media (min-width: 600px) {
+      
+
+      }
+
+    </style>
+    <firebase-document
+        app-name="beer"
+        path="beer/[[beerId]]"
+        data="{{beer}}">
+    </firebase-document>
+
+
+
+
+      <paper-material class='card' elevation="1" animated-shadow="false">
+       
+        <div>
+          <div class="title">
+            <div>
+             <div class="name">[[beer.name]]</div>
+            </div>
+          </div>
+          <div class="title">
+       
+             <div class="title">
+                <div class="style">[[beer.style.name]] from [[beer.breweryName]]</div>
+                
+             </div>
+                <div class="title">
+                  <div class="location">
+                    <div>[[beer.breweryCity]], [[beer.breweryState]]</div>
+                    
+                  </div>
+                  <div class="abv" hidden="[[!beer.abv]]">ABV: [[beer.abv]]</div>
+                </div>
+          </div>
+
+          </div>
+
+
+            
+        
+      </paper-material>
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-tv-card',
+      
+ 
+    });
+
+  </script>
+
+</dom-module>

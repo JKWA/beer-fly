@@ -1,0 +1,132 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+
+
+
+<dom-module id="beer-pub-card">
+
+  <template>
+
+    <style>
+
+      a{
+      color: var(--app-primary-color);
+      text-decoration: none;
+    }
+
+      .card{
+        width: 100%;
+        padding: 10px;
+        margin: 10px;
+      }
+
+      .wrapper{
+         @apply(--layout-horizontal);
+         @apply(--layout-start-justified);
+         @apply(--layout-wrap);
+         max-width: 800px
+      }
+
+      .name {
+        font-size: 1.5em;
+        font-weight: 300;
+        margin: 10px 5px 0 20px;
+      }
+
+      .motto {
+        font-size: 1.0em;
+        font-weight: 600;
+        margin: 0 5px 0 20px;
+      }
+
+      .address {
+        font-size: 1.0em;
+        font-weight: 300;
+        margin: 10px 5px 0 20px;
+      }
+
+      .logo {
+        width: 100px;
+        height: 100px;
+        background-color: #F8F8F8;
+        outline: none;
+      }
+
+
+      @media (max-width: 767px) {
+     
+
+        h3 {
+          margin: 24px 0;
+        }
+
+      }
+
+    </style>
+
+    <a aria-label$="[[org.name]]" href="/[[_urlName]]/main?orgid=[[organization.$key]]">
+      <paper-material class='card' elevation="0" animated-shadow="false">
+        <div class="wrapper">
+            <div>
+                <paper-icon-button ></paper-icon-button>
+            </div>
+             <div>
+                <iron-image 
+                    class="logo"
+                    sizing="cover" 
+                    preload 
+                    fade
+                    src="[[organization.mainImage.logoThumbnail.url]]">
+                </iron-image>
+              
+            </div>
+            <div>
+                <div class="name">[[organization.name]]</div>
+                <div class="motto">[[organization.motto]]</div>
+                <div class="address">[[organization.city]], [[organization.state]]</div>
+            </div>
+           
+         </div>
+        <div class="card-actions">
+          
+        </div>
+      </paper-material>
+  </a>
+    
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-pub-card',
+
+       properties: {
+
+        organization:{
+          type: Object
+        },
+        
+         _urlName:{
+             type: String,
+             computed: '_computeNameForUrl(organization.name)'
+         }
+        },
+        _computeNameForUrl: function (name) {
+         'use strict';
+          if (name) {
+            name = name.replace(/\s/g, '-')
+            return name.replace(/[^a-zA-Z\d\s:]/g, '');
+          } else {
+            return 'pub-name-missing'
+          }
+      },
+
+    });
+
+  </script>
+
+</dom-module>

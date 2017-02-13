@@ -1,0 +1,408 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+
+<link rel="import" href="../my_components/data/upload-image.html">
+
+<link rel="import" href="beer-pub-edit.html">
+
+<link rel="import" href="beer-fab.html">
+<link rel="import" href="beer-fab-search.html">
+<link rel="import" href="beer-menu-card.html">
+<link rel="import" href="beer-contact-card.html">
+<link rel="import" href="beer-hours-card.html">
+<link rel="import" href="beer-review-card-mini.html">
+<link rel="import" href="beer-rating-card.html">
+<link rel="import" href="beer-beer-card-mini.html">
+
+<link rel="import" href="beer-category-checkbox.html">
+
+<link rel="import" href="beer-button.html">
+
+<dom-module id="beer-pub">
+
+  <template>
+
+    <style include="beer-button">
+      a{
+        text-decoration: none;
+      }
+
+
+      .item {
+        display: block;
+        text-decoration: none;
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+       .menu{
+         @apply(--layout-vertical);         
+      }
+
+      
+
+      .category-wrapper{
+         /*@apply(--layout-horizontal);
+        @apply(--layout-center);*/
+        @apply(--layout-vertical); 
+         
+      }
+
+      .category{
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+      .category-item{
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-center-justified);
+         display: block;
+        text-decoration: none;
+        /*text-align: center;*/
+        margin-bottom: 40px;
+      }
+
+      .category-button{
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-center-justified);
+        
+        text-decoration: none;
+        /*text-align: center;*/
+        margin: 20px 0 0 0;
+      }
+
+    .category-title{
+        font-size: 1.7em;
+        font-weight: 500;
+        margin: 44px 0 10px 0;
+        text-align: center;
+        color: var(--app-primary-color);
+    }
+
+
+      .title {
+        font-size: 2.5em;
+        font-weight: 300;
+        margin: 32px 5px 0 20px;
+      }
+
+      .motto {
+        font-size: 2.0em;
+        font-weight: 500;
+        margin: 40px 5px 0 20px;
+      }
+
+      .history {
+        font-size: 1.2em;
+        font-weight: 300;
+        margin: 10px 5px 0 20px;
+      }
+
+
+      @media (max-width: 767px) {
+      
+
+        h2 {
+          margin: 24px 0;
+        }
+
+      }
+
+    </style>
+
+
+
+    <iron-image 
+        style="width:100%; height:300px; background-color: #F8F8F8;"
+        sizing="cover" 
+        preload 
+        fade
+        src="[[photoUrl]]">
+    </iron-image>
+    <beer-fab-search></beer-fab-search>
+    <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
+  
+    <beer-rating-card rating="[[place.rating]]"></beer-rating-card>
+
+      <div class="motto">
+        [[organization.motto]]
+      </div>
+
+     <template is="dom-repeat" items="[[_addBreaks(organization.description)]]" as="description">
+          <div class="history">
+            [[description]]
+          </div>
+      </template>
+
+      <div class="category-item-wrapper">
+        <div class="category">
+          <div>
+            <div class="category-title">Hours</div>
+            <beer-hours-card 
+                class=" category-item"
+                organization="[[place]]">
+            </beer-hours-card>
+          </div>
+        </div>
+
+        <template is="dom-repeat" items="[[categories]]" strip-whitespace>
+          
+          <template is="dom-if" if="[[item.display]]">
+            <div class="category">
+             <div>
+                <div class="category-item">
+                <!--<div class="item">-->
+
+                  <a aria-label$="[[item.title]] View Details" href$="/[[nameUrl]]/[[item.name]]?orgid=[[orgId]]">
+                    <div class="category-title">[[item.title]]</div>
+                  </a>
+
+                  <template is="dom-if" if="[[_isBeer(item.$key)]]"> 
+                    <template is="dom-repeat" items="[[_getArray(organization.brewBeer)]]">
+                      <beer-beer-card-mini 
+                          org-id="[[orgId]]" 
+                          beer-id="[[item.$key]]"
+                          owner="[[owner]]">
+                      </beer-beer-card-mini>
+                    </template>
+                  </template>
+
+                  <template is="dom-if" if="[[_isMenu(item.$key)]]"> 
+                    <div>
+                    <beer-menu-card 
+                        menu-category="[[item.menu]]">
+                    </beer-menu-card>
+                    </div>
+                  </template>
+
+                  <template is="dom-if" if="[[_isContact(item.$key)]]"> 
+                    <beer-contact-card 
+                        organization="[[place]]">
+                    </beer-contact-card>
+                  </template>
+
+                  <template is="dom-if" if="[[_isReview(item.$key)]]"> 
+                    <beer-review-card-mini
+                       organization="[[place]]">
+                     </beer-review-card-mini>
+                  </template>
+
+
+
+                      <div class="category-button">
+                        <div>
+                        <beer-button>
+                          <a aria-label$=" View [[item.title]] Details" href$="/[[nameUrl]]/[[item.name]]?orgid=[[orgId]]">View [[item.title]] Details</a>
+                        </beer-button>
+                        </div>
+                  </div>
+                </div>
+             </div>
+            </div>
+          </template>
+        </template>
+
+
+     <paper-dialog 
+        id="editDialog"
+        with-backdrop
+        style="width: 90vw;"
+        entry-animation="slide-from-right-animation"
+        exit-animation="slide-right-animation">
+            
+      <div> 
+          <h3>[[organization.name]]</h3>
+      </div>
+      <paper-dialog-scrollable>
+        <beer-pub-edit org-id="[[orgId]]" owner="[[owner]]">
+        </beer-pub-edit>
+      </paper-dialog-scrollable>
+    
+        
+      </paper-dialog-scrollable>
+     
+
+      <div>
+        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+      </div>
+    </paper-dialog>
+
+  </template>
+  
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-pub',
+
+      properties: {
+        organization:{
+          type: Object
+        },
+
+        categoryKey:{
+          type: String
+        },
+
+        allCategories:{
+          type: Object,
+        },
+
+        categories: {
+          type: Array,
+          computed: '_computeCategories(organization)'
+        },
+
+        organization:{
+          type: Object,
+          // computed: '_computeOrganization(organization)',
+          notify: true
+        },
+
+        visible: {
+          type: Boolean,
+          observer: '_visibleChanged'
+        },
+        
+        photoUrl: {
+          type: String,
+          computed: '_computePhotoUrl(organization, place)'
+        }
+
+        
+      },
+    
+
+      _visibleChanged: function(visible) {
+        if (visible) {
+          this.fire('change-section', { title: 'Home' });
+        }
+      },
+
+      _computeCategories: function(organization) {
+        var returnArray = [];
+        if(organization){
+          if(organization.category){
+            var category = organization.category;
+            var key = Object.keys(category);
+            for (var i=0; i<key.length; i++){
+                category[key[i]].$key = key[i];
+                returnArray.push(category[key[i]])
+            }
+          }
+        }
+        return returnArray.sort(function(a, b) {
+                                  return parseFloat(a.order) - parseFloat(b.order);
+                              });
+      },
+
+
+      _edit: function(e){
+        'use strict';
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.editDialog);
+        this.$.editDialog.open()
+      },
+
+      _addBreaks: function(str){
+        'use strict';
+        if(str){
+          return str.split('\n');
+        }else{
+          return [];
+        }
+      },
+      _isBeer(type){
+        if(type === 'BEER'){
+          return true;
+        }else{
+          return false;
+        }
+      },
+
+      _isMenu(type){
+        if(type === 'MENU'){
+          return true;
+        }else{
+          return false;
+        }
+      },
+      _isContact(type){
+        if(type === 'CONTACT'){
+          return true;
+        }else{
+          return false;
+        }
+      },
+
+      _isReview(type){
+        if(type === 'REVIEW'){
+          return true;
+        }else{
+          return false;
+        }
+      },
+
+       _getArray: function(obj){
+        'use strict';
+        if(obj){
+          var returnArray = [];
+          var key = Object.keys(obj);
+          for (var i=0; i<key.length; i++){
+            obj[key[i]].$key = key[i]
+            returnArray.push(obj[key[i]])
+          }
+            return returnArray.sort(function(a, b){
+            var nameA=a.name.toLowerCase(), nameB=b.name.toLowerCase()
+            if (nameA < nameB)
+                return -1 
+            if (nameA > nameB)
+                return 1
+            return 0
+          })
+        }
+      },
+
+      _computePhotoUrl: function (organization, place) {
+        if(organization.mainImage){
+          if(organization.mainImage.banner){
+            if(organization.mainImage.banner.url){
+              return organization.mainImage.banner.url;
+            }
+          }
+        }
+        var photoMeta = {};
+        photoMeta.maxWidth = place.photos[0].width;
+        photoMeta.maxHeight = place.photos[0].height;
+        return place.photos[0].getUrl(photoMeta);
+      },
+
+      _test: function(obj){
+        console.log('TEST', obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

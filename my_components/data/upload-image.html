@@ -1,0 +1,351 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-document.html">
+
+<link rel="import" href="../../bower_components/polymerfire/firebase-database-behavior.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-auth.html">
+
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../../src/beer-button.html">
+<link rel="import" href="../../src/beer-icons.html">
+
+
+
+<dom-module id="upload-image">
+
+  <template>
+ 
+  <style include="beer-button">
+    :host{
+       --paper-progress-active-color: var(--app-primary-color);
+
+    }
+    .button{
+      
+    }
+    .primary-color{
+      color: var(--app-secondary-color);
+    }
+     paper-progress {
+      width: 95%;
+    }
+    .message-box{
+      margin: 0 10px 10px 10px ;
+       @apply(--layout-horizontal);
+    }
+    .message-icon{
+      margin: 0 5px 0 5px;
+      width: 30px;
+    }
+    .error-message{
+      margin: 10px 0 0 10px;
+    }
+
+    .uploader-wrapper{
+      margin: 0 0 20px 10px;
+    }
+    .uploader-progress{
+      margin: 20px 0 0 10px;
+    }
+
+    ul {
+      list-style-type: none;
+    }
+
+    .label{
+      text-transform: uppercase;
+    }
+
+  </style>
+
+  <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+
+<!--<template is="dom-if" if="[[user]]">-->
+  <firebase-document
+      id="image"
+      app-name="beer"
+      path="organization/[[orgId]]/[[key]]">
+   </firebase-document>
+
+   <firebase-document
+      id="imageName"
+      app-name="beer"
+      path="organization/[[orgId]]/[[key]]/[[type]]"
+      data="{{imageMeta}}">
+   </firebase-document>
+  
+  
+  <div>
+  <paper-card elevation="0" animated-shadow="false">
+
+     <paper-progress 
+          class="uploader-progress"
+          hidden="{{fileComplete}}"
+          value="{{fileProgress}}">
+      </paper-progress>
+
+      <div hidden="{{!fileError}}" class="primary-text error error-message">
+        Files must be under 5 megabites and Microsoft Office documents or PDFs
+      </div>
+ 
+    <div class="card-content">
+     <a href="[[imageMeta.url]]">[[imageMeta.name]]</a>
+    </div>
+     <iron-label class="label">
+       <input id="uploader" hidden value="{{uploadValue::change}}" type="file" accept="image/*" capture>
+         <beer-button class="button" id="fileButton" elevation="1"> 
+          <a>
+            <iron-icon icon="beer-icons:upload"></iron-icon> UPLOAD [[type]] IMAGE</a>
+          
+         </beer-button>
+      </iron-label>
+
+     <div hidden="[[!fileError]]">
+        <div class="message-box">
+            <div class="message-icon">
+               <iron-icon icon="icons:report-problem" class="error"></iron-icon>
+            </div>      
+            <div class="primary-text-bold">
+               {{fileName}}
+            </div>
+        </div>
+      </div>
+      
+ 
+     
+
+  </paper-card>
+  </div>
+  
+</template>
+
+   
+
+  
+
+  <script>
+
+  Polymer({
+
+  is: 'upload-image',
+  properties:{
+  
+
+    fileName: {
+      type: String,
+      value: ''
+    },
+    orgId:{
+      type: String
+    },
+
+    key:{
+      type: String
+    },
+    type:{
+      type: String
+    },
+
+    uploadValue:{
+        type: Object
+    },
+
+    uploadProgress:{
+      type: Number,
+
+    },
+    fileComplete: {
+      type:Boolean,
+      value: true,
+    },
+    fileError: {
+      type: Boolean,
+      value: false
+    },
+    url: {
+      type: String
+    },
+    user:{
+        type: Object,
+        notify: true,
+        observer: '_userIdentified'
+      }
+
+  },
+
+  observers:['uploadOnChange(uploadValue)', 'watchForSuccess(fileComplete)','watchForError(fileError)','watchForUrl(url)'],
+  // behaviors:[Polymer.FirebaseDatabaseBehavior],
+
+  watchForSuccess: function (fileComplete) {
+    'use strict';
+    if(fileComplete){
+      this.customStyle['--paper-progress-active-color'] = 'green';
+      this.updateStyles();
+      }
+  },
+
+  watchForUrl: function (url){
+    'use strict';
+   
+    if(url){
+      var obj = {};
+      obj.name = this.fileName;
+      obj.url = url;
+      obj.timestamp = new Date();
+
+      // var key = this.isUpdatedFile();
+      // console.log(key);
+      // if(key){
+        // console.log('update');
+        this.$.image.ref.child(this.type).update(obj);
+      
+      // }else{
+      //   // console.log('new');
+      //  this.$.images.ref.push(obj);
+    //  }
+   }
+
+  },
+
+  watchForError: function (fileError) {
+    'use strict';
+
+    if(fileError){
+      // console.log('ERROR');
+      this.fileComplete = true;
+        this.customStyle['--paper-progress-active-color'] = 'red';
+        this.updateStyles();
+      }
+  },
+
+  uploadOnChange: function(uploadValue){
+    'use strict';
+    this.fileProgress = 0;
+    this.fileComplete = false;
+    this.fileError = false;
+    this.customStyle['--paper-progress-active-color'] = 'var(--app-primary-color)';
+    this.updateStyles();
+    // console.log(this.uploader);
+    // console.log(uploadValue);
+    this.fileName = this.$.uploader.files[0].name;
+
+    this.initiateUpload();
+    
+  },
+
+   _userIdentified: function(newValue){
+    'use strict';
+
+      if(newValue){
+        // this.$.downloads.disabled = false;
+      }
+      
+  },
+
+
+  initiateUpload: function(){
+      'use strict';
+      var uploader = this.$.uploader;
+      var files = uploader.files;
+
+      // console.log(files)
+
+      for (var i=0; i<files.length; i++){
+        var file = uploader.files[i];
+        this.uploadFile(file , i);
+      }
+   
+
+  },
+
+  uploadFile: function (file, position){
+    'use strict';
+  
+    var app = this.$.image.app;
+    var storageRef = app.storage().ref('organization/'+this.orgId+'/images/'+this.key+'/'+file.name);
+    var task = storageRef.put(file);
+    var that = this;
+    task.on('state_changed', 
+
+      function progress(snapshot){
+        var percentage = (snapshot.bytesTransferred/snapshot.totalBytes)*100;
+        // that.set('files.'+position+'.progress', percentage);
+        that.fileProgress = percentage;
+      },
+
+      function error(error){
+         that.fileError = true;
+         that.fileProgress = 100;
+         console.log(error);
+      },
+
+      function complete(){
+        that.fileComplete = true;
+        storageRef.getDownloadURL().then(function(url) {
+          console.log("SUCCESS", url);
+            that.url = url;
+          });
+      });      
+  },
+
+  // deleteFile: function(e){
+  //   'use strict';
+  //   var app = this.$.userPlan.app;
+  //   var ref = e.currentTarget.ref;
+  //   var key = e.currentTarget.key;
+  //   var storageRef = app.storage().ref('uploads/'+this.planId+'/'+ref);
+  //   var that = this;
+
+  //   storageRef.delete().then(function() {
+  //     that.$.images.ref.child(key).remove();
+
+  //    }).catch(function(error) {
+  //      console.log(error);
+  //   });
+
+  // },
+  isUpdatedFile: function(){
+  'use strict';
+    var downloads = this.downloads;
+    var fileName = this.fileName;
+    var key = Object.keys(downloads);
+    for (var i=0; i<key.length; i++){
+      var download = downloads[key[i]];
+      if(download.name === fileName){
+        return download.$key;
+
+      }
+    }
+    return false;
+
+  },
+
+  fileName_: function(a,b){
+      'use strict';
+      if (a.name < b.name)
+        return -1;
+      if (a.name > b.name)
+        return 1;
+      return 0;
+  },
+
+
+  test: function(obj){
+    'use strict';
+    console.log(obj);
+  }
+
+});
+
+
+  </script>
+
+</dom-module>

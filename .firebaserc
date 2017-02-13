@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "beer": "brewery-app",
+    "staging": "beer-fly"
+  }
+}

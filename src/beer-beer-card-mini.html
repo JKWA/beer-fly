@@ -1,0 +1,100 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+
+
+<dom-module id="beer-beer-card-mini">
+
+  <template>
+
+    <style>
+
+
+      a{
+        color: var(--app-primary-color);
+        text-decoration: none;
+        }
+
+      .card{
+        width: 95%;
+        margin: 10px;
+        padding: 5px;
+        text-align: center;
+      }
+
+      .footer{
+         @apply(--layout-horizontal);
+         @apply(--layout-justified));
+         margin: 10px 0 0 0;
+         font-size: 1em;
+         color: var(--app-primary-color);
+      }
+
+      .name {
+        font-size: 1.2em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .style {
+        font-size: .9em;
+        font-weight: 500;
+        color: var(--app-primary-color);
+       
+      }
+
+      .abv{
+        font-size: .9em;
+        font-weight: 400;
+        color: var(--app-secondary-color);
+      }
+
+
+
+
+      @media (max-width: 767px) {
+        
+
+        h3 {
+          margin: 24px 0;
+        }
+
+      }
+
+    </style>
+    <firebase-document
+        app-name="beer"
+        path="beer/[[beerId]]"
+        data="{{beer}}">
+    </firebase-document>
+
+
+
+
+      <paper-material class='card' elevation="0" animated-shadow="false">
+        <div>
+     
+            <div>
+                <div class="name">[[beer.name]]</div>
+                <div class="style">[[beer.style.name]]</div>             
+                <div class="abv" hidden="[[!beer.abv]]">ABV: [[beer.abv]]</div>
+                
+            </div>
+         </div>
+      </paper-material>
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-beer-card-mini',
+     
+
+   
+
+    });
+
+  </script>
+
+</dom-module>

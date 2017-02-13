@@ -1,0 +1,299 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/geo-location/geo-location.html">
+<link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/google-map/google-map-search.html">
+<link rel="import" href="../bower_components/google-map/google-map-marker.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-rating-card.html">
+
+
+<dom-module id="beer-home-search">
+
+  <template>
+
+    <style>
+
+     a{
+      color: var(--app-primary-color);
+      text-decoration: none;
+    }
+
+    .card{
+      padding: 10px;
+      margin: 10px;
+    }
+
+   
+    .search{
+      max-width: 300px;
+    }
+
+    .search-wrapper{
+      max-width: 500px;
+    }
+
+     .search-name{
+      color: var(--app-primary-color);
+      font-size: 1.5em;
+      font-weight: 400;
+    }
+
+     .search-address{
+        color: var(--app-secondary-color);
+        font-size: 1em;
+        font-weight: 400;
+      }
+
+    </style>
+
+    <firebase-document
+        id="organizations"
+         app-name="beer"
+        path="organization">
+    </firebase-document>
+
+  <!--KEEP THIS ABOVE THE MAP-->
+ <paper-input class="search" label="Search"value="{{queryInput}}">
+      <div prefix><iron-icon icon="beer-icons:search"></iron-icon></div>
+  </paper-input>
+  
+  <paper-checkbox checked="{{geoPermission}}">Near my location</paper-checkbox>
+  
+
+  <geo-location 
+      id="geoLocation"
+      idle
+      latitude="{{latitude}}"
+      longitude="{{longitude}}">
+  </geo-location>
+
+  <google-map-search 
+      id="search"
+      map="[[map]]" 
+      query="{{query}}" 
+      latitude="[[gLatitude]]"
+      longitude="[[gLongitude]]"
+      radius="50000"
+      type="bar"
+      results="{{results}}">
+  </google-map-search>
+
+  <div hidden>
+  <google-map 
+      id="map"
+      map="{{map}}" 
+      latitude="[[gLatitude]]"
+      longitude="[[gLongitude]]"
+      radius="50000"
+      type="bar"
+      api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" >
+  </google-map>
+  </div>
+  <!--LAT [[gLatitude]]  Long [[gLongitude]]-->
+    <div class="search-wrapper">
+      <template is="dom-repeat" items="{{results}}" as="pub">
+        <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
+          <paper-material class="card" elevation="0">
+              <div class="search-name">[[pub.name]]</div>
+              <div class="search-address">[[pub.formatted_address]]</div>
+              <div>
+                <beer-rating-card rating="[[pub.rating]]"></beer-rating-card>
+              </div>
+              <!--<a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
+                  <paper-button raised>SHOW</paper-button>
+              </a>-->
+            <!--<paper-button raised place="[[pub]]" on-tap="_getPlace">
+              ADD PUB
+            </paper-button>-->
+          </paper-material> 
+        </a> 
+      </template>
+    </div>
+ 
+<!--[[_test(results)]]-->
+ 
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-home-search',
+
+      properties: {
+
+       url:{
+         type:String,
+         computed: '_computeUrl()'
+       },
+       query:{
+         type: String
+       },
+       queryInput:{
+         type: String
+       },
+       details:{
+         type: Object
+       },
+
+       latitude: {
+          type: Number
+          
+       },
+
+       longitude:{
+         type: Number
+         
+       },
+
+       gLatitude:{
+         type: Number,
+         value:0
+       },
+
+       gLongitude:{
+         type: Number,
+         value:0
+       },
+
+       
+
+      // nameUrl: {
+      //   type: String,
+      //   computed: '_computeNameForUrl(organization.name)'
+      // },
+
+       placeId: {
+         type: String
+       }
+      },
+      observers:['_observeQuery(queryInput)',
+                  '_observeDetails(details)',
+                  '_observeLocation(latitude, longitude)',
+                  '_observeGeoPermission(geoPermission)'],
+
+ 
+
+      _observeLocation: function (latitude, longitude){
+          
+          if(latitude){
+            if(longitude){
+              this.gLatitude =latitude
+              this.gLongitude =longitude
+            }
+           
+          }
+
+         
+      },
+
+      _observeGeoPermission: function (geoPermission){
+       
+        if(geoPermission){
+          this.$.geoLocation.idle = false;
+        }else{
+          this.$.geoLocation.idle = true;
+          this.gLatitude =0;
+          this.gLongitude =0;
+        }
+      },
+
+      _observeQuery: function (queryInput){
+        
+        if(queryInput.length >2){
+          this.query = queryInput+'+beer';
+        }
+      },
+
+
+
+      _observeDetails: function (details){
+        console.log('DETAILS', details);
+        var obj = {};
+        var key = ['formatted_address',
+                   'formatted_phone_number',
+                    'id',
+                    'latitude',
+                    'longitude',
+                    'name',
+                    'opening_hours',
+                    'url',
+                    'place_id',
+                    'website',
+                    'reference'];
+        var obj = {};
+        obj.PUB = true;
+        obj.uid = 'test';
+        for (var i=0; i<key.length; i++){
+          if(details[key[i]]){obj[key[i]] = details[key[i]]}
+        }
+        if(details.place_id){
+          this.$.organizations.ref.child(details.place_id).update(obj);
+        }
+        
+      },
+
+      
+
+      _getPlace: function(e){
+        'use strict';
+     
+          var target = e.currentTarget;
+          var place = target.place;
+
+          // var place = "ChIJeVKwbHoRkFQR17m_DCgxrGc"
+          var details = this.$.search.getDetails(place.place_id);
+          var that = this;
+
+          details.then(function(result) {
+                          // console.log(result); 
+                          result.latitude = place.latitude;
+                          result.longitude = place.longitude;
+                          that.details = result;
+                          
+                        }, function(err) {
+                          console.log(err); 
+                        });
+
+      },
+
+     _computeNameForUrl: function (name) {
+        'use strict';
+        if (name) {
+          name = name.replace(/\s/g, '-')
+
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'pub-name-missing'
+        }
+      },
+
+      _sortRating: function(a,b){  
+        'use strict';
+        if(!a.rating)
+        return 0;
+        if (a.rating > b.rating)
+          return -1;
+        if (a.rating < b.rating)
+          return 1;
+        return 0;
+      },
+
+      _test: function(obj){
+          console.log("TEST",obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

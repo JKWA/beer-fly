@@ -1,0 +1,46 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<!--<link rel="import" href="shop-category-data.html">-->
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-list-item.html">
+
+<dom-module id="beer-list">
+
+  <template>
+
+    <style include="shop-common-styles">
+
+      
+
+    </style>
+
+    <!--
+      app-route provides the name of the category.
+    -->
+    <app-route
+        route="[[route]]"
+        pattern="/:category"
+        data="{{routeData}}"></app-route>
+THIS IS THE PAGE LAYOUT FOR GENERAL LIST TYPE PAGE 
+  
+
+    
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-list',
+
+     
+
+    });
+
+  </script>
+
+</dom-module>

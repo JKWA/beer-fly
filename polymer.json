@@ -1,0 +1,20 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/beer-app.html",
+  "fragments": [
+    "src/beer-beer.html",
+    "src/beer-contact.html",
+    "src/beer-menu.html",
+    "src/beer-pub.html",
+    "src/lazy-resources.html"
+  ],
+  "sourceGlobs": [
+   "src/**/*",
+   
+   "bower.json"
+  ],
+  "includeDependencies": [
+    "manifest.json",
+    "bower_components/webcomponentsjs/webcomponents-lite.min.js"
+  ]
+}

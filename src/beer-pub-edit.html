@@ -1,0 +1,220 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+<link rel="import" href="../my_components/data/upload-image.html">
+<link rel="import" href="beer-category-checkbox.html">
+
+<dom-module id="beer-pub-edit">
+
+  <template>
+
+    <style>
+      
+
+      .item {
+        display: block;
+        text-decoration: none;
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      
+
+
+      @media (max-width: 767px) {
+      
+
+        h2 {
+          margin: 24px 0;
+        }
+
+      }
+
+    </style>
+
+
+    <firebase-document 
+      id="category"
+      app-name="beer"
+      path="category/PUB" 
+      data="{{allCategories}}">
+    </firebase-document>
+
+     <firebase-query 
+        id="orgCategory"
+        app-name="beer" 
+        path="organization/[[orgId]]/category">
+    </firebase-query>
+
+    <firebase-document 
+        id="organization"
+        app-name="beer" 
+       
+        path="organization/[[orgId]]"
+        data="{{organization}}">
+    </firebase-document>
+
+  
+     
+        <template is="dom-repeat" items="{{categories}}">
+          <beer-category-checkbox
+            org-id="[[orgId]]"
+            key="[[item.$key]]">
+          </beer-category-checkbox>
+
+        </template>
+        <h3>Upload Images</h3>
+        <upload-image org-id="[[orgId]]" type="banner" key="mainImage"></upload-image>
+        
+        <!--<upload-image org-id="[[orgId]]" type="logo" key="mainImage"></upload-image>-->
+        
+        
+        <upload-image org-id="[[orgId]]" type="logoThumbnail" key="mainImage"></upload-image>
+        
+        <h3>Basic Information</h3>
+        <paper-input label="Name" value="{{organization.name}}"maxlength=50 char-counter></paper-input>
+        <paper-input label="Motto" value="{{organization.motto}}"maxlength=100 char-counter></paper-input>
+        <paper-textarea label="Description" value="{{organization.description}}" maxlength=2000 char-counter></paper-textarea>
+        
+        <h3>Tags</h3>
+        <div>
+          <paper-checkbox checked="{{organization.dogFriendly}}">Dogs allowed</paper-checkbox>&nbsp
+          <paper-checkbox checked="{{organization.patio}}">Outdoor patio</paper-checkbox>&nbsp
+          <paper-checkbox checked="{{organization.over21}}">Must be 21</paper-checkbox>&nbsp
+        </div>
+        <br>
+        <hr>
+        
+      </template>
+
+   
+
+ 
+  
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-pub-edit',
+      properties: {
+
+        categories: {
+          type: Array,
+          computed: '_computeCategories(organization)'
+        },
+
+         allCategories:{
+          type: Object,
+        },
+
+        organization:{
+          type: Object,
+          // computed: '_computeOrganization(organization)',
+          notify: true
+        },
+
+        visible: {
+          type: Boolean,
+          observer: '_visibleChanged'
+        }
+        
+      },
+
+    // observers: ['_watchForNewOrganizationData(organization, allCategories)'],
+
+   
+
+     _watchForNewOrganizationData: function (organization, category) {
+      var category = this.allCategories;
+      // console.log('fromGoogle',organization.googleData);
+      if(!organization.googleData){
+        if(category.BEER){
+          var key = Object.keys(category);
+          for(var i=0; i<key.length;i++){
+            this.categoryKey = key[i];
+            if(key[i]){
+              this.$.orgCategory.ref.child(key[i]).update(category[key[i]]);
+            }
+          }
+        }
+      }
+    },
+
+      // _visibleChanged: function(visible) {
+      //   if (visible) {
+      //     this.fire('change-section', { title: 'Pub' });
+      //   }
+      // },
+
+      _computeCategories: function(organization) {
+        var returnArray = [];
+        if(organization){
+          if(organization.category){
+            var category = organization.category;
+            var key = Object.keys(category);
+            for (var i=0; i<key.length; i++){
+                category[key[i]].$key = key[i];
+                returnArray.push(category[key[i]])
+            }
+          }
+        }
+        return returnArray.sort(function(a, b) {
+                                  return parseFloat(a.order) - parseFloat(b.order);
+                              });
+      },
+
+
+      // _edit: function(e){
+      //   'use strict';
+      //   var body = document.querySelector('body');
+      //   Polymer.dom(body).appendChild(this.$.editDialog);
+      //   this.$.editDialog.open()
+      // },
+
+      // _addBreaks: function(str){
+      //   'use strict';
+      //   if(str){
+      //     return str.split('\n');
+      //   }else{
+      //     return [];
+      //   }
+      // },
+      // _isMenu(type){
+      //   if(type === 'MENU'){
+      //     return true;
+      //   }else{
+      //     return false;
+      //   }
+      // },
+      // _isContact(type){
+      //   if(type === 'CONTACT'){
+      //     return true;
+      //   }else{
+      //     return false;
+      //   }
+      // },
+
+      // _isOwner(owner){
+      //   return true
+      // },
+
+      _test: function(obj){
+        console.log('TEST', obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

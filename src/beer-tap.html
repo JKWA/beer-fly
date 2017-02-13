@@ -1,0 +1,191 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="beer-beer-card.html">
+
+<link rel="import" href="../my_components/data/upload-image.html">
+<link rel="import" href="beer-fab.html">
+<link rel="import" href="beer-fab-search.html">
+
+
+<dom-module id="beer-tap">
+
+  <template>
+
+    <style>
+
+
+
+      .motto {
+        font-size: 2.0em;
+        font-weight: 500;
+        margin: 40px 5px 0 20px;
+      }
+
+      .description {
+        font-size: 1.2em;
+        font-weight: 300;
+        margin: 10px 5px 0 20px;
+      }
+
+    </style>
+
+    <iron-image 
+        style="width:100%; height:300px; background-color: #F8F8F8;"
+        sizing="cover" 
+        preload 
+        fade
+        src="[[photoUrl]]">
+    </iron-image>
+    
+    <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
+    <!--<beer-fab-search></beer-fab-search>-->
+
+    <div class="motto">
+        [[category.motto]]
+    </div>
+
+   <template is="dom-repeat" items="[[_addBreaks(category.description)]]" as="description">
+
+    <div class="description">
+        [[description]]
+    </div>
+   </template>
+
+    <template is="dom-repeat" items="[[_getArray(organization.onTap)]]" sort="_sortCategoryOrder">
+     <div hidden="[[!_showTapped(item.tapped)]]">
+      <!--<template is="dom-if" if="_showTapped(item.tapped)">-->
+      <beer-beer-card 
+          org-id="[[orgId]]" 
+          beer-id="[[item.$key]]"
+          organization="[[organization]]"
+          owner="[[owner]]">
+      </beer-beer-card>
+     </div>
+      <!--</template>-->
+    </template>
+
+
+    <paper-dialog 
+        id="editDialog"
+        with-backdrop
+        style="width: 90vw;"
+        entry-animation="slide-from-right-animation"
+        exit-animation="slide-right-animation">
+            
+      <div class=""> 
+          <h3>[[category.title]]</h3>
+      </div>
+    
+        <paper-dialog-scrollable>
+          <upload-image org-id="[[orgId]]" type="banner" key="category/TAP/image"></upload-image>   
+          <paper-input label="Motto" value="{{category.motto}}"maxlength=100 char-counter></paper-input>
+          <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
+        </paper-dialog-scrollable>
+      </template>
+      <div class="">
+        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+      </div>
+    </paper-dialog>
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-tap',
+      properties:{
+        photoUrl: {
+          type: String,
+          computed: '_computePhotoUrl(category, place)'
+        }
+      },
+
+     _edit: function(){
+        'use strict';
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.editDialog);
+        this.$.editDialog.open()
+      },
+      
+      _addBreaks: function(str){
+        'use strict';
+        if(str){
+          return str.split('\n');
+        }else{
+          return [];
+        }
+      },
+
+       _getArray: function(obj){
+        'use strict';
+        if(obj){
+          var returnArray = [];
+          var key = Object.keys(obj);
+          for (var i=0; i<key.length; i++){
+            obj[key[i]].$key = key[i]
+            returnArray.push(obj[key[i]])
+          }
+          return returnArray;
+        }
+          
+      },
+      _showTapped: function (tapped){
+        // console.log(item);
+        if(tapped === 'NOT_AVAILABLE'){
+          return false;
+        }else{
+          return true;
+        }
+
+      },
+
+      _sortCategoryOrder: function(a,b){
+      
+        'use strict';
+        if (a.categoryOrder < b.categoryOrder)
+          return -1;
+        if (a.categoryOrder > b.categoryOrder)
+          return 1;
+        return 0;
+      },
+
+      _computePhotoUrl: function (category, place) {
+        if(category.image){
+          if(category.image.banner){
+            if(category.image.banner.url){
+              return category.image.banner.url;
+            }
+          }
+        }
+        var photoMeta = {};
+        var photos = place.photos
+        var categoryIndex = 1
+        if(photos.length < categoryIndex){
+          categoryIndex = photos.length
+        }
+        photoMeta.maxWidth = place.photos[categoryIndex].width;
+        photoMeta.maxHeight = place.photos[categoryIndex].height;
+        return place.photos[categoryIndex].getUrl(photoMeta);
+      },
+
+      _test: function (obj) {
+        // console.log(obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

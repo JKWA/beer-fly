@@ -1,0 +1,172 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="beer-rating-card.html">
+
+
+<dom-module id="beer-review-card-mini">
+
+  <template>
+
+    <style>
+
+    a{
+      color: var(--app-primary-color);
+      text-decoration: none;
+    }
+
+      .card{
+        width: 100%;
+        margin: 0 0 20px 0;
+      }
+
+       .menu{
+         @apply(--layout-vertical);         
+      }
+
+      .category{
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+
+      .menu-items {
+         @apply(--layout-vertical);
+         margin: 0 0 0 20px;
+         min-width: 400px;
+      }
+
+      .menu-item {
+        @apply(--layout-horizontal);
+        @apply(--layout-start-justified);
+      }
+
+      .category-title{
+        font-size: 1.5em;
+        font-weight: 200;
+        min-width: 400px;
+        color: var(--app-accent-color);
+        @apply(--layout-horizontal);
+        @apply(--layout-end-justified);
+        @apply(--layout-center);
+      }
+
+
+
+      .menu-title{
+        color: var(--app-primary-color);
+        font-size: 1em;
+        font-weight: 400;
+      }
+
+      .menu-price{
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-secondary-color);
+        margin: 0 0 0 10px
+      }
+
+
+      .review{
+
+        margin: 20px 0 0 0;
+        max-width: 600px
+      }
+
+      .review-title{
+        font-size: 1.5em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+      .review-text{
+        font-size: 1em;
+        font-weight: 300;
+        margin: 0 10px 10px 20px;
+        color: var(--app-primary-color);
+       
+      }
+
+      .review-author{
+        font-size: 1em;
+        font-weight: 400;
+        margin: 0 10px 10px 20px;
+        color: var(--app-primary-color);
+       
+      }
+      
+
+
+      @media (max-width: 767px) {
+      
+
+        h3 {
+          margin: 24px 0;
+        }
+
+      }
+
+    </style>
+    <div>
+        <paper-material elevation="0" animated-shadow="false">
+            <!--<div class="review-title">Reviews</div>     -->
+            <template is="dom-repeat" items="[[_toArray(organization.reviews)]]" as="review">
+                <paper-material class="review" elevation="0" animated-shadow="false">
+                  <div>
+                    <beer-rating-card rating="[[review.rating]]">
+                    </beer-rating-card>
+                    </div>
+                  <div class="review-text">[[_truncateText(review.text)]]</div>
+                  <a href="[[review.author_url]]" target="_blank">
+                  <div class="review-author">[[review.author_name]]</div>
+                  </a>
+                </paper-material>
+            </template>
+        </paper-material>
+    </div>
+  </template>
+
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-review-card-mini',
+
+    
+       _toArray: function (obj) {
+        var returnArray = [];
+        if(obj){
+          var key = Object.keys(obj);
+          
+          for (var i=0; i<key.length; i++){
+            obj[key[i]].$key = key[i];
+            returnArray.push(obj[key[i]]);
+          }
+        }
+        return returnArray;
+      },
+
+      _truncateText: function (text){
+
+        if(text.length > 150){
+          var truncate = text.substring(0,150);
+          var lastSpacePosition = truncate.lastIndexOf(" ");
+          var truncateText = text.substring(0,lastSpacePosition);
+          return truncateText+'...';
+        }
+
+        return text
+      },
+
+     
+      _test(obj){
+        console.log(obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

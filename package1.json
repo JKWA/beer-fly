@@ -1,0 +1,29 @@
+{
+  "name": "beer-fly",
+  "version": "1.0.0",
+  "description": "Beer-Fly app",
+  "main": "service-worker.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Polymer/shop.git"
+  },
+  "author": "Joseph Koski",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Polymer/shop/issues"
+  },
+  "homepage": "https://github.com/Polymer/shop#readme",
+  "keywords": [
+    "beer",
+    "app"
+  ],
+  "dependencies": {
+    "redux": "^3.6.0"
+  }
+}

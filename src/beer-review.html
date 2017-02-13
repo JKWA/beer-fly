@@ -1,0 +1,126 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../my_components/data/upload-image.html">
+
+<link rel="import" href="beer-fab.html">
+<link rel="import" href="beer-fab-search.html">
+<link rel="import" href="beer-review-card.html">
+<link rel="import" href="beer-rating-card.html">
+
+
+<dom-module id="beer-review">
+  <template>
+
+    <style>
+
+
+      .review {
+        font-size: 2.0em;
+        font-weight: 500;
+        margin: 40px 5px 0 20px;
+      }
+
+     
+  
+
+
+
+    </style>
+    <firebase-auth app-name="beer" user="{{user}}"></firebase-auth>
+
+    <iron-image 
+        style="width:100%; height:300px; background-color: #F8F8F8;"
+        sizing="cover" 
+        preload 
+        fade
+        src="[[photoUrl]]">
+    </iron-image>
+    
+    <beer-fab-search></beer-fab-search>
+    <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
+
+      <beer-rating-card rating="[[place.rating]]"></beer-rating-card>
+      <div class="review">Reviews</div>
+       <beer-review-card 
+                organization="[[place]]">
+       </beer-review-card>
+
+
+    <paper-dialog 
+        id="editDialog"
+        with-backdrop
+        style="width: 90vw;"
+        entry-animation="slide-from-right-animation"
+        exit-animation="slide-right-animation">
+            <style>
+            
+            </style>
+      <div class=""> 
+          <h3>[[category.title]]</h3>
+      </div>
+      <paper-dialog-scrollable>
+        <template is="dom-if" if="[[owner]]">
+          <upload-image org-id="[[orgId]]" type="banner" key="category/REVIEW/image"></upload-image>   
+          
+        </template>
+      </paper-dialog-scrollable>  
+
+      <div class="">
+        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+      </div>
+    </paper-dialog>
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-review',
+
+      properties:{
+        photoUrl: {
+          type: String,
+          computed: '_computePhotoUrl(category, place)'
+        }
+      },
+
+     _edit: function(){
+        'use strict';
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.editDialog);
+        this.$.editDialog.open()
+      },
+
+           _computePhotoUrl: function (category, place) {
+        if(category.image){
+          if(category.image.banner){
+            if(category.image.banner.url){
+              return category.image.banner.url;
+            }
+          }
+        }
+        var photoMeta = {};
+        var photos = place.photos
+        var categoryIndex = 4
+        if(photos.length < categoryIndex){
+          categoryIndex = photos.length
+        }
+        photoMeta.maxWidth = place.photos[categoryIndex].width;
+        photoMeta.maxHeight = place.photos[categoryIndex].height;
+        return place.photos[categoryIndex].getUrl(photoMeta);
+      },
+
+      _test(obj){
+        console.log(obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

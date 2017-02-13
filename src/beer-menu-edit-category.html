@@ -1,0 +1,130 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+
+<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+
+<link rel="import" href="beer-icons.html">
+
+
+<dom-module id="beer-menu-edit-category">
+
+  <template>
+
+    <style>
+      
+      .category-titleA{
+        font-size: 1.5em;
+        font-weight: 700;
+      }
+
+      .category-item{
+        font-size: 1.25em;
+        font-weight: 300;
+        margin-left: 30px;
+        border-bottom: 1px solid grey;
+        width: 100px;
+      }
+      
+    </style>
+
+       <firebase-query
+          id="menuCategory"
+          app-name="beer"
+          path="organization/[[orgId]]/category/MENU/menu">
+      </firebase-query>
+
+      <firebase-query
+          app-name="beer"
+          path="category/MENU"
+          data="{{menuCategories}}">
+      </firebase-query>
+
+      <div>
+        <iron-label class="category-titleA">
+          <toggle-icon 
+              animation="flip-vertical" 
+              icon="beer-icons:expand-more"
+              class="menu-button"
+              checked="{{toggle}}"
+              noink>
+            </toggle-icon>
+              [[_ifValue(category.title)]]
+
+        </iron-label>
+
+        <iron-collapse opened={{toggle}}>
+          <paper-listbox
+              selected="{{menuCategory}}"
+              class="category-list"
+              attr-for-selected="menucat"
+              item-key="[[category.$key]]"
+              on-click="_saveCategory">
+
+            <template is="dom-repeat" items="{{menuCategories}}"  as="menuCategory" sort="_sortOrder">
+                  <paper-item class="category-item" menucat="{{menuCategory}}"> 
+                  [[menuCategory.title]] 
+                  </paper-item>
+            </template>
+          </paper-listbox>
+        </iron-collapse> 
+
+             
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-menu-edit-category',
+
+     _saveCategory: function(e){
+     	'use strict';
+       var target = e.currentTarget;
+      var menuCategory = this.menuCategory;
+      //clone category obj
+      var obj = {};
+      var menuKey = Object.keys(menuCategory);
+      for(var i=0; i<menuKey.length; i++){
+        if(menuKey[i] !== '$key'){
+          obj[menuKey[i]] = menuCategory[menuKey[i]];
+        }
+      }
+      //firebase does not accept $key 
+      obj.category = menuCategory.$key;
+
+      var key = target.itemKey
+       this.$.menuCategory.ref.child(key).update(obj);
+      this.toggle=false;
+     },
+
+     _ifValue: function(value){
+        'use strict';
+        if( typeof value === 'string'){
+          return value;
+
+        }else{
+          return 'Select a category';
+        }
+      }, 
+
+     _sortOrder: function(a,b){  
+      'use strict';
+    
+      if (a.order < b.order)
+        return -1;
+      if (a.order > b.order)
+        return 1;
+      return 0;
+    },
+
+    });
+
+  </script>
+
+</dom-module>

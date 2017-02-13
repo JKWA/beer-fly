@@ -1,0 +1,360 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
+
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/login-fire/login-fire.html">
+
+<link rel="import" href="../my_components/data/upload-image.html">
+<link rel="import" href="../my_components/data/upload-image.html">
+<link rel="import" href="beer-pub-card.html">
+<link rel="import" href="beer-fab.html">
+<link rel="import" href="beer-button.html">
+
+<link rel="import" href="beer-home-search.html">
+
+
+
+<dom-module id="beer-home">
+
+  <template>
+
+    <style include="beer-button">
+
+      
+
+      .item {
+        /*display: block;
+        text-decoration: none;
+        text-align: center;
+        margin-bottom: 40px;*/
+        margin: 30px;
+        padding: 10px;
+        height: 200px
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+
+     .body{
+   
+     }
+
+     .card {
+        padding: 12px;
+        margin: 10px;
+        width:92%;
+        background-color: white;
+    }
+
+    .card-header {
+        @apply(--layout-horizontal);
+        @apply(--layout-justified);
+        font-size: .9rem;
+        font-weight: 400;
+     }
+
+      h2 {
+        font-size: 1.3em;
+        font-weight: 500;
+        margin: 32px 0;
+      }
+
+      wrapper{
+         @apply(--layout-horizontal);
+         @apply(--layout-wrap);
+      }
+
+  
+
+      /*.title {
+        font-size: 2.5em;
+        font-weight: 300;
+        margin: 32px 5px 0 20px;
+      }*/
+
+      .motto {
+        font-size: 2.0em;
+        font-weight: 500;
+        margin: 20px 5px 0 20px;
+      }
+
+
+      .history {
+        font-size: 1.2em;
+        font-weight: 300;
+        margin: 10px 5px 0 20px;
+      }
+
+
+      @media (max-width: 767px) {
+       
+
+        h2 {
+          margin: 24px 0;
+        }
+
+      }
+
+    </style>
+
+     <firebase-auth 
+        id="auth" 
+        app-name="beer"
+        user="{{user}}" 
+        status-known="{{statusKnown}}"
+        on-error="handleError">
+    </firebase-auth>
+
+    <firebase-query
+        id="organizations"
+        app-name="beer"
+        path="organization"
+        data="{{organizations}}">
+    </firebase-query>
+    
+    <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
+    <iron-image 
+        style="width:100%; height:300px; background-color: #F8F8F8;"
+        sizing="cover" 
+        preload 
+        fade
+        src="[[organization.mainImage.banner.url]]">
+    </iron-image>
+
+     <div class="body">
+          <div class="motto">
+            [[organization.motto]]
+          </div>
+          <div class="history">
+            [[organization.history]]
+          </div>
+          <div>[[user.displayName]]</div>
+          <div hidden="[[user]]">
+             <login-fire  app-name="beer"  google></login-fire>
+          </div>
+
+          <div hidden="[[!user]]">
+            <paper-button on-tap="_logout" raised>Log out</paper-button>
+          </div>
+      
+     <div class="wrapper">
+          <div class="item">
+              <beer-home-search></beer-home-search> 
+          </div>
+          <div class="item">
+            <beer-button>
+              <a aria-label="Search Breweries" href="/home/allbreweries">Find Breweries</a>
+            </beer-button>
+          </div>
+          <div class="item">
+            <beer-button>
+              <a aria-label="Search Beers" href="/home/allbeers">Find Beers</a>
+            </beer-button>
+          </div>
+      </div>
+   
+    
+
+    
+     
+
+     </div>
+
+
+      <paper-dialog 
+        id="editDialog"
+        with-backdrop
+        style="width: 90vw;"
+        entry-animation="slide-from-right-animation"
+        exit-animation="slide-right-animation">
+      
+     
+        <paper-dialog-scrollable>
+          
+
+          <h3>Upload Images</h3>
+          <upload-image org-id="home" type="banner" key="mainImage"></upload-image>
+        
+          
+          <h3>Basic Information</h3>
+          <paper-input label="Motto" value="{{organization.motto}}"maxlength=100 char-counter></paper-input>
+          <paper-textarea label="History" value="{{organization.description}}" maxlength=2000 char-counter></paper-textarea>
+          
+          
+          </div>
+          
+        </paper-dialog-scrollable>
+
+
+      <div>
+        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+      </div>
+    </paper-dialog>
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-home',
+
+      properties: {
+
+        organizations:{
+          type: Array
+        },
+
+        _ownsOrganizations:{
+          type: Boolean,
+          computed:'_computedOwnsOrganizations(organizations)'
+        }
+
+      },
+
+      _computedOwnsOrganizations: function (){
+        var organizations = this.$.organizations
+        return !organizations.valueIsEmpty(organizations);
+      },
+
+      _edit: function(){
+        'use strict';
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.editDialog);
+        this.$.editDialog.open()
+      },
+       
+      // login: function(){
+      //   'use strict';
+      //   this.$.loginDialog.open();
+      // },
+
+      _addPub: function () {
+        var query = this.$.organizations;
+        var org = {};
+        org.PUB = true;
+        org.category = {}
+
+        org.category.BEER = {};
+        org.category.BEER.name = 'beer';
+        org.category.BEER.title = 'Beer';
+        org.category.BEER.order = '1';
+        org.category.BEER.display = false;
+
+        org.category.MENU = {};
+        org.category.MENU.name = 'menu';
+        org.category.MENU.title = 'Menu';
+        org.category.MENU.order = '2';
+        org.category.MENU.display = false;
+
+        org.category.TRUCK = {};
+        org.category.TRUCK.name = 'truck';
+        org.category.TRUCK.title = 'Food Truck';
+        org.category.TRUCK.order = '3';
+        org.category.TRUCK.display = false;
+
+        org.category.CONTACT = {};
+        org.category.CONTACT.name = 'contact';
+        org.category.CONTACT.title = 'Contact';
+        org.category.CONTACT.order = '4';
+        org.category.CONTACT.display = false;
+
+        org.category.EVENT = {};
+        org.category.EVENT.name = 'event';
+        org.category.EVENT.title = 'Event';
+        org.category.EVENT.order = '5';
+        org.category.EVENT.display = false;
+
+        org.category.STORE = {};
+        org.category.STORE.name = 'store';
+        org.category.STORE.title = 'Store';
+        org.category.STORE.order = '6';
+        org.category.STORE.display = false;
+
+        org.uid = 'test';
+        org.name = 'New Pub'
+        query.ref.push(org);
+      },
+
+      _addTruck(){
+        var query = this.$.organizations;
+        var org = {};
+        org.TRUCK = true;
+        org.category = {}
+
+        org.category.MENU = {};
+        org.category.MENU.name = 'menu';
+        org.category.MENU.title = 'Menu';
+        org.category.MENU.order = '1';
+        org.category.BEER.display = false;
+
+        org.category.LOCATION = {};
+        org.category.LOCATION.name = 'location';
+        org.category.LOCATION.title = 'Location';
+        org.category.LOCATION.order = '2';
+        org.category.LOCATION.display = false;
+
+        org.category.PUB = {};
+        org.category.PUB.name = 'pub';
+        org.category.PUB.title = 'PUB';
+        org.category.PUB.order = '3';
+        org.category.PUB.display = false;
+
+        org.category.CONTACT = {};
+        org.category.CONTACT.name = 'contact';
+        org.category.CONTACT.title = 'Contact';
+        org.category.CONTACT.order = '4';
+        org.category.CONTACT.display = false;
+
+        org.category.EVENT = {};
+        org.category.EVENT.name = 'event';
+        org.category.EVENT.title = 'Event';
+        org.category.EVENT.order = '5';
+        org.category.EVENT.display = false;
+
+        org.category.STORE = {};
+        org.category.STORE.name = 'store';
+        org.category.STORE.title = 'Store';
+        org.category.STORE.order = '6';
+        org.category.STORE.display = false;
+
+        org.uid = 'test';
+        org.name = 'New Truck'
+        query.ref.push(org);
+      },
+
+      _logout: function(){
+        'use strict';
+        return this.$.auth.signOut();
+      }, 
+
+     
+
+      _test: function(obj){
+          console.log(obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

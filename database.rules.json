@@ -1,0 +1,39 @@
+{
+  "rules": {
+   ".read": "true",
+    "organization": {
+      ".read": "true",
+      ".write": "true",
+      ".indexOn": "brewId"
+    },
+    "breweryDB": {
+      ".read": "true",
+      ".write": "true",
+      ".indexOn": "addedToOrganization"
+    },
+    "category": {
+      ".read": "true",
+      ".write": "true"
+      },
+    "beerStyle": {
+      ".read": "true",
+      ".write": "true"
+      },
+    "beer": {
+      ".read": "true",
+      ".write": "true",
+      ".indexOn": ["styleId","category"]
+      },
+    "onTap": {
+      ".read": "true",
+      ".write": "true"
+    },
+    "GeoFire": {
+      ".read": "true",
+      ".write": "true",
+      ".indexOn": "g"
+    }
+    
+   
+  }
+}
