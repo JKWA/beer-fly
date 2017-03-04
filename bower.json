@@ -57,7 +57,8 @@
     "paper-carousel": "Redbility/paper-carousel#^1.1.5",
     "l2t-paper-slider": "^1.2.6",
     "neon-page-behavior": "vguillou/neon-page-behavior#^1.2.0",
-    "simple-carousel": "franjsc/simple-carousel#^1.1.0"
+    "simple-carousel": "franjsc/simple-carousel#^1.1.0",
+    "paper-autocomplete-input": "NeilujD/paper-autocomplete-input#^1.2.0"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"

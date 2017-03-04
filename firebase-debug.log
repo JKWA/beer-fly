@@ -3,20 +3,7 @@
 [debug] CLI Version:  3.0.6
 [debug] Platform:     darwin
 [debug] Node Version: v6.9.4
-[debug] Time:         Sat Feb 11 2017 12:37:08 GMT-0800 (PST)
-[debug] ----------------------------------------------------------------------
-[debug] 
-[info] Starting Firebase development server...
-[info] 
-[info] Project Directory: /Users/joseph_koski/Projects/beer
-[info] 
-[info] Server listening at: http://localhost:5000
-[debug] ----------------------------------------------------------------------
-[debug] Command:      /usr/local/bin/node /usr/local/bin/firebase serve
-[debug] CLI Version:  3.0.6
-[debug] Platform:     darwin
-[debug] Node Version: v6.9.4
-[debug] Time:         Sat Feb 11 2017 14:44:37 GMT-0800 (PST)
+[debug] Time:         Fri Feb 17 2017 15:41:40 GMT-0800 (PST)
 [debug] ----------------------------------------------------------------------
 [debug] 
 [info] Starting Firebase development server...
@@ -29,7 +16,98 @@
 [debug] CLI Version:  3.0.6
 [debug] Platform:     darwin
 [debug] Node Version: v6.9.4
-[debug] Time:         Sat Feb 11 2017 14:46:28 GMT-0800 (PST)
+[debug] Time:         Tue Feb 21 2017 12:45:29 GMT-0800 (PST)
+[debug] ----------------------------------------------------------------------
+[debug] 
+[info] Starting Firebase development server...
+[info] 
+[info] Project Directory: /Users/joseph_koski/Projects/beer-fly
+[info] 
+[info] Server listening at: http://localhost:5000
+[debug] ----------------------------------------------------------------------
+[debug] Command:      /usr/local/bin/node /usr/local/bin/firebase serve
+[debug] CLI Version:  3.0.6
+[debug] Platform:     darwin
+[debug] Node Version: v6.9.4
+[debug] Time:         Fri Feb 24 2017 12:15:16 GMT-0800 (PST)
+[debug] ----------------------------------------------------------------------
+[debug] 
+[info] Starting Firebase development server...
+[info] 
+[info] Project Directory: /Users/joseph_koski/Projects/beer-fly
+[info] 
+[info] Server listening at: http://localhost:5000
+[debug] ----------------------------------------------------------------------
+[debug] Command:      /usr/local/bin/node /usr/local/bin/firebase serve
+[debug] CLI Version:  3.0.6
+[debug] Platform:     darwin
+[debug] Node Version: v6.9.4
+[debug] Time:         Tue Feb 28 2017 10:14:32 GMT-0800 (PST)
+[debug] ----------------------------------------------------------------------
+[debug] 
+[info] Starting Firebase development server...
+[info] 
+[info] Project Directory: /Users/joseph_koski/Projects/beer-fly
+[info] 
+[info] Server listening at: http://localhost:5000
+[debug] ----------------------------------------------------------------------
+[debug] Command:      /usr/local/bin/node /usr/local/bin/firebase serve
+[debug] CLI Version:  3.0.6
+[debug] Platform:     darwin
+[debug] Node Version: v6.9.4
+[debug] Time:         Tue Feb 28 2017 13:34:50 GMT-0800 (PST)
+[debug] ----------------------------------------------------------------------
+[debug] 
+[info] Starting Firebase development server...
+[info] 
+[info] Project Directory: /Users/joseph_koski/Projects/beer-fly
+[info] 
+[info] Server listening at: http://localhost:5000
+[debug] ----------------------------------------------------------------------
+[debug] Command:      /usr/local/bin/node /usr/local/bin/firebase serve
+[debug] CLI Version:  3.0.6
+[debug] Platform:     darwin
+[debug] Node Version: v6.9.4
+[debug] Time:         Wed Mar 01 2017 12:25:13 GMT-0800 (PST)
+[debug] ----------------------------------------------------------------------
+[debug] 
+[info] Starting Firebase development server...
+[info] 
+[info] Project Directory: /Users/joseph_koski/Projects/beer-fly
+[info] 
+[info] Server listening at: http://localhost:5000
+[debug] ----------------------------------------------------------------------
+[debug] Command:      /usr/local/bin/node /usr/local/bin/firebase serve
+[debug] CLI Version:  3.0.6
+[debug] Platform:     darwin
+[debug] Node Version: v6.9.4
+[debug] Time:         Wed Mar 01 2017 15:00:53 GMT-0800 (PST)
+[debug] ----------------------------------------------------------------------
+[debug] 
+[info] Starting Firebase development server...
+[info] 
+[info] Project Directory: /Users/joseph_koski/Projects/beer-fly
+[info] 
+[info] Server listening at: http://localhost:5000
+[debug] ----------------------------------------------------------------------
+[debug] Command:      /usr/local/bin/node /usr/local/bin/firebase serve
+[debug] CLI Version:  3.0.6
+[debug] Platform:     darwin
+[debug] Node Version: v6.9.4
+[debug] Time:         Wed Mar 01 2017 16:26:14 GMT-0800 (PST)
+[debug] ----------------------------------------------------------------------
+[debug] 
+[info] Starting Firebase development server...
+[info] 
+[info] Project Directory: /Users/joseph_koski/Projects/beer-fly
+[info] 
+[info] Server listening at: http://localhost:5000
+[debug] ----------------------------------------------------------------------
+[debug] Command:      /usr/local/bin/node /usr/local/bin/firebase serve
+[debug] CLI Version:  3.0.6
+[debug] Platform:     darwin
+[debug] Node Version: v6.9.4
+[debug] Time:         Wed Mar 01 2017 19:01:43 GMT-0800 (PST)
 [debug] ----------------------------------------------------------------------
 [debug] 
 [info] Starting Firebase development server...

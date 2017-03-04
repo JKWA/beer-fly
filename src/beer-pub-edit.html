@@ -81,7 +81,14 @@
         
         <upload-image org-id="[[orgId]]" type="logoThumbnail" key="mainImage"></upload-image>
         
+
         <h3>Basic Information</h3>
+        <iron-label>
+          <paper-checkbox checked={{organization.crowdSource}}></paper-checkbox>
+          <span>Turn off crowd-sourced data</span>
+        </iron-label>
+
+        <paper-input label="Name" value="{{organization.name}}"maxlength=50 char-counter></paper-input>
         <paper-input label="Name" value="{{organization.name}}"maxlength=50 char-counter></paper-input>
         <paper-input label="Motto" value="{{organization.motto}}"maxlength=100 char-counter></paper-input>
         <paper-textarea label="Description" value="{{organization.description}}" maxlength=2000 char-counter></paper-textarea>
@@ -133,11 +140,9 @@
 
     // observers: ['_watchForNewOrganizationData(organization, allCategories)'],
 
-   
 
      _watchForNewOrganizationData: function (organization, category) {
       var category = this.allCategories;
-      // console.log('fromGoogle',organization.googleData);
       if(!organization.googleData){
         if(category.BEER){
           var key = Object.keys(category);

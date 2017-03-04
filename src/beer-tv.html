@@ -119,7 +119,7 @@
 </div>
 
 
-<button on-click="_openTvView">Start</button>
+<!--<button on-click="_openTvView">Start</button>-->
 
 
   </template>
@@ -172,6 +172,11 @@
       },
       observers:['_watchForNewData(organization.onTap)'],
       // observers: ['_watchForChangeInNumberOfDialogs(numberOfDialogs)'],
+      ready: function (){
+        this._openTvView();
+      },
+
+
 
       _watchForNewData: function (tapped){
         // console.log('tapped',tapped);

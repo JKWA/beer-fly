@@ -231,6 +231,10 @@
 
       },
 
+      ready: function(){
+        document.title = 'Beer-Fly';
+     },
+      
       _computedOwnsOrganizations: function (){
         var organizations = this.$.organizations
         return !organizations.valueIsEmpty(organizations);

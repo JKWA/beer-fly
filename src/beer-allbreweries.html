@@ -48,18 +48,23 @@
         longitude="{{lng}}">
     </geo-location>
 
-    <geofire-elements 
+
+    <geofire-query 
         id="query" 
         app="beer" 
-        path="GeoFire"
+         path="GeoFire"
         lat="[[lat]]" 
-        lng="[[lng]]">
-    </geofire-elements>
-    
+        lng="[[lng]]" 
+        radius="[[distance]]" 
+        results-array="{{breweries}}">
+    </geofire-query>
+
+
     <div class="distance-wrapper">
       <s-slider value="{{sliderDistance}}"></s-slider>
       <div class="distance">Within [[distance]] miles</div>
     </div>
+   
     <template is="dom-repeat" items="[[breweries]]" as="geo" sort="_sortByDistance">
         <beer-allbreweries-card place-id ="[[geo.key]]" distance="[[geo.distance]]">
         </beer-allbreweries-card>
@@ -91,7 +96,7 @@
      },
 
      _observeSliderDistance:function (sliderDistance){
-       console.log(sliderDistance);
+      //  console.log(sliderDistance);
        this.distance = sliderDistance/2;
      },
     

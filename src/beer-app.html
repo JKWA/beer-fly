@@ -258,6 +258,12 @@
     data="{{organization}}">
 </firebase-document>
 
+<firebase-document 
+    id="user"
+    app-name="beer" 
+    path="user/[[user.uid]]">
+</firebase-document>
+
 
   <google-map-search 
       id="search"
@@ -344,8 +350,8 @@
   <beer-allbreweries name="allbreweries" owner="[[owner]]"></beer-allbreweries>
   <beer-allbeers name="allbeers" owner="[[owner]]"></beer-allbeers>
   <beer-pub name="pub" organization="{{organization}}" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" owner="[[owner]]"></beer-pub>
-  <beer-tap name="tap"  organization="[[organization]]" place="[[place]]" category=[[organization.category.TAP]] org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-tap>
-  <beer-beer name="beer" organization="[[organization]]" place="[[place]]" category=[[organization.category.BEER]] org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-beer>
+  <beer-tap name="tap"  organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.TAP]] org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-tap>
+  <beer-beer name="beer" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-beer>
   <beer-tv name="tv" organization="[[organization]]" place="[[place]]" org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-tv>
 
   <beer-review name="review" organization="[[organization]]" place="[[place]]" category=[[organization.category.REVIEW]] org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-review>
@@ -492,7 +498,9 @@
         '_toastOffline(online)',
         // '_organizationChanged(fireBaseData)',
         '_setBackArrowInHeader(page)',
-        '_getGoogleSupplimentalData(orgId)'
+        '_getGoogleSupplimentalData(orgId)',
+        '_updateUserBaseData(user)',
+        '_updatePageTitle(place.name, page)'
       ],
 
      
@@ -507,6 +515,19 @@
         window.performance && performance.mark && performance.mark('beer-app.created');
         // Custom elements polyfill safe way to indicate an element has been upgraded.
         this.removeAttribute('unresolved');
+      },
+
+      _updateUserBaseData: function (user){
+        
+          if(user){
+            var obj = {};
+            // console.log(user);
+            obj.displayName = user.displayName;
+            obj.domain = user.email.split('@')[1];
+            obj.verified = user.emailVerified;
+
+            this.$.user.ref.update(obj)
+          }
       },
 
 
@@ -623,6 +644,9 @@
       _routePageChanged: function (route) {
 
         // console.log('ROUTE', route);
+        var place = this.place;
+    
+        var title = 'Beer-Fly'
         var page = 'home'
         var path = route.path;
         if(!path){
@@ -650,6 +674,7 @@
           }else {
             if(subRoute === 'main'){
               page = 'pub';
+              
             }else if(subRoute==='beer'){
                page = 'beer';
             }else if(subRoute==='tap'){
@@ -661,12 +686,14 @@
              }else if(subRoute==='review'){
                page = 'review';
             }else if(subRoute==='tv'){
-            page = 'tv';
+              page = 'tv';
             }else{
               page='list';
             }
           }
         }
+
+        
         //  console.log('PAGE', page)
 
         // if (this.page === 'list') {
@@ -690,6 +717,39 @@
         } else {
           this.orgId = 'home';
         }
+      },
+
+      _updatePageTitle: function (name, page){
+          
+          name = (name) ? name : 'Beer Fly'
+          var title;
+
+            switch (page){
+              case "beer":
+                title = name+' Beers';
+                break;
+              case "tap":
+                title = name+' On-tap';
+                break;
+              case "menu":
+                title = name+' Menu';
+                break;
+              case "contact":
+                title = name+' Contact';
+                break;
+              case "review":
+                title = name+' Reviews';
+                break;
+              default:
+                title = name;
+
+            }
+            
+
+
+            document.title = title;
+          
+
       },
      
       _pageChanged: function (page, oldPage) {

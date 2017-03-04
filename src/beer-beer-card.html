@@ -5,6 +5,8 @@
 
 <link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 
 <link rel="import" href="../bower_components/paper-material/paper-material.html">
@@ -13,6 +15,7 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 
+<link rel="import" href="beer-rating.html">
 
 
 
@@ -124,12 +127,12 @@
         color: var(--app-primary-color);
       }
 
-     .available{
+     /*.available{
         font-size: 1em;
         font-weight: 300;
         color: var(--app-primary-color);
         
-     }
+     }*/
       .location{
         @apply(--layout-horizontal);
         @apply(--layout-start-justified);
@@ -161,11 +164,11 @@
       }
 
     </style>
-    <firebase-document
+    <!--<firebase-document
         app-name="beer"
         path="beer/[[beerId]]"
         data="{{beer}}">
-    </firebase-document>
+    </firebase-document>-->
 
      <firebase-document
         app-name="beer"
@@ -192,9 +195,23 @@
 
 
       <paper-material class='card' elevation="1" animated-shadow="false">
-       
+        [[beerId]]
         <div>
           <div class="title">
+          <div>
+            <beer-rating beer-id="[[beerId]]"></beer-rating>
+          </div>
+           <div hidden="[[!edit]]">
+              <!--<a href="https://script.google.com/a/macros/beer-fly.com/s/AKfycbwpSdcRSUNDeJfIZgyDqeQWBZLnT4D7X378ZHUOfPg/dev?place_id=[[orgId]]&uid=[[uid]]&beerId=[[beer.id]]">-->
+              <paper-icon-button icon="beer-icons:edit" on-tap="changeEditId"></paper-icon-button>
+              <!--</a>-->
+            </div>
+            
+            <!--<paper-icon-button icon="beer-icons:edit" on-tap="changeEditId" raised></paper-icon-button>-->
+            
+          </div>
+
+          
             <div id="tapStatusMesage" >
             <iron-label class="tap-status-wrapper">
               <toggle-icon
@@ -205,11 +222,7 @@
               <div class="tap-status-shown">[[tapStatus]]</div>
             </iron-label>
             </div>
-            <div>
-              <a href="http://www.brewerydb.com/beer/[[beer.id]]">
-              <paper-icon-button icon="beer-icons:edit"></paper-icon-button>
-              </a>
-            </div>
+           
           </div>
 
             <div>
@@ -262,20 +275,21 @@
 
                 </iron-collapse>
               </div>
-            </div>
+            
 
             <div class="wrapper">
                 <div class="name">[[beer.name]]</div>
-                <div class="style">[[beer.style.name]]</div>
+                <div class="style">[[beer.styleName]]</div>
                 <div class="description">[[beer.description]]</div>       
-                <div class="available">[[beer.available.description]]</div>
                 <div class="location">
                   <div>[[beer.breweryName]] - </div>
-                  <div>[[beer.breweryCity]],</div>
-                  <div>[[beer.breweryState]]</div>
+                  <div>[[beer.city]],</div>
+                  <div>[[beer.state]]</div>
                 </div>
                 <div class="footer-abv" hidden="[[!beer.abv]]">ABV: [[beer.abv]]</div>
+                
             </div>
+
         </div>
       </paper-material>
   </template>
@@ -318,7 +332,12 @@
         pageLoadComplete:{
           type: Boolean,
           value: false
+        },
+        editBeerId:{
+          type: String,
+          notify: true
         }
+       
       },
       observers: ['_watchTappedStatus(tapped)',
       '_watchTappedData(tappedData)'],
@@ -347,15 +366,18 @@
           tap.classList.remove('blown');
           tap.classList.add('on-deck');
           tap.classList.remove('not-available');
- 
         }else{
           tap.classList.remove('tapped');
           tap.classList.remove('blown');
           tap.classList.remove('on-deck');
           tap.classList.add('not-available');
         }
-
       },
+
+      changeEditId: function (){
+        this.editBeerId = this.beerId;
+      },
+      
 
        
       _computeIcon: function (tapped){
@@ -408,11 +430,11 @@
             beer.categoryOrder = this.beer.categoryOrder;
             beer.categoryOrder = this.beer.categoryOrder;
             beer.abv = this.beer.abv || '';
-            beer.id = this.beer.id;
+            beer.id = this.beerId;
             beer.name = this.beer.name;
             beer.tapName = this.organization.name;
             beer.place_id = this.organization.place_id;
-            beer.brewId = this.organization.brewId;
+            beer.breweryId = this.organization.breweryId;
             beer.latitude = this.organization.latitude;
             beer.longitude = this.organization.longitude;
             beer.tapped = tapped;

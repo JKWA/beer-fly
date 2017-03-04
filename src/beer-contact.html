@@ -26,8 +26,16 @@
   <template>
 
     <style>
-
-
+      .wrapper{
+        @apply(--layout-vertical);
+        
+        @apply(--layout-center-justified);
+      }
+      .item{
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        margin: 10px;
+      }
 
       .motto {
         font-size: 2.0em;
@@ -67,16 +75,20 @@
     <div class="motto">
         [[organization.siteName]]
     </div>
-
+    <div class="wrapper">
+      <div class="item">
       <beer-hours-card 
           class=" category-item"
           organization="[[place]]">
       </beer-hours-card>
-
+      </div>
+      <div class="item">
 
        <beer-contact-card 
                 organization="[[place]]">
        </beer-contact-card>
+      </div>
+    </div>
 
 
     <paper-dialog 
@@ -127,23 +139,29 @@
         }
       },
 
+      
+
       _computePhotoUrl: function (category, place) {
-        if(category.image){
-          if(category.image.banner){
-            if(category.image.banner.url){
-              return category.image.banner.url;
+        try{
+          if(category.image){
+            if(category.image.banner){
+              if(category.image.banner.url){
+                return category.image.banner.url;
+              }
             }
           }
-        }
-        var photoMeta = {};
-        var photos = place.photos
-        var categoryIndex = 3
-        if(photos.length < categoryIndex){
-          categoryIndex = photos.length
-        }
-        photoMeta.maxWidth = place.photos[categoryIndex].width;
-        photoMeta.maxHeight = place.photos[categoryIndex].height;
-        return place.photos[categoryIndex].getUrl(photoMeta);
+          var photoMeta = {};
+          var photos = place.photos
+          var categoryIndex = 3
+          if(photos.length < categoryIndex){
+            categoryIndex = photos.length
+          }
+          photoMeta.maxWidth = place.photos[categoryIndex].width;
+          photoMeta.maxHeight = place.photos[categoryIndex].height;
+          return place.photos[categoryIndex].getUrl(photoMeta);
+        }catch (error){
+
+       }
       },
 
 

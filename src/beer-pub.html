@@ -291,6 +291,8 @@
 
         
       },
+
+ 
     
 
       _visibleChanged: function(visible) {
@@ -373,28 +375,32 @@
             returnArray.push(obj[key[i]])
           }
             return returnArray.sort(function(a, b){
-            var nameA=a.name.toLowerCase(), nameB=b.name.toLowerCase()
-            if (nameA < nameB)
-                return -1 
-            if (nameA > nameB)
-                return 1
-            return 0
-          })
+              'use strict';
+              if (a.order < b.order)
+                return -1;
+              if (a.order > b.order)
+                return 1;
+              return 0;
+            })
         }
       },
 
       _computePhotoUrl: function (organization, place) {
-        if(organization.mainImage){
-          if(organization.mainImage.banner){
-            if(organization.mainImage.banner.url){
-              return organization.mainImage.banner.url;
+        try{
+          if(organization.mainImage){
+            if(organization.mainImage.banner){
+              if(organization.mainImage.banner.url){
+                return organization.mainImage.banner.url;
+              }
             }
           }
-        }
-        var photoMeta = {};
-        photoMeta.maxWidth = place.photos[0].width;
-        photoMeta.maxHeight = place.photos[0].height;
-        return place.photos[0].getUrl(photoMeta);
+          var photoMeta = {};
+          photoMeta.maxWidth = place.photos[0].width;
+          photoMeta.maxHeight = place.photos[0].height;
+          return place.photos[0].getUrl(photoMeta);
+        }catch (error){
+
+       }
       },
 
       _test: function(obj){

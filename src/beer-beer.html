@@ -1,7 +1,10 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
@@ -12,10 +15,15 @@
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="beer-beer-card.html">
+<link rel="import" href="../bower_components/login-fire/login-fire.html">
+
 
 <link rel="import" href="../my_components/data/upload-image.html">
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-fab-search.html">
+<link rel="import" href="beer-beer-add.html">
+
+
 
 
 <dom-module id="beer-beer">
@@ -49,6 +57,15 @@
 
     </style>
 
+    <firebase-auth  app-name="beer" user="{{user}}"></firebase-auth>
+    <firebase-query 
+       app-name="beer"
+       order-by-child="place_id"
+       equal-to="[[orgId]]"
+       path="beer"
+       data="{{beer}}">
+    </firebase-query>
+
     <iron-image 
         style="width:100%; height:300px; background-color: #F8F8F8;"
         sizing="cover" 
@@ -58,7 +75,7 @@
     </iron-image>
     
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
-    <!--<beer-fab-search></beer-fab-search>-->
+    <beer-fab-search></beer-fab-search>
 
     <div class="motto">
         [[category.motto]]
@@ -72,20 +89,70 @@
    </template>
 
    
-   <paper-material class="card" elevation="1">
-    <a href="http://www.brewerydb.com/add/beer-details/breweryId/[[organization.brewId]]">
-     <paper-icon-button icon="beer-icons:add" ></paper-icon-button>Add a beer
-    </a>
-   </paper-material>
+    <paper-material class="card" elevation="1">
+
+
+      <!--<iron-label>
+        <paper-icon-button icon="beer-icons:add" on-click="addBeerDialog"></paper-icon-button>
+        Add a beer
+      </iron-label>-->
+
+      <!--<a href="https://script.google.com/a/macros/beer-fly.com/s/AKfycbwpSdcRSUNDeJfIZgyDqeQWBZLnT4D7X378ZHUOfPg/dev?place_id=[[place.place_id]]&uid=[[user.uid]]">
+        <paper-icon-button icon="beer-icons:add"></paper-icon-button>
+        Add a beer
+      </a>-->
+
+      <iron-label>
+      <paper-icon-button icon="beer-icons:add" on-tap="_addBeerDialog"></paper-icon-button>
+      Add a beer
+      </iron-label>
+      TEST [[editBeerId]]
+    </paper-material>
+  
    
+    <!--<template is="dom-if" if="{{user}}">-->
+      <paper-dialog 
+            id="addBeer"
+            with-backdrop
+            opened="{{dialogOpen}}"
+            style="width: 90vw;"
+            entry-animation="slide-from-right-animation"
+            exit-animation="slide-right-animation">
 
+      <beer-beer-add
+          org-id="[[orgId]]"
+          uid="[[user.uid]]"
+          name-url="[[nameUrl]]"
+          brewery-id="[[organization.breweryId]]"
+          org-name="[[organization.name]]"
+          organization="[[organization]]"
+          edit-beer-id="{{editBeerId}}">
+      </beer-beer-add>
+      
+      </paper-dialog>
+    <!--</template>-->
 
-    <template is="dom-repeat" items="[[_getArray(organization.brewBeer)]]">
+    
+      <paper-dialog 
+          id="loginDialog"
+          with-backdrop
+          entry-animation="fade-in-animation"
+          exit-animation="fade-out-animation">
+        <login-fire  app-name="beer"  google></login-fire>
+        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+      </paper-dialog>
+    
+
+    <template is="dom-repeat" items="[[beer]]" sort="_sortCategoryOrder">
       <beer-beer-card 
           org-id="[[orgId]]" 
-          beer-id="[[item.id]]"
+          beer-id="[[item.$key]]"
           organization="[[organization]]"
-          owner="[[owner]]">
+          owner="[[owner]]"
+          uid="[[user.uid]]"
+          edit="[[canEdit]]"
+          beer="[[item]]"
+          edit-beer-id="{{editBeerId}}">
       </beer-beer-card>
     </template>
 
@@ -112,6 +179,8 @@
       </div>
     </paper-dialog>
 
+  
+
   </template>
 
   <script>
@@ -124,14 +193,95 @@
         photoUrl: {
           type: String,
           computed: '_computePhotoUrl(category, place)'
+        },
+
+       dialogOpen:{
+          type:Boolean
+       },
+
+       
+        owner:{
+          type: Boolean,
+          value: false
+        },
+
+        user: {
+          type: Object,
+          value: function (){
+            return {};
+          }
+        },
+
+        editBeerId:{
+          type: String
+        },
+
+
+        canEdit:{
+          type: Boolean,
+          computed: '_computeCanEdit(user, owner, organization)'
+        }
+        
+      },
+      observers: ['_addBeerDialog(editBeerId)', '_dialogOpenStatus(dialogOpen)'],
+
+      // listeners: {'iron-overlay-closed': '_onDialogClosed'},
+
+      _dialogOpenStatus: function (dialogOpen){
+          // console.log('dialog', dialogOpen);
+          if(!dialogOpen){
+            this.editBeerId = null;
+          }
+       },
+
+      _computeCanEdit: function (user, owner, organization){
+      
+       if(!user){
+        return false;
+       }
+
+       var uid = user.uid;
+        var crowdSource = true;
+        if(!organization){
+          return false
+        }else{
+          if(owner){
+            return true;
+          }
+          if(organization.stopCrowdSourcedData){
+            crowdSource = false;
+          }
+          if(crowdSource && uid){
+            return true
+          }
+         
+        }
+        return false;
+      },
+
+
+      _addBeerDialog: function(editBeerId){
+        'use strict';
+        if(editBeerId){
+          if(this.user){
+            var body = document.querySelector('body');
+            Polymer.dom(body).appendChild(this.$.addBeer);
+            this.$.addBeer.open();
+          }else{
+            var body = document.querySelector('body');
+            Polymer.dom(body).appendChild(this.$.loginDialog);
+            this.$.loginDialog.open()
+          }
         }
       },
 
      _edit: function(){
         'use strict';
+        
         var body = document.querySelector('body');
-        Polymer.dom(body).appendChild(this.$.editDialog);
-        this.$.editDialog.open()
+          Polymer.dom(body).appendChild(this.$.editDialog);
+          this.$.editDialog.open()
+       
       },
       
       _addBreaks: function(str){
@@ -143,48 +293,53 @@
         }
       },
 
-       _getArray: function(obj){
-        'use strict';
-        if(obj){
-          var returnArray = [];
-          var key = Object.keys(obj);
-          for (var i=0; i<key.length; i++){
-            obj[key[i]].$key = key[i]
-            returnArray.push(obj[key[i]])
-          }
-           return returnArray;
-        }
-      },
+      //  _getArray: function(obj){
+      //   'use strict';
+      //   if(obj){
+      //     var returnArray = [];
+      //     var key = Object.keys(obj);
+      //     for (var i=0; i<key.length; i++){
+      //       obj[key[i]].$key = key[i]
+      //       returnArray.push(obj[key[i]])
+      //     }
+      //      return returnArray.sort(this._sortCategoryOrder);
+      //   }
+      // },
 
       _sortCategoryOrder: function(a,b){
-      
         'use strict';
-        if (a.categoryOrder < b.categoryOrder)
+        if (a.order < b.order)
           return -1;
-        if (a.categoryOrder > b.categoryOrder)
+        if (a.order > b.order)
           return 1;
         return 0;
       },
        _computePhotoUrl: function (category, place) {
-        if(category.image){
-          if(category.image.banner){
-            if(category.image.banner.url){
-              return category.image.banner.url;
+         try{
+          if(category.image){
+            if(category.image.banner){
+              if(category.image.banner.url){
+                return category.image.banner.url;
+              }
             }
           }
-        }
-        var photoMeta = {};
-        var photos = place.photos
-        var categoryIndex = 2
-        if(photos.length < categoryIndex){
-          categoryIndex = photos.length
-        }
-        photoMeta.maxWidth = place.photos[categoryIndex].width;
-        photoMeta.maxHeight = place.photos[categoryIndex].height;
-        return place.photos[categoryIndex].getUrl(photoMeta);
+          var photoMeta = {};
+          var photos = place.photos
+          var categoryIndex = 2
+          if(photos.length < categoryIndex){
+            categoryIndex = photos.length
+          }
+          photoMeta.maxWidth = place.photos[categoryIndex].width;
+          photoMeta.maxHeight = place.photos[categoryIndex].height;
+          return place.photos[categoryIndex].getUrl(photoMeta);
+         
+       }catch (error){
+
+       }
       },
+
       _test: function (obj) {
-        console.log(obj);
+        console.log('TEST', obj);
       }
 
     });

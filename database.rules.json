@@ -1,10 +1,47 @@
 {
   "rules": {
-   ".read": "true",
+     
     "organization": {
       ".read": "true",
-      ".write": "true",
-      ".indexOn": "brewId"
+      ".indexOn": "brewId",
+      "$orgId":{
+        ".write": "auth.email_verified == true && (root.child('admin').child(auth.uid).exists() || root.child('organization').child($orgId).child('crowdSource').val()== true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val()))",
+        "brewBeer": {
+          "$orgBeerId": {
+            ".validate": "newData.hasChildren(['description', 'name', 'styleId'])",
+            "abv": {
+              ".validate": "newData.isNumber()"
+            },
+            "category": {
+              ".validate": "newData.isString()"
+            },
+            "categoryName": {
+              ".validate": "newData.isString()"
+            },
+            "categoryType": {
+              ".validate": "newData.isString()"
+            },
+            "description": {
+              ".validate": "newData.isString()"
+            },
+            "id": {
+              ".validate": "newData.isString()"
+            },
+            "name": {
+              ".validate": "newData.isString()"
+            },
+            "order": {
+              ".validate": "newData.isNumber()"
+            },
+            "styleId": {
+              ".validate": "newData.isNumber()"
+            },
+            "styleName": {
+              ".validate": "newData.isString()"
+            }
+          }
+        }
+      }
     },
     "breweryDB": {
       ".read": "true",
@@ -21,19 +58,34 @@
       },
     "beer": {
       ".read": "true",
-      ".write": "true",
-      ".indexOn": ["styleId","category"]
+      ".indexOn": ["styleId","category","place_id", "place"],
+        "$beerId": {
+      		".write": "auth.email_verified == true && (root.child('admin').child(auth.uid).exists() || root.child('organization').child(newData.child('place_id').val()).child('crowdSource').val()==true  || root.child('organization').child(root.child('beer').child($beerId).child('place_id').val()).child('crowdSource').val()==true || root.child('organization').child(newData.child('place_id').val()).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val()) || root.child('organization').child(root.child('beer').child($beerId).child('place_id').val()).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val()))"
+        }
+      
       },
     "onTap": {
       ".read": "true",
       ".write": "true"
     },
+     "rating": {
+    ".read": "true",
+    ".write": "true"
+    },
     "GeoFire": {
       ".read": "true",
       ".write": "true",
       ".indexOn": "g"
+    },
+    "user": {
+        "$uid":{
+          ".read": "$uid==auth.uid",
+     		  ".write": "$uid==auth.uid"
+        }
+    },
+    "breweryDbBeer": {
+      ".read": "true",
+      ".write": "true"
     }
-    
-   
   }
 }

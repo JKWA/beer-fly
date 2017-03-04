@@ -89,30 +89,36 @@
         }
       },
 
+       
+
      _edit: function(){
         'use strict';
-        var body = document.querySelector('body');
-        Polymer.dom(body).appendChild(this.$.editDialog);
-        this.$.editDialog.open()
-      },
+          var body = document.querySelector('body');
+          Polymer.dom(body).appendChild(this.$.editDialog);
+          this.$.editDialog.open()
+        },
 
-           _computePhotoUrl: function (category, place) {
-        if(category.image){
-          if(category.image.banner){
-            if(category.image.banner.url){
-              return category.image.banner.url;
+     _computePhotoUrl: function (category, place) {
+       try{
+          if(category.image){
+            if(category.image.banner){
+              if(category.image.banner.url){
+                return category.image.banner.url;
+              }
             }
           }
-        }
-        var photoMeta = {};
-        var photos = place.photos
-        var categoryIndex = 4
-        if(photos.length < categoryIndex){
-          categoryIndex = photos.length
-        }
-        photoMeta.maxWidth = place.photos[categoryIndex].width;
-        photoMeta.maxHeight = place.photos[categoryIndex].height;
-        return place.photos[categoryIndex].getUrl(photoMeta);
+          var photoMeta = {};
+          var photos = place.photos
+          var categoryIndex = 4
+          if(photos.length < categoryIndex){
+            categoryIndex = photos.length
+          }
+          photoMeta.maxWidth = place.photos[categoryIndex].width;
+          photoMeta.maxHeight = place.photos[categoryIndex].height;
+          return place.photos[categoryIndex].getUrl(photoMeta);
+        }catch (error){
+
+       }
       },
 
       _test(obj){

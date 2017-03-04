@@ -66,7 +66,6 @@
 
 
       .rating{
-
         margin: 10px
       }
 
@@ -115,7 +114,7 @@
 
     is: 'beer-rating-card',
   
-    _positiveStars: function (rating) {
+     _positiveStars: function (rating) {
       var returnArray = []
       var positiveRating = Math.floor(rating);
       
@@ -126,21 +125,25 @@
       return returnArray;
     },
 
-    _leftOverStars: function (rating) {
+  _leftOverStars: function (rating) {
       var returnArray = []
       if(rating >4){
         return [];
       }
-      var negitiveRating = 5-Math.floor(rating);
+      var floor = Math.floor(rating);
       
-      
-       for(var i=0; i<negitiveRating; i++){
-         returnArray.push('true')
+      var negitiveRating = 4-floor;
+      if(rating === floor){
+          //add one if there is no half star
+          negitiveRating ++
+      }
+        for(var i=0; i<negitiveRating; i++){
+            returnArray.push('true')
       }
       return returnArray;
     },
 
-    _middleRating: function (rating) {
+  _middleRating: function (rating) {
       var remainder = rating % 1;
       return remainder;
     },
