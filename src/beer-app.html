@@ -4,24 +4,30 @@
 <link rel="import" href="../bower_components/app-layout/app-scroll-effects/effects/waterfall.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../bower_components/app-layout/helpers/helpers.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/app-route/app-route-converter.html">
-<link rel="import" href="../bower_components/google-map/google-map.html">
-<link rel="import" href="../bower_components/google-map/google-map-search.html">
+<link rel="import" href="../bower_components/geo-location/geo-location.html">
+<!--<link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/google-map/google-map-search.html">-->
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
-
 <link rel="import" href="../bower_components/iron-location/iron-location.html">
 <link rel="import" href="../bower_components/iron-location/iron-query-params.html">
 <link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+
+<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
-
-
 <link rel="import" href="../bower_components/polymerfire/polymerfire.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
@@ -30,9 +36,14 @@
 
 
 
+
+
 <!--<link rel="import" href="beer-category-data.html">-->
 <!-- Since 'home' is the default route, eagerly load it. -->
 <link rel="import" href="beer-home.html">
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-login.html">
+<link rel="import" href="beer-place-data.html">
 
 <dom-module id="beer-app">
 
@@ -46,12 +57,15 @@
         padding-top: 130px;
         padding-bottom: 64px;
         min-height: 80vh;
-        --app-primary-color: #202020;
+        --app-primary-color: #303030;
         --app-secondary-color: #757575;
         --app-accent-color: #172C50;
+        --app-selected-color: #FF5722;
         --paper-button-ink-color: var(--app-accent-color);
         --paper-icon-button-ink-color: var(--app-accent-color);
         --paper-spinner-color: var(--app-accent-color);
+        --s-slider-active-color: var(--app-accent-color);
+        --s-slider-knob-color: var(--app-accent-color);
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         color: var(--app-primary-color);
       }
@@ -69,6 +83,10 @@
 
       paper-icon-button {
         color: var(--app-primary-color);
+      }
+
+      a{ 
+        text-decoration: none;
       }
 
       .logo {
@@ -96,9 +114,14 @@
         display: none;
       }
 
-      .cart-btn-container {
+      .home-btn-wrapper {
         position: relative;
-        width: 40px;
+        width: 90px;
+      }
+
+      .home-btn {
+        color: var(--app-accent-color);
+        text-decoration: none;
       }
 
       .announcer {
@@ -144,21 +167,62 @@
 
    
 
-      .drawer-list {
-        margin: 0 20px;
+      .card {
+        margin: 5px;
+        padding: 5px;
+      }
+      .card-title{
+        width: 100%;
+        font-size: 1.12em;
+        font-weight: 500;
+        color: var(--app-primary-color);
+        margin: 10px 0;
       }
 
       .drawer-list a {
         display: block;
-        padding: 0 16px;
+        padding: 0 9px;
         line-height: 40px;
         text-decoration: none;
         color: var(--app-secondary-color);
       }
 
-      .drawer-list a.iron-selected {
-        color: black;
-        font-weight: bold;
+      .extra-links{
+        display: block;
+        padding: 0 9px;
+        line-height: 40px;
+        text-decoration: none;
+        color: var(--app-secondary-color);
+      }
+
+   
+
+      .login-wrapper{
+        @apply(--layout-horizontal);
+        @apply(--layout-start-justified);
+        padding: 7px;
+        background-color: #F8F8F8;
+      }
+
+      .login-box{
+        color: white;
+        background-color: purple;
+        height: 50px;
+        width: 50px;
+        line-height: 50px;
+        text-align: center;
+        font-size: 2em;
+        font-weight: 500;
+      }
+
+      .login-account{
+        height: 50px;
+        text-align: center;
+        line-height: 50px;
+        font-size: 1.2em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+        margin: 0 10px;
       }
 
       
@@ -226,46 +290,63 @@
 <app-route-converter path="{{path}}" query-params="{{queryParams}}" route="{{route}}">
 </app-route-converter>
 
-<app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}">
-</app-route>
-<app-route route="{{subroute}}" pattern="/:page" data="{{subRouteData}}">
-</app-route>
+  <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}">
+  </app-route>
+  <app-route route="{{subroute}}" pattern="/:page" data="{{subRouteData}}">
+  </app-route>
 
 
-<firebase-app 
-    id="fire_DB" 
-    name="beer" 
-    api-key="AIzaSyD2Z_cYgNuKB58bGbSzo0kMmJAWj0A0p18" 
-    auth-domain="beer-fly.firebaseapp.com"
-    database-url="https://beer-fly.firebaseio.com" 
-    storage-bucket="beer-fly.appspot.com">
-</firebase-app>
+  <firebase-app 
+      id="fire_DB" 
+      name="beer" 
+      api-key="AIzaSyD2Z_cYgNuKB58bGbSzo0kMmJAWj0A0p18" 
+      auth-domain="beer-fly.firebaseapp.com"
+      database-url="https://beer-fly.firebaseio.com" 
+      storage-bucket="beer-fly.appspot.com">
+  </firebase-app>
 
 
+  <firebase-auth 
+      id="auth" 
+      app-name="beer"
+      user="{{user}}" 
+      status-known="{{statusKnown}}"
+      on-error="handleError">
+  </firebase-auth>
 
-<firebase-auth 
-    id="auth" 
-    app-name="beer"
-    user="{{user}}" 
-    status-known="{{statusKnown}}"
-    on-error="handleError">
-</firebase-auth>
+  <firebase-document 
+      id="organization"
+      app-name="beer" 
+      path="organization/[[orgId]]" 
+      data="{{organization}}">
+  </firebase-document>
 
-<firebase-document 
-    id="organization"
-    app-name="beer" 
-    path="organization/[[orgId]]" 
-    data="{{organization}}">
-</firebase-document>
+  <firebase-document 
+      id="user"
+      app-name="beer" 
+      path="user/[[user.uid]]">
+  </firebase-document>
 
-<firebase-document 
-    id="user"
-    app-name="beer" 
-    path="user/[[user.uid]]">
-</firebase-document>
+  <app-localstorage-document 
+      key="organization_[[orgId]]" 
+      data="{{localOrganizationData}}">
+  </app-localstorage-document>
+
+  <beer-place-data
+    place-id="[[orgId]]"
+    online="[[online]]"
+    data="{{place}}">
+  </beer-place-data>
+
+  <geo-location 
+      id="geoLocation"
+      idle="{{idle}}"
+      latitude="{{latitude}}"
+      longitude="{{longitude}}">
+  </geo-location>
 
 
-  <google-map-search 
+  <!--<google-map-search 
       id="search"
       map="[[map]]" 
       results="{{results}}">
@@ -276,7 +357,7 @@
       id="map"
       map="{{map}}" 
       api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" >
-  </google-map>
+  </google-map>-->
 
   </div>
 
@@ -287,20 +368,29 @@
   <app-toolbar>
     <div class="left-bar-item">
       <div id="homeButton">
-        <paper-icon-button class="menu-btn" icon="menu" on-click="_toggleDrawer" aria-label="Categories">
+        <paper-icon-button class="menu-btn" icon="beer-icons:menu" on-click="_toggleDrawer" aria-label="Categories">
         </paper-icon-button>
       </div>
       <div class="left-bar-item" >
         <div id="backButton" hidden>
             <a class="menu-btn" href="/[[nameUrl]]/main[[orgParam]]" tabindex="-1">
-              <paper-icon-button icon="arrow-back" aria-label="Go back"></paper-icon-button>
+              <paper-icon-button icon="beer-icons:arrow-back" aria-label="Go back"></paper-icon-button>
             </a>
         </div>
       </div>
     </div>
-    <div class="logo" main-title><a href="/[[nameUrl]]/main[[orgParam]]" aria-label="[[place.name]]">[[_showOrgName(place.name)]]</a></div>
-    <div class="cart-btn-container">
-
+    <div class="logo" main-title><a href="/[[nameUrl]]/main[[orgParam]]" aria-label="[[_showOrgName(place.name)]]">[[_showOrgName(place.name)]]</a></div>
+    
+    <div class="home-btn-wrapper" hidden$="[[smallScreen]]">
+      <a href="/home/search" aria-label="Search for breweries">
+          <iron-icon class="home-btn" icon="beer-icons:search"></iron-icon>
+      </a>
+      <a href="/home/near" aria-label="Breweries near me">
+          <iron-icon class="home-btn" icon="beer-icons:gps-fixed"></iron-icon>
+      </a>
+      <a href="/home/account" aria-label="Account page">
+          <iron-icon class="home-btn" icon="beer-icons:account"></iron-icon>
+      </a>
     </div>
   </app-toolbar>
 
@@ -319,9 +409,6 @@
             </beer-tab>
           </template>
         </template>
-        <!--<beer-tab name="review">
-          <a href="/[[nameUrl]]/review[[orgParam]]">Reviews</a>
-        </beer-tab>-->
       </beer-tabs>
     </template>
   </div>
@@ -329,46 +416,92 @@
 
 <!-- Lazy-create the drawer for small screen sizes. -->
 <template is="dom-if" if="[[_shouldRenderDrawer]]">
-  <!-- Two-way bind `drawerOpened` since app-drawer can update `opened` itself. -->
   <app-drawer opened="{{drawerOpened}}" tabindex="0">
-    <iron-selector role="navigation" class="drawer-list" selected="[[categoryName]]" attr-for-selected="name">
-      <a href="/[[nameUrl]]/main[[orgParam]]">Main</a>
-      <template is="dom-repeat" items="[[categories]]" as="category" sort="_sortCategory">
-        <template is="dom-if" if="[[category.display]]">
-          <a name="[[category.name]]" href="/[[nameUrl]]/[[category.name]][[orgParam]]">[[category.title]]</a>
+    
+    
+      <a href="/home/account">
+        <div class="login-wrapper">
+          <div class="login-box" hidden="[[!user]]">[[_returnFirstLetter(user.displayName)]]</div>
+          <div class="login-account">My Account</div>
+        </div>  
+      </a>
+    
+      <paper-material class="card"  elevation="0">
+      <div class="card-title">[[_showOrgName(place.name)]]</div>
+      <iron-selector role="navigation" selected-class="drawer-list" class="drawer-list" selected="[[categoryName]]" attr-for-selected="name">
+        <!--<a href="/[[nameUrl]]/main[[orgParam]]">Main</a>-->
+
+        <template is="dom-if" if="[[!_isHome(page)]]">
+          <template is="dom-repeat" items="[[categories]]" as="category" sort="_sortCategory">
+            <template is="dom-if" if="[[category.display]]">
+              <a name="[[category.name]]" href="/[[nameUrl]]/[[category.name]][[orgParam]]">[[category.title]]</a>
+            </template>
+          </template>
+          <hr>
         </template>
-      </template>
-      <!--<a href="/[[nameUrl]]/review[[orgParam]]">Reviews</a>-->
-    </iron-selector>
+        <a name="near" href="/home"><iron-icon icon="beer-icons:gps-fixed"></iron-icon>Near me</a>
+        <a name="search" href="/[[nameUrl]]/search[[orgParam]]"><iron-icon icon="beer-icons:search"></iron-icon>Search</a>
+        <a name="search" href="/[[nameUrl]]/favorite[[orgParam]]"><iron-icon icon="beer-icons:favorite"></iron-icon>Favorites</a>
+        <a name="browse" href="/[[nameUrl]]/browse[[orgParam]]"><iron-icon icon="beer-icons:near-me"></iron-icon>Browse</a>
+
+      </iron-selector>
+      
+      <div class="extra-links" hidden="[[!user]]" on-tap="_logout"><iron-icon icon="beer-icons:account"></iron-icon>Sign out</div>
+      <div class="extra-links" hidden="[[user]]" on-tap="_login"><iron-icon icon="beer-icons:account"></iron-icon>Sign in</div>
+      <div class="extra-links">Terms of use</div>
+    </paper-material>
   </app-drawer>
 </template>
 
 
 
 <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
-  <beer-home name="home" organization="[[organization]]" owner="[[owner]]"></beer-home>
+  <beer-account name="account" organization="[[organization]]" owner="[[owner]]"></beer-account>
   <beer-allbreweries name="allbreweries" owner="[[owner]]"></beer-allbreweries>
   <beer-allbeers name="allbeers" owner="[[owner]]"></beer-allbeers>
-  <beer-pub name="pub" organization="{{organization}}" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" owner="[[owner]]"></beer-pub>
-  <beer-tap name="tap"  organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.TAP]] org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-tap>
-  <beer-beer name="beer" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-beer>
+  <beer-pub name="pub" login="{{login}}" organization="{{organization}}" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" owner="[[owner]]" online="[[online]]"></beer-pub>
+  <beer-tap name="tap" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.TAP]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap>
+  <beer-beer name="beer" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-beer>
   <beer-tv name="tv" organization="[[organization]]" place="[[place]]" org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-tv>
+  <beer-favorite-beer name="favorite-beer" offline="[[offline]]"></beer-favorite-beer>
+  <beer-favorite-brewery name="favorite-brewery" offline="[[offline]]"></beer-favorite-brewery>
+  <beer-favorite-pub name="favorite-pub" offline="[[offline]]"></beer-favorite-pub>
 
-  <beer-review name="review" organization="[[organization]]" place="[[place]]" category=[[organization.category.REVIEW]] org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-review>
+  <beer-review name="review" organization="[[organization]]" place="[[place]]" category=[[organization.category.REVIEW]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-review>
 
-  <beer-menu name="menu" category=[[organization.category.MENU]] place="[[place]]" home-link="/[[nameUrl]]/main[[orgParam]]"org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-menu>
-  <beer-contact name="contact" organization="[[organization]]" place="[[place]]" category=[[organization.category.CONTACT]] org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-contact>
-  <beer-truck name="truck" category=[[organization.category.TRUCK]] place="[[place]]" org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-truck>
-  <beer-event name="event" category=[[organization.category.EVENT]] place="[[place]]" org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-event>
-  <beer-store name="store" category=[[organization.category.STORE]] place="[[place]]" org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-store>
+  <beer-menu name="menu" category=[[organization.category.MENU]] place="[[place]]" home-link="/[[nameUrl]]/main[[orgParam]]"org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-menu>
+  <beer-contact name="contact" organization="[[organization]]" place="[[place]]" category=[[organization.category.CONTACT]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-contact>
+  <beer-truck name="truck" category=[[organization.category.TRUCK]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-truck>
+  <beer-event name="event" category=[[organization.category.EVENT]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-event>
+  <beer-store name="store" category=[[organization.category.STORE]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-store>
   <beer-list name="list" route="[[subroute]]" offline="[[offline]]" place="[[place]]" owner="[[owner]]"></beer-list>
+  <beer-search name="search" latitude="[[latitude]]" longitude="[[longitude]]" idle="[[idle]]" error="[[geoError]]"></beer-search>
+  <beer-home name="home" login="{{login}}" latitude="[[latitude]]" longitude="[[longitude]]" idle="{{idle}}" error="[[geoError]]"></beer-home>
+  <beer-favorite name="favorite"></beer-favorite>
+  <beer-browse name="browse"></beer-browse>
+
+
   <beer-404-warning name="404"></beer-404-warning>
 </iron-pages>
 
 <!-- a11y announcer -->
 <div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
 
+   <!--TEST [[login]]-->
    
+   <paper-dialog 
+        entry-animation="scale-up-animation"
+        exit-animation="fade-out-animation"
+        with-backdrop 
+        id="loginDialog"
+        opened="{{login}}">
+    
+     <beer-login></beer-login>
+      <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+     
+   </paper-dialog>
+   
+
 
     <paper-toast class="toast" id="offLineToast" duration="0">
       <div> 
@@ -408,6 +541,16 @@
         
         queryParams: {
           type: Object
+        },
+
+        idle: {
+          type: Boolean,
+          value: true
+        },
+
+        geoError: {
+          type: Boolean,
+          value: false
         },
 
         orgId: {
@@ -461,6 +604,11 @@
           type: Object
         },
 
+        login:{
+          type: Boolean,
+          value: false
+        },
+
         owner:{
           type: Boolean,
           value: false
@@ -484,6 +632,10 @@
         isFromGoogle:{
           type: Boolean
         },
+        geoRendered:{
+          type: Boolean,
+          value: false
+        },
         mapLoaded:{
           type: Boolean,
           value: false
@@ -498,16 +650,23 @@
         '_toastOffline(online)',
         // '_organizationChanged(fireBaseData)',
         '_setBackArrowInHeader(page)',
-        '_getGoogleSupplimentalData(orgId)',
+        // '_getGoogleSupplimentalData(orgId)',
         '_updateUserBaseData(user)',
-        '_updatePageTitle(place.name, page)'
+        '_updatePageTitle(place.name, page)',
+        '_replaceOfflineOrganizationData(organization, online)',
+        '_cacheOrgData(organization, online)',
+        '_resendGPS(idle)'
       ],
 
      
-
       behaviors: [
-        Polymer.AppNetworkStatusBehavior
+        Polymer.AppNetworkStatusBehavior,
+       
        ],
+
+       listeners: {
+                  'geo-error': '_geoError', 
+                  'geo-response':'_geoResponse' },
 
    
 
@@ -517,11 +676,44 @@
         this.removeAttribute('unresolved');
       },
 
+      _resendGPS(idle){
+        console.log('idle', idle);
+      },
+
+      _cacheOrgData: function (organization, online){
+        // console.log('cachetew')
+        if(online){
+          if(Object.keys(organization).length > 0){
+            // console.log('cache');
+            this.localOrganizationData = organization;
+          }
+        }
+
+      },
+
+       _geoError: function (event){
+        console.log('GEO_ERROR', event);
+      
+        this.geoError = true;
+        this.geoRendered = false;
+        this.idle = true;
+        
+      },
+
+      _geoResponse: function (event){
+        if(event.returnValue){
+          this.geoRendered = true;
+          this.idle = true;
+        }
+        console.log('GEO_RESONSE', event);
+      },
+
       _updateUserBaseData: function (user){
         
           if(user){
             var obj = {};
             // console.log(user);
+            this.login = false;
             obj.displayName = user.displayName;
             obj.domain = user.email.split('@')[1];
             obj.verified = user.emailVerified;
@@ -579,8 +771,18 @@
           owner = true;
           }
          }
-        console.log('OWNER', owner);
+        //  console.log('OWNER', owner);
         this.owner = owner;
+      },
+
+      _replaceOfflineOrganizationData: function (organization, online){
+         
+          if(!online){
+            if(!organization){
+              //  console.log(this.localOrganizationData);
+              // this.organization = this.localOrganizationData;
+            }
+          }
       },
 
         _toastOffline: function(online){
@@ -595,50 +797,45 @@
       },
 
 
-      
+      // _getGoogleSupplimentalData: function () {
+      //     'use strict';
 
-      _getGoogleSupplimentalData: function () {
-          'use strict';
+      //    var organization = this.organization;
+      //    var map = this.$.map;
+      //    var that = this;
 
-         var organization = this.organization;
-         var map = this.$.map;
-         var that = this;
+      //     if(!this.mapLoaded){
+      //         map.addEventListener('google-map-ready', 
+      //         function(e) {
+      //           that.mapLoaded = true;
+      //           that._getGoogleDetails();
+      //         })
+      //       }else{
+      //         this._getGoogleDetails();
+      //       }
 
-          if(!this.mapLoaded){
-              map.addEventListener('google-map-ready', 
-              function(e) {
-                that.mapLoaded = true;
-                that._getGoogleDetails();
-              })
-            }else{
-              this._getGoogleDetails();
-            }
+      // },
 
-      },
-
-      _getGoogleDetails: function (){
-        var placeId = this.orgId;
-        if(placeId === 'home'){
-          var obj = {};
-          obj.name = 'home'
-          this.place = obj;
-        }else{
-          if(placeId){
-                  var details = this.$.search.getDetails(placeId);
-                  var that = this;
-                  details.then(
-                    function(result) {
-                      console.log('SUPPLIMENTAL');
-                        that.place = result;                 
-                    }, function(error) {
-                      console.log(error); 
-                    });
-                }
-        }
-      },
-
-
-     
+      // _getGoogleDetails: function (){
+      //   var placeId = this.orgId;
+      //   if(placeId === 'home'){
+      //     var obj = {};
+      //     obj.name = 'home'
+      //     this.place = obj;
+      //   }else{
+      //     if(placeId){
+      //             var details = this.$.search.getDetails(placeId);
+      //             var that = this;
+      //             details.then(
+      //               function(result) {
+      //                 console.log('SUPPLIMENTAL');
+      //                   that.place = result;                 
+      //               }, function(error) {
+      //                 console.log(error); 
+      //               });
+      //           }
+      //   }
+      // },
 
 
       _routePageChanged: function (route) {
@@ -656,6 +853,7 @@
           pathArray = path.split('/');
           var route = pathArray[1];
           var subRoute = pathArray[2];
+          var thirdRoute = pathArray[3];
           if(!route){
             route = 'home';
           }
@@ -667,6 +865,27 @@
                page = 'allbreweries';
             }else if(subRoute==='allbeers'){
                page = 'allbeers';
+            }else if(subRoute==='search'){
+               page = 'search';
+            }else if(subRoute==='account'){
+               page = 'account';
+            }else if(subRoute==='browse'){
+               page = 'browse';
+            }else if(subRoute==='favorite'){
+               
+               if(!thirdRoute){
+                 page = 'favorite';
+               }else{
+                 if(thirdRoute === 'beer'){
+                   page='favorite-beer';
+                 }else if(thirdRoute === 'brewery'){
+                   page='favorite-brewery';
+                 }else if(thirdRoute === 'pub'){
+                   page='favorite-pub';
+                 }else{
+                   page = 'favorite';
+                 }
+               }
             }else{
               page = 'home';
             }
@@ -687,6 +906,29 @@
                page = 'review';
             }else if(subRoute==='tv'){
               page = 'tv';
+            }else if(subRoute==='search'){
+               page = 'search';
+            }else if(subRoute==='account'){
+               page = 'account';
+            }else if(subRoute==='home'){
+               page = 'home';
+            }else if(subRoute==='browse'){
+               page = 'browse';
+            }else if(subRoute==='favorite'){
+               
+               if(!thirdRoute){
+                 page = 'favorite';
+               }else{
+                 if(thirdRoute === 'beer'){
+                   page='favorite-beer';
+                 }else if(thirdRoute === 'brewery'){
+                   page='favorite-brewery';
+                 }else if(thirdRoute === 'pub'){
+                   page='favorite-pub';
+                 }else{
+                   page = 'favorite';
+                 }
+               }
             }else{
               page='list';
             }
@@ -703,6 +945,17 @@
         this.page = page || 'home';
         if (this.page === 'home') {
           this.orgId = 'home';
+        }
+
+        if(this.page === 'home' || this.page === 'search'){
+          if(!this.geoRendered){
+          this.idle = false;
+          }else{
+            this.idle = true;
+          }
+
+        }else{
+          this.idle = true;
         }
 
         this.drawerOpened = false;
@@ -725,27 +978,32 @@
           var title;
 
             switch (page){
-              case "beer":
+              case 'beer':
                 title = name+' Beers';
                 break;
-              case "tap":
+              case 'tap':
                 title = name+' On-tap';
                 break;
-              case "menu":
+              case 'menu':
                 title = name+' Menu';
                 break;
-              case "contact":
+              case 'contact':
                 title = name+' Contact';
                 break;
-              case "review":
+              case 'review':
                 title = name+' Reviews';
+                break;
+              case 'near':
+                title = 'Near me';
                 break;
               default:
                 title = name;
 
             }
             
-
+            if(title === 'home'){
+              title = 'Beer-Fly'
+            }
 
             document.title = title;
           
@@ -926,14 +1184,14 @@
           }else{
             this.organization.category = {};
             var beer = {};
-            beer.$key = 'BEER';
-            beer.category = 'BEER';
-            beer.name = 'beer';
-            beer.title = 'Our beers';
+            beer.$key = 'TAP';
+            beer.category = 'TAP';
+            beer.name = 'tap';
+            beer.title = 'On-tap';
             beer.display = true;
-            beer.order = 200;
+            beer.order = 100;
             returnArray.push(beer);
-            this.organization.category['BEER'] = beer;
+            this.organization.category['TAP'] = beer;
 
             var contact = {};
             contact.$key = 'CONTACT';
@@ -971,16 +1229,20 @@
           name = name.replace(/\s/g, '-')
           return name.replace(/[^a-zA-Z\d\s:]/g, '');
         } else {
-          return 'pub-name-missing'
+          return 'home'
         }
       },
 
      _showOrgName: function (name) {
-        if(name === 'home'){
-          return 'Beer-Fly'
-        }else{
-          return name;
-        }
+       if(name){
+          if(name === 'home'){
+            return 'Beer-Fly'
+          }else{
+            return name;
+          }
+       }else{
+         return 'Beer-Fly'
+       }
      },
 
      _sortCategory: function(a,b){
@@ -992,6 +1254,34 @@
           return 1;
         return 0;
       },
+
+      _returnFirstLetter(text){
+        if(text){
+        return text.charAt(0).toUpperCase();
+        }
+      },
+
+      _isHome(page){
+        
+        if(page === 'home'){
+          // console.log(page);
+          return true;
+        }else{
+          return false;
+        }
+      },
+
+      _login: function(){
+        'use strict';
+        this.login = true;
+        this.drawerOpened = false;
+      }, 
+
+      _logout: function(){
+        'use strict';
+        this.drawerOpened = false;
+        return this.$.auth.signOut();
+      }, 
 
       _test(obj) {
         console.log("TEST",obj)

@@ -1,0 +1,119 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="beer-login.html">
+
+<link rel="import" href="beer-button.html">
+
+<!--<link rel="import" href="beer-home-search.html">-->
+
+
+
+<dom-module id="beer-favorite">
+
+  <template>
+
+    <style include="beer-button">
+
+
+      wrapper{
+         @apply(--layout-horizontal);
+         @apply(--layout-wrap);
+      }
+
+        .item {
+        margin: 20px;
+        padding: 10px;
+        height: 200px
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+      .message {
+        font-size: 1.2em;
+        font-weight: 300;
+        margin: 20px;
+        text-align: center;
+      }
+
+
+
+      @media (max-width: 767px) {
+       
+
+
+      }
+
+    </style>
+    <firebase-auth  app-name="beer" user="{{user}}"></firebase-auth>
+    
+      <div hidden="[[user]]">
+        <div class="item message">Sign in to view your favorite beers and breweries.</div>
+            <beer-login class="item"></beer-login>
+      </div>
+      <div class="wrapper" hidden="[[!user]]">
+          
+         <div class="item message">
+          Beers you have selected as four or five stars.
+         </div>
+         <div class="item">
+            <beer-button>
+              <a aria-label="My Favorite Beers" href="/home/favorite/beer">My Favorite Beers</a>
+            </beer-button>
+          </div>
+
+          <div class="item message">
+            Breweries you have selected as four or five stars.
+         </div>
+
+          <div class="item">
+          <beer-button>
+            <a aria-label="My Favorite Breweries" href="/home/favorite/brewery">My Favorite Breweries</a>
+          </beer-button>
+        </div>
+
+        <div class="item message">
+          Pubs you have selected as four or five stars. Note that many breweries pour their beer, but most pubs do not create their own beer.
+         </div>
+
+          <div class="item">
+          <beer-button>
+            <a aria-label="My Favorite Pubs" href="/home/favorite/pub">My Favorite Pubs</a>
+          </beer-button>
+        </div>
+
+          
+
+      </div>
+   
+
+
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-favorite',
+
+      properties: {
+
+       
+
+      },
+
+      
+     
+
+      _test: function(obj){
+          console.log(obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

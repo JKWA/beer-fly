@@ -1,0 +1,628 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+
+<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+
+<!--<link rel="import" href="beer-beer-rating.html">-->
+
+
+
+<dom-module id="beer-beer-tap">
+  <template>
+    <style>
+
+      /*a{
+        color: var(--app-accent-color);
+        text-decoration: none;
+        }
+
+      .card{
+        
+        margin: 10px;
+        padding: 20px;
+      }
+
+       
+      .title{
+        @apply(--layout-horizontal);
+        @apply(--layout-justified);
+        @apply(--layout-wrap);
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+       .title > div{
+        padding: 0 5px 0 0;
+      }
+     */
+
+      .tap-wrapper{
+        @apply(--layout-horizontal);
+        @apply(--layout-around-justified);
+      }
+
+      .tap-wrapper > div{
+        width: 50%;
+      }
+
+      .tap-status-wrapper{
+        @apply(--layout-horizontal);
+         @apply(--layout-start-justified);
+      }
+
+      .tap-toggle{
+        @apply(--layout-horizontal);
+         @apply(--layout-end-justified);
+         padding: 0 40px 0 0;
+      }
+
+      .tap-status{
+        font-size: 1.5em;
+        font-weight: 300;
+      }
+
+       .tap-status-shown{
+        font-size: 1.5em;
+        font-weight: 300;
+        margin: 6px 0 0 0;
+      }
+
+      .tap-status-wrapper > div{
+        padding: 0 10px 0 0
+      }
+/*
+      .wrapper{
+         @apply(--layout-vertical);        
+      }
+
+      .wrapper > div{
+        padding: 10px 0 5px 0
+      }*/
+
+      .tapped{
+        color: green;
+      }
+
+      .blown{
+        color:red;
+      }
+
+      .on-deck{
+        color: var(--app-secondary-color);
+      }
+
+      .available{
+        color: var(--app-primary-color);
+      }
+
+      /*.name {
+        font-size: 1.5em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .style {
+        font-size: 1.0em;
+        font-weight: 500;
+        color: var(--app-primary-color);
+       
+      }
+
+      .description {
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }*/
+
+     /*.available{
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+        
+     }*/
+      /*.location{
+        @apply(--layout-horizontal);
+        @apply(--layout-start-justified);
+        @apply(--layout-wrap);
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+       .location > div{
+        padding: 0 5px 0 0;
+      }*/
+
+
+      
+      /*.footer-abv{
+        text-align: right;
+        margin: 0 20px 0 0;
+        font-weight: 500;
+      }
+
+
+      @media (max-width: 767px) {
+        
+        h3 {
+          margin: 24px 0;
+        }
+
+      }*/
+
+    </style>
+    <!--<firebase-document
+        app-name="beer"
+        path="beer/[[beerId]]"
+        data="{{beer}}">
+    </firebase-document>-->
+
+    <firebase-auth 
+        id="auth" 
+        app-name="beer"
+        user="{{user}}" 
+        status-known="{{statusKnown}}"
+        on-error="handleError">
+    </firebase-auth>
+
+     <firebase-document
+        app-name="beer"
+        id="tapped"
+        path="organization/[[orgId]]/onTap/[[beerId]]"
+        data="{{tappedData}}">
+    </firebase-document>
+
+    <firebase-document
+        app-name="beer"
+        id="beer"
+        path="beer/[[beerId]]">
+    </firebase-document>
+    
+    <firebase-document
+        app-name="beer"
+        id="pub"
+        path="organization/[[orgId]]">
+    </firebase-document>
+
+    <firebase-document
+        app-name="beer"
+        id="onTap"
+        path="onTap">
+    </firebase-document>
+
+
+
+     <!--<firebase-document
+        app-name="beer"
+        id="beerMeta"
+        path="organization/[[orgId]]/onTap/[[beerId]]"
+        data="{{beerMeta}}">
+
+    </firebase-document>-->
+
+    <!--<firebase-query
+        app-name="beer"
+        id="onTap"
+        path="onTap"
+        >
+    </firebase-query>-->
+<!--[[_test(owner)]]-->
+      <div id="tapStatusMessage" >
+        <iron-label class="tap-status-wrapper">
+          <toggle-icon
+                icon="beer-icons:[[icon]]"
+                checked="{{toggle}}"
+                noink>
+          </toggle-icon>
+          <span class="tap-status-shown">[[tapStatus]]</span>
+        </iron-label>
+      </div>
+      <div>  
+        <iron-collapse id="tapOptions" opened="[[_toggleIfOwner]]">
+
+          <paper-listbox
+            id="tappedListBox"
+            attr-for-selected="tapstatus"
+            selected="{{tapped}}"
+            on-click="updateTappedInformation">
+            
+            <paper-item id="TAPPED" hidden="[[_hideChoice(tapped, 'TAPPED')]]" tapstatus="TAPPED">
+              <div class="tapped tap-status-wrapper">
+                <div><iron-icon icon="beer-icons:on-tap"></iron-icon></div>
+                <div class="tap-status">On tap</div>
+              </div>
+            </paper-item>
+
+            <paper-item id="BLOWN" hidden="[[_hideChoice(tapped, 'BLOWN')]]" tapstatus="BLOWN">
+              <div class="blown tap-status-wrapper">
+                <div><iron-icon icon="beer-icons:blown"></iron-icon></div>
+                <div class="tap-status">Blown</div>
+              </div>
+            </paper-item>
+
+            <paper-item id="ON_DECK" hidden="[[_hideChoice(tapped, 'ON_DECK')]]" tapstatus="ON_DECK">
+              <div class="on-deck tap-status-wrapper">
+                <div><iron-icon icon="beer-icons:add"></iron-icon></div>
+                <div class="tap-status">On deck</div>
+              </div>
+            </paper-item>
+
+            <!--<paper-item hidden="[[_hideChoice(tapped, 'NOT_AVAILABLE')]]" tapstatus="NOT_AVAILABLE">
+              <div class="not-available tap-status-wrapper">
+                <div><iron-icon icon="beer-icons:remove"></iron-icon></div>
+                <div class="tap-status">Not on tap</div>
+              </div>
+            </paper-item>-->
+
+              <paper-item id="REMOVE" hidden tapstatus="REMOVE">
+              <div class="not-available tap-status-wrapper">
+                <div><iron-icon icon="beer-icons:delete-forever"></iron-icon></div>
+                <div class="tap-status">Delete from taplist</div>
+              </div>
+            </paper-item>
+
+          </paper-listbox>
+
+        </iron-collapse>
+      </div>
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-beer-tap',
+      properties:{
+
+        tapped:{
+           type: String,
+           value:'',
+           computed: '_computeTapped(tappedData)'
+        },
+        tappedData:{
+          type: Object
+        },
+
+        beerMeta:{
+          type:Object,
+        },
+
+        icon:{
+          type: String,
+          computed: '_computeIcon(tapped)'
+        },
+
+        owner:{
+          type: Boolean,
+          value:false
+        },
+
+        crowdSource:{
+          type: Boolean,
+          value:false
+        },
+
+        tapStatus:{
+          type: String,
+          computed: '_computeTapStatus(tapped)'
+        },
+        toggle:{
+          type: Boolean
+        },
+        _toggleIfOwner:{
+          type: Boolean,
+          computed: '_computeIfToggle(toggle, owner, crowdSource)'
+        },
+        pageLoadComplete:{
+          type: Boolean,
+          value: false
+        },
+        // choice: {
+        //   type: String
+        // },
+        // tap: {
+        //   type: String
+        // }
+ 
+       
+      },
+      observers: ['_watchTappedStatus(tapped)',
+      '_watchTappedData(tappedData)'
+      
+      ],
+
+      _watchTappedData: function (tappedData){
+          if(typeof tappedData === 'object'){
+          if(Object.keys(tappedData).length > 0){
+            this.tapped = tappedData;
+            this.$.REMOVE.hidden = false;
+          }else{
+            this.$.REMOVE.hidden = true;
+            this.tapped=false;
+          }
+        }
+      },
+
+      _watchTappedStatus: function (tapped){
+        var tap = this.$.tapStatusMessage
+       
+        this.toggle = false;
+
+        if(tapped==='TAPPED'){
+          tap.classList.remove('blown');
+          tap.classList.remove('on-deck');
+          tap.classList.add('tapped');
+          tap.classList.remove('not-available');
+        }else if(tapped ==='BLOWN'){
+          tap.classList.remove('tapped');
+          tap.classList.add('blown');
+          tap.classList.remove('on-deck');
+          tap.classList.remove('not-available');
+        }else if(tapped === 'ON_DECK'){
+          tap.classList.remove('tapped');
+          tap.classList.remove('blown');
+          tap.classList.add('on-deck');
+          tap.classList.remove('not-available');
+        }else{
+          tap.classList.remove('tapped');
+          tap.classList.remove('blown');
+          tap.classList.remove('on-deck');
+          tap.classList.add('not-available');
+        }
+
+      },
+
+
+      _computeTapped(tappedData){
+        
+        return tappedData.tapped ;
+      },
+      
+
+       
+      _computeIcon: function (tapped){
+        if(tapped ==='TAPPED'){
+          return 'on-tap'
+        }else if (tapped ==='BLOWN'){
+          return 'blown'
+        }else if (tapped ==='ON_DECK'){
+          return 'add'
+        // }else if (tapped ==='NOT_AVAILABLE'){
+        //   return 'remove'
+        }else{
+          return 'remove'
+        }
+      },
+
+      _computeTapStatus: function (tapped){
+        if(tapped ==='TAPPED'){
+          return 'On tap'
+        }else if (tapped ==='BLOWN'){
+          return 'Blown'
+        }else if (tapped ==='ON_DECK'){
+          return 'On deck'
+        // }else if (tapped ==='NOT_AVAILABLE'){
+        //   return 'Not on tap'
+        }else{
+          return 'Not on tap'
+        }
+      },
+
+   
+      updateTappedInformation: function (event){
+      //  console.log('update');
+          var target = event.currentTarget;
+          var tapped = target.selected;
+          var beer = {};
+          var org = {};
+          var obj = {};
+          var beer = this.$.beer.data;
+          var pub = this.$.pub.data;
+          // var id = beer.id;
+          if(this.user){
+
+          
+
+          if(this.tappedData.tapId){
+            var id = this.tappedData.tapId;
+            console.log('EDIT')
+            // obj['beer/'+id+'/lastEdited'] = new Date();
+            // obj['beer/'+id+'/edited'] = true;
+          }else{
+             console.log('ADD')
+            var id = this.$.onTap.ref.push().key;
+            // obj['beer/'+id+'/createDate'] = new Date();
+            // obj['beer/'+id+'/new'] = true
+          }
+          // console.log(beer);
+
+          var orgPre = 'organization/'+pub.place_id+'/onTap/'+this.beerId;
+
+          if(tapped === 'REMOVE'){
+            console.log('DELETE');
+
+            obj['onTap/'+id] = null;
+            obj[orgPre] = null;
+            this.$.TAPPED.hidden = false;
+            this.$.BLOWN.hidden = false;
+            this.$.ON_DECK.hidden = false;
+            this.$.REMOVE.hidden = true;
+
+          }else{
+
+
+            if(tapped){
+              obj['onTap/'+id+'/tapped'] = tapped;
+              obj[orgPre+'/tapped'] = tapped;
+            }
+            
+            if(beer.abv){
+              obj['onTap/'+id+'/abv'] = Number(beer.abv);
+              obj[orgPre+'/abv'] = Number(beer.abv);
+            }
+            if(beer.category){
+              obj['onTap/'+id+'/category'] = beer.category;
+              obj[orgPre+'/category'] = beer.category;
+            }
+            if(beer.categoryName){
+              obj['onTap/'+id+'/categoryName'] = beer.categoryName;
+              obj[orgPre+'/categoryName'] = beer.categoryName;
+            }
+            if(beer.categoryTitle){
+              obj['onTap/'+id+'/categoryTitle'] = beer.categoryTitle;
+              obj[orgPre+'/categoryTitle'] = beer.categoryTitle;
+            }
+            if(beer.order){
+              obj['onTap/'+id+'/order'] = Number(beer.order);
+              obj[orgPre+'/order'] = Number(beer.order);
+            }
+            if(beer.description){
+              obj['onTap/'+id+'/description'] = beer.description;
+              obj[orgPre+'/description'] = beer.description;
+            }
+            if(beer.id){
+              obj['onTap/'+id+'/beerId'] = beer.id;
+              obj[orgPre+'/id'] = beer.id;
+            }
+            if(id){
+                obj['onTap/'+id+'/id'] = id;
+                obj[orgPre+'/tapId'] = id;
+            }
+
+            if(beer.name){
+                obj['onTap/'+id+'/name'] = beer.name;
+                obj[orgPre+'/name'] = beer.name;
+            }
+    
+            if(beer.styleId){
+              obj['onTap/'+id+'/styleId'] = Number(beer.styleId);
+              obj[orgPre+'/styleId'] = Number(beer.styleId);
+            }
+            if(beer.styleName){
+              obj['onTap/'+id+'/styleName'] = beer.styleName;
+              obj[orgPre+'/styleName'] = beer.styleName; 
+            }
+
+
+            if(beer.breweryId){
+              obj['onTap/'+id+'/breweryId'] = beer.breweryId;
+              obj[orgPre+'/breweryId'] = beer.breweryId; 
+            }
+            if(beer.name){
+              obj['onTap/'+id+'/breweryName'] = beer.name;
+              obj[orgPre+'/breweryName'] = beer.breweryName; 
+            }
+            if(beer.city){
+              obj['onTap/'+id+'/city'] = beer.city;
+              obj[orgPre+'/city'] = beer.city; 
+            }
+            // if(beer.domain){
+            //   obj['onTap/'+id+'/domain'] = beer.domain;
+            // }
+            if(beer.place_id){
+              obj['onTap/'+id+'/place_id'] = beer.place_id;
+              obj[orgPre+'/place_id'] = beer.place_id; 
+            }
+            if(beer.state){
+              obj['onTap/'+id+'/state'] = beer.state;
+              obj[orgPre+'/state'] = beer.state; 
+            }
+            if(beer.stateAbbreviation){
+              obj['onTap/'+id+'/stateAbbreviation'] = beer.stateAbbreviation;
+              obj[orgPre+'/stateAbbreviation'] = beer.stateAbbreviation; 
+            }
+
+
+
+
+
+            // if(pub.breweryId){
+            //   obj['onTap/'+id+'/breweryId'] = pub.breweryId;
+            // }
+            if(pub.name){
+              obj['onTap/'+id+'/pubName'] = pub.name;
+            }
+            if(pub.city){
+              obj['onTap/'+id+'/pubCity'] = pub.city;
+            }
+            // if(pub.domain){
+            //   obj['onTap/'+id+'/domain'] = pub.domain;
+            // }
+            if(pub.place_id){
+              obj['onTap/'+id+'/pubId'] = pub.place_id;
+            }
+            if(pub.latitude){
+              obj['onTap/'+id+'/pubLatitude'] = pub.latitude;
+            }
+            if(pub.longitude){
+              obj['onTap/'+id+'/pubLongitude'] = pub.longitude;
+            }
+            if(pub.state){
+              obj['onTap/'+id+'/pubState'] = pub.state;
+            }
+            if(pub.stateAbbreviation){
+              obj['onTap/'+id+'/pubStateAbbreviation'] = pub.stateAbbreviation;
+            }
+            if(this.user.uid){
+              obj['onTap/'+id+'/uid'] = this.user.uid;
+            }
+          }
+          
+          // console.log(obj);
+          
+    
+          var app = this.$.beer.app;
+          var that = this;
+
+          firebase.database(app).ref().update(obj, function(error) {
+            if (error){
+              console.log("Error" + error);
+            }else{
+              console.log("Saved");
+            }
+          });
+          }
+
+      },
+
+      _hideChoice(tap, choice){
+        if(tap === choice){
+          return true
+        }else{
+          return false
+       }
+      },
+
+      _computeIfToggle: function (toggle, owner, crowdSource){
+        if(owner || crowdSource){
+          return toggle;
+        }else{
+          return false
+        }
+       
+      },
+      _test: function (obj){
+        console.log(obj)
+      }
+ 
+    });
+
+  </script>
+
+</dom-module>

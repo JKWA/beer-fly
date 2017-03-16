@@ -14,8 +14,12 @@
 <link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
-<link rel="import" href="beer-rating.html">
+
+<link rel="import" href="beer-beer-rating.html">
+<link rel="import" href="beer-beer-tap.html">
+
 
 
 
@@ -49,40 +53,7 @@
       }
      
 
-      .tap-wrapper{
-        @apply(--layout-horizontal);
-        @apply(--layout-around-justified);
-      }
 
-      .tap-wrapper > div{
-        width: 50%;
-      }
-
-      .tap-status-wrapper{
-        @apply(--layout-horizontal);
-         @apply(--layout-start-justified);
-      }
-
-      .tap-toggle{
-        @apply(--layout-horizontal);
-         @apply(--layout-end-justified);
-         padding: 0 40px 0 0;
-      }
-
-      .tap-status{
-        font-size: 1.5em;
-        font-weight: 300;
-      }
-
-       .tap-status-shown{
-        font-size: 1.5em;
-        font-weight: 300;
-        margin: 3px 0 0 0;
-      }
-
-      .tap-status-wrapper > div{
-        padding: 0 10px 0 0
-      }
 
       .wrapper{
          @apply(--layout-vertical);        
@@ -92,21 +63,7 @@
         padding: 10px 0 5px 0
       }
 
-      .tapped{
-        color: green;
-      }
-
-      .blown{
-        color:red;
-      }
-
-      .on-deck{
-        color: var(--app-secondary-color);
-      }
-
-      .available{
-        color: var(--app-primary-color);
-      }
+ 
 
       .name {
         font-size: 1.5em;
@@ -127,12 +84,6 @@
         color: var(--app-primary-color);
       }
 
-     /*.available{
-        font-size: 1em;
-        font-weight: 300;
-        color: var(--app-primary-color);
-        
-     }*/
       .location{
         @apply(--layout-horizontal);
         @apply(--layout-start-justified);
@@ -164,133 +115,47 @@
       }
 
     </style>
-    <!--<firebase-document
+      <!--<firebase-document
         app-name="beer"
         path="beer/[[beerId]]"
         data="{{beer}}">
-    </firebase-document>-->
-
-     <firebase-document
-        app-name="beer"
-        id="tapped"
-        path="organization/[[orgId]]/onTap/[[beerId]]/tapped"
-        data="{{tappedData}}">
-    </firebase-document>
-
-
-     <firebase-document
-        app-name="beer"
-        id="beerMeta"
-        path="organization/[[orgId]]/onTap/[[beerId]]"
-        data="{{beerMeta}}">
-
-    </firebase-document>
-
-    <firebase-query
-        app-name="beer"
-        id="onTap"
-        path="onTap"
-        >
-    </firebase-query>
-
+     </firebase-document>-->
 
       <paper-material class='card' elevation="1" animated-shadow="false">
-        [[beerId]]
-        <div>
-          <div class="title">
-          <div>
-            <beer-rating beer-id="[[beerId]]"></beer-rating>
-          </div>
-           <div hidden="[[!edit]]">
-              <!--<a href="https://script.google.com/a/macros/beer-fly.com/s/AKfycbwpSdcRSUNDeJfIZgyDqeQWBZLnT4D7X378ZHUOfPg/dev?place_id=[[orgId]]&uid=[[uid]]&beerId=[[beer.id]]">-->
-              <paper-icon-button icon="beer-icons:edit" on-tap="changeEditId"></paper-icon-button>
-              <!--</a>-->
-            </div>
-            
-            <!--<paper-icon-button icon="beer-icons:edit" on-tap="changeEditId" raised></paper-icon-button>-->
-            
-          </div>
-
           
-            <div id="tapStatusMesage" >
-            <iron-label class="tap-status-wrapper">
-              <toggle-icon
-                    icon="beer-icons:[[icon]]"
-                    checked="{{toggle}}"
-                    noink>
-              </toggle-icon>
-              <div class="tap-status-shown">[[tapStatus]]</div>
-            </iron-label>
+          <div class="title">
+            <div>
+              <beer-beer-rating 
+                  beer-id="[[beerId]]"
+                  login="{{login}}">
+              </beer-beer-rating>
             </div>
-           
+            <div hidden="[[!edit]]">
+                <paper-icon-button icon="beer-icons:edit" on-tap="changeEditId"></paper-icon-button>
+            </div>  
           </div>
 
-            <div>
-  
-              <div> 
-                <iron-collapse opened="[[_toggleIfOwner]]">
+          <beer-beer-tap
+            org-id="[[placeId]]"
+            beer-id="[[beerId]]"
+            owner="[[owner]]"
+            crowd-source="[[crowdSource]]">
+          </beer-beer-tap>
 
-                  <paper-listbox
-                    id="tappedListBox"
-                    attr-for-selected="tapstatus"
-                    selected="{{tapped}}"
-                    on-click="updateTappedInformation">
-
-                    <paper-item hidden="[[_hideChoice(tapped, 'TAPPED')]]" tapstatus="TAPPED">
-                      <div class="tapped tap-status-wrapper">
-                        <div><iron-icon icon="beer-icons:on-tap"></iron-icon></div>
-                        <div class="tap-status">On tap</div>
-                      </div>
-                    </paper-item>
-
-                    <paper-item hidden="[[_hideChoice(tapped, 'BLOWN')]]" tapstatus="BLOWN">
-                      <div class="blown tap-status-wrapper">
-                        <div><iron-icon icon="beer-icons:blown"></iron-icon></div>
-                        <div class="tap-status">Blown</div>
-                      </div>
-                    </paper-item>
-
-                    <paper-item hidden="[[_hideChoice(tapped, 'ON_DECK')]]" tapstatus="ON_DECK">
-                      <div class="on-deck tap-status-wrapper">
-                        <div><iron-icon icon="beer-icons:add"></iron-icon></div>
-                        <div class="tap-status">On deck</div>
-                      </div>
-                    </paper-item>
-
-                    <paper-item hidden="[[_hideChoice(tapped, 'NOT_AVAILABLE')]]" tapstatus="NOT_AVAILABLE">
-                      <div class="not-available tap-status-wrapper">
-                        <div><iron-icon icon="beer-icons:remove"></iron-icon></div>
-                        <div class="tap-status">Not on tap</div>
-                      </div>
-                    </paper-item>
-
-                     <paper-item hidden="[[_hideChoice(tapped, 'REMOVE')]]" tapstatus="REMOVE">
-                      <div class="not-available tap-status-wrapper">
-                        <div><iron-icon icon="beer-icons:delete-forever"></iron-icon></div>
-                        <div class="tap-status">Delete from taplist</div>
-                      </div>
-                    </paper-item>
-
-                  </paper-listbox>
-
-                </iron-collapse>
-              </div>
-            
-
-            <div class="wrapper">
-                <div class="name">[[beer.name]]</div>
-                <div class="style">[[beer.styleName]]</div>
-                <div class="description">[[beer.description]]</div>       
-                <div class="location">
-                  <div>[[beer.breweryName]] - </div>
-                  <div>[[beer.city]],</div>
-                  <div>[[beer.state]]</div>
-                </div>
-                <div class="footer-abv" hidden="[[!beer.abv]]">ABV: [[beer.abv]]</div>
-                
+          <div class="wrapper">
+            <div class="name">[[beerName]]</div>
+            <div class="style">[[styleName]]</div>
+            <div class="description">[[beerDescription]]</div>       
+            <div class="location">
+              <div>[[breweryName]] - </div>
+              <div>[[breweryCity]],</div>
+              <div>[[breweryState]]</div>
             </div>
+            <div class="footer-abv" hidden="[[!abv]]">ABV: [[abv]]</div>
+              
+          </div>
 
-        </div>
+      
       </paper-material>
   </template>
 
@@ -301,174 +166,37 @@
       is: 'beer-beer-card',
       properties:{
 
-        tapped:{
-           type: String,
-        },
-
-        beerMeta:{
-          type:Object,
-        },
-
-        icon:{
-          type: String,
-          computed: '_computeIcon(tapped)'
-        },
-
-        owner:{
-          type: Boolean
-        },
-
-        tapStatus:{
-          type: String,
-          computed: '_computeTapStatus(tapped)'
-        },
-        toggle:{
-          type: Boolean
-        },
-        _toggleIfOwner:{
-          type: Boolean,
-          computed: '_computeIfToggle(toggle, owner)'
-        },
-        pageLoadComplete:{
-          type: Boolean,
-          value: false
-        },
+      
         editBeerId:{
           type: String,
           notify: true
+        },
+
+        beerId: {
+          type: String
+        },
+
+        edit:{
+          type: Boolean,
+          value: false
+        },
+
+        login: {
+        type: Boolean,
+        notify: true
         }
        
       },
-      observers: ['_watchTappedStatus(tapped)',
-      '_watchTappedData(tappedData)'],
- 
-
-      _watchTappedData: function (tappedData){
-        this.tapped = tappedData;
-      },
-
-      _watchTappedStatus: function (tapped){
-                 
-        var tap = this.$.tapStatusMesage
-
-        if(tapped==='TAPPED'){
-          tap.classList.remove('blown');
-          tap.classList.remove('on-deck');
-          tap.classList.add('tapped');
-          tap.classList.remove('not-available');
-        }else if(tapped ==='BLOWN'){
-          tap.classList.remove('tapped');
-          tap.classList.add('blown');
-          tap.classList.remove('on-deck');
-          tap.classList.remove('not-available');
-        }else if(tapped === 'ON_DECK'){
-          tap.classList.remove('tapped');
-          tap.classList.remove('blown');
-          tap.classList.add('on-deck');
-          tap.classList.remove('not-available');
-        }else{
-          tap.classList.remove('tapped');
-          tap.classList.remove('blown');
-          tap.classList.remove('on-deck');
-          tap.classList.add('not-available');
-        }
-      },
+      
 
       changeEditId: function (){
         this.editBeerId = this.beerId;
       },
-      
 
-       
-      _computeIcon: function (tapped){
-        if(tapped ==='TAPPED'){
-          return 'on-tap'
-        }else if (tapped ==='BLOWN'){
-          return 'blown'
-        }else if (tapped ==='ON_DECK'){
-          return 'add'
-        }else if (tapped ==='NOT_AVAILABLE'){
-          return 'remove'
-        }else{
-          return 'blown'
-        }
-      },
-
-      _computeTapStatus: function (tapped){
-        if(tapped ==='TAPPED'){
-          return 'On tap'
-        }else if (tapped ==='BLOWN'){
-          return 'Blown'
-        }else if (tapped ==='ON_DECK'){
-          return 'On deck'
-        }else if (tapped ==='NOT_AVAILABLE'){
-          return 'Not on tap'
-        }else{
-          return 'Unknown if on tap'
-        }
-      },
-
-      updateTappedInformation: function (event){
-        this.toggle = false;
-        var target = event.currentTarget;
-        var tapped = target.selected;
-        if(tapped === 'REMOVE'){
-          if(this.beerMeta.tapKey){
-             this.$.onTap.ref.child(this.beerMeta.tapKey).remove();
-          }
-
-          this.$.beerMeta.ref.remove();
-
-        }else{
-
-           var beer = {};
-            beer.categoryOrder = this.beer.categoryOrder;
-            beer.category = this.beer.category;
-            beer.categoryName = this.beer.categoryName;
-            beer.categoryTitle = this.beer.categoryTitle;
-            beer.categoryOrder = this.beer.categoryOrder;
-            beer.categoryOrder = this.beer.categoryOrder;
-            beer.categoryOrder = this.beer.categoryOrder;
-            beer.abv = this.beer.abv || '';
-            beer.id = this.beerId;
-            beer.name = this.beer.name;
-            beer.tapName = this.organization.name;
-            beer.place_id = this.organization.place_id;
-            beer.breweryId = this.organization.breweryId;
-            beer.latitude = this.organization.latitude;
-            beer.longitude = this.organization.longitude;
-            beer.tapped = tapped;
-            beer.tapCity = this.organization.city;
-            beer.tapState = this.organization.state; 
-
-            if(!this.beerMeta.tapKey){
-              var newTap = this.$.onTap.ref.push(beer);
-              beer.tapKey = newTap.key;
-            }else{
-              this.$.onTap.ref.child(this.beerMeta.tapKey).update(beer);
-            }
-
-            this.$.beerMeta.ref.update(beer);
-        }
-        
-      },
-
-      _hideChoice(tap, choice){
-
-        if(tap === choice){
-          return true
-        }else{
-          return false
-       }
-      },
-
-      _computeIfToggle: function (toggle, owner){
-        if(owner === false){
-          return false;
-        }else{
-          return toggle;
-        }
+      _test(obj){
+        console.log(obj);
       }
+      
  
     });
 

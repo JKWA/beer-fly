@@ -1,0 +1,104 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-allbeers-card.html">
+
+
+<dom-module id="beer-favorite-beer">
+  
+
+  <template>
+
+    <style>
+
+   
+
+    </style>
+
+    <firebase-auth 
+        id="auth" 
+        app-name="beer"
+        user="{{user}}" 
+        status-known="{{statusKnown}}"
+        on-error="handleError">
+    </firebase-auth>
+
+    <firebase-document
+        id="rating"
+        app-name="beer"
+        disabled
+        path="user/[[user.uid]]/rating"
+        data="{{ratings}}">
+    </firebase-document>
+
+<!--[[_test(ratings)]]
+TEST-->
+    <template is="dom-repeat" items=[[_toArray(ratings)]] sort="_sortByRating">
+      
+       <beer-allbeers-card beer-id="[[item.id]]"></beer-allbeers-card>
+    </template>
+
+
+  </template>
+  <script>
+
+  Polymer({
+
+    is: 'beer-favorite-beer',
+
+    //  properties: {
+    //     user:{
+    //       type: Object
+    //     },
+    //   },
+
+     observers:['_watchUserStatus(statusKnown)'],
+
+    _watchUserStatus: function (statusKnown) {
+      console.log(statusKnown)
+      if(statusKnown){
+        this.$.rating.disabled = false;
+        
+      }else{
+        this.$.rating.disabled = true;
+      }
+    },
+
+  _toArray(obj){
+    
+    if(obj){
+      var returnArray=[];
+      var key = Object.keys(obj);
+      for (var i=0; i<key.length; i++){
+        var beer = {};
+        beer.id = key[i];
+        beer.rating = obj[key[i]].rating;
+        if(beer.rating >=4){
+         returnArray.push(beer);
+        }
+      }
+      return returnArray;
+    }
+  },
+
+  _sortByRating: function(a,b){
+      'use strict';
+      if (a.rating > b.rating)
+        return -1;
+      if (a.rating < b.rating)
+        return 1;
+      return 0;
+    },
+    
+    _test(obj){
+      console.log("RATING", obj);
+    }
+
+  });
+
+  </script>
+
+</dom-module>

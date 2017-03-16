@@ -21,7 +21,7 @@
 <link rel="import" href="../my_components/data/upload-image.html">
 
 <link rel="import" href="beer-pub-edit.html">
-
+<link rel="import" href="beer-pub-icons.html">
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-fab-search.html">
 <link rel="import" href="beer-menu-card.html">
@@ -30,6 +30,9 @@
 <link rel="import" href="beer-review-card-mini.html">
 <link rel="import" href="beer-rating-card.html">
 <link rel="import" href="beer-beer-card-mini.html">
+<link rel="import" href="beer-pub-favorite.html">
+<link rel="import" href="beer-pub-rating.html">
+
 
 <link rel="import" href="beer-category-checkbox.html">
 
@@ -117,6 +120,12 @@
         margin: 10px 5px 0 20px;
       }
 
+      .rating-wrapper{
+        @apply(--layout-horizontal);
+        @apply(--layout-justified);
+        @apply(--layout-wrap);
+      }
+
 
       @media (max-width: 767px) {
       
@@ -129,19 +138,52 @@
 
     </style>
 
-
-
-    <iron-image 
-        style="width:100%; height:300px; background-color: #F8F8F8;"
-        sizing="cover" 
-        preload 
-        fade
-        src="[[photoUrl]]">
-    </iron-image>
-    <beer-fab-search></beer-fab-search>
+    <!--<firebase-query 
+       app-name="beer"
+       order-by-child="place_id"
+       equal-to="[[orgId]]"
+       path="onTap"
+       data="{{tap}}">
+    </firebase-query>-->
+    <!--[[_test(tap)]]
+    [[orgId]]-->
+ 
+    <div hidden="[[!online]]">
+      <iron-image 
+          style="width:100%; height:300px; background-color: #F8F8F8;"
+          sizing="cover" 
+          
+          preload 
+          fade
+          src="[[photoUrl]]">
+      </iron-image>
+    </div>
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
   
-    <beer-rating-card rating="[[place.rating]]"></beer-rating-card>
+    <div class="rating-wrapper">
+        <div>
+          <beer-pub-rating 
+            google-rating="[[place.rating]]" 
+            org-id="[[place.place_id]]"
+            login="{{login}}">
+        </beer-pub-rating>
+        </div>
+       
+        <!--<div hidden="[[!organization.place_id]]">
+          <beer-pub-favorite
+              org-id$="[[organization.place_id]]">
+          </beer-pub-favorite>
+        </div>-->
+        <div>
+          <beer-pub-icons
+              dogs$="[[dogs]]"
+              patio$="[[organization.patio]]"
+              over21$="[[organization.over21]]"
+              crowd-source$="[[organization.crowdSource]]">
+          </beer-pub-icons>
+        </div>
+        
+    </div>
 
       <div class="motto">
         [[organization.motto]]
@@ -176,11 +218,30 @@
                     <div class="category-title">[[item.title]]</div>
                   </a>
 
-                  <template is="dom-if" if="[[_isBeer(item.$key)]]"> 
-                    <template is="dom-repeat" items="[[_getArray(organization.brewBeer)]]">
+                  <template is="dom-if" if="[[_isTap(item.$key)]]"> 
+                  
+                    <template is="dom-repeat" items="[[_getArray(organization.onTap)]]" sort="_sortOrder" filter="_filterForTapped" as="tap">
                       <beer-beer-card-mini 
                           org-id="[[orgId]]" 
-                          beer-id="[[item.$key]]"
+                          beer-name="[[tap.name]]"
+                          style-name="[[tap.styleName]]"
+                          brewery-name="[[tap.breweryName]]"
+                          brewery-city="[[tap.city]]"
+                          brewery-state="[[tap.stateAbbreviation]]"
+
+                          abv$="[[tap.abv]]"
+                          owner="[[owner]]">
+                      </beer-beer-card-mini>
+                    </template>
+                  </template>
+
+                  <template is="dom-if" if="[[_isBeer(item.$key)]]"> 
+                    <template is="dom-repeat" items="[[_getArray(organization.brewBeer)]]" sort="_sortOrder" as="beer">
+                      <beer-beer-card-mini 
+                          org-id="[[orgId]]" 
+                          beer-name="[[beer.name]]"
+                          style-name="[[beer.styleName]]"
+                          abv$="[[beer.abv]]"
                           owner="[[owner]]">
                       </beer-beer-card-mini>
                     </template>
@@ -196,7 +257,7 @@
 
                   <template is="dom-if" if="[[_isContact(item.$key)]]"> 
                     <beer-contact-card 
-                        organization="[[place]]">
+                        place="[[place]]">
                     </beer-contact-card>
                   </template>
 
@@ -279,10 +340,39 @@
           notify: true
         },
 
-        visible: {
+        dogs:{
           type: Boolean,
-          observer: '_visibleChanged'
+          value: false,
+          computed: '_computeDogs(organization)',
         },
+
+        patio:{
+          type: Boolean,
+          value: false,
+          computed: '_computePatio(organization)',
+        },
+        
+        over21:{
+          type: Boolean,
+          value: false,
+          computed: '_computeOver21(organization)',
+        },
+
+        crowdSource:{
+          type: Boolean,
+          value: false,
+          computed: '_computeCrowdSource(organization)',
+        },
+
+        login: {
+         type: Boolean,
+         notify: true
+       },
+
+        // visible: {
+        //   type: Boolean,
+        //   observer: '_visibleChanged'
+        // },
         
         photoUrl: {
           type: String,
@@ -295,11 +385,11 @@
  
     
 
-      _visibleChanged: function(visible) {
-        if (visible) {
-          this.fire('change-section', { title: 'Home' });
-        }
-      },
+      // _visibleChanged: function(visible) {
+      //   if (visible) {
+      //     this.fire('change-section', { title: 'Home' });
+      //   }
+      // },
 
       _computeCategories: function(organization) {
         var returnArray = [];
@@ -334,6 +424,15 @@
           return [];
         }
       },
+
+       _isTap(type){
+        if(type === 'TAP'){
+          return true;
+        }else{
+          return false;
+        }
+      },
+
       _isBeer(type){
         if(type === 'BEER'){
           return true;
@@ -365,23 +464,85 @@
         }
       },
 
-       _getArray: function(obj){
+      _getArray: function(obj){
         'use strict';
         if(obj){
           var returnArray = [];
           var key = Object.keys(obj);
           for (var i=0; i<key.length; i++){
-            obj[key[i]].$key = key[i]
-            returnArray.push(obj[key[i]])
+              obj[key[i]].$key = key[i]
+              returnArray.push(obj[key[i]])   
           }
-            return returnArray.sort(function(a, b){
-              'use strict';
-              if (a.order < b.order)
-                return -1;
-              if (a.order > b.order)
-                return 1;
-              return 0;
-            })
+          
+          return returnArray;
+        }
+      },
+
+      _filterForTapped: function(beer){
+        if(beer.tapped === 'TAPPED'){
+          return true;
+        }else{
+          return false;
+        }
+
+      },
+
+      _sortOrder: function(a,b){
+        'use strict';
+        if (a.order < b.order)
+          return -1;
+        if (a.order > b.order)
+          return 1;
+        return 0;
+      },
+
+
+
+      _computeDogs: function (organization) {
+        if (organization){
+          if(organization.dogFriendly){
+            return true;
+          }else{
+            return false;
+          }
+        }else{
+          return false;
+        }
+      },
+
+       _computePatio: function (organization) {
+        if (organization){
+          if(organization.patio){
+            return true;
+          }else{
+            return false;
+          }
+        }else{
+          return false;
+        }
+      },
+
+       _computeOver21: function (organization) {
+        if (organization){
+          if(organization.over21){
+            return true;
+          }else{
+            return false;
+          }
+        }else{
+          return false;
+        }
+      },
+
+      _computeCrowdSource: function (organization) {
+        if (organization){
+          if(organization.crowdSource){
+            return true;
+          }else{
+            return false;
+          }
+        }else{
+          return false;
         }
       },
 

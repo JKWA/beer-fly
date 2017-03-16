@@ -16,40 +16,57 @@
         }
 
       .card{
-        width: 95%;
         margin: 10px;
-        padding: 5px;
+        padding: 10px;
         text-align: center;
       }
 
-      .footer{
+      /*.footer{
          @apply(--layout-horizontal);
          @apply(--layout-justified));
          margin: 10px 0 0 0;
          font-size: 1em;
          color: var(--app-primary-color);
-      }
+      }*/
 
       .name {
-        font-size: 1.2em;
+        font-size: 1.5em;
         font-weight: 300;
         color: var(--app-primary-color);
       }
 
       .style {
-        font-size: .9em;
-        font-weight: 500;
+        font-size: 1em;
+        font-weight: 400;
         color: var(--app-primary-color);
        
       }
 
       .abv{
-        font-size: .9em;
+        font-size: 1em;
         font-weight: 400;
-        color: var(--app-secondary-color);
+        color: var(--app-primary-color);
+      }
+
+      .breweryName{
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+      .location{
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        @apply(--layout-wrap);
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
       }
 
 
+       .location > div{
+        padding: 0 5px 0 0;
+      }
 
 
       @media (max-width: 767px) {
@@ -62,22 +79,26 @@
       }
 
     </style>
-    <firebase-document
+    <!--<firebase-document
         app-name="beer"
         path="beer/[[beerId]]"
         data="{{beer}}">
-    </firebase-document>
+    </firebase-document>-->
 
 
 
 
       <paper-material class='card' elevation="0" animated-shadow="false">
         <div>
-     
             <div>
-                <div class="name">[[beer.name]]</div>
-                <div class="style">[[beer.styleName]]</div>             
-                <div class="abv" hidden="[[!beer.abv]]">ABV: [[beer.abv]]</div>
+                <div class="name">[[beerName]]</div>
+                <div class="style">[[styleName]]</div>
+                <div class="breweryName" hidden="[[!location]]">[[breweryName]]</div>
+                <div class="location">
+                  <div hidden="[[!location]]">[[breweryCity]],</div>
+                  <div hidden="[[!location]]">[[breweryState]]</div>
+                </div>           
+                <div id="abv" class="abv" hidden>ABV: [[abv]]</div>
                 
             </div>
          </div>
@@ -89,6 +110,37 @@
     Polymer({
 
       is: 'beer-beer-card-mini',
+       properties:{
+
+        location:{
+           type: Boolean,
+           computed: '_computeLocation(breweryState)',
+           value:false
+       
+        },
+        abv: {
+          type: String,
+         
+        }
+       },
+
+       observers:['_watchAbv(abv)'],
+
+       _watchAbv: function (abv) {
+          if(abv){
+            this.$.abv.hidden = false;
+          }else{
+            this.$.abv.hidden = true;
+          }
+       },
+
+       _computeLocation: function (breweryState) {
+          if(breweryState){
+            return true;
+          }else{
+            return false;
+          }
+       }
      
 
    

@@ -58,13 +58,13 @@
     </style>
 
     <firebase-auth  app-name="beer" user="{{user}}"></firebase-auth>
-    <firebase-query 
+    <!--<firebase-query 
        app-name="beer"
        order-by-child="place_id"
        equal-to="[[orgId]]"
        path="beer"
        data="{{beer}}">
-    </firebase-query>
+    </firebase-query>-->
 
     <iron-image 
         style="width:100%; height:300px; background-color: #F8F8F8;"
@@ -75,7 +75,6 @@
     </iron-image>
     
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
-    <beer-fab-search></beer-fab-search>
 
     <div class="motto">
         [[category.motto]]
@@ -92,21 +91,10 @@
     <paper-material class="card" elevation="1">
 
 
-      <!--<iron-label>
-        <paper-icon-button icon="beer-icons:add" on-click="addBeerDialog"></paper-icon-button>
-        Add a beer
-      </iron-label>-->
-
-      <!--<a href="https://script.google.com/a/macros/beer-fly.com/s/AKfycbwpSdcRSUNDeJfIZgyDqeQWBZLnT4D7X378ZHUOfPg/dev?place_id=[[place.place_id]]&uid=[[user.uid]]">
-        <paper-icon-button icon="beer-icons:add"></paper-icon-button>
-        Add a beer
-      </a>-->
-
       <iron-label>
       <paper-icon-button icon="beer-icons:add" on-tap="_addBeerDialog"></paper-icon-button>
       Add a beer
       </iron-label>
-      TEST [[editBeerId]]
     </paper-material>
   
    
@@ -114,6 +102,7 @@
       <paper-dialog 
             id="addBeer"
             with-backdrop
+            modal
             opened="{{dialogOpen}}"
             style="width: 90vw;"
             entry-animation="slide-from-right-animation"
@@ -142,17 +131,23 @@
         <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
       </paper-dialog>
     
-
-    <template is="dom-repeat" items="[[beer]]" sort="_sortCategoryOrder">
+    <template is="dom-repeat" items="[[_getArray(organization.brewBeer)]]" sort="_sortOrder" as="beer">
       <beer-beer-card 
-          org-id="[[orgId]]" 
-          beer-id="[[item.$key]]"
-          organization="[[organization]]"
+          beer-id="[[beer.id]]"
+          beer-name="[[beer.name]]"
+          beer-description="[[beer.description]]"
+          brewery-name="[[place.name]]"
+          brewery-city="[[organization.city]]"
+          brewery-state="[[organization.stateAbbreviation]]"
+          style-name="[[beer.styleName]]"
+          abv="[[beer.abv]]"
+          place-id="[[place.place_id]]"
+          crowd-source="[[organization.crowdSource]]"
           owner="[[owner]]"
           uid="[[user.uid]]"
           edit="[[canEdit]]"
-          beer="[[item]]"
-          edit-beer-id="{{editBeerId}}">
+          edit-beer-id="{{editBeerId}}"
+          login="{{login}}">
       </beer-beer-card>
     </template>
 
@@ -197,6 +192,11 @@
 
        dialogOpen:{
           type:Boolean
+       },
+
+       login: {
+         type: Boolean,
+         notify: true
        },
 
        
@@ -293,20 +293,21 @@
         }
       },
 
-      //  _getArray: function(obj){
-      //   'use strict';
-      //   if(obj){
-      //     var returnArray = [];
-      //     var key = Object.keys(obj);
-      //     for (var i=0; i<key.length; i++){
-      //       obj[key[i]].$key = key[i]
-      //       returnArray.push(obj[key[i]])
-      //     }
-      //      return returnArray.sort(this._sortCategoryOrder);
-      //   }
-      // },
+       _getArray: function(obj){
+        'use strict';
+        if(obj){
+          var returnArray = [];
+          var key = Object.keys(obj);
+          for (var i=0; i<key.length; i++){
+            obj[key[i]].$key = key[i]
+            returnArray.push(obj[key[i]])
+          }
+          //  return returnArray.sort(this._sortOrder);
+           return returnArray;
+        }
+      },
 
-      _sortCategoryOrder: function(a,b){
+      _sortOrder: function(a,b){
         'use strict';
         if (a.order < b.order)
           return -1;

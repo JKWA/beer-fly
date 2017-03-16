@@ -18,7 +18,7 @@
 
 
 
-<dom-module id="beer-rating">
+<dom-module id="beer-beer-rating">
 <template strip-whitespace>
 
 
@@ -63,7 +63,7 @@ paper-listbox {
 }
 
 .user-rating{
-    color: orange; 
+    color: var(--app-selected-color);
 }
 
 .no-rating{
@@ -89,6 +89,7 @@ paper-listbox {
 </firebase-document>
 
 <firebase-document
+    id="rating"
     app-name="beer"
     path="rating/[[beerId]]"
     data="{{savedRating}}">
@@ -125,15 +126,7 @@ paper-listbox {
         </div>
     </div>
 
-    <paper-dialog 
-        id="loginDialog"
-        with-backdrop
-        entry-animation="fade-in-animation"
-        exit-animation="fade-out-animation">
-     <login-fire  app-name="beer"  google></login-fire>
-    <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
 
-    </paper-dialog>
 
 
 
@@ -143,13 +136,16 @@ paper-listbox {
 
 Polymer({
 
-  is: 'beer-rating',
+  is: 'beer-beer-rating',
 
   properties: {
 
     savedRating:{
-        type: Object,
-        
+        type: Object
+    },
+
+    beerId:{
+        type: String
     },
     rating:{
         type: Number,
@@ -157,10 +153,13 @@ Polymer({
     },
     selectedRating:{
         type: Number
-
     },
     user:{
         type: Object
+    },
+    login: {
+        type: Boolean,
+        notify: true
     }
   },
  
@@ -212,15 +211,29 @@ _selectedRating: function (){
     var rating = this.selectedRating +1;
     var saved = this.$.beerRating.data;
     if(this.user){
+        var obj = {};
         if(saved === rating){
-            this.$.beerRating.data = null;
-        } else{
-            this.$.beerRating.data = rating;
-        }    
+          rating = null;
+        } 
+                
+        obj['rating/'+this.beerId+'/'+this.user.uid+'/rating'] = rating;
+        obj['user/'+this.user.uid+'/rating/'+this.beerId+'/rating'] = rating;
+        // console.log(obj);
+        var app = this.$.rating.app;
+        var that = this;
+        firebase.database(app).ref().update(obj, function(error) {
+            if (error){
+                console.log("Error" + error);
+            }else{
+                console.log("Saved");
+            }
+        })
+          
     }else{
-        var body = document.querySelector('body');
-        Polymer.dom(body).appendChild(this.$.loginDialog);
-        this.$.loginDialog.open()
+
+        //SEND SIGN IN ISSUE
+        this.login = true;
+
     }
 },
 
@@ -273,7 +286,7 @@ _selectedRating: function (){
 
 
   _test(obj){
-    //   console.log(obj)
+      console.log(obj)
   }
 
 });

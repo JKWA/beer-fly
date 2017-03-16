@@ -8,7 +8,6 @@
 
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-material/paper-material.html">
-<link rel="import" href="../bower_components/geo-location/geo-location.html">
 <link rel="import" href="../bower_components/google-map/google-map.html">
 <link rel="import" href="../bower_components/google-map/google-map-search.html">
 <link rel="import" href="../bower_components/google-map/google-map-marker.html">
@@ -17,7 +16,7 @@
 <link rel="import" href="beer-rating-card.html">
 
 
-<dom-module id="beer-home-search">
+<dom-module id="beer-search">
 
   <template>
 
@@ -63,71 +62,58 @@
     </firebase-document>
 
   <!--KEEP THIS ABOVE THE MAP-->
- <paper-input class="search" label="Search"value="{{queryInput}}">
-      <div prefix><iron-icon icon="beer-icons:search"></iron-icon></div>
-  </paper-input>
-  
-  <paper-checkbox checked="{{geoPermission}}">Near my location</paper-checkbox>
-  
+ <paper-material class="card" elevation="0">
+  <paper-input class="search" label="Search"value="{{queryInput}}">
+        <div prefix><iron-icon icon="beer-icons:search"></iron-icon></div>
+    </paper-input>
+    
+    <paper-checkbox disabled="[[error]]" checked="{{geoPermission}}">Near my location</paper-checkbox>
+    
+    
 
-  <geo-location 
-      id="geoLocation"
-      idle
-      latitude="{{latitude}}"
-      longitude="{{longitude}}">
-  </geo-location>
+    <google-map-search 
+        id="search"
+        map="[[map]]" 
+        query="{{query}}" 
+        latitude="[[gLatitude]]"
+        longitude="[[gLongitude]]"
+        radius="50000"
+        results="{{results}}">
+    </google-map-search>
 
-  <google-map-search 
-      id="search"
-      map="[[map]]" 
-      query="{{query}}" 
-      latitude="[[gLatitude]]"
-      longitude="[[gLongitude]]"
-      radius="50000"
-      type="bar"
-      results="{{results}}">
-  </google-map-search>
-
-  <div hidden>
-  <google-map 
-      id="map"
-      map="{{map}}" 
-      latitude="[[gLatitude]]"
-      longitude="[[gLongitude]]"
-      radius="50000"
-      type="bar"
-      api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" >
-  </google-map>
-  </div>
-  <!--LAT [[gLatitude]]  Long [[gLongitude]]-->
-    <div class="search-wrapper">
-      <template is="dom-repeat" items="{{results}}" as="pub">
-        <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
-          <paper-material class="card" elevation="0">
-              <div class="search-name">[[pub.name]]</div>
-              <div class="search-address">[[pub.formatted_address]]</div>
-              <div>
-                <beer-rating-card rating="[[pub.rating]]"></beer-rating-card>
-              </div>
-              <!--<a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
-                  <paper-button raised>SHOW</paper-button>
-              </a>-->
-            <!--<paper-button raised place="[[pub]]" on-tap="_getPlace">
-              ADD PUB
-            </paper-button>-->
-          </paper-material> 
-        </a> 
-      </template>
+    <div hidden>
+    <google-map 
+        id="map"
+        map="{{map}}" 
+        latitude="[[gLatitude]]"
+        longitude="[[gLongitude]]"
+        radius="50000"
+        type="bar"
+        api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" >
+    </google-map>
     </div>
- 
-<!--[[_test(results)]]-->
+    <!--LAT [[gLatitude]]  Long [[gLongitude]]-->
+      <div class="search-wrapper">
+        <template is="dom-repeat" items="{{results}}" as="pub">
+          <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
+            <paper-material class="card" elevation="1">
+                <div class="search-name">[[pub.name]]</div>
+                <div class="search-address">[[pub.formatted_address]]</div>
+                <div>
+                  <beer-rating-card rating="[[pub.rating]]"></beer-rating-card>
+                </div>
+            </paper-material> 
+          </a> 
+        </template>
+      </div>
+  </paper-material>
  
 </template>
   <script>
 
     Polymer({
 
-      is: 'beer-home-search',
+      is: 'beer-search',
 
       properties: {
 
@@ -145,11 +131,25 @@
          type: Object
        },
 
+       idle:{
+          type: Boolean,
+          notify: true
+        },
+        error:{
+          type: Boolean
+        },
+
+        geoPermission:{
+          type: Boolean,
+          value: false
+        },
+
        latitude: {
           type: Number
           
        },
 
+       
        longitude:{
          type: Number
          
@@ -184,26 +184,26 @@
  
 
       _observeLocation: function (latitude, longitude){
-          
+          console.log("TEST")
           if(latitude){
             if(longitude){
-              this.gLatitude =latitude
-              this.gLongitude =longitude
+              this.gLatitude =latitude;
+              this.gLongitude =longitude;
+              this.geoPermission = true;
             }
-           
           }
-
-         
       },
 
       _observeGeoPermission: function (geoPermission){
        
-        if(geoPermission){
-          this.$.geoLocation.idle = false;
-        }else{
-          this.$.geoLocation.idle = true;
+        if(!geoPermission){
+          
           this.gLatitude =0;
           this.gLongitude =0;
+        }else{
+          this.gLatitude = this.latitude
+          this.gLongitude = this.longitude
+          
         }
       },
 

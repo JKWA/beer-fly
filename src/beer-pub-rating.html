@@ -1,0 +1,282 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+<link rel="import" href="beer-icons.html">
+
+
+
+
+
+<dom-module id="beer-pub-rating">
+<template strip-whitespace>
+
+
+
+<style is="custom-style">
+
+
+
+paper-listbox {
+    --paper-listbox-color: white;
+}
+
+/*paper-item {
+    width: 5px
+}*/
+
+.rating-wrapper{
+    @apply(--layout-horizontal);
+    @apply(--layout-start-justified);
+}
+
+.rating-stars{
+    @apply(--layout-horizontal);
+    @apply(--layout-start-justified);
+}
+
+.rating-number{
+    font-size: 1.2em;
+    font-weight: 300;
+    color: var(--app-secondary-color);
+    margin: 20px 0 0 10px
+    }
+
+.rating-icon{
+    /*width: 10px;*/
+    margin: 0 -15px 0 -10px;
+    
+    font-size: 1em;
+    font-weight: 300;
+    
+}
+
+.has-rating{
+    color: var(--app-accent-color); 
+
+}
+
+.user-rating{
+    color: var(--app-selected-color);
+}
+
+.no-rating{
+    color: var(--app-secondary-color); 
+}
+
+
+</style>
+
+    <firebase-auth 
+        id="auth" 
+        app-name="beer"
+        user="{{user}}" 
+        status-known="{{statusKnown}}"
+        on-error="handleError">
+    </firebase-auth>
+
+
+    <firebase-document
+        app-name="beer"
+        id="rating"
+        disabled
+        path="user/[[user.uid]]/favorite/[[orgId]]/rating"
+        data="{{userRating}}">
+    </firebase-document>
+ 
+    <firebase-document
+        app-name="beer"
+        id="pub"
+        path="organization/[[orgId]]">
+    </firebase-document>
+
+
+
+    <div class="rating-wrapper">
+     
+            
+            <paper-listbox 
+                id="selectedRating" 
+                class="rating-stars"
+                selected="{{selectedRating}}" 
+                on-click="_selectedRating">
+                
+                <template is="dom-repeat" items="[[_positiveStars(rating)]]" as="rating">
+                    
+                    <paper-item>
+                       <iron-icon class="rating-icon" icon="beer-icons:star"></iron-icon>
+                    </paper-item>
+                </template>
+                <template is="dom-if" if="[[_middleRating(rating)]]">
+                    <paper-item>
+                        <iron-icon class="rating-icon" icon="beer-icons:star-half"></iron-icon>
+                    </paper-item>
+                </template>
+                <template is="dom-repeat" items="[[_leftOverStars(rating)]]" as="rating">
+                    <paper-item>
+                        <iron-icon class="rating-icon" icon="beer-icons:star-border"></iron-icon>
+                    </paper-item>
+                </template>
+            </paper-listbox>
+            
+        <div hidden="[[!rating]]">
+            <div class="rating-number">[[rating]]</div>
+        </div>
+    </div>
+
+
+</template>
+
+<script>
+
+Polymer({
+
+  is: 'beer-pub-rating',
+
+  properties: {
+
+    savedRating:{
+        type: Object
+    },
+
+    beerId:{
+        type: String
+    },
+    rating:{
+        type: Number,
+    },
+    selectedRating:{
+        type: Number
+    },
+    user:{
+        type: Object
+    },
+    userRating: {
+        type: Number
+    },
+    googleRating: {
+        type: Number,
+        value:0
+    },
+    login: {
+         type: Boolean,
+         notify: true
+    }
+  },
+ 
+observers:['_userSignedIn(user)','_hasUserRating(userRating)'],
+ready: function () {
+    this.rating = this.googleRating;
+},
+
+_userSignedIn: function (user){
+    if(user){
+        this.$.rating.disabled = false;
+    }else{
+        this.$.rating.disabled = true;
+    }
+},
+
+_hasUserRating: function (userRating) {
+    var selectedRating = this.$.selectedRating;
+    if(typeof userRating === 'number'){
+        this.rating = userRating;
+        selectedRating.classList.remove('no-rating');
+        selectedRating.classList.remove('has-rating');
+        selectedRating.classList.add('user-rating');
+
+    }else if(this.googleRating) {
+        this.rating = this.googleRating;
+        selectedRating.classList.remove('no-rating');
+        selectedRating.classList.add('has-rating');
+        selectedRating.classList.remove('user-rating');
+
+    }else{
+        this.rating = 0;
+        selectedRating.classList.add('no-rating');
+        selectedRating.classList.remove('has-rating');
+        selectedRating.classList.remove('user-rating');
+    }
+},
+
+
+
+_selectedRating: function (){
+    var rating = this.selectedRating +1;
+    var saved = this.$.rating.data;
+    if(this.user){
+        var obj = {};
+        if(saved === rating){
+          rating = null;
+        } 
+
+        obj['favorite/'+this.orgId+'/'+this.user.uid+'/rating'] = rating;
+        obj['user/'+this.user.uid+'/favorite/'+this.orgId+'/rating'] = rating;
+
+        // console.log(obj);
+        var app = this.$.rating.app;
+        var that = this;
+        firebase.database(app).ref().update(obj, function(error) {
+            if (error){
+                console.log("Error" + error);
+            }else{
+                console.log("Saved");
+            }
+        })
+          
+    }else{
+        this.login = true;
+    }
+},
+
+
+  _positiveStars: function (rating) {
+     
+      var returnArray = []
+      var positiveRating = Math.floor(rating);
+      
+       for(var i=0; i<positiveRating; i++){
+         returnArray.push('true');
+      }
+      
+      return returnArray;
+    },
+
+  _leftOverStars: function (rating) {
+      var returnArray = []
+      if(rating >4){
+        return [];
+      }
+      var floor = Math.floor(rating);
+      
+      var negitiveRating = 4-floor;
+      if(rating === floor){
+          //add one if there is no half star
+          negitiveRating ++
+      }
+        for(var i=0; i<negitiveRating; i++){
+            returnArray.push('true')
+      }
+      return returnArray;
+    },
+
+  _middleRating: function (rating) {
+      var remainder = rating % 1;
+      return remainder;
+    },
+
+
+  _test(obj){
+      console.log(obj)
+  }
+
+});
+
+</script>
+</dom-module>

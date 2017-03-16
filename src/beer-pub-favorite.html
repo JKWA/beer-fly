@@ -1,0 +1,160 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="beer-icons.html">
+
+<dom-module id="beer-pub-favorite">
+
+  <template>
+
+    <style>
+
+      .icon {
+        font-size: 1.0em;
+        font-weight: 600;
+        text-align: center;
+        line-height: 30px;
+        margin: 3px 5px 0 0;
+      }
+      .yes{
+        color: var(--app-selected-color);
+      }
+
+      .no{
+        color: var(--app-accent-color);
+      }
+
+    </style>
+
+    <firebase-auth 
+        id="auth" 
+        app-name="beer"
+        user="{{user}}" 
+        status-known="{{statusKnown}}"
+        on-error="handleError">
+    </firebase-auth>
+
+    <firebase-document
+        app-name="beer"
+        id="favorite"
+        disabled
+        path="user/[[user.uid]]/favorite/[[orgId]]/favorite"
+        data="{{favorite}}">
+    </firebase-document>
+ 
+    <firebase-document
+        app-name="beer"
+        id="pub"
+        path="organization/[[orgId]]">
+    </firebase-document>
+      <div id="favoriteIcon" class="icon no">
+        <paper-icon-button 
+          icon="beer-icons:favorite"
+          on-tap="_selectAsFavorite">
+          </paper-icon-button>
+      </div>
+          
+    
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-pub-favorite',
+
+       properties: {
+         user:{
+           type: Object
+         },
+        favorite:{
+          type:Boolean,
+          value: false
+        }
+
+       },
+
+       observers: ['_watchFavoriteStatus(favorite)', '_watchUserStatus(user)'],
+
+       _watchUserStatus: function (user) {
+
+         if (user){
+          this.$.favorite.disabled=false;
+         }else{
+          this.$.favorite.disabled=true;
+         }
+
+       },
+
+       _watchFavoriteStatus: function (favorite){
+         var icon = this.$.favoriteIcon;
+         if( typeof favorite === 'object'){
+           favorite = false;
+         }
+          if(favorite){
+            icon.classList.remove('no');
+            icon.classList.add('yes');
+          }else{
+            icon.classList.remove('yes');
+            icon.classList.add('no');
+          }
+       },
+
+       _selectAsFavorite: function (){
+          var pub = this.$.pub.data;
+          if(pub){
+            if(this.user){
+              if(this.orgId){
+               
+                var favObj = {};
+                var favorite = this.favorite;
+                if( typeof favorite === 'object'){
+                  favorite = true;
+                }else if(favorite === true){
+                  favorite = null;
+                }else {
+                  favorite = true
+                }
+                
+                if(favorite){
+                  favObj.id = pub.place_id;
+                  favObj.name = pub.name;
+                  favObj.favorite = true;
+                }else{
+                favObj = null;
+                }
+              
+                var obj={};
+                        
+                obj['favorite/'+this.orgId+'/'+this.user.uid] = favObj;
+                obj['user/'+this.user.uid+'/favorite/'+this.orgId] = favObj;
+                
+                // console.log(obj);
+  
+                var app = this.$.favorite.app;
+                var that = this;
+                firebase.database(app).ref().update(obj, function(error) {
+                    if (error){
+                        console.log("Error" + error);
+                    }else{
+                        // console.log("Saved");
+                    }
+                })
+              }
+
+                
+          }else{
+              // var body = document.querySelector('body');
+              // Polymer.dom(body).appendChild(this.$.loginDialog);
+              // this.$.loginDialog.open()
+          }
+        }
+    },
+
+
+    });
+
+  </script>
+
+</dom-module>

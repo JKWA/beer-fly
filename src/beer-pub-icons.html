@@ -1,0 +1,134 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+
+
+<link rel="import" href="beer-icons.html">
+
+<dom-module id="beer-pub-icons">
+
+  <template>
+
+    <style>
+
+     
+
+      .icons {
+        margin: 10px 5px 0 0;
+        @apply(--layout-horizontal);
+      }
+
+      .over21{
+        font-size: 1.0em;
+        font-weight: 600;
+        color: var(--app-accent-color);
+        margin: 4px 10px;
+        text-align: center;
+        line-height: 30px;
+      }
+
+      .icon {
+        font-size: 1.0em;
+        font-weight: 600;
+        color: var(--app-accent-color);
+        margin: 0 10px;
+        text-align: center;
+        line-height: 30px;
+
+      }
+
+    </style>
+
+        <div class="icons">
+          <div class="icon" hidden="[[!dogs]]">
+            <iron-icon on-tap="_toast" id="dogs" icon="beer-icons:dogs"></iron-icon>
+          </div>
+          <div class="icon" hidden="[[!patio]]">
+            <iron-icon on-tap="_toast" id="patio" icon="beer-icons:patio"></iron-icon>
+          </div>
+          <div id="over21" on-tap="_toast" class="over21" hidden="[[!over21]]">+21</div>  
+          <div  class="icon" hidden="[[!crowdSource]]">
+              <iron-icon on-tap="_toast" id="crowdSource" icon="beer-icons:crowd-source"></iron-icon>
+          </div>
+        </div>
+
+        
+        <paper-toast id="toast" text="[[message]]">
+          <!--<paper-button>TEST</paper-button>-->
+        </paper-toast>
+        
+
+        
+ 
+    
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-pub-icons',
+
+       properties: {
+
+          dogs:{
+            type: Boolean,
+            value: false
+          },
+
+          patio:{
+            type: Boolean,
+            value: false
+          },
+          
+          over21:{
+            type: Boolean,
+            value: false
+          },
+
+          crowdSource:{
+            type: Boolean,
+            value: false
+          },
+
+          message:{
+            type: String
+          }
+        },
+        
+
+
+        _toast: function (event) {
+          var target = event.currentTarget;
+          var id = target.id;
+          var toast = this.$.toast;
+          console.log(id);
+          if(toast.opened){
+            toast.close();
+          }
+          
+          if(id === 'dogs'){
+            this.message = "Is dog friendly";
+          }else if(id === 'patio'){
+            this.message = "Has patio seating";
+          }else if(id === 'over21'){
+            this.message = "Limited to guests over 21"
+          }else if(id === 'crowdSource'){
+            this.message = "Data is crowd sourced";
+          }
+  
+          toast.duration = 5000;
+          toast.open();
+
+        }
+
+
+    });
+
+  </script>
+
+</dom-module>

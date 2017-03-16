@@ -59,9 +59,10 @@
         fade
         src="[[photoUrl]]">
     </iron-image>
+
+    
     
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
-    <!--<beer-fab-search></beer-fab-search>-->
 
     <div class="motto">
         [[category.motto]]
@@ -85,18 +86,26 @@
    </div>
    
 
-    <template is="dom-repeat" items="[[_getArray(organization.onTap)]]" sort="_sortCategoryOrder">
-     <div hidden="[[!_showTapped(item.tapped)]]">
-      <!--<template is="dom-if" if="_showTapped(item.tapped)">-->
-      <beer-beer-card 
-          org-id="[[orgId]]" 
-          beer-id="[[item.$key]]"
-          organization="[[organization]]"
+    <template is="dom-repeat" items="[[_getArray(organization.onTap)]]" sort="_sortOrder" as="beer">
+
+     <beer-beer-card 
+          beer-id="[[beer.id]]"
+          beer-name="[[beer.name]]"
+          beer-description="[[beer.description]]"
+          brewery-name="[[beer.breweryName]]"
+          brewery-city="[[beer.city]]"
+          brewery-state="[[beer.stateAbbreviation]]"
+          style-name="[[beer.styleName]]"
+          abv="[[beer.abv]]"
+          place-id="[[place.place_id]]"
+          crowd-source="[[organization.crowdSource]]"
           owner="[[owner]]"
-          edit=true>
+          uid="[[user.uid]]"
+          edit="[[canEdit]]"
+          edit-beer-id="{{editBeerId}}"
+          login="{{login}}">
       </beer-beer-card>
-     </div>
-      <!--</template>-->
+
     </template>
 
 
@@ -130,6 +139,10 @@
 
       is: 'beer-tap',
       properties:{
+        login: {
+         type: Boolean,
+         notify: true
+       },
         photoUrl: {
           type: String,
           computed: '_computePhotoUrl(category, place)'
@@ -139,6 +152,11 @@
       canEdit:{
         type: Boolean,
         value: false
+      },
+
+      login: {
+        type: Boolean,
+        notify: true
       },
 
 
@@ -169,8 +187,10 @@
           }
           return returnArray;
         }
-          
       },
+
+     
+
       _showTapped: function (tapped){
         // console.log(item);
         if(tapped === 'NOT_AVAILABLE'){
@@ -181,7 +201,7 @@
 
       },
 
-      _sortCategoryOrder: function(a,b){
+      _sortOrder: function(a,b){
       
         'use strict';
         if (a.order < b.order)

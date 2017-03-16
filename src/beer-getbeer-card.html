@@ -1,13 +1,15 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<!--<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">-->
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+
 
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/s-rating/s-rating.html">
-<link rel="import" href="beer-beer-rating.html">
+<!--<link rel="import" href="beer-rating.html">-->
 <link rel="import" href="beer-icons.html">
 
-<dom-module id="beer-allbeers-card">
+<dom-module id="beer-getbeer-card">
 
   <template>
 
@@ -82,20 +84,12 @@
 
     </style>
 
-    <!--<firebase-auth app-name="beer" user="{{user}}"></firebase-auth>  -->
+  DELETED
 
-<!--[[_test(user)]]-->
+     <!--<paper-material class='card' elevation="1" animated-shadow="false">
 
-    <firebase-document
-        app-name="beer"
-        id="beer"
-     
-        path="beer/[[beerId]]">  
-    </firebase-document>
-
-     <paper-material class='card' elevation="1" animated-shadow="false">
         <div>
-          <beer-beer-rating beer-id="[[beer.id]]"></beer-beer-rating>
+          <beer-rating beer-id="[[beer.id]]"></beer-rating>
 
           <a href="/[[_computeNameForUrl(beer.breweryName)]]/main?orgid=[[beer.place_id]]"> 
 
@@ -111,22 +105,12 @@
                 <div class="footer-abv" hidden="[[!beer.abv]]">ABV: [[beer.abv]]</div>
                 
             </div>
-          <!--<div class="brewery">[[beer.breweryName]]</div>
-            <div class="beer">[[beer.name]]</div>
-            <div class="style">[[beer.style.name]]</div>   
-              <div class="location">[[beer.breweryCity]],  [[beer.breweryState]]</div>        
-            <div class="footer">
-              <div>[[beer.available.description]]</div>
-              <div class="footer-abv" hidden="[[!item.abv]]">ABV: [[beer.abv]]</div>
-            </div>-->
+       
           </a>
         </div>
         
-      </paper-material>
-     
-
-     <!--</template>-->
-     
+      </paper-material>-->
+      
       
     
 
@@ -136,51 +120,26 @@
 
     Polymer({
 
-      is: 'beer-allbeers-card',
+      is: 'beer-getbeer-card',
        properties: {
-        // user:{
-        //   type: Object
-        // },
-        beer:{
+        user:{
           type: Object
-        },
-        beerId:{
-          type: String
         }
 
        },
        
-       observers: ['_observeBeerId(beerId)'],
+       observers: ['_observeUserStatus(user)'],
 
-    // _observeUserStatus: function (user) {
-    //     if(user){
-    //       console.log('YES')
-    //       this.$.rating.disabled = false;
-    //     }else{
-    //       console.log('NO')
-    //       this.$.rating.disabled = true;
-    //     }
-
-    // },
-
-      _observeBeerId: function (beerId){
-        if(beerId){
-          var app = this.$.beer.app;
-          var that = this;
-          
-          var ref = firebase.database(app).ref('beer/'+beerId);
-          ref.once('value').then(function(snapshot) {
-          
-          var beer = snapshot.val();
-          // console.log(beer);
-          that.beer = beer;
-          })
-          // this.$.beer.disabled = false;
-          // console.log('BEER',this.$.beer.data);
-          // this.beer = this.$.beer.data;
+    _observeUserStatus: function (user) {
+        if(user){
+          console.log('YES')
+          this.$.rating.disabled = false;
+        }else{
+          console.log('NO')
+          this.$.rating.disabled = true;
         }
-      },
 
+    },
       _computeNameForUrl: function (name) {
          'use strict';
           if (name) {

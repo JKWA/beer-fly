@@ -1,6 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
-<link rel="import" href="../bower_components/geo-location/geo-location.html">
+<!--<link rel="import" href="../bower_components/geo-location/geo-location.html">-->
 <link rel="import" href="../bower_components/geofire-elements/geofire-query.html">
 <link rel="import" href="../bower_components/s-slider/s-slider.html">
 
@@ -12,7 +12,7 @@
   <template>
 
     <style>
-    .body {
+    /*.body {
       height: 100vh;
       margin: 0;
       display: flex;
@@ -29,12 +29,12 @@
         color: var(--app-secondary-color);
         font-size: 1.2em;
         font-weight: 300;
-      }
+      }*/
 
     </style>
 
- 
-    <firebase-app 
+ THIS IS DELETED
+    <!--<firebase-app 
         id="fire_DB" 
         name="beer" 
         api-key="AIzaSyD2Z_cYgNuKB58bGbSzo0kMmJAWj0A0p18" 
@@ -68,7 +68,7 @@
     <template is="dom-repeat" items="[[breweries]]" as="geo" sort="_sortByDistance">
         <beer-allbreweries-card place-id ="[[geo.key]]" distance="[[geo.distance]]">
         </beer-allbreweries-card>
-    </template>
+    </template>-->
 
 
   </template>

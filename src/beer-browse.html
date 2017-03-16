@@ -1,0 +1,109 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/login-fire/login-fire.html">
+
+<link rel="import" href="../my_components/data/upload-image.html">
+<link rel="import" href="../my_components/data/upload-image.html">
+<link rel="import" href="beer-button.html">
+
+<!--<link rel="import" href="beer-home-search.html">-->
+
+
+
+<dom-module id="beer-browse">
+
+  <template>
+
+    <style include="beer-button">
+
+
+      wrapper{
+         @apply(--layout-horizontal);
+         @apply(--layout-wrap);
+      }
+
+        .item {
+        /*display: block;
+        text-decoration: none;
+        text-align: center;
+        margin-bottom: 40px;*/
+        margin: 30px;
+        padding: 10px;
+        height: 200px
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+
+
+      @media (max-width: 767px) {
+       
+
+
+      }
+
+    </style>
+
+     <firebase-auth 
+        id="auth" 
+        app-name="beer"
+        user="{{user}}" 
+        status-known="{{statusKnown}}"
+        on-error="handleError">
+    </firebase-auth>
+
+    <firebase-query
+        id="organizations"
+        app-name="beer"
+        path="organization"
+        data="{{organizations}}">
+    </firebase-query>
+    
+      
+     <div class="wrapper">
+          
+         
+          <div class="item">
+            <beer-button>
+              <a aria-label="Browse Beers" href="/home/allbeers">Browse Beers</a>
+            </beer-button>
+          </div>
+      </div>
+   
+
+
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-browse',
+
+      properties: {
+
+       
+
+      },
+
+      
+     
+
+      _test: function(obj){
+          console.log(obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

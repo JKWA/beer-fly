@@ -1,10 +1,12 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 
-
+<link rel="import" href="beer-pub-icons.html">
+<link rel="import" href="beer-pub-rating.html">
+<link rel="import" href="beer-pub-favorite.html">
 
 <dom-module id="beer-pub-card">
 
@@ -18,83 +20,94 @@
     }
 
       .card{
-        width: 100%;
         padding: 10px;
         margin: 10px;
       }
 
-      .wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-start-justified);
-         @apply(--layout-wrap);
-         max-width: 800px
+      .items > div{
+        margin: 0 10px 10px 10px
       }
+
 
       .name {
         font-size: 1.5em;
         font-weight: 300;
-        margin: 10px 5px 0 20px;
+        color: var(--app-primary-color);
       }
 
       .motto {
         font-size: 1.0em;
-        font-weight: 600;
-        margin: 0 5px 0 20px;
+        font-weight: 400;
+        color: var(--app-primary-color);
       }
 
       .address {
         font-size: 1.0em;
         font-weight: 300;
-        margin: 10px 5px 0 20px;
+        color: var(--app-primary-color);
+      }
+      .distance{
+        font-size: 1.0em;
+        font-weight: 300;
+        color: var(--app-secondary-color);
       }
 
-      .logo {
-        width: 100px;
-        height: 100px;
-        background-color: #F8F8F8;
-        outline: none;
+      .icons-wrapper{
+        @apply(--layout-horizontal);
+        @apply(--layout-justified);
+        @apply(--layout-wrap);
+      }
+
+      .sponsor-wrapper{
+        font-size: .8em;
+        font-weight: 300;
+        color: var(--app-secondary-color);
+        /*visibility: hidden;*/
+        /*@apply(--layout-horizontal);
+        @apply(--layout-center-justified);*/
       }
 
 
-      @media (max-width: 767px) {
-     
-
-        h3 {
-          margin: 24px 0;
-        }
-
-      }
 
     </style>
 
-    <a aria-label$="[[org.name]]" href="/[[_urlName]]/main?orgid=[[organization.$key]]">
-      <paper-material class='card' elevation="0" animated-shadow="false">
-        <div class="wrapper">
+    
+
+      <paper-material class='card' elevation="1" animated-shadow="false">
+     
+        <div  class="sponsor-wrapper" >
+            <div id="sponsor" hidden="[[!sponsor]]">Sponsoring Organization</div>
+        </div>
+         <div class="icons-wrapper">
             <div>
-                <paper-icon-button ></paper-icon-button>
-            </div>
-             <div>
-                <iron-image 
-                    class="logo"
-                    sizing="cover" 
-                    preload 
-                    fade
-                    src="[[organization.mainImage.logoThumbnail.url]]">
-                </iron-image>
-              
+              <beer-pub-rating 
+                  org-id="[[placeId]]"
+                  google-rating="[[googleRating]]"
+                  login="{{login}}">
+              </beer-pub-rating>
             </div>
             <div>
-                <div class="name">[[organization.name]]</div>
-                <div class="motto">[[organization.motto]]</div>
-                <div class="address">[[organization.city]], [[organization.state]]</div>
+              <beer-pub-icons
+                dogs="[[dogFriendly]]"
+                patio="[[patio]]"
+                over21="[[over21]]">
+              </beer-pub-icons>
             </div>
            
-         </div>
-        <div class="card-actions">
-          
-        </div>
+   
+          </div>
+          <a aria-label$="[[name]]" href="/[[_urlName]]/main?orgid=[[placeId]]">
+            <div class="items">
+                <div class="name">[[name]]</div>
+                <div class="motto">[[motto]]</div>
+                <div class="address" hidden="[[!address]]">[[address]]</div>
+                <div class="address" hidden="[[address]]">[[city]], [[state]]</div>
+                <div class="distance" hidden="[[!distance]]">[[_computeDisplayDistance(distance)]] miles from you</div>
+            </div>
+           </a>
+           
       </paper-material>
-  </a>
+ 
     
   </template>
 
@@ -106,15 +119,42 @@
 
        properties: {
 
-        organization:{
-          type: Object
+        distance:{
+          type: Number,
+          value: false
         },
+
+        sponsor:{
+          type: Boolean,
+          value: false
+        },
+
+        login: {
+         type: Boolean,
+         notify: true
+       },
         
          _urlName:{
              type: String,
-             computed: '_computeNameForUrl(organization.name)'
+             computed: '_computeNameForUrl(name)'
          }
         },
+
+        observers: ['_watchforSponsor(sponsor)'],
+
+         _watchforSponsor: function (sponsor){
+        
+          if(sponsor){
+            console.log('sponsor', sponsor)
+            // this.$.sponsor.hidden = false;
+          }
+        },
+
+         _computeDisplayDistance: function (distance){
+          return Math.round(distance*10)/10
+
+        },
+
         _computeNameForUrl: function (name) {
          'use strict';
           if (name) {

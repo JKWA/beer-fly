@@ -9,7 +9,7 @@
     "polymer": "polymer/polymer#^1.4.0",
     "app-layout": "polymerelements/app-layout#^0.10.0",
     "app-route": "polymerelements/app-route#^0.9.1",
-    "app-storage": "polymerelements/app-storage#^0.9.6",
+    "app-storage": "PolymerElements/app-storage#^0.9.8",
     "iron-flex-layout": "polymerelements/iron-flex-layout#^1.0.0",
     "iron-form": "polymerelements/iron-form#^1.0.0",
     "iron-icon": "polymerelements/iron-icon#^1.0.0",
@@ -58,7 +58,10 @@
     "l2t-paper-slider": "^1.2.6",
     "neon-page-behavior": "vguillou/neon-page-behavior#^1.2.0",
     "simple-carousel": "franjsc/simple-carousel#^1.1.0",
-    "paper-autocomplete-input": "NeilujD/paper-autocomplete-input#^1.2.0"
+    "paper-autocomplete-input": "NeilujD/paper-autocomplete-input#^1.2.0",
+    "google-apis": "GoogleWebComponents/google-apis#^1.1.7",
+    "geo-codec": "jifalops/geo-codec#^1.0.1",
+    "iron-localstorage": "PolymerElements/iron-localstorage#^1.0.6"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
