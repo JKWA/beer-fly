@@ -3,18 +3,18 @@
     "rules": "database.rules.json"
   },
   "hosting": {
-    "public": "",
+    "public": "build/bundled",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
     ]
+    // "rewrites": [
+    //   {
+    //     "source": "**",
+    //     "destination": "/index.html"
+    //   }
+    // ]
   }
 
 }
