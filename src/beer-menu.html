@@ -8,8 +8,6 @@
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../my_components/data/upload-image.html">
 <link rel="import" href="beer-menu-meta.html">
 
@@ -101,7 +99,7 @@
 
     </style>
 
-    <iron-image 
+    <!--<iron-image 
         style="width:100%; height:300px; background-color: #F8F8F8;"
         sizing="cover" 
         preload 
@@ -120,7 +118,7 @@
     <div class="description">
         [[category.description]]
     </div>
-    <!--[[_toArray(category.menu)]]-->
+
     <div class="menu">
     <template is="dom-repeat" items="[[_toArray(category.menu)]]" as="menu" sort="_categoryOrder">
         <div class="category">
@@ -170,73 +168,73 @@
       <div class="">
         <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
       </div>
-    </paper-dialog>
+    </paper-dialog>-->
 
   </template>
 
   <script>
 
-    Polymer({
+    // Polymer({
 
-      is: 'beer-menu',
-      properties: {
+    //   is: 'beer-menu',
+    //   properties: {
 
-        category:{
-          type: String
-        },
+    //     category:{
+    //       type: String
+    //     },
 
-        owner:{
-          type: Boolean
-        }
-      },
+    //     owner:{
+    //       type: Boolean
+    //     }
+    //   },
       
-     _edit: function(){
-        'use strict';
-        var body = document.querySelector('body');
-        Polymer.dom(body).appendChild(this.$.editDialog);
-        this.$.editDialog.open()
-      },
+    //  _edit: function(){
+    //     'use strict';
+    //     var body = document.querySelector('body');
+    //     Polymer.dom(body).appendChild(this.$.editDialog);
+    //     this.$.editDialog.open()
+    //   },
 
-      _toArray: function (obj) {
-        var returnArray = [];
-        if(obj){
-          var key = Object.keys(obj);
+    //   _toArray: function (obj) {
+    //     var returnArray = [];
+    //     if(obj){
+    //       var key = Object.keys(obj);
           
-          for (var i=0; i<key.length; i++){
-            obj[key[i]].$key = key[i];
-            returnArray.push(obj[key[i]]);
-          }
-        }
-        return returnArray;
-      },
+    //       for (var i=0; i<key.length; i++){
+    //         obj[key[i]].$key = key[i];
+    //         returnArray.push(obj[key[i]]);
+    //       }
+    //     }
+    //     return returnArray;
+    //   },
 
-      _categoryOrder: function(a,b){  
-        'use strict';
-        if(!a.order)
-        return 0;
-        if (a.order < b.order)
-          return -1;
-        if (a.order > b.order)
-          return 1;
-        return 0;
-      },
+    //   _categoryOrder: function(a,b){  
+    //     'use strict';
+    //     if(!a.order)
+    //     return 0;
+    //     if (a.order < b.order)
+    //       return -1;
+    //     if (a.order > b.order)
+    //       return 1;
+    //     return 0;
+    //   },
 
-      _addBreaks: function(str){
-        'use strict';
-        if(str){
-          return str.split('\n');
-        }else{
-          return [];
-        }
-      },
+    //   _addBreaks: function(str){
+    //     'use strict';
+    //     if(str){
+    //       return str.split('\n');
+    //     }else{
+    //       return [];
+    //     }
+    //   },
 
-      _test: function (obj){
-        console.log(obj);
-      }
+    //   _test: function (obj){
+    //     console.log(obj);
+    //   }
 
     
 
-    });
+    // });
 
   </script>
 

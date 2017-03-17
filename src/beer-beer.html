@@ -17,7 +17,6 @@
 
 <link rel="import" href="../my_components/data/upload-image.html">
 <link rel="import" href="beer-fab.html">
-<link rel="import" href="beer-fab-search.html">
 <link rel="import" href="beer-beer-add.html">
 
 
@@ -215,10 +214,7 @@
       },
       observers: ['_addBeerDialog(editBeerId)', '_dialogOpenStatus(dialogOpen)'],
 
-      // listeners: {'iron-overlay-closed': '_onDialogClosed'},
-
       _dialogOpenStatus: function (dialogOpen){
-          // console.log('dialog', dialogOpen);
           if(!dialogOpen){
             this.editBeerId = null;
           }
@@ -292,7 +288,6 @@
             obj[key[i]].$key = key[i]
             returnArray.push(obj[key[i]])
           }
-          //  return returnArray.sort(this._sortOrder);
            return returnArray;
         }
       },
@@ -305,6 +300,7 @@
           return 1;
         return 0;
       },
+
        _computePhotoUrl: function (category, place) {
          try{
           if(category.image){

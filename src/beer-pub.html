@@ -8,11 +8,8 @@
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<!--<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">-->
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
@@ -138,15 +135,7 @@
 
     </style>
 
-    <!--<firebase-query 
-       app-name="beer"
-       order-by-child="place_id"
-       equal-to="[[orgId]]"
-       path="onTap"
-       data="{{tap}}">
-    </firebase-query>-->
-    <!--[[_test(tap)]]
-    [[orgId]]-->
+
  
     <div hidden="[[!online]]">
       <iron-image 
@@ -169,17 +158,12 @@
         </beer-pub-rating>
         </div>
        
-        <!--<div hidden="[[!organization.place_id]]">
-          <beer-pub-favorite
-              org-id$="[[organization.place_id]]">
-          </beer-pub-favorite>
-        </div>-->
         <div>
           <beer-pub-icons
-              dogs$="[[dogs]]"
-              patio$="[[organization.patio]]"
-              over21$="[[organization.over21]]"
-              crowd-source$="[[organization.crowdSource]]">
+              dogs="[[dogs]]"
+              patio="[[organization.patio]]"
+              over21="[[organization.over21]]"
+              crowd-source="[[organization.crowdSource]]">
           </beer-pub-icons>
         </div>
         
@@ -212,7 +196,6 @@
             <div class="category">
              <div>
                 <div class="category-item">
-                <!--<div class="item">-->
 
                   <a aria-label$="[[item.title]] View Details" href$="/[[nameUrl]]/[[item.name]]?orgid=[[orgId]]">
                     <div class="category-title">[[item.title]]</div>
@@ -228,8 +211,7 @@
                           brewery-name="[[tap.breweryName]]"
                           brewery-city="[[tap.city]]"
                           brewery-state="[[tap.stateAbbreviation]]"
-
-                          abv$="[[tap.abv]]"
+                          abv="[[tap.abv]]"
                           owner="[[owner]]">
                       </beer-beer-card-mini>
                     </template>
@@ -241,7 +223,7 @@
                           org-id="[[orgId]]" 
                           beer-name="[[beer.name]]"
                           style-name="[[beer.styleName]]"
-                          abv$="[[beer.abv]]"
+                          abv="[[beer.abv]]"
                           owner="[[owner]]">
                       </beer-beer-card-mini>
                     </template>

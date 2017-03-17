@@ -33,7 +33,7 @@
    
       <template is="dom-repeat" items="[[allTags]]" as="tag">
        
-          <!--<paper-checkbox 
+          <paper-checkbox 
             tag="[[tag]]"
             class="tag" 
             tag-key="[[tag.$key]]"
@@ -41,7 +41,7 @@
             checked="[[_checked(menuTag, tag.$key)]]"
             on-tap="_setTag">
             [[tag.title]]
-          </paper-checkbox>-->
+          </paper-checkbox>
        
       </template>
         

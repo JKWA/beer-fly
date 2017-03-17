@@ -173,11 +173,6 @@
               <paper-input value="{{address}}" on-keydown="_watchForSubmit" label="City, State; or Zip"></paper-input>
               <paper-button on-click="_getGeoFromAddress">SET LOCATION</paper-button>
           </iron-collapse>
-
-          <!--<div class="distance-wrapper">
-            <s-slider class="slider" value="{{sliderDistance}}"></s-slider>
-            <div class="distance">Within [[limitDistance]] miles</div>
-          </div>-->
               
            
       </paper-material>
@@ -414,7 +409,10 @@
            if(latitude){
             if(longitude){
               
-              this.gpsIcon = 'gps-fixed'
+              this.gpsIcon = 'gps-fixed';
+              this.error = false;
+              this.toggle = false;
+
               clearTimeout(this.timeout);
               if(!this.initialLoad){
                 this.initialLoad = true;
