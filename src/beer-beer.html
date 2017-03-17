@@ -8,22 +8,17 @@
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="beer-beer-card.html">
-<link rel="import" href="../bower_components/login-fire/login-fire.html">
-
 
 <link rel="import" href="../my_components/data/upload-image.html">
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-fab-search.html">
 <link rel="import" href="beer-beer-add.html">
-
-
 
 
 <dom-module id="beer-beer">
@@ -58,13 +53,6 @@
     </style>
 
     <firebase-auth  app-name="beer" user="{{user}}"></firebase-auth>
-    <!--<firebase-query 
-       app-name="beer"
-       order-by-child="place_id"
-       equal-to="[[orgId]]"
-       path="beer"
-       data="{{beer}}">
-    </firebase-query>-->
 
     <iron-image 
         style="width:100%; height:300px; background-color: #F8F8F8;"
@@ -98,7 +86,6 @@
     </paper-material>
   
    
-    <!--<template is="dom-if" if="{{user}}">-->
       <paper-dialog 
             id="addBeer"
             with-backdrop
@@ -119,17 +106,8 @@
       </beer-beer-add>
       
       </paper-dialog>
-    <!--</template>-->
 
     
-      <paper-dialog 
-          id="loginDialog"
-          with-backdrop
-          entry-animation="fade-in-animation"
-          exit-animation="fade-out-animation">
-        <login-fire  app-name="beer"  google></login-fire>
-        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
-      </paper-dialog>
     
     <template is="dom-repeat" items="[[_getArray(organization.brewBeer)]]" sort="_sortOrder" as="beer">
       <beer-beer-card 
@@ -159,7 +137,7 @@
         entry-animation="slide-from-right-animation"
         exit-animation="slide-right-animation">
             
-      <div class=""> 
+      <div > 
           <h3>[[category.title]]</h3>
       </div>
     
@@ -169,7 +147,7 @@
           <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
         </paper-dialog-scrollable>
       </template>
-      <div class="">
+      <div>
         <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
       </div>
     </paper-dialog>

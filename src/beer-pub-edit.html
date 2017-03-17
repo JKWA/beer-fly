@@ -5,14 +5,14 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<!--<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">-->
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 
 <link rel="import" href="../my_components/data/upload-image.html">
-<link rel="import" href="beer-category-checkbox.html">
+<!--<link rel="import" href="beer-category-checkbox.html">-->
 
 <dom-module id="beer-pub-edit">
 
@@ -64,18 +64,18 @@
 
      <h3>Tags</h3>
         <div>
-          <paper-checkbox checked="{{organization.dogFriendly}}">Dogs allowed</paper-checkbox>&nbsp
+          <!--<paper-checkbox checked="{{organization.dogFriendly}}">Dogs allowed</paper-checkbox>&nbsp
           <paper-checkbox checked="{{organization.patio}}">Outdoor patio</paper-checkbox>&nbsp
           <paper-checkbox checked="{{organization.over21}}">Must be 21</paper-checkbox>&nbsp
-          <paper-checkbox checked={{organization.crowdSource}}>Crowd sourced data allowed</paper-checkbox>&nbsp
+          <paper-checkbox checked={{organization.crowdSource}}>Crowd sourced data allowed</paper-checkbox>&nbsp-->
         </div>
 
         <h3>Show Categories</h3>
         <template is="dom-repeat" items="{{categories}}">
-          <beer-category-checkbox
+          <!--<beer-category-checkbox
             org-id="[[orgId]]"
             key="[[item.$key]]">
-          </beer-category-checkbox>
+          </beer-category-checkbox>-->
 
         </template>
         <h3>Upload Images</h3>

@@ -1,6 +1,6 @@
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<!--<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../bower_components/app-layout/app-scroll-effects/effects/waterfall.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
@@ -12,8 +12,6 @@
 <link rel="import" href="../bower_components/app-route/app-route-converter.html">
 
 <link rel="import" href="../bower_components/geo-location/geo-location.html">
-<!--<link rel="import" href="../bower_components/google-map/google-map.html">
-<link rel="import" href="../bower_components/google-map/google-map-search.html">-->
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
@@ -25,30 +23,24 @@
 
 <link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
-<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
-<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/polymerfire/polymerfire.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">-->
 
 
-
-
-
-<!--<link rel="import" href="beer-category-data.html">-->
-<!-- Since 'home' is the default route, eagerly load it. -->
-<link rel="import" href="beer-home.html">
+<!--<link rel="import" href="beer-home.html">
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-login.html">
 <link rel="import" href="beer-place-data.html">
 <link rel="import" href="beer-tabs.html">
-<link rel="import" href="beer-tab.html">
+<link rel="import" href="beer-tab.html">-->
 
 <dom-module id="beer-app">
 
@@ -289,7 +281,7 @@
 
 <!--<beer-analytics key="UA-39334307-16"></beer-analytics>-->
 
-<iron-location path="{{path}}" query="{{query}}"></iron-location>
+<!--<iron-location path="{{path}}" query="{{query}}"></iron-location>
 <iron-query-params params-string="{{query}}" params-object="{{queryParams}}">
 </iron-query-params>
 <app-route-converter path="{{path}}" query-params="{{queryParams}}" route="{{route}}">
@@ -348,20 +340,6 @@
       longitude="{{longitude}}">
   </geo-location>
 
-
-  <!--<google-map-search 
-      id="search"
-      map="[[map]]" 
-      results="{{results}}">
-  </google-map-search>
-
-  <div hidden>
-  <google-map 
-      id="map"
-      map="{{map}}" 
-      api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" >
-  </google-map>-->
-
   </div>
 
 <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
@@ -397,7 +375,6 @@
     </div>
   </app-toolbar>
 
-  <!-- Lazy-create the tabs for larger screen sizes. -->
   <div id="tabContainer" sticky hidden$="[[_shouldRenderDrawer]]">
     <template is="dom-if" if="[[!_shouldRenderDrawer]]">
       <beer-tabs selected="[[subPage]]" attr-for-selected="name">
@@ -417,7 +394,6 @@
   </div>
 </app-header>
 
-<!-- Lazy-create the drawer for small screen sizes. -->
 <template is="dom-if" if="[[_shouldRenderDrawer]]">
   <app-drawer opened="{{drawerOpened}}" tabindex="0">
     
@@ -432,7 +408,6 @@
       <paper-material class="card"  elevation="0">
       <div class="card-title">[[_showOrgName(place.name)]]</div>
       <iron-selector role="navigation" selected-class="drawer-list" class="drawer-list" selected="[[categoryName]]" attr-for-selected="name">
-        <!--<a href="/[[nameUrl]]/main[[orgParam]]">Main</a>-->
 
         <template is="dom-if" if="[[!_isHome(page)]]">
           <template is="dom-repeat" items="[[categories]]" as="category" sort="_sortCategory">
@@ -482,15 +457,13 @@
   <beer-home name="home" login="{{login}}" latitude="[[latitude]]" longitude="[[longitude]]" idle="{{idle}}" error="[[geoError]]"></beer-home>
   <beer-favorite name="favorite"></beer-favorite>
   <beer-browse name="browse"></beer-browse>
-
-
   <beer-404-warning name="404"></beer-404-warning>
 </iron-pages>
 
-<!-- a11y announcer -->
+
 <div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
 
-   <!--TEST [[login]]-->
+
    
    <paper-dialog 
         entry-animation="scale-up-animation"
@@ -517,7 +490,7 @@
       <div class= "footer-item">
        <iron-image src="/images/powered_by_google_on_non_white.png"></iron-image>
       </div>
-    </footer>
+    </footer>-->
 
 </template>
 
@@ -563,11 +536,6 @@
           type: Boolean,
           value: false
         },
-
-        //  mapLoaded:{
-        //   type: Boolean,
-        //   value: false
-        // },
          
         nameUrl: {
           type: String,
@@ -585,7 +553,6 @@
         orgId: {
           type: String,
           computed: '_computeOrgId(queryParams)',
-          // observer: '_orgIdChanged',
         },
 
         orgParam: {
@@ -657,7 +624,6 @@
         '_isOwner(user, organization)',
         '_toastOffline(online)',
         '_setBackArrowInHeader(page)',
-        // '_getGoogleSupplimentalData(orgId)',
         '_updateUserBaseData(user)',
         '_updatePageTitle(place.name, page)',
         '_replaceOfflineOrganizationData(organization, online)',
@@ -687,10 +653,9 @@
       },
 
       _cacheOrgData: function (organization, online){
-        // console.log('cachetew')
+       
         if(online){
           if(Object.keys(organization).length > 0){
-            // console.log('cache');
             this.localOrganizationData = organization;
           }
         }
@@ -702,7 +667,6 @@
       
         this.geoError = true;
         this.geoRendered = false;
-        // this.idle = true;
         
       },
 
@@ -718,7 +682,6 @@
         
           if(user){
             var obj = {};
-            // console.log(user);
             this.login = false;
             obj.displayName = user.displayName;
             obj.domain = user.email.split('@')[1];
@@ -758,7 +721,6 @@
                       var domainSection = websiteArray[1];
                       if(domainSection){
                         var domain =  domainSection.split('/')[0];
-                        // console.log(domain, emailDomain);
                         if (domain === emailDomain){
                           owner = true;  
                         }
@@ -777,7 +739,6 @@
           owner = true;
           }
          }
-        //  console.log('OWNER', owner);
         this.owner = owner;
       },
 
@@ -803,50 +764,11 @@
       },
 
 
-      // _getGoogleSupplimentalData: function () {
-      //     'use strict';
-
-      //    var organization = this.organization;
-      //    var map = this.$.map;
-      //    var that = this;
-
-      //     if(!this.mapLoaded){
-      //         map.addEventListener('google-map-ready', 
-      //         function(e) {
-      //           that.mapLoaded = true;
-      //           that._getGoogleDetails();
-      //         })
-      //       }else{
-      //         this._getGoogleDetails();
-      //       }
-
-      // },
-
-      // _getGoogleDetails: function (){
-      //   var placeId = this.orgId;
-      //   if(placeId === 'home'){
-      //     var obj = {};
-      //     obj.name = 'home'
-      //     this.place = obj;
-      //   }else{
-      //     if(placeId){
-      //             var details = this.$.search.getDetails(placeId);
-      //             var that = this;
-      //             details.then(
-      //               function(result) {
-      //                 console.log('SUPPLIMENTAL');
-      //                   that.place = result;                 
-      //               }, function(error) {
-      //                 console.log(error); 
-      //               });
-      //           }
-      //   }
-      // },
+     
 
 
       _routePageChanged: function (route) {
 
-        // console.log('ROUTE', route);
         var place = this.place;
     
         var title = 'Beer-Fly'
@@ -942,11 +864,9 @@
         }
 
         
-        //  console.log('PAGE', page)
-
-        // if (this.page === 'list') {
-          this._listScrollTop = window.pageYOffset;
-        // }
+   
+          // this._listScrollTop = window.pageYOffset;
+        
 
         this.page = page || 'home';
         if (this.page === 'home') {
@@ -1017,12 +937,9 @@
       },
      
       _pageChanged: function (page, oldPage) {
-        // console.log('PAGECHANGE', page);
         if (page != null) {
-          // home route is eagerly loaded
           if (page == 'home') {
             this._pageLoaded(Boolean(oldPage));
-            // other routes are lazy loaded
           } else {            
             // When a load failed, it triggered a 404 which means we need to
             // eagerly load the 404 page definition
@@ -1220,8 +1137,6 @@
             this.organization.category['REVIEW'] = review;
           }
         }
-
-        // console.log(returnArray);
         
         return returnArray.sort(function (a, b) {
           return parseFloat(a.order) - parseFloat(b.order);
@@ -1270,7 +1185,6 @@
       _isHome(page){
         
         if(page === 'home'){
-          // console.log(page);
           return true;
         }else{
           return false;
