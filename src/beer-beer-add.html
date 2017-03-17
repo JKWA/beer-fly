@@ -131,11 +131,11 @@
 
     <paper-material class="card" elevation="0">
 
-      [[editBeerId]]
+      <!--[[editBeerId]]-->
       <div class="brewed-by">Brewed by [[organization.name]] - [[organization.city]], [[organization.stateAbbreviation]]</div>
-       <div class="beer-name" hidden"[[!editBeerId]]">[[name]]</div>
+       <div class="beer-name" hidden$="[[!editBeerId]]">[[name]]</div>
         <paper-input 
-          hidden="[[editBeerId]]"
+          hidden$="[[editBeerId]]"
           id="name"
           label="Beer Name" 
           char-counter 
@@ -218,30 +218,70 @@
       behaviors: [ Polymer.NeonAnimationRunnerBehavior ],
 
       properties:{
-        styleName:{
-          type: String,
+
+        abv:{
+          type: Number
         },
-        searchString:{
-          type: String,
+
+        beer: {
+          type: Object
         },
-        savedBeerName:{
+
+        buttonName:{
+          type:String
+        },
+
+        description:{
           type: String
         },
-        savedMessage:{
-          type: String,
-          value: 'test'
-        },
-        valid:{
-          type: Boolean,
-          value: false
-        },
+        
         editBeerId:{
           type: String,
           notify: true
         },
-        beer: {
+
+        name:{
+          type: String
+        },
+
+        orgId:{
+          type: String
+        },
+
+        organization:{
           type: Object
         },
+
+        savedBeerName:{
+          type: String
+        },
+
+        savedMessage:{
+          type: String,
+          value: 'test'
+        },
+
+        searchString:{
+          type: String,
+        },
+
+        styles:{
+          type: Array
+        },
+
+        styleId:{
+          type: Number
+        },
+
+        styleName:{
+          type: String,
+        },
+
+        valid:{
+          type: Boolean,
+          value: false
+        },
+       
         animationConfig: {
           value: function() {
             return {

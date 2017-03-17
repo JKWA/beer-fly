@@ -118,7 +118,7 @@
                     </beer-rating-card>
                     </div>
                   <div class="review-text">[[_truncateText(review.text)]]</div>
-                  <a href="[[review.author_url]]" target="_blank">
+                  <a href$="[[review.author_url]]" target="_blank">
                   <div class="review-author">[[review.author_name]]</div>
                   </a>
                 </paper-material>
@@ -133,6 +133,14 @@
     Polymer({
 
       is: 'beer-review-card-mini',
+
+      properties: {
+        
+        organization: {
+          type: Object
+        }
+     
+      },
 
     
        _toArray: function (obj) {

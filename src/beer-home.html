@@ -166,11 +166,11 @@
   
        
           <iron-collapse opened="[[toggle]]">
-              <div hidden="[[!error]]">
+              <div hidden$="[[!error]]">
                   <div class="geo-error">Location not available from this device.</div>
               </div>
 
-              <paper-input value="{{address}}" label="City, State; or Zip"></paper-input>
+              <paper-input value="{{address}}" on-keydown="_watchForSubmit" label="City, State; or Zip"></paper-input>
               <paper-button on-click="_getGeoFromAddress">SET LOCATION</paper-button>
           </iron-collapse>
 
@@ -182,7 +182,7 @@
            
       </paper-material>
 
-       <div hidden="[[!isNear]]">
+       <div hidden$="[[!isNear]]">
         <beer-pub-card 
             class="near-card"
             place-id="[[pub.place_id]]"
@@ -339,9 +339,18 @@
                   '_resolveGeoError(error)',
                   '_distance(latitude, longitude)',
                   '_watchNearData(nearData)'
+                  // '_watchForSubmit(address)'
                   ],
 
       listeners: {'api-load':'_mapHasLoaded' },
+
+      ready: function () {
+        var that = this; 
+        that.timeout = setTimeout(function(){ 
+          console.log('sent error message');
+          
+          that.error = true; }, 4000);
+      },
       
       _watchNearData: function (nearData) {
         // console.log('near', nearData);
@@ -376,6 +385,7 @@
           // this.idle = true;
           this.gpsIcon = 'gps-disabled';
           this.toggle = true;
+          clearTimeout(this.timeout);
         }
 
       },
@@ -405,6 +415,7 @@
             if(longitude){
               
               this.gpsIcon = 'gps-fixed'
+              clearTimeout(this.timeout);
               if(!this.initialLoad){
                 this.initialLoad = true;
                 this.$.spinner.active = true;
@@ -443,6 +454,15 @@
              }
            }
         }
+      },
+
+      _watchForSubmit: function (event){
+        // console.log(event);
+         var key = event.which || event.keyCode;
+        //  console.log(key);
+         if(key === 13){
+           this._getGeoFromAddress();
+         }
       },
 
       _getGeoFromAddress: function () {

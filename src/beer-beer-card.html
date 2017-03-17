@@ -130,7 +130,7 @@
                   login="{{login}}">
               </beer-beer-rating>
             </div>
-            <div hidden="[[!edit]]">
+            <div hidden$="[[!edit]]">
                 <paper-icon-button icon="beer-icons:edit" on-tap="changeEditId"></paper-icon-button>
             </div>  
           </div>
@@ -151,7 +151,7 @@
               <div>[[breweryCity]],</div>
               <div>[[breweryState]]</div>
             </div>
-            <div class="footer-abv" hidden="[[!abv]]">ABV: [[abv]]</div>
+            <div class="footer-abv" hidden$="[[!abv]]">ABV: [[abv]]</div>
               
           </div>
 
@@ -166,29 +166,67 @@
       is: 'beer-beer-card',
       properties:{
 
+        abv:{
+          type: Number
+        },
+
+        beerDescription:{
+          type: String
+        },
+
+         beerId: {
+          type: String
+        },
+
+         beerName:{
+          type: String
+        },
+
+        breweryCity:{
+          type: String
+        },
+
+        breweryName:{
+          type: String
+        },
+
+        breweryState:{
+          type: String
+        },
+
+        crowdSource:{
+          type: Boolean
+        },
+
+         edit:{
+          type: Boolean,
+          value: false
+        },
       
         editBeerId:{
           type: String,
           notify: true
         },
 
-        beerId: {
-          type: String
-        },
-
-        edit:{
-          type: Boolean,
-          value: false
-        },
-
         login: {
         type: Boolean,
         notify: true
+        },
+
+        owner:{
+          type: Boolean
+        },
+
+        placeId:{
+          type: String
+        },
+        
+        styleName:{
+          type: String
         }
        
       },
       
-
       changeEditId: function (){
         this.editBeerId = this.beerId;
       },
@@ -197,7 +235,6 @@
         console.log(obj);
       }
       
- 
     });
 
   </script>

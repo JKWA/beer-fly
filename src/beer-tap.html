@@ -138,26 +138,56 @@
     Polymer({
 
       is: 'beer-tap',
+
       properties:{
+
+        beer:{
+          type: Object
+        },
+
+        canEdit:{
+          type: Boolean
+        },
+
+        category:{
+         type: Object
+       },
+
+        editBeerId:{
+          type: String
+        },
+
         login: {
          type: Boolean,
          notify: true
        },
+
+      //  name:{
+      //    type: String
+      //  },
+
+       nameUrl:{
+         type: String
+       },
+
+       organization:{
+         type: Object
+       },
+
+       orgId:{
+         type: String
+       },
+
+       owner:{
+         type: Boolean
+       },
+       
         photoUrl: {
           type: String,
           computed: '_computePhotoUrl(category, place)'
         }
-      },
-
-      canEdit:{
-        type: Boolean,
-        value: false
-      },
-
-      login: {
-        type: Boolean,
-        notify: true
-      },
+     
+    },
 
 
      _edit: function(){

@@ -8,7 +8,7 @@
 
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 
-<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<!--<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">-->
 <link rel="import" href="../../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
@@ -28,9 +28,7 @@
        --paper-progress-active-color: var(--app-primary-color);
 
     }
-    .button{
-      
-    }
+  
     .primary-color{
       color: var(--app-secondary-color);
     }
@@ -88,27 +86,25 @@
 
      <paper-progress 
           class="uploader-progress"
-          hidden="{{fileComplete}}"
+          hidden$="{{fileComplete}}"
           value="{{fileProgress}}">
       </paper-progress>
 
-      <div hidden="{{!fileError}}" class="primary-text error error-message">
+      <div hidden$="{{!fileError}}" class="primary-text error error-message">
         Files must be under 5 megabites and Microsoft Office documents or PDFs
       </div>
  
     <div class="card-content">
-     <a href="[[imageMeta.url]]">[[imageMeta.name]]</a>
+     <a href$="[[imageMeta.url]]">[[imageMeta.name]]</a>
     </div>
      <iron-label class="label">
        <input id="uploader" hidden value="{{uploadValue::change}}" type="file" accept="image/*" capture>
          <beer-button class="button" id="fileButton" elevation="1"> 
-          <a>
-            <iron-icon icon="beer-icons:upload"></iron-icon> UPLOAD [[type]] IMAGE</a>
-          
+          <a><iron-icon icon="beer-icons:upload"></iron-icon> UPLOAD [[type]] IMAGE</a>
          </beer-button>
       </iron-label>
 
-     <div hidden="[[!fileError]]">
+     <div hidden$="[[!fileError]]">
         <div class="message-box">
             <div class="message-icon">
                <iron-icon icon="icons:report-problem" class="error"></iron-icon>
@@ -143,10 +139,15 @@
       type: String,
       value: ''
     },
+    fileProgress:{
+      type: Number
+    },
+    imageMeta:{
+      type: Object
+    },
     orgId:{
       type: String
     },
-
     key:{
       type: String
     },
@@ -160,7 +161,6 @@
 
     uploadProgress:{
       type: Number,
-
     },
     fileComplete: {
       type:Boolean,

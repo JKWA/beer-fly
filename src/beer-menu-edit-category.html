@@ -82,6 +82,20 @@
     Polymer({
 
       is: 'beer-menu-edit-category',
+      properties:{
+        orgId:{
+          type: String
+        },
+        category:{
+          type: Object
+        },
+        menuCategories:{
+          type: Array
+        },
+        menuCategory:{
+          type: String
+        }
+      },
 
      _saveCategory: function(e){
      	'use strict';

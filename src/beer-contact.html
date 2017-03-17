@@ -132,9 +132,29 @@
       is: 'beer-contact',
 
       properties:{
+
+        category:{
+          type: Object
+        },
+
+        organization:{
+          type: Object
+        },
+
+        owner:{
+          type: Boolean
+        },
+
+        place:{
+          type: Object
+        },
+
         photoUrl: {
           type: String,
           computed: '_computePhotoUrl(category, place)'
+        },
+        user:{
+          type: Object
         }
       },
 

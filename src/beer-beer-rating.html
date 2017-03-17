@@ -121,7 +121,7 @@ paper-listbox {
             </paper-listbox>
         </div>
             
-        <div hidden="[[!rating]]">
+        <div hidden$="[[!rating]]">
             <div class="rating-number">[[rating]]</div>
         </div>
     </div>
@@ -140,27 +140,31 @@ Polymer({
 
   properties: {
 
-    savedRating:{
-        type: Object
-    },
-
     beerId:{
         type: String
     },
+
+    login: {
+        type: Boolean,
+        notify: true
+    },
+
     rating:{
         type: Number,
         computed: '_computeRating(savedRating)'
     },
+
+    savedRating:{
+        type: Object
+    },
+
     selectedRating:{
         type: Number
     },
     user:{
         type: Object
-    },
-    login: {
-        type: Boolean,
-        notify: true
     }
+   
   },
  
 

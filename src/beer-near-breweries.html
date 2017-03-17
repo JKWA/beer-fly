@@ -109,6 +109,18 @@
           data: {
             type: Array,
             notify: true
+          },
+          latitude:{
+            type: Number
+          },
+          longitude:{
+            type: Number
+          },
+          distance:{
+            type: Number
+          },
+          breweries:{
+            type: Array
           }
        },
 
@@ -143,10 +155,12 @@
           }else{
             result.sort = distObj[result.place_id]
           }
-          
-          result.cacheTimestamp = Date.now();
-          localStorage.setItem('orgainziation_'+result.place_id, JSON.stringify(result));
-
+          try{
+            result.cacheTimestamp = Date.now();
+            localStorage.setItem('orgainziation_'+result.place_id, JSON.stringify(result));
+          }catch (error){
+            console.log("LOCAL SAVE ERROR ", error)
+          }
 
           // result.sort = sort;
           // result.distance = distance;

@@ -3,11 +3,14 @@
 <link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../bower_components/app-layout/app-scroll-effects/effects/waterfall.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+
 <link rel="import" href="../bower_components/app-layout/helpers/helpers.html">
 <link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/app-route/app-route-converter.html">
+
 <link rel="import" href="../bower_components/geo-location/geo-location.html">
 <!--<link rel="import" href="../bower_components/google-map/google-map.html">
 <link rel="import" href="../bower_components/google-map/google-map-search.html">-->
@@ -44,6 +47,8 @@
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-login.html">
 <link rel="import" href="beer-place-data.html">
+<link rel="import" href="beer-tabs.html">
+<link rel="import" href="beer-tab.html">
 
 <dom-module id="beer-app">
 
@@ -309,9 +314,7 @@
   <firebase-auth 
       id="auth" 
       app-name="beer"
-      user="{{user}}" 
-      status-known="{{statusKnown}}"
-      on-error="handleError">
+      user="{{user}}">
   </firebase-auth>
 
   <firebase-document 
@@ -368,18 +371,18 @@
   <app-toolbar>
     <div class="left-bar-item">
       <div id="homeButton">
-        <paper-icon-button class="menu-btn" icon="beer-icons:menu" on-click="_toggleDrawer" aria-label="Categories">
+        <paper-icon-button class="menu-btn" icon="beer-icons:menu" on-click="_toggleDrawer" alt="Toggle drawer">
         </paper-icon-button>
       </div>
       <div class="left-bar-item" >
         <div id="backButton" hidden>
-            <a class="menu-btn" href="/[[nameUrl]]/main[[orgParam]]" tabindex="-1">
-              <paper-icon-button icon="beer-icons:arrow-back" aria-label="Go back"></paper-icon-button>
+            <a class="menu-btn"  href$="/[[nameUrl]]/main[[orgParam]]" tabindex="-1">
+              <paper-icon-button alt="Back to main page" icon="beer-icons:arrow-back" ></paper-icon-button>
             </a>
         </div>
       </div>
     </div>
-    <div class="logo" main-title><a href="/[[nameUrl]]/main[[orgParam]]" aria-label="[[_showOrgName(place.name)]]">[[_showOrgName(place.name)]]</a></div>
+    <div class="logo" main-title><a aria-label="Go to main page" href$="/[[nameUrl]]/main[[orgParam]]" aria-label$="[[_showOrgName(place.name)]]">[[_showOrgName(place.name)]]</a></div>
     
     <div class="home-btn-wrapper" hidden$="[[smallScreen]]">
       <a href="/home/search" aria-label="Search for breweries">
@@ -399,13 +402,13 @@
     <template is="dom-if" if="[[!_shouldRenderDrawer]]">
       <beer-tabs selected="[[subPage]]" attr-for-selected="name">
         <beer-tab name="main">
-          <a href="/[[nameUrl]]/main[[orgParam]]">Main</a>
+          <a aria-label="To main page" href$="/[[nameUrl]]/main[[orgParam]]">Main</a>
         </beer-tab>
         <template is="dom-repeat" items="[[categories]]" as="category" sort="_sortCategory">
       
           <template is="dom-if" if="[[category.display]]">
             <beer-tab name="[[category.name]]">
-              <a href="/[[nameUrl]]/[[category.name]][[orgParam]]">[[category.title]]</a>
+              <a aria-label="To [[category.name]]" href$="/[[nameUrl]]/[[category.name]][[orgParam]]">[[category.title]]</a>
             </beer-tab>
           </template>
         </template>
@@ -419,9 +422,9 @@
   <app-drawer opened="{{drawerOpened}}" tabindex="0">
     
     
-      <a href="/home/account">
+      <a aria-label="To home page" href="/home/account">
         <div class="login-wrapper">
-          <div class="login-box" hidden="[[!user]]">[[_returnFirstLetter(user.displayName)]]</div>
+          <div class="login-box" hidden$="[[!user]]">[[_returnFirstLetter(user.displayName)]]</div>
           <div class="login-account">My Account</div>
         </div>  
       </a>
@@ -434,20 +437,20 @@
         <template is="dom-if" if="[[!_isHome(page)]]">
           <template is="dom-repeat" items="[[categories]]" as="category" sort="_sortCategory">
             <template is="dom-if" if="[[category.display]]">
-              <a name="[[category.name]]" href="/[[nameUrl]]/[[category.name]][[orgParam]]">[[category.title]]</a>
+              <a name="[[category.name]]" aria-label="To [[category.name]]" href$="/[[nameUrl]]/[[category.name]][[orgParam]]">[[category.title]]</a>
             </template>
           </template>
           <hr>
         </template>
-        <a name="near" href="/home"><iron-icon icon="beer-icons:gps-fixed"></iron-icon>Near me</a>
-        <a name="search" href="/[[nameUrl]]/search[[orgParam]]"><iron-icon icon="beer-icons:search"></iron-icon>Search</a>
-        <a name="search" href="/[[nameUrl]]/favorite[[orgParam]]"><iron-icon icon="beer-icons:favorite"></iron-icon>Favorites</a>
-        <a name="browse" href="/[[nameUrl]]/browse[[orgParam]]"><iron-icon icon="beer-icons:near-me"></iron-icon>Browse</a>
+        <a name="near" aria-label="Breweries near me" href="/home"><iron-icon icon="beer-icons:gps-fixed"></iron-icon>Near me</a>
+        <a name="search" aria-label="Search for breweries" href$="/[[nameUrl]]/search[[orgParam]]"><iron-icon icon="beer-icons:search"></iron-icon>Search</a>
+        <a name="favorite" aria-label="My favorites" href$="/[[nameUrl]]/favorite[[orgParam]]"><iron-icon icon="beer-icons:favorite"></iron-icon>Favorites</a>
+        <a name="browse" aria-label="Browse beers" href$="/[[nameUrl]]/browse[[orgParam]]"><iron-icon icon="beer-icons:near-me"></iron-icon>Browse</a>
 
       </iron-selector>
       
-      <div class="extra-links" hidden="[[!user]]" on-tap="_logout"><iron-icon icon="beer-icons:account"></iron-icon>Sign out</div>
-      <div class="extra-links" hidden="[[user]]" on-tap="_login"><iron-icon icon="beer-icons:account"></iron-icon>Sign in</div>
+      <div class="extra-links" hidden$="[[!user]]" on-tap="_logout"><iron-icon icon="beer-icons:account"></iron-icon>Sign out</div>
+      <div class="extra-links" hidden$="[[user]]" on-tap="_login"><iron-icon icon="beer-icons:account"></iron-icon>Sign in</div>
       <div class="extra-links">Terms of use</div>
     </paper-material>
   </app-drawer>
@@ -528,29 +531,55 @@
       is: 'beer-app',
 
       properties: {
-
-        page: {
-          type: String,
+        _a11yLabel: {
+          type: String
         },
 
-        subPage: {
-          type: String,
-          value: 'main',
-          computed: '_computeSubPage(subRouteData.page)'
+        categories: {
+          type: Array,
+          computed: '_computeCategories(organization)'
         },
-        
-        queryParams: {
-          type: Object
+
+        geoError: {
+          type: Boolean,
+          value: false
+        },
+
+         geoRendered: {
+          type: Boolean,
+          value: false
         },
 
         idle: {
           type: Boolean,
           value: true
         },
+        
+        localOrganizationData: {
+          type: Object
+        },
 
-        geoError: {
+        login: {
           type: Boolean,
           value: false
+        },
+
+        //  mapLoaded:{
+        //   type: Boolean,
+        //   value: false
+        // },
+         
+        nameUrl: {
+          type: String,
+          computed: '_computeNameForUrl(place.name)'
+        },
+
+        offline:{
+          type: Boolean
+        },
+
+        organization: {
+          type: Object,
         },
 
         orgId: {
@@ -559,40 +588,29 @@
           // observer: '_orgIdChanged',
         },
 
-        nameUrl: {
-          type: String,
-          computed: '_computeNameForUrl(place.name)'
-        },
-
         orgParam: {
           type: String,
           computed: '_computeOrgParam(orgId)'
         },
 
-
-        fireBaseData: {
-          type: Object,
-         
+        owner:{
+          type: Boolean,
+          value: false
         },
+  
+        place: {
+          type: Object
+        }, 
 
         place_id:{
           type: String,
         },
-
-        organization: {
-          type: Object,
+  
+        page: {
+          type: String,
         },
 
-        place: {
-          type: Object
-        },  
-
-        categories: {
-          type: Array,
-          computed: '_computeCategories(organization)'
-        },
-
-        routeData: {
+        queryParams: {
           type: Object
         },
 
@@ -600,21 +618,24 @@
           type: Object
         },
 
-        user:{
+        routeData: {
           type: Object
         },
 
-        login:{
-          type: Boolean,
-          value: false
+        subPage: {
+          type: String,
+          value: 'main',
+          computed: '_computeSubPage(subRouteData.page)'
         },
 
-        owner:{
-          type: Boolean,
-          value: false
+        subRouteData: {
+          type: Object
         },
 
-
+        user:{
+          type: Object
+        },
+        
         _shouldShowTabs: {
           computed: '_computeShouldShowTabs(page, smallScreen)'
         },
@@ -625,22 +646,9 @@
 
         _shouldRenderDrawer: {
           computed: '_computeShouldRenderDrawer(smallScreen, loadComplete)'
-        },
-        subRouteData: {
-          type: Object
-        },
-        isFromGoogle:{
-          type: Boolean
-        },
-        geoRendered:{
-          type: Boolean,
-          value: false
-        },
-        mapLoaded:{
-          type: Boolean,
-          value: false
         }
       },
+       
 
       observers: [
         '_routePageChanged(route)',
@@ -648,14 +656,13 @@
         '_routeOrgIdChanged(orgId)',
         '_isOwner(user, organization)',
         '_toastOffline(online)',
-        // '_organizationChanged(fireBaseData)',
         '_setBackArrowInHeader(page)',
         // '_getGoogleSupplimentalData(orgId)',
         '_updateUserBaseData(user)',
         '_updatePageTitle(place.name, page)',
         '_replaceOfflineOrganizationData(organization, online)',
         '_cacheOrgData(organization, online)',
-        '_resendGPS(idle)'
+        '_scrollToTop(orgId)'
       ],
 
      
@@ -668,16 +675,15 @@
                   'geo-error': '_geoError', 
                   'geo-response':'_geoResponse' },
 
-   
-
       created: function () {
         window.performance && performance.mark && performance.mark('beer-app.created');
         // Custom elements polyfill safe way to indicate an element has been upgraded.
         this.removeAttribute('unresolved');
       },
-
-      _resendGPS(idle){
-        console.log('idle', idle);
+ 
+      _scrollToTop: function (orgId){
+        console.log('scroll top')
+        Polymer.AppLayout.scroll({ top: 0, behavior: 'silent' });
       },
 
       _cacheOrgData: function (organization, online){
@@ -696,7 +702,7 @@
       
         this.geoError = true;
         this.geoRendered = false;
-        this.idle = true;
+        // this.idle = true;
         
       },
 
@@ -1080,7 +1086,7 @@
         // effects during the scroll.
                 // Polymer.AppLayout.scroll({ top: 0, behavior: 'silent' });
 
-        Polymer.AppLayout.scroll({ top: scrollTop, behavior: 'silent' });
+        // Polymer.AppLayout.scroll({ top: scrollTop, behavior: 'silent' });
 
         // this.categoryName = detail.category || '';
 

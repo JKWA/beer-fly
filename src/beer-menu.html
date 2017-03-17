@@ -111,7 +111,7 @@
     </iron-image>
 
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
-    <a href="[[homeLink]]">
+    <a href$="[[homeLink]]">
     <iron-icon icon="beer-icons:back" ></iron-icon>
     </a>
 
@@ -180,10 +180,17 @@
     Polymer({
 
       is: 'beer-menu',
+      properties: {
 
+        category:{
+          type: String
+        },
+
+        owner:{
+          type: Boolean
+        }
+      },
       
-     
-
      _edit: function(){
         'use strict';
         var body = document.querySelector('body');

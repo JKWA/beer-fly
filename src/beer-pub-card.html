@@ -76,7 +76,7 @@
       <paper-material class='card' elevation="1" animated-shadow="false">
      
         <div  class="sponsor-wrapper" >
-            <div id="sponsor" hidden="[[!sponsor]]">Sponsoring Organization</div>
+            <div id="sponsor" hidden$="[[!sponsor]]">Sponsoring Organization</div>
         </div>
          <div class="icons-wrapper">
             <div>
@@ -96,13 +96,13 @@
            
    
           </div>
-          <a aria-label$="[[name]]" href="/[[_urlName]]/main?orgid=[[placeId]]">
+          <a aria-label$="[[name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
             <div class="items">
                 <div class="name">[[name]]</div>
                 <div class="motto">[[motto]]</div>
-                <div class="address" hidden="[[!address]]">[[address]]</div>
-                <div class="address" hidden="[[address]]">[[city]], [[state]]</div>
-                <div class="distance" hidden="[[!distance]]">[[_computeDisplayDistance(distance)]] miles from you</div>
+                <div class="address" hidden$="[[!address]]">[[address]]</div>
+                <div class="address" hidden$="[[address]]">[[city]], [[state]]</div>
+                <div class="distance" hidden$="[[!distance]]">[[_computeDisplayDistance(distance)]] miles from you</div>
             </div>
            </a>
            
@@ -119,25 +119,66 @@
 
        properties: {
 
-        distance:{
-          type: Number,
-          value: false
-        },
+          address:{
+            type: String
+          },
 
-        sponsor:{
-          type: Boolean,
-          value: false
-        },
+          city:{
+            type: String
+          },
 
-        login: {
-         type: Boolean,
-         notify: true
-       },
-        
-         _urlName:{
-             type: String,
-             computed: '_computeNameForUrl(name)'
-         }
+          distance:{
+            type: Number,
+            value: false
+          },
+
+          dogFriendly:{
+            type: Boolean
+          },
+
+          googleRating:{
+            type: Number
+          },
+
+          login: {
+            type: Boolean,
+            notify: true
+          },
+
+          motto:{
+            type: String
+          },
+
+          name:{
+              type: String
+          },
+
+          over21:{
+            type: Boolean
+          },
+
+          patio:{
+            type: Boolean
+          },
+
+          placeId:{
+            type: String
+          },
+
+          sponsor:{
+            type: Boolean,
+            value: false
+          },
+
+          state:{
+            type: String
+          },
+          
+          urlName:{
+              type: String,
+              computed: '_computeNameForUrl(name)'
+          }
+         
         },
 
         observers: ['_watchforSponsor(sponsor)'],

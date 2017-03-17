@@ -102,7 +102,7 @@
               <iron-icon class="rating-icon" icon="beer-icons:star-border"></iron-icon>
           </template>
 
-          <div hidden="[[!rating]]" class="rating-number">[[rating]]</div>
+          <div hidden$="[[!rating]]" class="rating-number">[[rating]]</div>
         <div>
     </paper-material>
   </template>
@@ -113,6 +113,11 @@
   Polymer({
 
     is: 'beer-rating-card',
+    properties:{
+      rating: {
+        type: Number
+      },
+    },
   
      _positiveStars: function (rating) {
       var returnArray = []

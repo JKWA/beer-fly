@@ -241,21 +241,21 @@
             selected="{{tapped}}"
             on-click="updateTappedInformation">
             
-            <paper-item id="TAPPED" hidden="[[_hideChoice(tapped, 'TAPPED')]]" tapstatus="TAPPED">
+            <paper-item id="TAPPED" hidden$="[[_hideChoice(tapped, 'TAPPED')]]" tapstatus="TAPPED">
               <div class="tapped tap-status-wrapper">
                 <div><iron-icon icon="beer-icons:on-tap"></iron-icon></div>
                 <div class="tap-status">On tap</div>
               </div>
             </paper-item>
 
-            <paper-item id="BLOWN" hidden="[[_hideChoice(tapped, 'BLOWN')]]" tapstatus="BLOWN">
+            <paper-item id="BLOWN" hidden$="[[_hideChoice(tapped, 'BLOWN')]]" tapstatus="BLOWN">
               <div class="blown tap-status-wrapper">
                 <div><iron-icon icon="beer-icons:blown"></iron-icon></div>
                 <div class="tap-status">Blown</div>
               </div>
             </paper-item>
 
-            <paper-item id="ON_DECK" hidden="[[_hideChoice(tapped, 'ON_DECK')]]" tapstatus="ON_DECK">
+            <paper-item id="ON_DECK" hidden$="[[_hideChoice(tapped, 'ON_DECK')]]" tapstatus="ON_DECK">
               <div class="on-deck tap-status-wrapper">
                 <div><iron-icon icon="beer-icons:add"></iron-icon></div>
                 <div class="tap-status">On deck</div>
@@ -289,28 +289,12 @@
 
       is: 'beer-beer-tap',
       properties:{
-
-        tapped:{
-           type: String,
-           value:'',
-           computed: '_computeTapped(tappedData)'
+        beerId:{
+          type: String
         },
-        tappedData:{
-          type: Object
-        },
-
+        
         beerMeta:{
           type:Object,
-        },
-
-        icon:{
-          type: String,
-          computed: '_computeIcon(tapped)'
-        },
-
-        owner:{
-          type: Boolean,
-          value:false
         },
 
         crowdSource:{
@@ -318,29 +302,59 @@
           value:false
         },
 
-        tapStatus:{
+        icon:{
           type: String,
-          computed: '_computeTapStatus(tapped)'
+          computed: '_computeIcon(tapped)'
         },
-        toggle:{
-          type: Boolean
+
+        organization:{
+          type: Object
         },
-        _toggleIfOwner:{
+
+        orgId:{
+          type: String
+        },
+
+        owner:{
           type: Boolean,
-          computed: '_computeIfToggle(toggle, owner, crowdSource)'
+          value:false
         },
+
         pageLoadComplete:{
           type: Boolean,
           value: false
         },
-        // choice: {
-        //   type: String
-        // },
-        // tap: {
-        //   type: String
-        // }
- 
-       
+
+        statusKnown:{
+          type: Boolean
+        },
+
+        tapped:{
+          type: String,
+          value:'',
+          computed: '_computeTapped(tappedData)'
+        },
+
+        tappedData:{
+          type: Object
+        },
+
+        tapStatus:{
+          type: String,
+          computed: '_computeTapStatus(tapped)'
+        },
+
+        toggle:{
+          type: Boolean
+        },
+
+        _toggleIfOwner:{
+          type: Boolean,
+          computed: '_computeIfToggle(toggle, owner, crowdSource)'
+        },
+        user:{
+          type: Object
+        }
       },
       observers: ['_watchTappedStatus(tapped)',
       '_watchTappedData(tappedData)'

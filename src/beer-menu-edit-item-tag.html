@@ -59,10 +59,18 @@
       is: 'beer-menu-edit-item-tag',
 
        properties: {
-
+        orgId:{
+          type: String
+        },
         checkedValue:{
           type: Boolean,
           // computed: '_computeCheckedValues'
+        },
+        menuTag:{
+          type:Object
+        },
+        allTags:{
+          type: Array
         }
        },
 
