@@ -60,7 +60,6 @@
     "simple-carousel": "franjsc/simple-carousel#^1.1.0",
     "paper-autocomplete-input": "NeilujD/paper-autocomplete-input#^1.2.0",
     "google-apis": "GoogleWebComponents/google-apis#^1.1.7",
-    "geo-codec": "jifalops/geo-codec#^1.0.1",
     "iron-localstorage": "PolymerElements/iron-localstorage#^1.0.6"
   },
   "devDependencies": {
