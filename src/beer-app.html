@@ -184,6 +184,10 @@
         color: var(--app-secondary-color);
       }
 
+      .drawer-icon {
+        margin: 0 5px 0 0;
+      }
+
       .extra-links{
         display: block;
         padding: 0 9px;
@@ -362,7 +366,7 @@
     </div>
     <div class="logo" main-title><a aria-label="Go to main page" href$="/[[nameUrl]]/main[[orgParam]]" aria-label$="[[_showOrgName(place.name)]]">[[_showOrgName(place.name)]]</a></div>
     
-    <div class="home-btn-wrapper" hidden$="[[smallScreen]]">
+    <div class="home-btn-wrapper" hidden$="[[_hideExtraButtons(smallScreen, page)]]">
       <a href="/home/search" aria-label="Search for breweries">
           <iron-icon class="home-btn" icon="beer-icons:search"></iron-icon>
       </a>
@@ -417,15 +421,15 @@
           </template>
           <hr>
         </template>
-        <a name="near" aria-label="Breweries near me" href="/home"><iron-icon icon="beer-icons:gps-fixed"></iron-icon>Near me</a>
-        <a name="search" aria-label="Search for breweries" href$="/[[nameUrl]]/search[[orgParam]]"><iron-icon icon="beer-icons:search"></iron-icon>Search</a>
-        <a name="favorite" aria-label="My favorites" href$="/[[nameUrl]]/favorite[[orgParam]]"><iron-icon icon="beer-icons:favorite"></iron-icon>Favorites</a>
-        <a name="browse" aria-label="Browse beers" href$="/[[nameUrl]]/browse[[orgParam]]"><iron-icon icon="beer-icons:near-me"></iron-icon>Browse</a>
+        <a name="near" aria-label="Breweries near me" href="/home"><iron-icon class="drawer-icon" icon="beer-icons:gps-fixed"></iron-icon>Near me</a>
+        <a name="search" aria-label="Search for breweries" href$="/[[nameUrl]]/search[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:search"></iron-icon>Search</a>
+        <a name="favorite" aria-label="My favorites" href$="/[[nameUrl]]/favorite[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:favorite"></iron-icon>Favorites</a>
+        <a name="browse" aria-label="Browse beers" href$="/[[nameUrl]]/browse[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:near-me"></iron-icon>Browse</a>
 
       </iron-selector>
       
-      <div class="extra-links" hidden$="[[!user]]" on-tap="_logout"><iron-icon icon="beer-icons:account"></iron-icon>Sign out</div>
-      <div class="extra-links" hidden$="[[user]]" on-tap="_login"><iron-icon icon="beer-icons:account"></iron-icon>Sign in</div>
+      <div class="extra-links" hidden$="[[!user]]" on-tap="_logout"><iron-icon class="drawer-icon" icon="beer-icons:account"></iron-icon>Sign out</div>
+      <div class="extra-links" hidden$="[[user]]" on-tap="_login"><iron-icon class="drawer-icon" icon="beer-icons:account"></iron-icon>Sign in</div>
       <div class="extra-links">Terms of use</div>
     </paper-material>
   </app-drawer>
@@ -453,8 +457,8 @@
   <beer-event name="event" category=[[organization.category.EVENT]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-event>
   <beer-store name="store" category=[[organization.category.STORE]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-store>
   <beer-list name="list" route="[[subroute]]" offline="[[offline]]" place="[[place]]" owner="[[owner]]"></beer-list>
-  <beer-search name="search" latitude="[[latitude]]" longitude="[[longitude]]" idle="[[idle]]" error="[[geoError]]"></beer-search>
-  <beer-home name="home" login="{{login}}" latitude="[[latitude]]" longitude="[[longitude]]" idle="{{idle}}" error="[[geoError]]"></beer-home>
+  <beer-search name="search" latitude="[[latitude]]" longitude="[[longitude]]" idle="[[idle]]" geo-error="[[geoError]]"></beer-search>
+  <beer-home name="home" login="{{login}}" latitude="[[latitude]]" longitude="[[longitude]]" idle="{{idle}}" geo-error="[[geoError]]"></beer-home>
   <beer-favorite name="favorite"></beer-favorite>
   <beer-browse name="browse"></beer-browse>
   <beer-404-warning name="404"></beer-404-warning>
@@ -476,7 +480,6 @@
       <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
      
    </paper-dialog>
-   
 
 
     <paper-toast class="toast" id="offLineToast" duration="0">
@@ -628,7 +631,8 @@
         '_updatePageTitle(place.name, page)',
         '_replaceOfflineOrganizationData(organization, online)',
         '_cacheOrgData(organization, online)',
-        '_scrollToTop(orgId)'
+        '_scrollToTop(orgId)',
+        '_setTimeoutForGeo(page)'
       ],
 
      
@@ -645,6 +649,17 @@
         window.performance && performance.mark && performance.mark('beer-app.created');
         // Custom elements polyfill safe way to indicate an element has been upgraded.
         this.removeAttribute('unresolved');
+      },
+
+      _setTimeoutForGeo: function (page) {
+        if(page === 'home'){
+          var that = this; 
+          this.timeout = setTimeout(function(){ 
+          console.log('sent error message');
+          
+          that.geoError = true; }, 7000);
+        }
+
       },
  
       _scrollToTop: function (orgId){
@@ -672,6 +687,7 @@
 
       _geoResponse: function (event){
         if(event.returnValue){
+          clearTimeout(this.timeout);
           this.geoRendered = true;
           this.idle = true;
         }
@@ -1189,6 +1205,19 @@
         }else{
           return false;
         }
+      },
+
+      _hideExtraButtons: function (smallScreen, page){
+       
+        var hide = false;
+        if(smallScreen){
+          hide = true;
+        }
+        if(page=='account'){
+          hide = true;
+        }
+         console.log(hide)
+        return hide;
       },
 
       _login: function(){

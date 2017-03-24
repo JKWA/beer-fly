@@ -130,26 +130,20 @@
     <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
       <!--[[latitude]], [[longitude]]-->
 
-    <geofire-query 
-        id="query" 
-        app="beer" 
-        path="GeoFire"
-        lat="[[latitude]]" 
-        lng="[[longitude]]" 
-        radius="10" 
-        results-array="{{breweries}}">
-    </geofire-query>
+    <beer-near-breweries
+        latitude="[[latitude]]"
+        longitude="[[longitude]]"
+        distance="[[limitDistance]]"
+        login="{{login}}"
+        data="{{nearData}}">
+    </beer-near-breweries>
 
-    <firebase-document 
-      app-name="beer" 
-      id="pub"
-      path="organization">
-  </firebase-document>
-
-
+    <!--[[_test(near)]]-->
     <div class="body">
    
     <paper-spinner-lite active id="spinner"></paper-spinner-lite>
+
+     
 
       <paper-material class="card" elevation="1">
         <div class="title-wrapper">
@@ -179,6 +173,7 @@
               <paper-button on-click="_getGeoFromAddress">SET LOCATION</paper-button>
           </iron-collapse>
               
+           
       </paper-material>
 
        <div hidden$="[[!isNear]]">
@@ -194,29 +189,10 @@
             over21="[[pub.over21]]"
             login="{{login}}">
         </beer-pub-card>
-
       </div>
-      <template is="dom-repeat" items="[[_toArray(data)]]" as="pub" initial-count="5"  sort="_sort">
-         <beer-pub-card 
-            place-id="[[pub.place_id]]"
-            name="[[pub.name]]"
-            address="[[pub.vicinity]]"
-            motto="[[pub.motto]]"
-            distance="[[pub.distance]]"
-            google-rating="[[pub.rating]]"
-            sponsor="[[pub.PREMIUM]]"
-            dog-friendly="[[!pub.dogFriendly]]"
-            patio="[[!pub.patio]]"
-            over21="[[!pub.over21]]"
-            login="{{login}}">
-        </beer-pub-card>
-
-      </template>
-    </div>
-    
         <div id="near" hidden>
           
-         <!--<template is="dom-repeat" initial-count="5" items="[[_toArray(nearData)]]" as="pub">
+         <template is="dom-repeat" initial-count="5" items="[[_toArray(nearData)]]" as="pub">
         
           <beer-pub-card 
             place-id="[[pub.place_id]]"
@@ -230,7 +206,7 @@
             login="{{login}}">
         </beer-pub-card>
 
-         </template>-->
+         </template>
         </div>
 
     </div>
@@ -247,10 +223,6 @@
           type: String
         },
 
-        breweries: {
-          type: Object
-        },
-
         distance:{
           type: Number,
         },
@@ -261,11 +233,6 @@
         },
 
         geoError:{
-          type: Boolean,
-          value: false
-        },
-
-        geoFireReady: {
           type: Boolean,
           value: false
         },
@@ -284,11 +251,6 @@
         },
 
         initialLoad:{
-          type: Boolean,
-          value: false
-        },
-
-        initialLocation: {
           type: Boolean,
           value: false
         },
@@ -333,16 +295,8 @@
           type:String
         },
 
-        pubs: {
-          type: Object
-        },
-
         query: {
           type: String
-        },
-
-        searchString:{
-          type: 'String'
         },
 
         toggle:{
@@ -351,26 +305,27 @@
         }
       },
       
-      observers:[
-                  // '_getGoogleDetails(mapLoaded, latitude, longitude)',
-                  '_getGoogleSearchData(mapLoaded, latitude, longitude, breweries, searchString, geoFireReady)',
-                  '_getGoogleLocationData(mapLoaded, latitude, longitude)',
+      observers:[ '_getGoogleDetails(mapLoaded, latitude, longitude)',
                   '_resolveGeoError(geoError)',
                   '_distance(latitude, longitude)',
                   '_watchNearData(nearData)'
-                  // '_watchBreweries(breweries)'
                   ],
 
-      listeners: {'api-load':'_mapHasLoaded', 'ready': '_geoFireReady' },
+      listeners: {'api-load':'_mapHasLoaded' },
 
+      // ready: function () {
+      //   var that = this; 
+      //   this.timeout = setTimeout(function(){ 
+      //     console.log('sent error message');
+          
+      //     that.geoError = true; }, 4000);
+      // },
       
       _watchNearData: function (nearData) {
+        // console.log('near', nearData);
         this.$.spinner.active = false;
+
       },
-      // _watchBreweries: function (breweries) {
-      //   // console.log('breweries2', breweries);
-      //   // this.$.spinner.active = false;
-      // },
 
       _computeIsNear(distance){
         if(distance < .05){
@@ -384,11 +339,6 @@
         this.mapLoaded = true;
       },
 
-      _geoFireReady: function () {
-        // console.log('geoready2', this.breweries);
-        this.geoFireReady = true;
-      },
-
       _resolveGeoError: function (geoError){
         if(geoError){
           this.$.spinner.active = false;
@@ -397,6 +347,7 @@
           this.toggle = true;
           clearTimeout(this.timeout);
         }
+
       },
 
       _resetToLocal: function (){
@@ -413,165 +364,6 @@
         
       },
 
-      _getGoogleLocationData: function (mapLoaded, latitude, longitude){
-        if(!this.initialLocation){
-          if(mapLoaded){
-            if(latitude){
-            if(longitude){
-              this.initialLocation = true;
-              var that = this;
-              var locationObj = {};
-              locationObj.location = {};
-                locationObj.location.lat = latitude
-                locationObj.location.lng = longitude;
-
-
-              this.geocode(locationObj, function (city, lat, lng, placeId) {
-                  // that.latitude = lat;
-                  // that.longitude = lng
-                  that.gpsIcon = 'gps-fixed'
-                  that.searchString = city;
-              
-              });
-
-            }
-            }
-          }
-        }
-
-      },
-
-
-    _getGoogleSearchData: function (mapLoaded, latitude, longitude, breweries, searchString, geoFireReady){
-     
-      if(mapLoaded){
-        if(latitude){
-          if(longitude){
-            if(geoFireReady){
-              if(searchString){
-                this.data = {};
-                var allPubs = {};
-                this.geoFireReady = false;
-                this.initialLocation = false;
-                var location = {};
-                location.lat = latitude;
-                location.lng = longitude;
-
-                var request = {};
-                request.location = location;
-                request.radius = 30094
-                // request.types = 'bar';
-                // request.type = 'bar';
-                
-                request.query = searchString + '  brewery';
-                // request.rankBy = google.maps.places.RankBy.DISTANCE
-                var that = this;
-                // console.log(request);
-          
-                var places = new google.maps.places.PlacesService(this.$.map);
-                places.textSearch(request, function (result){
-                var returnDataArray = [];
-                var returnDataObject = {};
-                  for (var i=0; i<result.length; i++){
-                    var typeOK = 0;
-
-                    var types = result[i].types;
-                    if(types){
-
-                    for (var j=0; j<types.length; j++){
-                      var type = types[j];
-                    
-                      if(type === 'grocery_or_supermarket'){
-                        typeOK --;
-                      }
-                      if(type === 'bar'){
-                        typeOK ++;
-                      }
-                    }
-
-                      if(typeOK >= 0){
-                        var formatted_address = result[i].formatted_address;
-                        
-                        if(formatted_address){
-                          var addressArray = formatted_address.split(', ').slice(0,2);
-                          result[i].vicinity = addressArray.join(', ');
-
-                        }
-                        
-                        var location = result[i].geometry.location;
-                        var distance = that._distance (that.latitude, that.longitude, location.lat(), location.lng())
-                      
-                        result[i].distance = distance;
-                        result[i].sort = distance;
-                        allPubs[result[i].place_id] = result[i];
-                        
-                      }
-                    }
-
-                  }
-
-                  var totalNumberPubs = breweries.length;
-                  if (totalNumberPubs > 0) {
-                    var counter = 0;
-                      for(var i=0; i<breweries.length; i++){
-
-                        var placeId = breweries[i].key;
-
-                          that.$.pub.ref.child(placeId).once('value').then(function(snapshot) {
-                            var pubData =  snapshot.val();
-
-                            var pubDistance = that._distance (that.latitude, that.longitude, pubData.latitude, pubData.longitude);
-                            pubData.distance = pubDistance;
-                            if(pubData.PREMIUM){
-                              if(pubDistance <= 10){
-                              pubData.sort = pubDistance -10;
-                              }else{
-                                pubData.sort = pubDistance;
-                              }
-                            }else{
-                              pubData.sort = pubDistance;
-                            }
-                            
-                            return pubData
-
-                          }).then(function(nextone){
-
-                                if(nextone){
-                                  if(!allPubs[nextone.place_id]){
-                                    allPubs[nextone.place_id] = nextone;
-                                  }else{
-                                    allPubs[nextone.place_id].motto = nextone.motto;
-                                    allPubs[nextone.place_id].distance = nextone.distance;
-                                    allPubs[nextone.place_id].sort = nextone.sort;
-                                    allPubs[nextone.place_id].dogFriendly = nextone.dogFriendly;
-                                    allPubs[nextone.place_id].patio = nextone.patio;
-                                    allPubs[nextone.place_id].over21 = nextone.over21;
-                                    allPubs[nextone.place_id].PREMIUM = nextone.PREMIUM;
-                                  }
-                                  
-
-                                }
-                                counter++
-                                if(counter === totalNumberPubs){
-                                  that.data = allPubs;
-                                  that.$.spinner.active = false;
-                                }
-                          })
-                      }
-                    }else{
-                        that.data = allPubs;
-                        that.$.spinner.active = false;
-                      }
-                 
-                    })
-              }
-            }
-          }
-        }
-      }
-
-
-    },
   
 
       _getGoogleDetails: function (mapLoaded, latitude, longitude){
@@ -597,13 +389,13 @@
               var map = this.$.map;
 
               var location = {};
-              // location.lat = latitude;
-              // location.lng = longitude;
+              location.lat = latitude
+              location.lng = longitude;
 
 
               var request = {};
               request.location = location;
-              request.types = 'bar';
+              request.types = ['bar', 'restaurant'];
               request.type = 'bar';
               request.rankBy = google.maps.places.RankBy.DISTANCE
               var that = this;
@@ -638,36 +430,29 @@
 
       _getGeoFromAddress: function () {
         // console.log('ADDRESS', this.address);
-        if(!this.initialLocation){
-          this.initialLocation = true;
-          this.toggle = false;
-          this.$.near.hidden = true;
-          this.gpsIcon = 'gps-searching'
-          var that = this;
-          var location = {};
-          location.address = this.address;
-            this.geocode(location, function (city, lat, lng, placeId) {
-                console.log(city);
-                that.latitude = lat;
-                that.longitude = lng;
-                that.searchString = city;
-                that.gpsIcon = 'gps-fixed'
-              
-            });
-        }
+        this.toggle = false;
+        this.$.near.hidden = true;
+        this.gpsIcon = 'gps-searching'
+        var that = this;
+          this.geocode(this.address, function (address, lat, lng, placeId) {
+            
+              that.latitude = lat;
+              that.longitude = lng
+              this.gpsIcon = 'gps-fixed'
+            
+          });
       },
 
 
-       geocode: function(location, onComplete) {
+       geocode: function(address, onComplete) {
 
          var geocoder = this._geocoder = this._geocoder || new google.maps.Geocoder();
 
-            geocoder.geocode(location, function(results, status) {
+            geocoder.geocode({address: address}, function(results, status) {
 
               if (status == google.maps.GeocoderStatus.OK && results[0]) {
-                // console.log(results[0]);
+                console.log(results[0]);
                 var searchAddressString = '';
-                
                 var address = results[0].address_components;
                 for (var i=0; i<address.length; i++){
                   var type = address[i].types
@@ -676,16 +461,11 @@
                       searchAddressString += address[i].long_name + ', ';
                     }else if (type[j] === 'administrative_area_level_1') {
                       searchAddressString += address[i].long_name + ' ';
-
-                    }else if (type[j] === 'postal_code') {
-                      searchAddressString += address[i].long_name + ' ';
                     }
-
-                    
 
                   }
                 }
-                // console.log(searchAddressString);
+                console.log(searchAddressString);
                 
                 onComplete(
                         results[0].formatted_address,           
@@ -713,7 +493,7 @@
 
           var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
           var d = R * c; // Distance in km
-          return d
+          this.distance = d;
        },
 
        deg2rad: function (deg) {
@@ -748,10 +528,6 @@
 
         _sort: function (a,b){
         return parseFloat(a.sort) - parseFloat(b.sort) ;
-        },
-
-         _sortDistance: function (a,b){
-        return parseFloat(a.distance) - parseFloat(b.distance) ;
         },
 
       _test: function(obj){

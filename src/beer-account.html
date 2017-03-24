@@ -56,11 +56,6 @@
         font-weight: 400;
      }
 
-      h2 {
-        font-size: 1.3em;
-        font-weight: 500;
-        margin: 32px 0;
-      }
 
       wrapper{
          @apply(--layout-horizontal);
@@ -70,10 +65,11 @@
       .item {
         margin: 30px;
         padding: 10px;
-        height: 200px
         @apply(--layout-horizontal);
         @apply(--layout-center-justified);
       }
+
+  
 
 
       .motto {
@@ -93,7 +89,7 @@
 
     </style>
 
-     <firebase-auth  app-name="beer" user="{{user}}"></firebase-auth>
+     <firebase-auth id="auth"  app-name="beer" user="{{user}}"></firebase-auth>
 
     <firebase-query
         id="organization"
@@ -139,13 +135,14 @@
             [[organization.history]]
           </div>-->
           
-          <div hidden="[[user]]">
-             <beer-login></beer-login>
+          <div hidden$="[[user]]">
+            
+             <beer-login class="item"></beer-login>
           </div>
 
 
  
-          <div hidden="[[!user]]">
+          <div hidden$="[[!user]]">
             <paper-material class="card" elevation="0">
            
             
@@ -155,16 +152,16 @@
             <div>Admin: [[userData.ADMIN]]</div>
             <div>Email Verified: [[user.emailVerified]]</div>-->
 
-            <div hidden="[[!userData.ADMIN]]">
+            <div hidden$="[[!userData.ADMIN]]">
               You are an administrator and may edit any data.
             </div>
            
-            <div hidden="[[user.emailVerified]]">
+            <div hidden$="[[user.emailVerified]]">
               You cannot save or edit information because your emial has not been verified by [[provider]].
             </div>
-            <div hidden="[[!user.emailVerified]]">
+            <div hidden$="[[!user.emailVerified]]">
               You may edit comment and rating data associated with the account "[[user.email]]".
-              <div hidden="[[!userData.domain]]">
+              <div hidden$="[[!userData.domain]]">
                 Also, you may edit organization data sharing the domain "[[userData.domain]]".
                  
                   <template is="dom-repeat" items="[[organizations]]" as="pub">
@@ -201,7 +198,7 @@
             <div class="item">
               <beer-button>
                 <a aria-label="Seach" href="/home/search">
-                  <iron-icon icon="beer-icons:search"></iron-icon>Search"</a>
+                  <iron-icon icon="beer-icons:search"></iron-icon>Search</a>
               </beer-button>
             </div>
             <div class="item">
@@ -212,8 +209,16 @@
             </div>
             <div class="item" >
               <beer-button>
-                <a aria-label="Browse" href="/home/browse">
+                <a  aria-label="Browse" href="/home/browse">
                   <iron-icon icon="beer-icons:near-me"></iron-icon>Browse</a>
+              </beer-button>
+            </div>
+
+             <div class="item" >
+              <beer-button>
+                <a on-tap="_logout" aria-label="Sign out">
+                  <iron-icon icon="beer-icons:account"></iron-icon>Sign out
+                  </a>
               </beer-button>
             </div>
             
@@ -270,11 +275,10 @@
           type: Array
         },
 
-
-
         user:{
           type: Object
         },
+
         provider: {
           type: String,
           computed: '_computeProvider(user)'

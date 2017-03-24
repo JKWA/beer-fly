@@ -15,10 +15,8 @@
 
     <style>
 
-     
-
       .icons {
-        margin: 10px 5px 0 0;
+        margin: 10px 0px 0 0;
         @apply(--layout-horizontal);
       }
 
@@ -44,16 +42,16 @@
     </style>
 
         <div class="icons">
-          <div class="icon" hidden$="[[!dogs]]">
+          <div class="icon" hidden$="[[dogs]]">
             <iron-icon on-tap="_toast" id="dogs" icon="beer-icons:dogs"></iron-icon>
           </div>
-          <div class="icon" hidden$="[[!patio]]">
+          <div class="icon" hidden$="[[patio]]">
             <iron-icon on-tap="_toast" id="patio" icon="beer-icons:patio"></iron-icon>
           </div>
-          <div id="over21" on-tap="_toast" class="over21" hidden$="[[!over21]]">+21</div>  
-          <div  class="icon" hidden$="[[!crowdSource]]">
+          <div id="over21" on-tap="_toast" class="over21" hidden$="[[over21]]">+21</div>  
+          <!--<div  class="icon" hidden$="[[crowdSource]]">
               <iron-icon on-tap="_toast" id="crowdSource" icon="beer-icons:crowd-source"></iron-icon>
-          </div>
+          </div>-->
         </div>
 
         

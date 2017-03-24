@@ -76,7 +76,7 @@
       <paper-material class='card' elevation="1" animated-shadow="false">
      
         <div  class="sponsor-wrapper" >
-            <div id="sponsor" hidden$="[[!sponsor]]">Sponsoring Organization</div>
+            <div id="sponsor" hidden$="[[sponsorHide]]">Sponsoring Organization</div>
         </div>
          <div class="icons-wrapper">
             <div>
@@ -86,13 +86,7 @@
                   login="{{login}}">
               </beer-pub-rating>
             </div>
-            <div>
-              <beer-pub-icons
-                dogs="[[dogFriendly]]"
-                patio="[[patio]]"
-                over21="[[over21]]">
-              </beer-pub-icons>
-            </div>
+           
            
    
           </div>
@@ -105,6 +99,13 @@
                 <div class="distance" hidden$="[[!distance]]">[[_computeDisplayDistance(distance)]] miles from you</div>
             </div>
            </a>
+            <div>
+              <beer-pub-icons
+                dogs="[[dogFriendly]]"
+                patio="[[patio]]"
+                over21="[[over21]]">
+              </beer-pub-icons>
+            </div>
            
       </paper-material>
  
@@ -133,7 +134,8 @@
           },
 
           dogFriendly:{
-            type: Boolean
+            type: Boolean,
+            value: false
           },
 
           googleRating:{
@@ -154,11 +156,13 @@
           },
 
           over21:{
-            type: Boolean
+            type: Boolean,
+            value: false
           },
 
           patio:{
-            type: Boolean
+            type: Boolean,
+            value: false
           },
 
           placeId:{
@@ -168,6 +172,12 @@
           sponsor:{
             type: Boolean,
             value: false
+          },
+
+          sponsorHide:{
+            type: Boolean,
+            computed: '_computeSponsorHide(sponsor)',
+            value: true
           },
 
           state:{
@@ -181,19 +191,27 @@
          
         },
 
-        observers: ['_watchforSponsor(sponsor)'],
+        // observers: ['_watchforSponsor(sponsor)'],
 
-         _watchforSponsor: function (sponsor){
+        //  _watchforSponsor: function (sponsor){
         
-          if(sponsor){
-            console.log('sponsor', sponsor)
-            // this.$.sponsor.hidden = false;
-          }
-        },
+        //   if(sponsor){
+        //     // console.log('sponsor', sponsor)
+        //     // this.$.sponsor.hidden = false;
+        //   }
+        // },
 
          _computeDisplayDistance: function (distance){
           return Math.round(distance*10)/10
 
+        },
+
+        _computeSponsorHide: function (sponsor){
+          if(sponsor){
+            return false;
+          }else{
+            return true;
+          }
         },
 
         _computeNameForUrl: function (name) {
