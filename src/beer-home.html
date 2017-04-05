@@ -9,15 +9,28 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+
+
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../bower_components/google-apis/google-maps-api.html">
 
 <link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 <link rel="import" href="../bower_components/s-slider/s-slider.html">
+<link rel="import" href="../bower_components/geo-query/geo-query.html">
+<link rel="import" href="../bower_components/geofire-elements/geofire-query.html">
+
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
+<link rel="import" href="../bower_components/app-storage/app-storage-behavior.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
+
 
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-rating-card.html">
-<link rel="import" href="beer-near-breweries.html">
+<!--<link rel="import" href="beer-near-breweries.html">-->
+<link rel="import" href="beer-pub-card.html">
 
 
 
@@ -53,8 +66,10 @@
 
     paper-spinner-lite{
       position: absolute;
-      top: 40%;
-      left: 50%;
+      top: 5%;
+      right: 5%;
+      font-size: .4em;
+
     }
 
     paper-material > div{
@@ -72,12 +87,24 @@
        @apply(--layout-wrap);
     }
 
+    .locationAddress{
+      font-size: 1.2em;
+      font-weight: 500;
+      color: var(--app-primary-color);
+      
+
+    }
+
    .title{
      font-size: 1em;
      font-weight: 500;
      color: var(--app-accent-color);
      margin: 10px 0
    }
+
+   .location-list {
+        color: var(--app-primary-color);
+    }
 
    .geo-error{
       font-size: .8em;
@@ -99,7 +126,7 @@
     }
 
     .address{
-      color: var(--app-secondary-color);
+      color: var(--app-seconpdary-color);
       font-size: 1em;
       font-weight: 400;
     }
@@ -128,35 +155,48 @@
     </style>
 
     <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
-      <!--[[latitude]], [[longitude]]-->
 
     <geofire-query 
         id="query" 
         app="beer" 
         path="GeoFire"
-        lat="[[latitude]]" 
-        lng="[[longitude]]" 
-        radius="10" 
-        results-array="{{breweries}}">
+        lat="[[location.location.latitude]]" 
+        lng="[[location.location.longitude]]" 
+        radius="[[radius]]" 
+        results-array="{{breweries}}"
+        results-object="{{breweriesObj}}">
     </geofire-query>
+ 
 
     <firebase-document 
-      app-name="beer" 
-      id="pub"
-      path="organization">
-  </firebase-document>
+        app-name="beer" 
+        id="pub"
+        path="organization">
+    </firebase-document>
+
+    <app-localstorage-document 
+        key="locationHistory" 
+        data="{{locationHistory}}">
+    </app-localstorage-document>
 
 
     <div class="body">
-   
-    <paper-spinner-lite active id="spinner"></paper-spinner-lite>
+   <!--<div>
+      <paper-spinner-lite id="spinner"></paper-spinner-lite>
+   </div>-->
 
       <paper-material class="card" elevation="1">
-        <div class="title-wrapper">
+        <div class="locationAddress">[[address]]</div>
+        <paper-spinner-lite id="spinner" active></paper-spinner-lite>
+        <div hidden$="[[!geoError]]">
+          <div class="geo-error">Location not available from this device.</div>
+        </div>
+        <div class="">
         <iron-label class="wrapper">
               <paper-icon-button icon="beer-icons:[[gpsIcon]]" on-tap="_resetToLocal"></paper-icon-button>
-              <span class="title">Nearest breweries<span>
+              <span class="title">Near my location<span>
           </iron-label>
+
 
         <iron-label class="wrapper">
             <toggle-icon
@@ -168,42 +208,42 @@
             <span class="location-label">Change location</span>
           </iron-label>
         </div>
-  
        
-          <iron-collapse opened="[[toggle]]">
-              <div hidden$="[[!geoError]]">
-                  <div class="geo-error">Location not available from this device.</div>
-              </div>
-
-              <paper-input value="{{address}}" on-keydown="_watchForSubmit" label="City, State; or Zip"></paper-input>
-              <paper-button on-click="_getGeoFromAddress">SET LOCATION</paper-button>
+        
+       
+       
+          <iron-collapse opened="[[toggle]]" no-animation>        
+              <paper-listbox
+                attr-for-selected="location"
+                selected-class="location-list" 
+                class="location-list"
+                selected="{{location}}"
+                on-click="close">
+                <template is="dom-repeat" items="[[sortedLocationHistory]]" as="history">
+                  <paper-item location="[[history]]">[[history.address]]</paper-item>
+              </template>
+            </paper-listbox>
+              <paper-input value="{{searchString}}" on-keydown="_watchForSubmit" label="City, State; or Zip"></paper-input>
+            <paper-button on-click="_getGeoFromAddress">SET LOCATION</paper-button>
           </iron-collapse>
               
       </paper-material>
 
-       <div hidden$="[[!isNear]]">
-        <beer-pub-card 
-            class="near-card"
-            place-id="[[pub.place_id]]"
-            name="[[pub.name]]"
-            address="[[pub.vicinity]]"
-            distance="[[distance]]"
-            sponsor="[[pub.PREMIUM]]"
-            dog-friendly="[[pub.dogFriendly]]"
-            patio="[[pub.patio]]"
-            over21="[[pub.over21]]"
-            login="{{login}}">
-        </beer-pub-card>
-
-      </div>
-      <template is="dom-repeat" items="[[_toArray(data)]]" as="pub" initial-count="5"  sort="_sort">
+      <div id="pubCards">
+      <template id="repeater" is="dom-repeat" 
+          items="[[data]]" as="pub" 
+          initial-count="5"  sort="_sort" 
+          observe="sort distance" filter="{{_computeFilter(radius)}}" >
+         
+        
          <beer-pub-card 
             place-id="[[pub.place_id]]"
             name="[[pub.name]]"
             address="[[pub.vicinity]]"
             motto="[[pub.motto]]"
-            distance="[[pub.distance]]"
-            google-rating="[[pub.rating]]"
+            distance="[[pub.distance]]"  
+            photo-url="[[pub.mainImage.banner.url]]"
+            placeholder-data="[[pub.mainImage.banner.base64]]"
             sponsor="[[pub.PREMIUM]]"
             dog-friendly="[[!pub.dogFriendly]]"
             patio="[[!pub.patio]]"
@@ -212,26 +252,12 @@
         </beer-pub-card>
 
       </template>
+      </div>
     </div>
     
-        <div id="near" hidden>
-          
-         <!--<template is="dom-repeat" initial-count="5" items="[[_toArray(nearData)]]" as="pub">
         
-          <beer-pub-card 
-            place-id="[[pub.place_id]]"
-            name="[[pub.name]]"
-            address="[[pub.vicinity]]"
-            distance="[[pub.distance]]"
-            sponsor="[[pub.PREMIUM]]"
-            dog-friendly="[[!pub.dogFriendly]]"
-            patio="[[!pub.patio]]"
-            over21="[[!pub.over21]]"
-            login="{{login}}">
-        </beer-pub-card>
-
-         </template>-->
-        </div>
+          
+    
 
     </div>
 </template>
@@ -247,8 +273,20 @@
           type: String
         },
 
+        addressKey:{
+          type: String
+        },
+
+        allPubs:{
+          type: Object
+        },
+
         breweries: {
           type: Object
+        },
+
+        data:{
+          type: Array
         },
 
         distance:{
@@ -270,13 +308,14 @@
           value: false
         },
 
-        // gpsLat: {
-        //   type: Number
-        // },
+        geoResponse: {
+          type: Object
+        },
 
-        // gpsLng:{
-        //   type: Number
-        // },
+        googleSearch:{
+          type: Boolean,
+          value: false
+        },
 
         gpsIcon:{
           type: String,
@@ -285,7 +324,7 @@
 
         initialLoad:{
           type: Boolean,
-          value: false
+          value: true
         },
 
         initialLocation: {
@@ -299,17 +338,17 @@
           value: false
         },
 
-        latitude: {
-            type: Number
+        location: {
+          type: Object
+       
         },
 
-        longitude:{
-          type: Number
+        locationHistory: {
+          type: Object,
+          
         },
-
-        limitDistance:{
-          type: Number,
-          value: 15
+        sortedLocationHistory: {
+          type: Array
         },
 
         login: {
@@ -322,23 +361,33 @@
           value: false
         },
 
-        near:{
-          type: Array
-        },
-        nearData:{
-          type: Array
-        },
+        // near:{
+        //   type: Array
+        // },
+        // nearData:{
+        //   type: Array
+        // },
 
-        path: {
-          type:String
-        },
+        // path: {
+        //   type:String
+        // },
 
         pubs: {
           type: Object
         },
 
-        query: {
-          type: String
+        // query: {
+        //   type: String
+        // },
+
+        radius:{
+          type: Number,
+          value: 10
+        },
+
+        search: {
+          type: Boolean,
+          value: false
         },
 
         searchString:{
@@ -348,31 +397,164 @@
         toggle:{
           type: Boolean,
           value: false
+        },
+
+        transitioning: {
+          type: Boolean,
+          value: true
         }
       },
       
-      observers:[
-                  // '_getGoogleDetails(mapLoaded, latitude, longitude)',
-                  '_getGoogleSearchData(mapLoaded, latitude, longitude, breweries, searchString, geoFireReady)',
-                  '_getGoogleLocationData(mapLoaded, latitude, longitude)',
+      observers:[                 
+                  // '_search(geoFireReady, mapLoaded, location, breweries, radius)',
                   '_resolveGeoError(geoError)',
-                  '_distance(latitude, longitude)',
-                  '_watchNearData(nearData)'
-                  // '_watchBreweries(breweries)'
+                  '_watchGeoResponse(geoResponse)',
+                  '_watchLocationHistory(locationHistory)',
+                  '_watchLocationChange(location)',
+                  '_getBreweryData(breweries, geoFireReady)',
+                  '_getGoogleSearchData(location, mapLoaded, googleSearch)'
+                  // '_adjustForLocationDensity(breweries, geoFireReady)'
                   ],
 
-      listeners: {'api-load':'_mapHasLoaded', 'ready': '_geoFireReady' },
+      listeners: {'api-load':'_mapHasLoaded', 'ready': '_geoFireReady'},
 
-      
-      _watchNearData: function (nearData) {
-        this.$.spinner.active = false;
+      ready: function (){
+         this.initialLoad = true;
+        //timer watching for no location data
+        this.data = [];
+        this.allPubs = {};
+        var that = this; 
+        this.timeout = setTimeout(function(){ 
+          console.log('timeout');
+          that._watchLocationChange(that.location);
+        }, 500);
       },
-      // _watchBreweries: function (breweries) {
-      //   // console.log('breweries2', breweries);
-      //   // this.$.spinner.active = false;
-      // },
 
-      _computeIsNear(distance){
+
+      _watchGeoResponse: function (geoResponse){
+        if(geoResponse){
+
+            if(geoResponse.detail){
+             var that = this;
+            var locationObj = {};
+           
+            locationObj.location = {};
+            locationObj.location.lat = geoResponse.detail.latitude;
+            locationObj.location.lng = geoResponse.detail.longitude;
+
+            this.geocode(locationObj, function (location, placeId) {
+                that._setToLocalHistory(location);
+                that.gpsIcon = 'gps-fixed';
+            });
+          }
+        }
+      },
+
+      _watchLocationHistory: function (locationHistory){
+       
+        //  console.log('noticed history change');
+          if(typeof locationHistory === 'object'){
+            var key = Object.keys(locationHistory);
+            var locationArray = [];
+            for (var i=0; i<key.length; i++){
+              locationHistory[key[i]].addressKey = key[i];
+              locationArray.push(locationHistory[key[i]]);
+            }
+          
+            if(locationArray.length >0){
+              var sortedLocations = locationArray.sort(this._sortTimestamp);
+              if(sortedLocations.length > 5){
+                
+                var trimmed = sortedLocations.splice(0,5);
+                // console.log('too long', trimmed)
+                var trimmedObj = {};
+                for(var i=0; i<trimmed.length; i++){
+                  trimmedObj[trimmed[i].addressKey] = trimmed[i]
+                }
+                // console.log ('trimmedObj',trimmedObj)
+                 return this.locationHistory = trimmedObj;
+
+              }
+
+              var location = sortedLocations.shift();
+              this.location = location;
+
+              this.longitude = location.location.longitude;
+              this.latitude = location.location.latitude;
+              this.searchString = location.address;
+              this.address = location.address;
+
+              this.sortedLocationHistory = sortedLocations;
+            }
+          }
+      },
+
+      _watchLocationChange: function (location){
+        // console.log(toggle);
+        if(location){
+          
+          this.$.spinner.active = true;
+          //initial load deals with spinner bug. 
+          if(this.initialLoad){
+            // console.log('initial load');
+            clearTimeout(this.timeout);
+         
+            
+            this.initialLoad = false;
+
+          }
+          var data = this.data;
+          // console.log('location', this.data.length);
+
+          for(var i=0; i<data.length; i++){
+            var setKey = 'data.'+i.toString();
+            var distance = this._distance (location.location.latitude, location.location.longitude, data[i].latitude, data[i].longitude);
+            
+            this.set(setKey+'.distance', distance);
+            if(data[i].PREMIUM && distance <=10){
+              this.set(setKey+'.sort', distance-20);
+            }else{
+              this.set(setKey+'.sort', distance);
+            }
+          }
+
+          // console.log('location changed')
+          // this.data = [];
+          // this.allPubs = {};
+
+          this.googleSearch = false;
+          this.radius = 10;
+          this.toggle = false;
+          this._setToLocalHistory(location);
+          
+        }else{
+          this.toggle = true;
+          // this.$.spinner.active = false;
+        }
+        
+      },
+
+      _pushPubData: function (pub){
+
+        // this.$.spinner.active = false;
+        this.$.pubCards.hidden = false;
+        // console.log('push data');
+
+        if(!this.data){
+          this.data = [];
+        }
+          if(pub.googleSearch){
+            if(!this.allPubs[pub.place_id]){
+              pub.arrayLocation = this.data.length + 1;
+              this.allPubs[pub.place_id] = pub;
+              this.push('data', pub);
+            }
+          }else{
+            this.push('data', pub);
+          }
+      },
+
+      _computeIsNear: function (distance){
         if(distance < .05){
           return true;
         }else{
@@ -385,13 +567,13 @@
       },
 
       _geoFireReady: function () {
-        // console.log('geoready2', this.breweries);
+        // console.log('geoready');
         this.geoFireReady = true;
       },
 
       _resolveGeoError: function (geoError){
         if(geoError){
-          this.$.spinner.active = false;
+          // this.$.spinner.active = false;
           // this.idle = true;
           this.gpsIcon = 'gps-disabled';
           this.toggle = true;
@@ -400,209 +582,426 @@
       },
 
       _resetToLocal: function (){
-        console.log('reset');
-        // this.latitude = this.gpsLat;
-        // this.longitude = this.gpsLng;
-        this.idle = false;
-        this.gpsIcon = 'gps-searching'
-        this.$.near.hidden = true;
         this.$.spinner.active = true;
+        // this.$.pubCards.hidden = true;
+        this.geoFireReady = false;
+        // this.allPubs = {};
+        // this.data = [];
+        this.latitude = null;
+        this.longitude = null;
+        this.gpsIcon = 'gps-searching'
         this.toggle = false;
-        this.address = '';
-        // this._getGoogleDetails(true, this.gpsLat, this.gpsLng);
-        
+        this.idle = false;
+       
       },
 
-      _getGoogleLocationData: function (mapLoaded, latitude, longitude){
-        if(!this.initialLocation){
-          if(mapLoaded){
-            if(latitude){
-            if(longitude){
-              this.initialLocation = true;
-              var that = this;
-              var locationObj = {};
-              locationObj.location = {};
-                locationObj.location.lat = latitude
-                locationObj.location.lng = longitude;
+      // _watchBreweryChange: function (breweries){
+      //   if(breweries){
+
+      //     this._getBreweryData(breweries, location);
+
+      //   }
+
+      // },
 
 
-              this.geocode(locationObj, function (city, lat, lng, placeId) {
-                  // that.latitude = lat;
-                  // that.longitude = lng
-                  that.gpsIcon = 'gps-fixed'
-                  that.searchString = city;
-              
-              });
+  //  _search: function (geoFireReady, mapLoaded, location, breweries, radius){
 
-            }
-            }
-          }
-        }
-
-      },
-
-
-    _getGoogleSearchData: function (mapLoaded, latitude, longitude, breweries, searchString, geoFireReady){
-     
-      if(mapLoaded){
-        if(latitude){
-          if(longitude){
-            if(geoFireReady){
-              if(searchString){
-                this.data = {};
-                var allPubs = {};
-                this.geoFireReady = false;
-                this.initialLocation = false;
-                var location = {};
-                location.lat = latitude;
-                location.lng = longitude;
-
-                var request = {};
-                request.location = location;
-                request.radius = 30094
-                // request.types = 'bar';
-                // request.type = 'bar';
+  //     if(geoFireReady){
+  //       if(mapLoaded){
+  //         if(location){
+  //           if(breweries){
+  //             if(radius){
                 
-                request.query = searchString + '  brewery';
-                // request.rankBy = google.maps.places.RankBy.DISTANCE
-                var that = this;
-                // console.log(request);
+  //               var totalNumberPubs = breweries.length;
+        
+  //               if(totalNumberPubs < 10 && this.radius < 50){
+  //                 this.radius += 10;
+  //                 this.geoFireReady = false;
+  //                 console.log('not enough', radius);
+                  
+  //                 // this._getBreweryData(breweries, location);
+  //                 return;
+  //               }else{
+  //                 console.log('now search radius', radius);
+  //                 if(!this.searched){
+  //                   this._getGoogleSearchData (location, radius);  
+  //                   this.searched = true;
+  //                 }
+    
+  //                 // this._getBreweryData(breweries, location);
+  //                 this.geoFireReady = false;
+  //               }
+  //             }
+  //           }
+  //         }
+  //       }  
+  //    }
+  //  },
+
+  //  _adjustForLocationDensity: function (breweries, geoFireReady){
+  //    if(geoFireReady){
+
+  //       var totalNumberPubs = breweries.length; 
+            
+  //       if(totalNumberPubs < 10 && this.radius < 50){
+  //         this.radius += 10;
+  //         this.geoFireReady = false;
+  //       }
+  //    }
+
+  //  },
+
+
+   _getGoogleSearchData: function(location, mapLoaded, googleSearch){
+      if(mapLoaded){
+        if(googleSearch){
+         
+          this.googleSearch = false;
+        
+          console.log('google search');
+
+          var searchLocation = {};
+          searchLocation.lat = location.location.latitude;
+          searchLocation.lng = location.location.longitude;
+
+          var that = this;
+          var request = {};
+          request.location = searchLocation;
+          request.radius = this.radius*100;
+          request.query = 'Brewery in '+location.address+' Craft Beer';
           
-                var places = new google.maps.places.PlacesService(this.$.map);
-                places.textSearch(request, function (result){
-                var returnDataArray = [];
-                var returnDataObject = {};
-                  for (var i=0; i<result.length; i++){
-                    var typeOK = 0;
+          var places = new google.maps.places.PlacesService(this.$.map);
+          places.textSearch(request, function (result){
+            that.$.spinner.active = false;
+            var returnDataArray = [];
+            var returnDataObject = {};
+            if(result){
+              var allPubs = {};
+              for (var i=0; i<result.length; i++){
+                var typeOK = 0;
 
-                    var types = result[i].types;
-                    if(types){
+                var types = result[i].types;
 
-                    for (var j=0; j<types.length; j++){
-                      var type = types[j];
-                    
-                      if(type === 'grocery_or_supermarket'){
-                        typeOK --;
-                      }
-                      if(type === 'bar'){
-                        typeOK ++;
-                      }
+                if(types){
+                  for (var j=0; j<types.length; j++){
+                    var type = types[j];
+                    if(type === 'bar'){
+                      typeOK ++;
                     }
-
-                      if(typeOK >= 0){
-                        var formatted_address = result[i].formatted_address;
-                        
-                        if(formatted_address){
-                          var addressArray = formatted_address.split(', ').slice(0,2);
-                          result[i].vicinity = addressArray.join(', ');
-
-                        }
-                        
-                        var location = result[i].geometry.location;
-                        var distance = that._distance (that.latitude, that.longitude, location.lat(), location.lng())
-                      
-                        result[i].distance = distance;
-                        result[i].sort = distance;
-                        allPubs[result[i].place_id] = result[i];
-                        
-                      }
-                    }
-
                   }
 
-                  var totalNumberPubs = breweries.length;
-                  if (totalNumberPubs > 0) {
-                    var counter = 0;
-                      for(var i=0; i<breweries.length; i++){
+                    if(typeOK > 0){
+                      var formatted_address = result[i].formatted_address;
+                      
+                      if(formatted_address){
+                        var addressArray = formatted_address.split(', ').slice(0,2);
+                        result[i].vicinity = addressArray.join(', ');
 
-                        var placeId = breweries[i].key;
-
-                          that.$.pub.ref.child(placeId).once('value').then(function(snapshot) {
-                            var pubData =  snapshot.val();
-
-                            var pubDistance = that._distance (that.latitude, that.longitude, pubData.latitude, pubData.longitude);
-                            pubData.distance = pubDistance;
-                            if(pubData.PREMIUM){
-                              if(pubDistance <= 10){
-                              pubData.sort = pubDistance -10;
-                              }else{
-                                pubData.sort = pubDistance;
-                              }
-                            }else{
-                              pubData.sort = pubDistance;
-                            }
-                            
-                            return pubData
-
-                          }).then(function(nextone){
-
-                                if(nextone){
-                                  if(!allPubs[nextone.place_id]){
-                                    allPubs[nextone.place_id] = nextone;
-                                  }else{
-                                    allPubs[nextone.place_id].motto = nextone.motto;
-                                    allPubs[nextone.place_id].distance = nextone.distance;
-                                    allPubs[nextone.place_id].sort = nextone.sort;
-                                    allPubs[nextone.place_id].dogFriendly = nextone.dogFriendly;
-                                    allPubs[nextone.place_id].patio = nextone.patio;
-                                    allPubs[nextone.place_id].over21 = nextone.over21;
-                                    allPubs[nextone.place_id].PREMIUM = nextone.PREMIUM;
-                                  }
-                                  
-
-                                }
-                                counter++
-                                if(counter === totalNumberPubs){
-                                  that.data = allPubs;
-                                  that.$.spinner.active = false;
-                                }
-                          })
                       }
-                    }else{
-                        that.data = allPubs;
-                        that.$.spinner.active = false;
-                      }
-                 
-                    })
+                      
+                      var resultLocation = result[i].geometry.location;
+                      var distance = that._distance (location.location.latitude, location.location.longitude, resultLocation.lat(), resultLocation.lng())
+                      result[i].latitude = resultLocation.lat();
+                      result[i].longitude = resultLocation.lng();
+                      result[i].distance = distance;
+                      result[i].sort = distance;
+                      result[i].googleSearch = true;
+
+                      that._pushPubData(result[i]);
+
+                    }
+                  }
+                }
               }
-            }
+          })
+        }
+      
+      }
+   },
+
+   _getBreweryData: function (breweries, geoFireReady){
+ 
+     if(geoFireReady){
+       this.geoFireReady = false;
+
+        // console.log('brewery data radius', this.radius);
+        // console.log('data length', this.data.length);
+
+        if(breweries.length < 10 && this.radius < 50){
+          // this.geoFireReady = false;
+          this.radius += 10;
+        }else{
+          this.googleSearch = true;
+        }
+
+        this.geoFireReady = false;
+        var location = this.location;
+        var that = this;
+        // this.$.spinner.active = false;
+        this.$.pubCards.hidden = false;
+
+        // if(typeof this.allPubs !== 'object'){
+        //   this.allPubs = {}
+        // }
+
+        var allPubs = this.allPubs;
+
+        for (var i=0; i<breweries.length; i++){
+          var pub = breweries[i];
+    
+          if(!allPubs[pub.key]){
+            var setString = 'allPubs.'+pub.key
+            this.set(setString, {});
+          }
+
+
+
+            if(!this.allPubs[pub.key].beerfly){
+
+              var beerFlyString = 'allPubs.'+pub.key+'.beerfly'
+              this.set(beerFlyString, true);
+              
+
+            this.$.pub.ref.child(pub.key).once('value').then(function(snapshot) {
+                var pubData =  snapshot.val();
+
+                if(pubData){
+                  var pubObj = {};
+                  var pubDistance = that._distance (location.location.latitude, location.location.longitude, pubData.latitude, pubData.longitude);
+                  pubData.distance = pubDistance;
+
+                if(pubData.PREMIUM){
+                  if(pubDistance <= 10){
+                  pubData.sort = pubDistance -10;
+
+                  }else{
+                    pubData.sort = pubDistance;
+                  }
+                }else{
+                  pubData.sort = pubDistance;
+                }
+
+                pubData.beerfly = true;
+                // if(Array.isArray(that.data)){
+                //   console.log('no data array');
+                //   that.data = [];
+                // }
+
+                // pubData.arrayLocation = that.data.length +1;
+
+                
+                return pubData;
+            
+              }
+            }).then( function(pubData){
+              // console.log('promise returned', pubData);
+                if(pubData){
+                var position = that.push('data', pubData); 
+                // console.log(position);
+                pubData.arrayPosition = position;
+                var pubDataSetString = 'allPubs.'+pubData.key;
+                that.set(pubDataSetString, pubData);
+                }
+                
+             
+
+            }).then( function(){
+              that.$.spinner.active = false;
+              // var pubDataSetString = 'allPubs.'+pubData.key;
+               
+              //   that.set(pubDataSetString, pubData);
+              //   console.log(data);
+            })
           }
         }
-      }
+     }
+   },
 
+    // _getGoogleSearchDataOLD: function (mapLoaded, location, breweries, geoFireReady, radius){
+      
+    //   if(mapLoaded){
+    //     if(location){
+    //       if(location.location){
+    //       if(location.location.latitude){
+    //         if(location.location.longitude){
+    //           if(geoFireReady){
+            
+    //             var totalNumberPubs = breweries.length;
+                
+    //             if(totalNumberPubs < 10 && this.radius < 50){
+    //               this.radius += 10;
+    //               return;
 
-    },
+    //             }else{
+
+    //               var radius = this.radius;
+    //               this.data = {};
+    //               var allPubs = {};
+    //               this.geoFireReady = false;
+    //               this.initialLocation = false;
+    //               var searchLocation = {};
+    //               searchLocation.lat = location.location.latitude;
+    //               searchLocation.lng = location.location.longitude;
+
+    //               var request = {};
+    //               request.location = searchLocation;
+    //               request.radius = this.radius*100;
+    //               request.query = 'Brewery in '+location.address+' Craft Beer';
+
+    //               var that = this;
+            
+    //               var places = new google.maps.places.PlacesService(this.$.map);
+    //               places.textSearch(request, function (result){
+    //               var returnDataArray = [];
+    //               var returnDataObject = {};
+
+    //               if(result){
+    //                 for (var i=0; i<result.length; i++){
+    //                   var typeOK = 0;
+
+    //                   var types = result[i].types;
+    //                   if(types){
+
+    //                   for (var j=0; j<types.length; j++){
+    //                     var type = types[j];
+                      
+    //                     if(type === 'bar'){
+    //                       typeOK ++;
+    //                     }
+
+    //                   }
+
+    //                     if(typeOK > 0){
+    //                       var formatted_address = result[i].formatted_address;
+                          
+    //                       if(formatted_address){
+    //                         var addressArray = formatted_address.split(', ').slice(0,2);
+    //                         result[i].vicinity = addressArray.join(', ');
+
+    //                       }
+                          
+    //                       var resultLocation = result[i].geometry.location;
+    //                       var distance = that._distance (location.location.latitude, location.location.longitude, resultLocation.lat(), resultLocation.lng())
+                        
+    //                       result[i].distance = distance;
+    //                       result[i].sort = distance;
+    //                       allPubs[result[i].place_id] = result[i];
+    //                     }
+    //                     }
+    //                   }
+
+    //                 }
+
+                    
+                    
+    //                 if (totalNumberPubs > 0) {
+                      
+    //                     var counter = 0;
+    //                       for(var i=0; i<breweries.length; i++){
+    //                         var placeId = breweries[i].key;
+
+    //                           that.$.pub.ref.child(placeId).once('value').then(function(snapshot) {
+    //                             var pubData =  snapshot.val();
+
+    //                             if(pubData){
+
+    //                             var pubDistance = that._distance (location.location.latitude, location.location.longitude, pubData.latitude, pubData.longitude);
+    //                             pubData.distance = pubDistance;
+    //                             if(pubData.PREMIUM){
+    //                               if(pubDistance <= 10){
+    //                               pubData.sort = pubDistance -10;
+    //                               }else{
+    //                                 pubData.sort = pubDistance;
+    //                               }
+    //                             }else{
+    //                               pubData.sort = pubDistance;
+    //                             }
+    //                             try{
+    //                             pubData.cacheTimestamp = Date.now()+604800000;
+    //                             window.localStorage.setItem('organization_'+pubData.place_id, JSON.stringify(pubData))
+    //                             }catch (error){
+    //                               console.log('ERROR_CACHE_ORG ', error);
+    //                             }
+    //                             return pubData
+                            
+    //                             }
+    //                           }).then(function(nextone){
+
+    //                                 if(nextone){
+    //                                   if(!allPubs[nextone.place_id]){
+    //                                     allPubs[nextone.place_id] = nextone;
+    //                                     if(nextone.mainImage){
+    //                                       if(nextone.mainImage.banner){
+    //                                         allPubs[nextone.place_id].photoUrl = nextone.mainImage.banner.url;
+    //                                         if(nextone.mainImage.banner.base64){
+    //                                           allPubs[nextone.place_id].placeholderData = 'data:image/png;base64, '+nextone.mainImage.banner.base64;
+    //                                         }
+    //                                       }
+    //                                     }
+    //                                   }else{
+    //                                     allPubs[nextone.place_id].motto = nextone.motto;
+    //                                     allPubs[nextone.place_id].distance = nextone.distance;
+    //                                     allPubs[nextone.place_id].sort = nextone.sort;
+    //                                     allPubs[nextone.place_id].dogFriendly = nextone.dogFriendly;
+    //                                     allPubs[nextone.place_id].patio = nextone.patio;
+    //                                     allPubs[nextone.place_id].over21 = nextone.over21;
+    //                                     allPubs[nextone.place_id].PREMIUM = nextone.PREMIUM;
+    //                                     if(nextone.mainImage){
+    //                                       if(nextone.mainImage.banner){
+    //                                         allPubs[nextone.place_id].photoUrl = nextone.mainImage.banner.url;
+    //                                         if(nextone.mainImage.banner.base64){
+    //                                           allPubs[nextone.place_id].placeholderData = 'data:image/png;base64, '+nextone.mainImage.banner.base64;
+    //                                         }
+    //                                       }
+    //                                     }
+                                        
+    //                                   }
+                                      
+    //                                 }
+    //                                 counter++
+    //                                 if(counter === totalNumberPubs){
+    //                                   // console.log(allPubs);
+    //                                   that.data = allPubs;
+    //                                   that.$.spinner.active = false;
+    //                                   that.$.near.hidden = false;
+    //                                 }
+    //                           })
+    //                       }
+    //                     // }
+    //                   }else{
+    //                       that.data = allPubs;
+    //                       that.$.spinner.active = false;
+    //                   }
+    //               })
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    //   }
+
+    // },
   
 
-      _getGoogleDetails: function (mapLoaded, latitude, longitude){
+      _getNearbyGoogleResults: function (mapLoaded, location){
        
-      //  console.log('GEO');
-       
-        if(mapLoaded){
-           if(latitude){
-            if(longitude){
-              
-              this.gpsIcon = 'gps-fixed';
               this.geoError = false;
               this.toggle = false;
 
-              // clearTimeout(this.timeout);
               if(!this.initialLoad){
                 this.initialLoad = true;
-                this.$.spinner.active = true;
-                // this.gpsLat = latitude;
-                // this.gpsLng = longitude;
+                // this.$.spinner.active = true;
               }
-              this.$.near.hidden = true;
+
               var map = this.$.map;
-
-              var location = {};
-              // location.lat = latitude;
-              // location.lng = longitude;
-
+              var nearLocation = {};
+              nearLocation.lat = location.location.latitude;
+              nearLocation.lng = location.location.longitude;
 
               var request = {};
-              request.location = location;
+              request.location = nearLocation;
               request.types = 'bar';
               request.type = 'bar';
               request.rankBy = google.maps.places.RankBy.DISTANCE
@@ -610,51 +1009,74 @@
         
               var places = new google.maps.places.PlacesService(map);
               places.nearbySearch(request, function (result){
-                  if(result[0]){
-                  that.pub = result[0];
-                  // console.log('result', result[0]);
-                  var location = result[0].geometry.location;
-                  that.pubLat = location.lat();
-                  that.pubLng = location.lng();
-                  // console.log(result[0].geometry.location.lat());             
-                  // that.$.spinner.active = false;
-                  that.$.near.hidden = false;
-                  var distance = that._distance (that.latitude, that.longitude, location.lat(), location.lng())
+
+                  if(result){
+                  var allPubs = {};
+                  for (var i=0; i<result.length; i++){
+                    var typeOK = 0;
+
+                    var types = result[i].types;
+                    console.log(result[i]);
+                    if(types){
+
+                      for (var j=0; j<types.length; j++){
+                        var type = types[j];
+                        
+                        if(type === 'bar'){
+                          typeOK ++;
+                        }
+            
+                      }
+
+                        if(typeOK > 0){
+                          var formatted_address = result[i].formatted_address;
+                          
+                          if(formatted_address){
+                            var addressArray = formatted_address.split(', ').slice(0,2);
+                            result[i].vicinity = addressArray.join(', ');
+
+                          }
+                          
+                          var resultLocation = result[i].geometry.location;
+                          var distance = that._distance (location.location.latitude, location.location.longitude, resultLocation.lat(), resultLocation.lng())
+                        
+                          result[i].distance = distance;
+                          result[i].sort = distance-20;
+
+                          if(distance < .05){
+                            that._pushPubData(result[i]);
+                          }
+                        }
+                      }
+                    }
                   }
+
+
                 })
-             }
-           }
-        }
       },
 
       _watchForSubmit: function (event){
-        // console.log(event);
          var key = event.which || event.keyCode;
-        //  console.log(key);
          if(key === 13){
            this._getGeoFromAddress();
          }
       },
 
       _getGeoFromAddress: function () {
-        // console.log('ADDRESS', this.address);
-        if(!this.initialLocation){
+        console.log('new location')
+        this.radius = 10;
           this.initialLocation = true;
           this.toggle = false;
-          this.$.near.hidden = true;
+          // this.$.near.hidden = true;
           this.gpsIcon = 'gps-searching'
           var that = this;
           var location = {};
-          location.address = this.address;
-            this.geocode(location, function (city, lat, lng, placeId) {
-                console.log(city);
-                that.latitude = lat;
-                that.longitude = lng;
-                that.searchString = city;
-                that.gpsIcon = 'gps-fixed'
-              
+          location.address = this.searchString;
+            this.geocode(location, function (location, placeId) {
+                that._setToLocalHistory(location);
+                that.gpsIcon = 'gps-searching';         
             });
-        }
+        
       },
 
 
@@ -665,33 +1087,43 @@
             geocoder.geocode(location, function(results, status) {
 
               if (status == google.maps.GeocoderStatus.OK && results[0]) {
-                // console.log(results[0]);
+
                 var searchAddressString = '';
+                var neighborhood = '';
+                var city = '';
+                var state = '';
+                var zipcode = '';
                 
                 var address = results[0].address_components;
+  
                 for (var i=0; i<address.length; i++){
-                  var type = address[i].types
+                  var type = address[i].types;
+
                   for (var j=0; j<type.length; j++){
                     if(type[j] === 'locality'){
-                      searchAddressString += address[i].long_name + ', ';
+                      city = address[i].long_name + ', ';
                     }else if (type[j] === 'administrative_area_level_1') {
-                      searchAddressString += address[i].long_name + ' ';
+                      state = address[i].long_name + ' ';
+
+                    }else if (type[j] === 'neighborhood') {
+                      neighborhood = address[i].long_name + ', ';
 
                     }else if (type[j] === 'postal_code') {
-                      searchAddressString += address[i].long_name + ' ';
+                      zipcode = address[i].long_name + ' ';
                     }
-
-                    
-
                   }
                 }
-                // console.log(searchAddressString);
+                addressKey = neighborhood+city+state
+                searchAddressString = neighborhood+city+state+zipcode;
+
+                var completeObj = {};
+                completeObj.location = {};
+                completeObj.location.latitude = results[0].geometry.location.lat(), 
+                completeObj.location.longitude = results[0].geometry.location.lng(), 
+                completeObj.address = searchAddressString;
+                completeObj.addressKey = addressKey
                 
-                onComplete(
-                        results[0].formatted_address,           
-                        results[0].geometry.location.lat(),     
-                        results[0].geometry.location.lng(),     
-                        results[0].place_id);  
+                onComplete(completeObj,results[0].place_id);  
                                          
               } else {
                 console.warn('Geocode failed for ' + address + '. Status ' + status, results);
@@ -702,9 +1134,24 @@
             return true;
       },
 
+      _setToLocalHistory: function (location){
+
+       console.log('location history');
+          location.cacheTimestamp = Date.now();
+
+          if(this.locationHistory){
+            this.set(["locationHistory", location.addressKey], location);
+          }else{
+            var newLocationObj = {};
+            newLocationObj[location.addressKey] = location;
+            this.locationHistory = newLocationObj
+          }
+          this._watchLocationHistory(this.locationHistory);
+      },
+
       _distance: function (myLat, myLng, pubLat, pubLng){
-          var R = 6371; // Radius of the earth in km
-          var dLat = this.deg2rad(pubLat-myLat);  // deg2rad below
+          var R = 6371; 
+          var dLat = this.deg2rad(pubLat-myLat);  
           var dLon = this.deg2rad(pubLng-myLng); 
           var a = 
             Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -712,13 +1159,26 @@
             Math.sin(dLon/2) * Math.sin(dLon/2);
 
           var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-          var d = R * c; // Distance in km
+          var d = R * c; 
           return d
+       },
+
+       _calculateSortDistance: function (pubLat, pubLng, PREMIUM){
+         var myLat = this.location.location.latitude;
+         var myLng = this.location.location.longitude;
+         var distance = this._distance(myLat, myLng, pubLat, pubLng);
+         if (PREMIUM){
+           distance = distance-10;
+         }
+         return distance;
+
        },
 
        deg2rad: function (deg) {
               return deg * (Math.PI/180)
        },
+
+       
 
 
       _computeNameForUrl: function (name) {
@@ -731,28 +1191,66 @@
           return 'pub-name-missing'
         }
       },
-        _toArray(obj){
-          // console.log('arrayfunction',obj);
-          if(obj){
-            var key = Object.keys(obj);
-            // console.log(obj['ChIJ67q6T0MUkFQRKzMpFDL9Aoo']);
-            var returnArray = []; 
+        // _toArray(obj){
+        //   console.log('arrayObj', JSON.stringify(obj));
+ 
+        //   if(obj){
+        //     var key = Object.keys(obj);
+        //     console.log('key', key);
+        //     var returnArray = []; 
           
-            for (var i=0; i<key.length; i++){
-              returnArray.push(obj[key[i]])
-            }
-          }
-          var finalArray = returnArray.sort(this._sort);
-          return finalArray;
-        },
+        //     for (var i=0; i<key.length; i++){
+        //       returnArray.push(obj[key[i]])
+        //     }
+        //   }
+  
+        //   // console.log('arrayfunction',returnArray);
+        //   return returnArray;
+        // },
 
-        _sort: function (a,b){
+      _sort: function (a,b){
         return parseFloat(a.sort) - parseFloat(b.sort) ;
-        },
+      },
+      
+      _sortTimestamp: function(a,b){
+        'use strict';
+        if (a.cacheTimestamp > b.cacheTimestamp)
+          return -1;
+        if (a.cacheTimestamp < b.cacheTimestamp)
+          return 1;
+        return 0;
+      },
 
-         _sortDistance: function (a,b){
+      _sortDistance: function (a,b){
         return parseFloat(a.distance) - parseFloat(b.distance) ;
-        },
+      },
+
+      _defaultIcon: function (icon){
+        if(icon){
+          true;
+        }else{
+          false
+        }
+      },
+
+      _computeFilter: function (radius){
+        return function(pub) {
+          return pub.distance <=radius;
+        };
+      },
+
+      // _filter: function (obj){  
+      //   if(obj.distance <= this.radius){
+      //     return true;
+      //   }else{
+      //     return true;
+      //   }
+      // },
+
+      close: function (){
+        this.toggle = false;
+        this.searchString = this.address;
+      },
 
       _test: function(obj){
           console.log("TEST",obj);

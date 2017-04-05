@@ -70,7 +70,7 @@
          
           if(!online){
               var path = 'place_'+placeId;
-            var data = localStorage.getItem(path);
+            var data = window.localStorage.getItem(path);
            
             if(data){
               try{
@@ -88,18 +88,18 @@
 
           }else{
              //clean up local storage
-            for ( var i = 0; i<localStorage.length; i++ ) {
+            for ( var i = 0; i<window.localStorage.length; i++ ) {
               try{
-                var timestamp = JSON.parse(localStorage.getItem(localStorage.key(i))).cacheTimestamp;
+                var timestamp = JSON.parse(window.localStorage.getItem(window.localStorage.key(i))).cacheTimestamp;
                 if(timestamp){
-                  if((timestamp+86400000) < Date.now()){
-                    localStorage.removeItem(localStorage.key(i));
+                  if((timestamp) < Date.now()){
+                    window.localStorage.removeItem(window.localStorage.key(i));
                     console.log('removed cache item');
                   }
                 }
               }catch (error) {
                 console.log('CACHE CLEANUP ERROR: '+error);
-                localStorage.removeItem(localStorage.key(i));
+                window.localStorage.removeItem(window.localStorage.key(i));
               }
             }
             //get details data
@@ -128,8 +128,8 @@
                     // console.log(result);
 
                     if(result){
-                      result.cacheTimestamp = Date.now();
-                      localStorage.setItem('place_'+placeId, JSON.stringify(result));
+                      result.cacheTimestamp = Date.now()+86400000;
+                      window.localStorage.setItem('place_'+placeId, JSON.stringify(result));
                     }
               })
             }

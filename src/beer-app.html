@@ -358,7 +358,7 @@
       </div>
       <div class="left-bar-item" >
         <div id="backButton" hidden>
-            <a class="menu-btn"  href$="/[[nameUrl]]/main[[orgParam]]" tabindex="-1">
+            <a class="menu-btn"  href$="/[[nameUrl]]/[[returnPage]][[orgParam]]" tabindex="-1">
               <paper-icon-button alt="Back to main page" icon="beer-icons:arrow-back" ></paper-icon-button>
             </a>
         </div>
@@ -367,9 +367,9 @@
     <div class="logo" main-title><a aria-label="Go to main page" href$="/[[nameUrl]]/main[[orgParam]]" aria-label$="[[_showOrgName(place.name)]]">[[_showOrgName(place.name)]]</a></div>
     
     <div class="home-btn-wrapper" hidden$="[[_hideExtraButtons(smallScreen, page)]]">
-      <a href="/home/search" aria-label="Search for breweries">
+      <!--<a href="/home/search" aria-label="Search for breweries">
           <iron-icon class="home-btn" icon="beer-icons:search"></iron-icon>
-      </a>
+      </a>-->
       <a href="/home/near" aria-label="Breweries near me">
           <iron-icon class="home-btn" icon="beer-icons:gps-fixed"></iron-icon>
       </a>
@@ -422,7 +422,7 @@
           <hr>
         </template>
         <a name="near" aria-label="Breweries near me" href="/home"><iron-icon class="drawer-icon" icon="beer-icons:gps-fixed"></iron-icon>Near me</a>
-        <a name="search" aria-label="Search for breweries" href$="/[[nameUrl]]/search[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:search"></iron-icon>Search</a>
+        <!--<a name="search" aria-label="Search for breweries" href$="/[[nameUrl]]/search[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:search"></iron-icon>Search</a>-->
         <a name="favorite" aria-label="My favorites" href$="/[[nameUrl]]/favorite[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:favorite"></iron-icon>Favorites</a>
         <a name="browse" aria-label="Browse beers" href$="/[[nameUrl]]/browse[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:near-me"></iron-icon>Browse</a>
 
@@ -456,11 +456,13 @@
   <beer-truck name="truck" category=[[organization.category.TRUCK]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-truck>
   <beer-event name="event" category=[[organization.category.EVENT]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-event>
   <beer-store name="store" category=[[organization.category.STORE]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-store>
-  <beer-list name="list" route="[[subroute]]" offline="[[offline]]" place="[[place]]" owner="[[owner]]"></beer-list>
-  <beer-search name="search" latitude="[[latitude]]" longitude="[[longitude]]" idle="[[idle]]" geo-error="[[geoError]]"></beer-search>
-  <beer-home name="home" login="{{login}}" latitude="[[latitude]]" longitude="[[longitude]]" idle="{{idle}}" geo-error="[[geoError]]"></beer-home>
+  <beer-list name="list" route="[[subroute]]" offline="[[offline]]" place="[[place]]"  owner="[[owner]]"></beer-list>
+  <beer-search name="search" latitude="[[latitude]]" longitude="[[longitude]]" idle="{{idle}}" geo-error="[[geoError]]"></beer-search>
+  <beer-home name="home" login="{{login}}" geo-response="[[geoResponse]]" latitude="[[latitude]]" longitude="[[longitude]]" idle="{{idle}}" geo-error="[[geoError]]"></beer-home>
   <beer-favorite name="favorite"></beer-favorite>
   <beer-browse name="browse"></beer-browse>
+  <beer-beer-edit name="beer-edit" offline="[[offline]]" place="[[place]]" organization="[[organization]]"org-id="[[orgId]]" beer-id="[[beerId]]" name-url="[[nameUrl]]" owner="[[owner]]"></beer-beer-edit>
+
   <beer-404-warning name="404"></beer-404-warning>
 </iron-pages>
 
@@ -482,7 +484,7 @@
    </paper-dialog>
 
 
-    <paper-toast class="toast" id="offLineToast" duration="0">
+    <paper-toast class="toast" id="offLineToast" duration="5000">
       <div> 
         Offline, read only access  
         <br>
@@ -511,6 +513,11 @@
           type: String
         },
 
+        beerId: {
+          type: String,
+          computed: '_computeBeerId(queryParams)'
+        },
+
         categories: {
           type: Array,
           computed: '_computeCategories(organization)'
@@ -521,12 +528,21 @@
           value: false
         },
 
+        geoResponse:{
+          type: Object
+        },
+
          geoRendered: {
           type: Boolean,
           value: false
         },
 
         idle: {
+          type: Boolean,
+          value: true
+        },
+
+        firstTimeHomeHasLoaded: {
           type: Boolean,
           value: true
         },
@@ -562,6 +578,7 @@
           type: String,
           computed: '_computeOrgParam(orgId)'
         },
+
 
         owner:{
           type: Boolean,
@@ -604,6 +621,11 @@
 
         user:{
           type: Object
+        },
+
+        returnPage: {
+          type: String,
+          value: 'main'
         },
         
         _shouldShowTabs: {
@@ -652,13 +674,22 @@
       },
 
       _setTimeoutForGeo: function (page) {
-        if(page === 'home'){
-          var that = this; 
-          this.timeout = setTimeout(function(){ 
-          console.log('sent error message');
-          
-          that.geoError = true; }, 7000);
-        }
+        //if phone has location serves off and does not trigger error message
+        // if(page === 'home'){
+        //   if(this.firstTimeHomeHasLoaded){
+            
+        //     var that = this; 
+        //     this.timeout = setTimeout(function(){ 
+        //     console.log('sent error message');
+            
+        //     that.geoError = true; }, 7000);
+
+        //     this.firstTimeHomeHasLoaded = false;
+
+        //   }
+         
+
+        // }
 
       },
  
@@ -690,8 +721,9 @@
           clearTimeout(this.timeout);
           this.geoRendered = true;
           this.idle = true;
+          this.geoResponse = event;
         }
-        console.log('GEO_RESONSE', event);
+        console.log('GEO_RESONSE', JSON.stringify(event));
       },
 
       _updateUserBaseData: function (user){
@@ -789,6 +821,7 @@
     
         var title = 'Beer-Fly'
         var page = 'home'
+        var returnPage='main';
         var path = route.path;
         if(!path){
           page ='home';
@@ -822,10 +855,13 @@
                }else{
                  if(thirdRoute === 'beer'){
                    page='favorite-beer';
+                   returnPage='favorite';
                  }else if(thirdRoute === 'brewery'){
                    page='favorite-brewery';
+                   returnPage='favorite';
                  }else if(thirdRoute === 'pub'){
                    page='favorite-pub';
+                   returnPage='favorite';
                  }else{
                    page = 'favorite';
                  }
@@ -850,6 +886,7 @@
                page = 'review';
             }else if(subRoute==='tv'){
               page = 'tv';
+              returnPage='tap';
             }else if(subRoute==='search'){
                page = 'search';
             }else if(subRoute==='account'){
@@ -858,6 +895,9 @@
                page = 'home';
             }else if(subRoute==='browse'){
                page = 'browse';
+            }else if(subRoute==='beer-edit'){
+               page = 'beer-edit';
+               returnPage='beer';
             }else if(subRoute==='favorite'){
                
                if(!thirdRoute){
@@ -865,10 +905,13 @@
                }else{
                  if(thirdRoute === 'beer'){
                    page='favorite-beer';
+                   returnPage='favorite';
                  }else if(thirdRoute === 'brewery'){
                    page='favorite-brewery';
+                   returnPage='favorite';
                  }else if(thirdRoute === 'pub'){
                    page='favorite-pub';
+                   returnPage='favorite';
                  }else{
                    page = 'favorite';
                  }
@@ -883,7 +926,7 @@
    
           // this._listScrollTop = window.pageYOffset;
         
-
+        this.returnPage = returnPage
         this.page = page || 'home';
         if (this.page === 'home') {
           this.orgId = 'home';
@@ -891,13 +934,13 @@
 
         if(this.page === 'home' || this.page === 'search'){
           if(!this.geoRendered){
-          this.idle = false;
+          // this.idle = false;
           }else{
-            this.idle = true;
+            // this.idle = true;
           }
 
         }else{
-          this.idle = true;
+          // this.idle = true;
         }
 
         this.drawerOpened = false;
@@ -1099,6 +1142,15 @@
         return 'home';
       },
 
+      _computeBeerId: function (queryParams) {
+        if (queryParams) {
+          if (queryParams.beerId) {
+            return queryParams.beerId
+          }
+        }
+        return null;
+      },
+
       _computeOrgParam: function (orgId) {
         if (orgId) {
           if (orgId !== 'home') {
@@ -1192,13 +1244,13 @@
         return 0;
       },
 
-      _returnFirstLetter(text){
+      _returnFirstLetter: function (text){
         if(text){
         return text.charAt(0).toUpperCase();
         }
       },
 
-      _isHome(page){
+      _isHome: function (page){
         
         if(page === 'home'){
           return true;
@@ -1232,7 +1284,7 @@
         return this.$.auth.signOut();
       }, 
 
-      _test(obj) {
+      _test: function (obj) {
         console.log("TEST",obj)
       }
 

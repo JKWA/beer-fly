@@ -4,7 +4,7 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 
 <link rel="import" href="beer-icons.html">
-<link rel="import" href="beer-near-breweries-card.html">
+<link rel="import" href="beer-pub-card.html">
 
 
 <dom-module id="beer-favorite-brewery">
@@ -34,10 +34,20 @@
 
 
 
-    <template is="dom-repeat" items=[[_toArray(favorite)]] sort="_sortByRating">
-       <beer-near-breweries-card
+    <template is="dom-repeat" items=[[_toArray(favorite)]] as="pub" sort="_sortByRating">
+       <!--<beer-near-breweries-card
           place-id="[[item.id]]">
-      </beer-near-breweries-card>
+      </beer-near-breweries-card>-->
+      <beer-pub-card 
+            place-id="[[pub.place_id]]"
+            name="[[pub.name]]"
+            address="[[pub.vicinity]]"
+            dog-friendly="[[!pub.dogFriendly]]"
+            patio="[[!pub.patio]]"
+            over21="[[!pub.over21]]">
+      </beer-pub-card>
+
+
     </template>
 
 
@@ -66,17 +76,21 @@
       }
     },
 
-  _toArray(obj){
+  _toArray: function (obj){
     
     if(obj){
       var returnArray=[];
       var key = Object.keys(obj);
       for (var i=0; i<key.length; i++){
-        var beer = {};
-        beer.id = key[i];
-        beer.name = obj[key[i]].name;
-        beer.rating = obj[key[i]].rating;
-        returnArray.push(beer);
+        var pub = obj[key[i]];
+        
+        pub.dogFriendly = false;
+        pub.patio = false;
+        pub.over21=false;
+        // beer.id = key[i];
+        // beer.name = obj[key[i]].name;
+        // beer.rating = obj[key[i]].rating;
+        returnArray.push(pub);
       }
       return returnArray.sort(this._sortByName);
     }
@@ -99,7 +113,7 @@
         return 1;
       return 0;
     },
-    _test(obj){
+    _test: function (obj){
       console.log("RATING", obj);
     }
 

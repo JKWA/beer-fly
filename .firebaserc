@@ -1,6 +1,7 @@
 {
   "projects": {
     "beer": "brewery-app",
-    "staging": "beer-fly"
+    "staging": "beer-fly",
+    "default": "beer-fly"
   }
 }

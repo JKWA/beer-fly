@@ -74,24 +74,24 @@
        properties: {
 
           dogs:{
-            type: Boolean,
-            value: false
-          },
+          type: Boolean,
+          value: false
+        },
 
-          patio:{
-            type: Boolean,
-            value: false
-          },
-          
-          over21:{
-            type: Boolean,
-            value: false
-          },
+        patio:{
+          type: Boolean,
+          value: false
+        },
+        
+        over21:{
+          type: Boolean,
+          value: false
+        },
 
-          crowdSource:{
-            type: Boolean,
-            value: false
-          },
+        crowdSource:{
+          type: Boolean,
+          value: false
+        },
 
           message:{
             type: String
@@ -122,7 +122,17 @@
           toast.duration = 5000;
           toast.open();
 
-        }
+        },
+
+         _computeHidden: function (item) {
+           console.log('item',item);
+          if(item === true){
+            console.log('dont hide')
+            return false;
+          }else{
+            return true;
+          }
+      },
 
 
     });

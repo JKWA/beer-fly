@@ -198,18 +198,10 @@
       var obj = {};
       obj.name = this.fileName;
       obj.url = url;
-      obj.timestamp = new Date();
+      obj.timestamp = Date.now();
 
-      // var key = this.isUpdatedFile();
-      // console.log(key);
-      // if(key){
-        // console.log('update');
         this.$.image.ref.child(this.type).update(obj);
-      
-      // }else{
-      //   // console.log('new');
-      //  this.$.images.ref.push(obj);
-    //  }
+
    }
 
   },
@@ -230,7 +222,7 @@
     this.fileProgress = 0;
     this.fileComplete = false;
     this.fileError = false;
-    this.customStyle['--paper-progress-active-color'] = 'var(--app-primary-color)';
+    this.customStyle['--paper-progress-active-color'] = 'var(--app-accent-color)';
     this.updateStyles();
     // console.log(this.uploader);
     // console.log(uploadValue);
@@ -269,7 +261,7 @@
     'use strict';
   
     var app = this.$.image.app;
-    var storageRef = app.storage().ref('organization/'+this.orgId+'/images/'+this.key+'/'+file.name);
+    var storageRef = app.storage().ref('organization/'+this.orgId+'/'+this.key+'/'+this.type+'/'+file.name);
     var task = storageRef.put(file);
     var that = this;
     task.on('state_changed', 

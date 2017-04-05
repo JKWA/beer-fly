@@ -141,11 +141,12 @@
       <iron-image 
           style="width:100%; height:300px; background-color: #F8F8F8;"
           sizing="cover" 
-          
+          placeholder="[[placeholder]]"
           preload 
           fade
           src="[[photoUrl]]">
       </iron-image>
+
     </div>
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
   
@@ -153,17 +154,23 @@
         <div>
           <beer-pub-rating 
             google-rating="[[place.rating]]" 
-            org-id="[[place.place_id]]"
+            place-id="[[place.place_id]]"
+            name="[[place.name]]"
+            address="[[place.vicinity]]"
             login="{{login}}">
         </beer-pub-rating>
         </div>
-       
+      
         <div>
+          <!--DOG
+          PATIO
+          21
+          CROWD-->
           <beer-pub-icons
-              dogs="[[dogs]]"
-              patio="[[organization.patio]]"
-              over21="[[organization.over21]]"
-              crowd-source="[[organization.crowdSource]]">
+              dogs="[[!dogs]]"
+              patio="[[!patio]]"
+              over21="[[!over21]]"
+              crowd-source="[[!crowdSource]]">
           </beer-pub-icons>
         </div>
         
@@ -368,6 +375,11 @@
         photoUrl: {
           type: String,
           computed: '_computePhotoUrl(organization, place)'
+        },
+
+        placeholder: {
+          type: String,
+          computed: '_computePhotoPlaceholder(organization, place)'
         }
 
         
@@ -416,7 +428,7 @@
         }
       },
 
-       _isTap(type){
+       _isTap: function (type){
         if(type === 'TAP'){
           return true;
         }else{
@@ -424,7 +436,7 @@
         }
       },
 
-      _isBeer(type){
+      _isBeer: function (type){
         if(type === 'BEER'){
           return true;
         }else{
@@ -432,14 +444,14 @@
         }
       },
 
-      _isMenu(type){
+      _isMenu: function (type){
         if(type === 'MENU'){
           return true;
         }else{
           return false;
         }
       },
-      _isContact(type){
+      _isContact: function (type){
         if(type === 'CONTACT'){
           return true;
         }else{
@@ -447,7 +459,7 @@
         }
       },
 
-      _isReview(type){
+      _isReview: function (type){
         if(type === 'REVIEW'){
           return true;
         }else{
@@ -554,6 +566,25 @@
 
        }
       },
+
+      _computePhotoPlaceholder: function (organization, place) {
+        try{
+          if(organization.mainImage){
+            if(organization.mainImage.banner){
+              if(organization.mainImage.banner.base64){
+                return 'data:image/png;base64, '+organization.mainImage.banner.base64;
+              }
+            }
+          }
+          // var photoMeta = {};
+          // photoMeta.maxWidth = place.photos[0].width;
+          // photoMeta.maxHeight = place.photos[0].height;
+          // return place.photos[0].getUrl(photoMeta);
+        }catch (error){
+
+       }
+      },
+
 
       _test: function(obj){
         console.log('TEST', obj);

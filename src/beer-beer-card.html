@@ -131,9 +131,14 @@
               </beer-beer-rating>
             </div>
             <div hidden$="[[!edit]]">
-                <paper-icon-button icon="beer-icons:edit" on-tap="changeEditId"></paper-icon-button>
+              <a aria-label$="TEST" href$="/[[nameUrl]]/beer-edit?orgid=[[placeId]]&beerId=[[beerId]]">
+                <paper-icon-button icon="beer-icons:edit"></paper-icon-button>
+              </a>
+                <!--<paper-icon-button icon="beer-icons:edit" on-tap="changeEditId"></paper-icon-button>-->
             </div>  
           </div>
+
+          
 
           <beer-beer-tap
             org-id="[[placeId]]"
@@ -231,7 +236,7 @@
         this.editBeerId = this.beerId;
       },
 
-      _test(obj){
+      _test: function (obj){
         console.log(obj);
       }
       

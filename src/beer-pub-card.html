@@ -74,6 +74,22 @@
     
 
       <paper-material class='card' elevation="1" animated-shadow="false">
+        <!--TEST[[photoUrl]]-->
+        <template is="dom-if" if="[[sponsor]]">
+          <div hidden$="[[!photoUrl]]">
+          <a aria-label$="[[name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
+            <iron-image 
+                style="width:100%; height:300px; background-color: #F8F8F8;"
+                sizing="cover" 
+                preload 
+                placeholder="[[_computedPlaceHolder]]"
+                fade
+                src="[[photoUrl]]">
+            </iron-image>
+           
+          </a>
+          </div>
+        </template>
      
         <div  class="sponsor-wrapper" >
             <div id="sponsor" hidden$="[[sponsorHide]]">Sponsoring Organization</div>
@@ -81,21 +97,26 @@
          <div class="icons-wrapper">
             <div>
               <beer-pub-rating 
-                  org-id="[[placeId]]"
+                  place-id="[[placeId]]"
                   google-rating="[[googleRating]]"
-                  login="{{login}}">
+                  login="{{login}}"
+                  address="[[address]]"
+                  name="[[name]]">
               </beer-pub-rating>
             </div>
            
            
    
           </div>
+       
           <a aria-label$="[[name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
             <div class="items">
                 <div class="name">[[name]]</div>
-                <div class="motto">[[motto]]</div>
+                <template is="dom-if" if="[[sponsor]]">
+                  <div class="motto">[[motto]]</div>
+                </template>
                 <div class="address" hidden$="[[!address]]">[[address]]</div>
-                <div class="address" hidden$="[[address]]">[[city]], [[state]]</div>
+                <!--<div class="address" hidden$="[[address]]">[[city]], [[state]]</div>-->
                 <div class="distance" hidden$="[[!distance]]">[[_computeDisplayDistance(distance)]] miles from you</div>
             </div>
            </a>
@@ -165,6 +186,19 @@
             value: false
           },
 
+          photoUrl:{
+            type: String
+          },
+
+          placeholderData:{
+            type: String
+          },
+
+          _computedPlaceHolder:{
+            type: String,
+            computed: '_computePlaceHolder(placeHolderData)'
+          },
+
           placeId:{
             type: String
           },
@@ -223,6 +257,11 @@
             return 'pub-name-missing'
           }
       },
+      _computedPlaceHolder: function (placeholderData){
+        if(placeholderData){
+          return 'data:image/png;base64, '+placeholderData;
+        }
+      }
 
     });
 

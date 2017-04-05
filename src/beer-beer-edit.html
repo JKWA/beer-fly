@@ -5,12 +5,14 @@
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="beer-icons.html">
 
-<dom-module id="beer-beer-add">
+<dom-module id="beer-beer-edit">
 
 
   <template>
@@ -21,6 +23,12 @@
         color: var(--app-accent-color);
         text-decoration: none;
         }
+
+      paper-spinner-lite{
+        position: absolute;
+        top: 40%;
+        left: 50%;
+      }
 
       .card{
         margin: 10px;
@@ -110,7 +118,7 @@
     <firebase-document
         app-name="beer"
         id="onTap"
-        path="organization/[[orgId]]/onTap/[[editBeerId]]">
+        path="organization/[[orgId]]/onTap/[[beerId]]">
     </firebase-document>
 
     <firebase-document
@@ -123,19 +131,24 @@
         app-name="beer"
         id="beer"
         disabled
-        path="beer/[[editBeerId]]"
+        path="beer/[[beerId]]"
         data="{{beer}}">
     </firebase-document>
 
-    <!--THIS "beer/[[editBeerId]]" [[beer.name]]-->
+    <!--THIS "beer/[[beerId]]" [[beer.name]]-->
 
-    <paper-material class="card" elevation="0">
+    <!--TEST [[beerId]]-->
+    <!--<paper-spinner-lite active id="spinner"></paper-spinner-lite>-->
 
-      <!--[[editBeerId]]-->
-      <div class="brewed-by">Brewed by [[organization.name]] - [[organization.city]], [[organization.stateAbbreviation]]</div>
-       <div class="beer-name" hidden$="[[!editBeerId]]">[[name]]</div>
+    <div id="editCard" >
+  
+    <paper-material  class="card"  elevation="0">
+
+      <!--[[beerId]]-->
+      <div class="brewed-by">Brewed by [[place.name]] - [[place.vicinity]]</div>
+       <div class="beer-name" hidden$="[[!beerId]]">[[name]]</div>
         <paper-input 
-          hidden$="[[editBeerId]]"
+          hidden$="[[beerId]]"
           id="name"
           label="Beer Name" 
           char-counter 
@@ -189,9 +202,9 @@
               <iron-label >
                   <paper-button id="submitButton" on-tap="_addNewBeer" class="button">[[buttonName]]</paper-button>
               </iron-label>
-              <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+              <!--<paper-button dialog-dismiss autofocus>CLOSE</paper-button>-->
             </div>
-            <div class="message-wrapper" id="message">
+            <!--<div class="message-wrapper" id="message">
               <div>
                 <paper-spinner-lite id="spinner"></paper-spinner-lite>
               </div>
@@ -201,10 +214,18 @@
               <div class="error-message" id="error" hidden>
                 <iron-icon icon="beer-icons:error"></iron-icon>
               </div>
-            </div>
+            </div>-->
           </div>
     
     </paper-material>
+    </div>
+
+    <paper-toast class="toast" id="savedToast" duration="5000" vertical-offset="150">
+      <div> 
+        Saved [[name]]
+        <br>
+      </div>
+    </paper-toast>
  
     
 
@@ -214,8 +235,8 @@
 
     Polymer({
 
-      is: 'beer-beer-add',
-      behaviors: [ Polymer.NeonAnimationRunnerBehavior ],
+      is: 'beer-beer-edit',
+  
 
       properties:{
 
@@ -228,16 +249,18 @@
         },
 
         buttonName:{
-          type:String
+          type:String,
+          value: 'Add Beer'
+
         },
 
         description:{
           type: String
         },
         
-        editBeerId:{
+        beerId:{
           type: String,
-          notify: true
+          
         },
 
         name:{
@@ -282,24 +305,24 @@
           value: false
         },
        
-        animationConfig: {
-          value: function() {
-            return {
-              'entry': {
-                // provided by neon-animation/animations/scale-up-animation.html
-                name: 'scale-up-animation',
-                node: this
-              },
-              'exit': {
-                // provided by neon-animation-animations/fade-out-animation.html
-                name: 'fade-in-animation',
-                node: this.$.saved,
-                timing: {delay: 1000}
+        // animationConfig: {
+        //   value: function() {
+        //     return {
+        //       'entry': {
+        //         // provided by neon-animation/animations/scale-up-animation.html
+        //         name: 'scale-up-animation',
+        //         node: this
+        //       },
+        //       'exit': {
+        //         // provided by neon-animation-animations/fade-out-animation.html
+        //         name: 'fade-in-animation',
+        //         node: this.$.saved,
+        //         timing: {delay: 1000}
                 
-              }
-            }
-          }
-        }
+        //       }
+        //     }
+        //   }
+        // }
       },
 
       observers:[
@@ -309,15 +332,26 @@
         '_validateDescription(description)',
         '_validateAll(name, description, abv, searchString)',
         '_prefillData(beer)',
-        '_ifEditBeerId(editBeerId)'
+        '_ifBeerId(beerId)',
+        '_stylesAreLoaded(styles)'
       ],
 
       ready: function (){
         this.$.description.invalid = true;
+        
       },
 
-      _ifEditBeerId: function (editBeerId) {
-        if(editBeerId){
+      _stylesAreLoaded: function (styles){
+        // console.log(this.$.styles.valueIsEmpty());
+        // if(Object.keys(styles).length > 0){
+        //    this.$.editCard.hidden = false;
+        // }
+      },
+
+      _ifBeerId: function (beerId) {
+        console.log('getting beer id');
+        
+        if(beerId){
           this.$.beer.disabled = false;
           this.buttonName = "SAVE";
         }else{
@@ -327,13 +361,14 @@
           this.searchString = null;
           this.styleName = null;
           this.styleId = null;
+          this.abv = null;
           this.buttonName = "ADD BEER";
 
         }
       },
 
       _prefillData: function (beer) {
-        
+        console.log(beer);
         if(beer){
 
             this.name = beer.name;
@@ -349,9 +384,13 @@
             
         }else{
            
-
+        
         }
-        // this.editBeerId = false
+        if(Object.keys(beer).length >0){
+        this.$.editCard.hidden = false;
+        // this.$.spinner.active = false;
+        }
+        // this.beerId = false
       },
 
 
@@ -447,9 +486,9 @@
       _addNewBeer: function (){
         this._validateAll();
         if(this.valid){
-          this.$.spinner.active = true;
-          this.$.saved.hidden = true;
-          this.$.error.hidden = true;
+          // this.$.spinner.active = true;
+          // this.$.saved.hidden = true;
+          // this.$.error.hidden = true;
           var beer = {};
           var org = {};
           var obj = {};
@@ -460,8 +499,8 @@
           // var isOnTap = (onTap.id) ? true : false;
           console.log('onTap', isOnTap);
 
-          if(this.editBeerId){
-            var id = this.editBeerId
+          if(this.beerId){
+            var id = this.beerId
             obj['beer/'+id+'/lastEdited'] = new Date();
             obj['beer/'+id+'/edited'] = true;
           }else{
@@ -532,7 +571,7 @@
             };
           }
           if(this.name){
-            if(!this.editBeerId){
+            if(!this.beerId){
               obj['beer/'+id+'/name'] = this.name;
               obj[orgPre+'/name'] = this.name;
               if(isOnTap) { 
@@ -612,24 +651,25 @@
 
           firebase.database(app).ref().update(obj, function(error) {
             if (error){
-              that.$.spinner.active = false;
-              that.$.saved.hidden = true;
-              that.$.error.hidden = false;
+              // that.$.spinner.active = false;
+              // that.$.saved.hidden = true;
+              // that.$.error.hidden = false;
               // that.playAnimation('exit');
 
               console.log("Error" + error);
             }else{
               console.log("Saved");
-              that.$.spinner.active = false;
-              that.$.saved.hidden = false;
+              that.$.savedToast.open();
+              // that.$.spinner.active = false;
+              // that.$.saved.hidden = false;
               // that.playAnimation('exit');
-              that.$.error.hidden = true;
+              // that.$.error.hidden = true;
               if(that.savedBeerName){
                 that.savedBeerName += ', '+beer.name;
               }else{
                 that.savedBeerName = beer.name;
               }
-              if(!that.editBeerId){
+              if(!that.beerId){
               that.abv = '';
               that.name = '';
               that.description = '';
@@ -641,8 +681,8 @@
           });
         }else{
           console.log('not valid');
-          this.$.saved.hidden = true;
-          this.$.error.hidden = false;
+          // this.$.saved.hidden = true;
+          // this.$.error.hidden = false;
           // this.playAnimation('exit');
         }
 
