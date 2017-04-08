@@ -20,8 +20,14 @@
     <style>
 
       a{
-        color: var(--app-accent-color);
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 0.3em;
+        color: var(--app-primary-color);
         text-decoration: none;
+        /* required for IE 11, so this <a> can receive pointer events */
+        display: inline-block;
+        pointer-events: auto;
         }
 
       paper-spinner-lite{
@@ -54,6 +60,11 @@
         font-weight: 400;
         color: var(--app-primary-color);
       }
+
+      .return-link{
+        margin: 0 0 0 15px;
+      }
+
       .brewed-by{
         font-size: 1em;
         font-weight: 600;
@@ -83,6 +94,19 @@
       .button{
          color: var(--app-accent-color);
       }
+
+      .brewery-name {
+        font-size: 1.7em;
+        font-weight: 500;
+        color: var(--app-primary-color);
+      }
+
+      .address {
+        font-size: .9em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
       .action-wrapper{
          @apply(--layout-horizontal);
          @apply(--layout-justified);
@@ -95,12 +119,19 @@
 
     </style>
 
+    <firebase-auth  app-name="beer" user="{{user}}"></firebase-auth>
+
+    <firebase-document 
+        id="newOrg"
+        app-name="beer" 
+        path="newOrg/[[place.place_id]]">
+    </firebase-document>
+
     <firebase-query
         app-name="beer"
         id="styles"
         path="beerStyle"
-        data="{{styles}}"
-        >
+        data="{{styles}}">
     </firebase-query>
 
     <firebase-document
@@ -141,11 +172,24 @@
     <!--<paper-spinner-lite active id="spinner"></paper-spinner-lite>-->
 
     <div id="editCard" >
+
+    <div class="return-link" hidden="[[!returnOrgId]]">
+        <iron-label>
+        <a aria-label$="TEST" href$="/[[_computeNameForUrl(returnName)]]/tap-add?orgid=[[returnOrgId]]">
+          <paper-icon-button icon="beer-icons:arrow-back"></paper-icon-button>
+          [[returnName]]</a>
+      </iron-label>
+      </div>
   
     <paper-material  class="card"  elevation="0">
 
-      <!--[[beerId]]-->
-      <div class="brewed-by">Brewed by [[place.name]] - [[place.vicinity]]</div>
+      <div>
+        <div class="brewery-name">[[organization.name]]</div>
+        <div class="address">[[organization.city]], [[organization.stateAbbreviation]]</div>
+      </div>
+
+      
+
        <div class="beer-name" hidden$="[[!beerId]]">[[name]]</div>
         <paper-input 
           hidden$="[[beerId]]"
@@ -160,7 +204,6 @@
         <paper-textarea 
           id="description"
           label="Beer Description" 
-          error-message="Required"
           char-counter 
           maxlength="500" 
           value="{{description}}">
@@ -202,19 +245,8 @@
               <iron-label >
                   <paper-button id="submitButton" on-tap="_addNewBeer" class="button">[[buttonName]]</paper-button>
               </iron-label>
-              <!--<paper-button dialog-dismiss autofocus>CLOSE</paper-button>-->
             </div>
-            <!--<div class="message-wrapper" id="message">
-              <div>
-                <paper-spinner-lite id="spinner"></paper-spinner-lite>
-              </div>
-              <div class="saved-message" id="saved" hidden>
-                <iron-icon icon="beer-icons:save"></iron-icon>
-              </div>
-              <div class="error-message" id="error" hidden>
-                <iron-icon icon="beer-icons:error"></iron-icon>
-              </div>
-            </div>-->
+   
           </div>
     
     </paper-material>
@@ -304,6 +336,10 @@
           type: Boolean,
           value: false
         },
+        
+        user:{
+          type:Object
+        }
        
         // animationConfig: {
         //   value: function() {
@@ -329,15 +365,16 @@
         '_validateStyleData(searchString)',
         '_validateABV(abv)',
         '_validateName(name)',
-        '_validateDescription(description)',
+        // '_validateDescription(description)',
         '_validateAll(name, description, abv, searchString)',
         '_prefillData(beer)',
         '_ifBeerId(beerId)',
-        '_stylesAreLoaded(styles)'
+        '_stylesAreLoaded(styles)',
+        '_addNewOrg(orgId, user)'
       ],
 
       ready: function (){
-        this.$.description.invalid = true;
+        // this.$.description.invalid = true;
         
       },
 
@@ -347,6 +384,20 @@
         //    this.$.editCard.hidden = false;
         // }
       },
+
+       _addNewOrg: function (orgId, user){
+          if(user){
+            if(orgId){
+                console.log('update edit');
+                var obj = {};
+                obj['user/'+user.uid] = {};
+                obj['user/'+user.uid].uid = this.user.uid;
+                obj['user/'+user.uid].timestamp = Date.now();
+            
+                this.$.newOrg.ref.update(obj);
+            }
+          }
+        },
 
       _ifBeerId: function (beerId) {
         console.log('getting beer id');
@@ -429,21 +480,21 @@
           }
       },
 
-      _validateDescription: function (description){
-        if(description){
-            this.$.description.invalid = false;
-          }else{
-            this.$.description.invalid = true;
-          }
-      },
+      // _validateDescription: function (description){
+      //   if(description){
+      //       this.$.description.invalid = false;
+      //     }else{
+      //       this.$.description.invalid = true;
+      //     }
+      // },
 
       _validateAll: function (){
         var name  = !this.$.name.invalid;
-        var description  = !this.$.description.invalid;
+        // var description  = !this.$.description.invalid;
         var abv  = !this.$.abv.invalid;
         var search  = !this.$.search.invalid;
 
-        if(name && description && abv && search){
+        if(name && abv && search){
           this.valid = true;
 
         }else{
@@ -688,12 +739,20 @@
 
       },
 
+
+      _computeNameForUrl: function (name) {
+        'use strict';
+        if (name) {
+          name = name.replace(/\s/g, '-')
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'unknown-name'
+        }
+      }
+
   
       
 
-      _sortStyleName: function(){
-
-      }
 
     });
 

@@ -283,7 +283,7 @@
 
     </style>
 
-<!--<beer-analytics key="UA-39334307-16"></beer-analytics>-->
+<beer-analytics key="UA-97017491-1"></beer-analytics>
 
 <iron-location path="{{path}}" query="{{query}}"></iron-location>
 <iron-query-params params-string="{{query}}" params-object="{{queryParams}}">
@@ -326,10 +326,10 @@
       path="user/[[user.uid]]">
   </firebase-document>
 
-  <app-localstorage-document 
+  <!--<app-localstorage-document 
       key="organization_[[orgId]]" 
       data="{{localOrganizationData}}">
-  </app-localstorage-document>
+  </app-localstorage-document>-->
 
   <beer-place-data
     place-id="[[orgId]]"
@@ -461,7 +461,12 @@
   <beer-home name="home" login="{{login}}" geo-response="[[geoResponse]]" latitude="[[latitude]]" longitude="[[longitude]]" idle="{{idle}}" geo-error="[[geoError]]"></beer-home>
   <beer-favorite name="favorite"></beer-favorite>
   <beer-browse name="browse"></beer-browse>
-  <beer-beer-edit name="beer-edit" offline="[[offline]]" place="[[place]]" organization="[[organization]]"org-id="[[orgId]]" beer-id="[[beerId]]" name-url="[[nameUrl]]" owner="[[owner]]"></beer-beer-edit>
+
+  <beer-tap-add name="tap-add" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap-add>
+
+
+  <beer-beer-edit name="beer-edit" offline="[[offline]]" place="[[place]]" organization="[[organization]]"org-id="[[orgId]]" beer-id="[[beerId]]" name-url="[[nameUrl]]" owner="[[owner]]" return-name="[[returnName]]" return-org-id="[[returnOrgId]]"></beer-beer-edit>
+  <!--<beer-tap-add name="tap-add" offline="[[offline]]" place="[[place]]" organization="[[organization]]" org-id="[[orgId]]" name-url="[[nameUrl]]" owner="[[owner]]"></beer-tap-add>-->
 
   <beer-404-warning name="404"></beer-404-warning>
 </iron-pages>
@@ -546,10 +551,12 @@
           type: Boolean,
           value: true
         },
+
+
         
-        localOrganizationData: {
-          type: Object
-        },
+        // localOrganizationData: {
+        //   type: Object
+        // },
 
         login: {
           type: Boolean,
@@ -572,6 +579,16 @@
         orgId: {
           type: String,
           computed: '_computeOrgId(queryParams)',
+        },
+
+        returnOrgId: {
+          type: String,
+          computed: '_computeReturnOrgId(queryParams)',
+        },
+
+        returnName: {
+          type: String,
+          computed: '_computeReturnName(queryParams)',
         },
 
         orgParam: {
@@ -651,8 +668,8 @@
         '_setBackArrowInHeader(page)',
         '_updateUserBaseData(user)',
         '_updatePageTitle(place.name, page)',
-        '_replaceOfflineOrganizationData(organization, online)',
-        '_cacheOrgData(organization, online)',
+        // '_replaceOfflineOrganizationData(organization, online)',
+        // '_cacheOrgData(organization, online)',
         '_scrollToTop(orgId)',
         '_setTimeoutForGeo(page)'
       ],
@@ -672,6 +689,8 @@
         // Custom elements polyfill safe way to indicate an element has been upgraded.
         this.removeAttribute('unresolved');
       },
+
+     
 
       _setTimeoutForGeo: function (page) {
         //if phone has location serves off and does not trigger error message
@@ -698,15 +717,18 @@
         Polymer.AppLayout.scroll({ top: 0, behavior: 'silent' });
       },
 
-      _cacheOrgData: function (organization, online){
+      // _cacheOrgData: function (organization, online){
        
-        if(online){
-          if(Object.keys(organization).length > 0){
-            this.localOrganizationData = organization;
-          }
-        }
+      //   if(online){
+      //     if(Object.keys(organization).length > 0){
+      //       console.log('cached', organization);
+      //       organization.beerfly = true;
+      //       organization.cacheTimestamp = Date.now()+604800000;
+      //       this.localOrganizationData = organization;
+      //     }
+      //   }
 
-      },
+      // },
 
        _geoError: function (event){
         console.log('GEO_ERROR', event);
@@ -790,15 +812,15 @@
         this.owner = owner;
       },
 
-      _replaceOfflineOrganizationData: function (organization, online){
+      // _replaceOfflineOrganizationData: function (organization, online){
          
-          if(!online){
-            if(!organization){
-              //  console.log(this.localOrganizationData);
-              // this.organization = this.localOrganizationData;
-            }
-          }
-      },
+      //     if(!online){
+      //       if(!organization){
+      //         //  console.log(this.localOrganizationData);
+      //         // this.organization = this.localOrganizationData;
+      //       }
+      //     }
+      // },
 
         _toastOffline: function(online){
           if(online){
@@ -898,6 +920,9 @@
             }else if(subRoute==='beer-edit'){
                page = 'beer-edit';
                returnPage='beer';
+            }else if(subRoute==='tap-add'){
+               page = 'tap-add';
+               returnPage='tap';
             }else if(subRoute==='favorite'){
                
                if(!thirdRoute){
@@ -1146,6 +1171,24 @@
         if (queryParams) {
           if (queryParams.beerId) {
             return queryParams.beerId
+          }
+        }
+        return null;
+      },
+
+      _computeReturnName: function (queryParams) {
+        if (queryParams) {
+          if (queryParams.returnName) {
+            return decodeURI(queryParams.returnName);
+          }
+        }
+        return null;
+      },
+
+      _computeReturnOrgId: function (queryParams) {
+        if (queryParams) {
+          if (queryParams.returnOrgId) {
+            return queryParams.returnOrgId;
           }
         }
         return null;

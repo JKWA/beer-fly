@@ -232,79 +232,19 @@ function savePub(pub, place){
     pub['newOrg/'+place.place_id+'/timestamp'] = Date.now();
 
     if(!place.permanently_closed){
-      if(place.latitude){
-        if(place.longitude){
-          geoFire.set(place.place_id, [place.latitude, place.longitude]).then(function() {
-          console.log("Set GeoFire");
+       if(place.geometry){
+         geoFire.set(place.place_id, [place.geometry.location.lat, place.geometry.location.lng]).then(function() {
+          console.log("Set GeoFire", place);
           }, function(error) {
               console.log("Error: " + error);
           });
-        }
-      }
+       }    
     }
     console.log('save', pub);
     return admin.database().ref().update(pub);
   }
 }
 
-
-// exports.blurOffensiveImages = functions.storage.object().onChange(event => {
-//   const object = event.data;
-//   // Exit if this is a deletion or a deploy event.
-//   if (object.resourceState === 'not_exists') {
-//     return console.log('This is a deletion event.');
-//   } else if (!object.name) {
-//     return console.log('This is a deploy event.');
-//   }
-
-//   const bucket = gcs.bucket(object.bucket);
-//   const file = bucket.file(object.name);
-
-//   // Check the image content using the Cloud Vision API.
-//   return vision.detectSafeSearch(file).then(safeSearchResult => {
-//     if (safeSearchResult[0].adult || safeSearchResult[0].violence) {
-//       console.log('The image', object.name, 'has been detected as inappropriate.');
-      
-
-//       return blurImage(object.name, bucket);
-//     } else {
-//       console.log('The image', object.name,'has been detected as OK.');
-//     }
-//   });
-// });
-
-// function blurImage(filePath, bucket, metadata) {
-//   let fileArray = filePath.split('/');
-//   const encodedPath = 'https://firebasestorage.googleapis.com/v0/b/beer-fly.appspot.com/o/'+fileArray.join('%2F')+'?alt=media';
-//   const fileName = fileArray.pop();
-//   const tempLocalFile = `/tmp/${fileName}`;
-//   // const messageId = filePath.split('/')[1];
-//   const dataPath = fileArray.join('/');
-//   console.log('delete url');
-//   // admin.database().ref(dataPath).update({url: null});
-//   // console.log('This has been joined', encodedPath);
-//   // Download file from bucket.
-
-  
-//   return bucket.file(filePath).download({destination: tempLocalFile})
-//     .then(() => {
-//       console.log('Image has been downloaded to', tempLocalFile);
-//       // Blur the image using ImageMagick.
-//       return exec(`convert ${tempLocalFile} -channel RGBA -blur 0x24 ${tempLocalFile}`);
-//     }).then(() => {
-//       console.log('Image has been blurred');
-//       // Uploading the Blurred image back into the bucket.
-//       return bucket.upload(tempLocalFile, {destination: filePath});
-//     }).then((url) => {
-//       console.log('Image has been blurred');
-      
-//       return admin.database().ref(dataPath).update({moderated: true, url: encodedPath});
-//       // return true;
-  
-//     }).then(() => {
-//       console.log('Marked the image as moderated in the database.');
-//     });
-// }
 
 exports.processImage = functions.storage.object().onChange(event => {
   const object = event.data;
@@ -385,37 +325,12 @@ function shrinkImage(filePath, bucket, metadata) {
       return true
   
     }).then(() => {
-      // console.log('Converting to Base 64');
-      // return admin.database().ref(dataPath).update({base64: new Buffer(tempLocalFile).toString('base64')});
+     
       
     });
 }
 
-// function base64(filePath, bucket, metadata) {
-//   let fileArray = filePath.split('/');
-//   // const encodedPath = 'https://firebasestorage.googleapis.com/v0/b/beer-fly.appspot.com/o/'+fileArray.join('%2F')+'?alt=media';
-//   const fileName = fileArray.pop();
-//   const tempLocalFile = `/tmp_small/${fileName}`;
 
-//   const dataPath = fileArray.join('/');
-
-
-//   return bucket.file(filePath).download({destination: tempLocalFile})
-//     .then(() => {
-      
-//       console.log('Image has been downloaded to', tempLocalFile);
-
-//       return exec('convert ${tempLocalFile} -define jpeg:extent=.02kb ${tempLocalFile}');
-//     }).then(() => {
-//       console.log('Image has been shrunk to 1%');
-//       return admin.database().ref(dataPath).update({base64: new Buffer(tempLocalFile).toString('base64')});
-
-//     }).then(() => {
-//       console.log('Base 64 data has been saved');
-  
-//     })
-
-// }
 
 function base64(filePath, bucket, metadata) {
   let fileArray = filePath.split('/');
@@ -431,7 +346,9 @@ function base64(filePath, bucket, metadata) {
      
       console.log('Image has been downloaded to', tempLocalFile);
 
-      return exec(`convert ${tempLocalFile} -strip -quality 1 -resample 200 ${tempLocalFile}`);
+      // return exec(`convert ${tempLocalFile} -strip -channel RGBA -blur 0x24 -quality 3 -resample 150 ${tempLocalFile}`);
+      return exec(`convert ${tempLocalFile} -strip -thumbnail 100x100 ${tempLocalFile}`);
+
     }).then(() => {
 
       console.log('Image has been shrunk alot ');
@@ -442,7 +359,7 @@ function base64(filePath, bucket, metadata) {
           return console.log(err);
         }else{
           console.log(data);
-          return admin.database().ref(dataPath).update({base64: data});
+          return admin.database().ref(dataPath).update({thumbnail: data});
         }
       });
      

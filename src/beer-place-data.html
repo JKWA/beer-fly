@@ -87,21 +87,7 @@
             }
 
           }else{
-             //clean up local storage
-            for ( var i = 0; i<window.localStorage.length; i++ ) {
-              try{
-                var timestamp = JSON.parse(window.localStorage.getItem(window.localStorage.key(i))).cacheTimestamp;
-                if(timestamp){
-                  if((timestamp) < Date.now()){
-                    window.localStorage.removeItem(window.localStorage.key(i));
-                    console.log('removed cache item');
-                  }
-                }
-              }catch (error) {
-                console.log('CACHE CLEANUP ERROR: '+error);
-                window.localStorage.removeItem(window.localStorage.key(i));
-              }
-            }
+           
             //get details data
             if(mapHasLoaded){
                 console.log('google');

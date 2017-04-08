@@ -1,23 +1,20 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
-
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
-<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
 <link rel="import" href="beer-beer-card.html">
 
 <link rel="import" href="../my_components/data/upload-image.html">
 <link rel="import" href="beer-fab.html">
-<link rel="import" href="beer-beer-add.html">
+
 
 
 <dom-module id="beer-beer">
@@ -77,41 +74,14 @@
 
    
     <paper-material class="card" elevation="1">
-
-
       <iron-label>
-
         <a aria-label$="TEST" href$="/[[nameUrl]]/beer-edit?orgid=[[orgId]]">
           <paper-icon-button icon="beer-icons:add"></paper-icon-button>
           Add a beer</a>
-      
       </iron-label>
-      
     </paper-material>
   
-   
-      <paper-dialog 
-            id="addBeer"
-            with-backdrop
-            modal
-            opened="{{dialogOpen}}"
-            style="width: 90vw;"
-            entry-animation="slide-from-right-animation"
-            exit-animation="slide-right-animation">
 
-      <beer-beer-add
-          org-id="[[orgId]]"
-          uid="[[user.uid]]"
-          name-url="[[nameUrl]]"
-          brewery-id="[[organization.breweryId]]"
-          org-name="[[organization.name]]"
-          organization="[[organization]]"
-          edit-beer-id="{{editBeerId}}">
-      </beer-beer-add>
-      
-      </paper-dialog>
-
-    
     
     <template is="dom-repeat" items="[[_getArray(organization.brewBeer)]]" sort="_sortOrder" as="beer">
       <beer-beer-card 
@@ -223,13 +193,7 @@
         }
         
       },
-      observers: ['_addBeerDialog(editBeerId)', '_dialogOpenStatus(dialogOpen)'],
-
-      _dialogOpenStatus: function (dialogOpen){
-          if(!dialogOpen){
-            this.editBeerId = null;
-          }
-       },
+    
 
       _computeCanEdit: function (user, owner, organization){
       
@@ -257,20 +221,7 @@
       },
 
 
-      _addBeerDialog: function(editBeerId){
-        'use strict';
-        if(editBeerId){
-          if(this.user){
-            var body = document.querySelector('body');
-            Polymer.dom(body).appendChild(this.$.addBeer);
-            this.$.addBeer.open();
-          }else{
-            var body = document.querySelector('body');
-            Polymer.dom(body).appendChild(this.$.loginDialog);
-            this.$.loginDialog.open()
-          }
-        }
-      },
+     
 
      _edit: function(){
         'use strict';
@@ -340,8 +291,8 @@
         try{
           if(category.image){
             if(category.image.banner){
-              if(category.image.banner.base64){
-                return 'data:image/png;base64, '+category.image.banner.base64;
+              if(category.image.banner.thumbnail){
+                return 'data:image/png;base64, '+category.image.banner.thumbnail;
               }
             }
           }

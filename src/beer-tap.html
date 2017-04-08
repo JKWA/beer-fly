@@ -83,6 +83,14 @@
     </a>
    </paper-material>
    </div>
+
+   <paper-material class="card" elevation="1">
+     <iron-label>
+        <a aria-label$="TEST" href$="/[[nameUrl]]/tap-add?orgid=[[orgId]]">
+          <paper-icon-button icon="beer-icons:add"></paper-icon-button>
+          Add a beer on tap</a>
+      </iron-label>
+   </paper-material>
    
 
     <template is="dom-repeat" items="[[_getArray(organization.onTap)]]" sort="_sortOrder" as="beer">

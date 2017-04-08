@@ -1,0 +1,383 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+
+
+<link rel="import" href="beer-beer-card.html">
+<link rel="import" href="beer-beer-edit.html">
+<link rel="import" href="beer-icons.html">
+
+
+<dom-module id="beer-tap-add">
+
+  <template>
+
+    <style>
+
+      a{
+        color: var(--app-accent-color);
+        text-decoration: none;
+        }
+
+      .card{
+        margin: 10px;
+        padding: 20px;
+      }
+
+      .brewery-info{
+        margin: 20px 0 0 0
+      }
+
+      .brewery-name {
+        font-size: 1.7em;
+        font-weight: 500;
+        color: var(--app-primary-color);
+      }
+
+      .address {
+        font-size: .9em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .clear{
+        color:red;
+      }
+
+
+    </style>
+
+
+    <firebase-auth  app-name="beer" user="{{user}}"></firebase-auth>
+    <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
+
+    <firebase-query 
+      id="beers"
+      order-by-child="place_id"
+      equal-to="[[placeId]]"
+      limit-to-first="50"
+      disabled
+      app-name="beer" 
+      path="beer" 
+      data="{{beers}}">
+  </firebase-query>
+
+   <firebase-document 
+      id="newOrg"
+      app-name="beer" 
+      path="newOrg/[[place.place_id]]">
+  </firebase-document>
+
+   
+   <paper-material class="card" elevation="0">
+     
+   <paper-input label="Search for brewery" value="{{queryString}}">
+     <iron-icon icon="beer-icons:search" prefix></iron-icon>
+      <paper-icon-button class="clear" suffix onclick="clearInput()" icon="beer-icons:clear" alt="clear" title="clear">
+
+   </paper-input>
+
+   
+   <iron-collapse id="collapse" opened="[[toggle]]" no-animation>
+   
+    <paper-listbox
+        attr-for-selected="brewery"
+        selected-class="location-list" 
+        class="location-list"
+        selected="{{brewery}}"
+        on-click="_close">
+      <template is="dom-repeat" items="[[data]]" as="brewery">
+          <paper-item brewery="[[brewery]]">[[brewery.name]]</paper-item>
+      </template>
+    </paper-listbox>
+    </iron-collapse>
+
+    <div class="brewery-info" hidden="[[!placeId]]">
+      <div class="brewery-name">[[brewery.name]]</div>
+      <div class="address">[[brewery.formatted_address]]</div>
+      <iron-label>
+        <a aria-label$="TEST" href$="/[[_computeNameForUrl(brewery.name)]]/beer-edit?orgid=[[brewery.place_id]]&returnName=[[_computeEncodeName(organization.name)]]&returnOrgId=[[orgId]]">
+          <paper-icon-button icon="beer-icons:add"></paper-icon-button>
+          Add a missing beer</a>
+      </iron-label>
+    </div>
+
+    </paper-material>
+    
+    <div id="beerCards">
+    <template is="dom-repeat" items="[[beers]]" as="beer" sort="_sortOrder">
+      <beer-beer-card 
+          beer-id="[[beer.id]]"
+          beer-name="[[beer.name]]"
+          beer-description="[[beer.description]]"
+          brewery-name="[[beer.breweryName]]"
+          brewery-city="[[beer.city]]"
+          brewery-state="[[beer.stateAbbreviation]]"
+          style-name="[[beer.styleName]]"
+          abv="[[beer.abv]]"
+          place-id="[[place.place_id]]"
+          crowd-source="[[organization.crowdSource]]"
+          owner="[[owner]]"
+          uid="[[user.uid]]"
+          name-url="[[nameUrl]]"
+          login="{{login}}">
+      </beer-beer-card>
+    </template>
+    </div>
+
+   
+  
+
+  
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-tap-add',
+
+      properties:{
+        
+      beer:{
+         type: Object
+       },
+
+      brewery:{
+        type: Object
+      },
+        
+      crowdSource:{
+         type: Boolean
+       },
+      data: {
+        type: Array
+      },
+   
+      editBeerId:{
+          type: String
+      },
+       
+      queryString:{
+         type: String
+      },
+
+      login: {
+         type: Boolean,
+         notify: true
+       },
+
+       mapLoaded: {
+         type: Boolean,
+         value: false
+       },
+
+       nameUrl:{
+         type: String
+       },
+
+       orgId:{
+         type: String
+       },
+
+        owner:{
+          type: Boolean
+        },
+
+        placeId:{
+          type: String,
+          value: false
+        },
+
+        searchString: {
+          type: String
+        },
+
+        toggle:{
+          type: Boolean,
+          value: false
+        },
+
+        user: {
+          type: Object,
+        },
+
+        
+        canEdit:{
+          type: Boolean,
+          computed: '_computeCanEdit(user, owner, organization)'
+        }
+        
+      },
+
+       listeners: {'api-load':'_mapHasLoaded'},
+       
+       observers:['_getGoogleSearchData(mapLoaded, queryString)',
+                  '_setBeersForId(placeId)',
+                  '_watchBreweryChange(brewery)',
+                  '_addNewOrg(orgId, user)'
+                  ],
+        
+        _addNewOrg: function (orgId, user){
+          if(user){
+            if(orgId){
+                console.log('update edit');
+                var obj = {};
+                obj['user/'+user.uid] = {};
+                obj['user/'+user.uid].uid = this.user.uid;
+                obj['user/'+user.uid].timestamp = Date.now();
+            
+                this.$.newOrg.ref.update(obj);
+
+            }
+          }
+        },
+
+       _mapHasLoaded: function (){
+         console.log('map loaded');
+        this.mapLoaded = true;
+      },
+
+      _watchBreweryChange: function (brewery){
+        if(brewery){
+          if(brewery.place_id){
+            this.placeId = brewery.place_id;
+            
+          }
+        }
+      },
+
+      _setBeersForId: function (placeId){
+        if(placeId){
+          console.log(placeId)
+          this.$.beers.disabled = false;
+          this.toggle = false;
+        }
+      },
+
+      _computeCanEdit: function (user, owner, organization){
+      
+       if(!user){
+        return false;
+       }
+
+       var uid = user.uid;
+        var crowdSource = true;
+        if(!organization){
+          return false
+        }else{
+          if(owner){
+            return true;
+          }
+          if(organization.stopCrowdSourcedData){
+            crowdSource = false;
+          }
+          if(crowdSource && uid){
+            return true
+          }
+         
+        }
+        return false;
+      },
+
+
+ _getGoogleSearchData: function(mapLoaded, queryString){
+   
+      // if(mapLoaded){
+        console.log('google search');
+        if(queryString.length >=4){
+         
+          // this.googleSearch = false;
+        
+          // console.log('google search');
+          this.data = [];
+
+          var that = this;
+          var request = {};
+          
+          request.query = queryString+' Brewery';
+          
+          var places = new google.maps.places.PlacesService(this.$.map);
+          places.textSearch(request, function (result){
+        
+            var returnDataArray = [];
+            var returnDataObject = {};
+            if(result){
+              that.toggle = true;
+          
+              for (var i=0; i<result.length; i++){
+       
+                if(result[i].formatted_address){
+                  result[i].vicinity = result[i].formatted_address;
+                }
+                // console.log(result[i]);
+                that.push('data', result[i]);
+              }  
+                
+            }
+          })
+        }   
+      // }
+   },
+
+   _computeNameForUrl: function (name) {
+        'use strict';
+        if (name) {
+          name = name.replace(/\s/g, '-')
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'missing-name'
+        }
+      },
+
+      _computeEncodeName: function (string){
+        return encodeURI(string)
+      },
+
+       _getArray: function(obj){
+        'use strict';
+        if(obj){
+          var returnArray = [];
+          var key = Object.keys(obj);
+          for (var i=0; i<key.length; i++){
+            obj[key[i]].$key = key[i]
+            returnArray.push(obj[key[i]])
+          }
+           return returnArray;
+        }
+      },
+
+      _sortOrder: function(a,b){
+        'use strict';
+        if (a.name < b.name)
+          return -1;
+        if (a.name > b.name)
+          return 1;
+        return 0;
+      },
+
+      _close: function (e){
+        this.toggle = false;
+      },
+
+       
+
+      _test: function (obj) {
+        console.log('TEST', obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

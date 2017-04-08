@@ -135,6 +135,13 @@
 
     </style>
 
+  <firebase-auth app-name="beer" user="{{user}}"></firebase-auth>
+
+  <firebase-document 
+      id="newOrg"
+      app-name="beer" 
+      path="newOrg/[[place.place_id]]">
+  </firebase-document>
 
  
     <div hidden="[[!online]]">
@@ -380,6 +387,9 @@
         placeholder: {
           type: String,
           computed: '_computePhotoPlaceholder(organization, place)'
+        },
+        user:{
+          type: Object
         }
 
         
@@ -414,9 +424,21 @@
 
       _edit: function(e){
         'use strict';
-        var body = document.querySelector('body');
-        Polymer.dom(body).appendChild(this.$.editDialog);
-        this.$.editDialog.open()
+        // console.log('tapped');
+        if(this.user){
+          var obj = {};
+          obj['user/'+this.user.uid] = {};
+          obj['user/'+this.user.uid].uid = this.user.uid;
+          obj['user/'+this.user.uid].timestamp = Date.now();
+          console.log(obj);
+         
+          this.$.newOrg.ref.update(obj);
+
+          var body = document.querySelector('body');
+          Polymer.dom(body).appendChild(this.$.editDialog);
+          this.$.editDialog.open();
+        }
+
       },
 
       _addBreaks: function(str){
@@ -571,8 +593,8 @@
         try{
           if(organization.mainImage){
             if(organization.mainImage.banner){
-              if(organization.mainImage.banner.base64){
-                return 'data:image/png;base64, '+organization.mainImage.banner.base64;
+              if(organization.mainImage.banner.thumbnail){
+                return 'data:image/png;base64, '+organization.mainImage.banner.thumbnail;
               }
             }
           }

@@ -46,9 +46,16 @@
         font-weight: 400;
         color: var(--app-primary-color);
       }
-      .brewed-by{
-        font-size: 1em;
-        font-weight: 600;
+
+      .brewery-name {
+        font-size: 1.7em;
+        font-weight: 500;
+        color: var(--app-primary-color);
+      }
+
+      .address {
+        font-size: .9em;
+        font-weight: 300;
         color: var(--app-primary-color);
       }
 
@@ -132,7 +139,11 @@
     <paper-material class="card" elevation="0">
 
       <!--[[editBeerId]]-->
-      <div class="brewed-by">Brewed by [[organization.name]] - [[organization.city]], [[organization.stateAbbreviation]]</div>
+      <div class="brewed-by">
+        <div class="brewery-name">Brewed by [[organization.name]]</div>
+        <div class="address">[[organization.city]], [[organization.stateAbbreviation]]</div>
+      </div>
+      
        <div class="beer-name" hidden$="[[!editBeerId]]">[[name]]</div>
         <paper-input 
           hidden$="[[editBeerId]]"

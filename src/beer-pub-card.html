@@ -190,13 +190,13 @@
             type: String
           },
 
-          placeholderData:{
+          thumbnail:{
             type: String
           },
 
           _computedPlaceHolder:{
             type: String,
-            computed: '_computePlaceHolder(placeHolderData)'
+            computed: '_computePlaceHolder(thumbnail)'
           },
 
           placeId:{
@@ -225,7 +225,7 @@
          
         },
 
-        // observers: ['_watchforSponsor(sponsor)'],
+        // observers: ['_watch(sponsor)'],
 
         //  _watchforSponsor: function (sponsor){
         
@@ -237,7 +237,6 @@
 
          _computeDisplayDistance: function (distance){
           return Math.round(distance*10)/10
-
         },
 
         _computeSponsorHide: function (sponsor){
@@ -257,9 +256,9 @@
             return 'pub-name-missing'
           }
       },
-      _computedPlaceHolder: function (placeholderData){
-        if(placeholderData){
-          return 'data:image/png;base64, '+placeholderData;
+      _computePlaceHolder: function (thumbnail){
+        if(thumbnail){
+          return 'data:image/png;base64, '+thumbnail;
         }
       }
 
