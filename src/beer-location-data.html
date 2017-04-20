@@ -104,12 +104,12 @@
 
                 var trimmed = sortedLocations.splice(0,5);
 
-                // var trimmedObj = {};
-                // for(var i=0; i<trimmed.length; i++){
-                //   trimmedObj[trimmed[i].addressKey] = trimmed[i]
-                // }
-                console.log(trimmed);
-                return this.locationHistory = trimmed;
+                var trimmedObj = {};
+                for(var i=0; i<trimmed.length; i++){
+                  trimmedObj[trimmed[i].addressKey] = trimmed[i]
+                }
+                console.log(trimmedObj);
+                return this.locationHistory = trimmedObj;
                 
               }
               this.sortedLocationHistory = sortedLocations.slice();
