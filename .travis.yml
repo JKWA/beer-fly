@@ -15,4 +15,4 @@ before_script:
  
 script: polymer build
 after_success:
-  - firebase use staging deploy --only hosting --token $FIREBASE_TOKEN  
+  - firebase use staging deploy --only hosting --token $FIREBASE_TOKEN
