@@ -14,5 +14,5 @@ before_script:
   - bower install --save webcomponents/webcomponentsjs
  
 script: polymer build
-# after_success:
-  # - firebase deploy --token $FIREBASE_TOKEN
+after_success:
+  - firebase deploy --only hosting --token $FIREBASE_TOKEN
