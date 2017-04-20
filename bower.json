@@ -49,7 +49,8 @@
     "geo-location": "ebidel/geo-location#^1.0.6",
     "google-apis": "GoogleWebComponents/google-apis#^1.1.7",
     "iron-localstorage": "PolymerElements/iron-localstorage#^1.0.6",
-    "geo-query": "^0.3.1"
+    "geo-query": "^0.3.1",
+    "toggle-icon": "^1.1.2"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
