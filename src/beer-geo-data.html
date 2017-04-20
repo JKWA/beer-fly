@@ -1,0 +1,206 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/geo-query/geo-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+
+
+<dom-module id="beer-geo-data">
+<template>
+
+    <firebase-document 
+        app-name="beer" 
+        id="organization">
+    </firebase-document>
+
+
+  </template>
+
+   <script>
+
+    Polymer({
+
+      is: 'beer-geo-data',
+       properties: {
+        geofire:{
+          type: Object
+        },
+        orgId:{
+            type: String
+        },
+
+        allObject:{
+            type: Object,
+            notify: true
+        },
+
+        allArray:{
+            type: Array,
+            notify: true
+        },
+
+        location:{
+            type: Object
+        }, 
+
+        radius:{
+            type: Number,
+            value: 10
+        },
+        
+        page:{
+            type: String
+        }
+
+       },
+       
+       observers: ['_getLocation(allObject, location, page, radius)'],
+
+        ready: function (){
+           
+
+                // this.geofire = new GeoFire(geofireDbRef);
+        },
+
+        _getLocation: function (allObject, location, page, radius){
+            // console.log('radius', radius)
+            if(page === 'home'){
+                
+              if(location){
+
+                if(Array.isArray(this.allArray)){
+
+                    // for (var i=0; i<this.allArray.length; i++){
+
+                     for(i=this.allArray.length-1; i>=0; i--){
+                        var pub = this.allArray[i];
+                        
+                        var distance = this._distance (location.location.latitude, location.location.longitude, pub.latitude, pub.longitude);
+                        // console.log('ARRAY', distance);
+                        var sort = distance;
+                        if(pub.PREMIUM){
+                            if(distance <= 10){
+                                sort = sort-10;
+                            }
+                        }
+                        this.set('allArray.'+[i]+'.distance', distance)
+                        this.set('allArray.'+[i]+'.sort', sort)
+                        this.set('allArray.'+[i]+'.distance', distance)
+                        this.set('allObject.'+pub.place_id+'.sort', sort)
+                        this.set('allObject.'+pub.place_id+'.arrayPosition', i+1);
+
+                    }
+
+                }
+
+                
+                var that = this;
+                var app = this.$.organization.app;
+                var firebaseRef = app.database().ref('GeoFire');
+                var geoFire = new GeoFire(firebaseRef);
+                // var ref = geoFire.ref();
+
+                var query = {};
+                var number = 0;
+
+                query.center = [location.location.latitude, location.location.longitude];
+                query.radius = radius*1.609344;
+
+                var locations = geoFire.query(query).on("key_entered", function(key, location, distance) {
+                    app.database().ref('/organization/'+key).once('value').then( function(snapshot) {
+                    
+                    var pub = snapshot.val();
+                    
+                    var pubDistance = distance*0.621371;
+                    pub.distance = pubDistance;
+
+                    if(location){
+                        // console.log('geo-location', location)
+                        pub.latitude = location[0];
+                        pub.longitude = location[1];
+                    }
+
+                    if(pub.PREMIUM){
+                            if(pubDistance <= 10){
+                                pub.sort = pubDistance -10;
+
+                            }else{
+                                pub.sort = pubDistance;
+                            }
+                        }else{
+                            pub.sort = pubDistance;
+                        }
+
+                    pub.beerfly = true;
+                    pub.organization = true;
+                    return pub;
+
+                }).then(function (pub){
+                    if(allObject[pub.place_id]){
+                        pub.arrayPosition = allObject[pub.place_id].arrayPosition;
+                        that.set('allArray.'+pub.arrayPosition-1, pub);
+                        that.set('allObject.'+pub.place_id, pub);
+                        
+                    }else{
+                        var position =  that.push('allArray', pub);
+                        // console.log('push', position);
+                        pub.arrayPosition = position;
+                        that.set('allObject.'+pub.place_id, pub);
+                    }
+
+                    
+                    
+                    return pub;
+
+                }).then(function (pub){
+                    if(pub){
+                        if(pub.place_id){
+                            // pub.cacheTimestamp = Date.now()+604800000;
+                            pub.cacheTimestamp = Date.now()
+                            pub.organization=true;
+                            window.localStorage.setItem('organization_'+pub.place_id, JSON.stringify(pub));
+                            // console.log('cached');
+                    }
+                }
+                    
+                });
+                    
+                //  console.log(key + " entered query at " + location + " (" + distance*.62 + " km from center)");
+                //  return true;
+            })
+
+            
+            // console.log(allObject);
+            // locations.cancel();
+             }
+            }
+        },
+
+
+         _distance: function (myLat, myLng, pubLat, pubLng){
+          var R = 3959 ; 
+          var dLat = this.deg2rad(pubLat-myLat);  
+          var dLon = this.deg2rad(pubLng-myLng); 
+          var a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(myLat)) * Math.cos(this.deg2rad(pubLat)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+
+          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+          var d = R * c; 
+          return d
+       },
+
+       deg2rad: function (deg) {
+              return deg * (Math.PI/180)
+       },
+
+  
+    
+      _test: function (obj) {
+        console.log(obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

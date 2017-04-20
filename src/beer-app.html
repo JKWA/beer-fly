@@ -11,7 +11,7 @@
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/app-route/app-route-converter.html">
 
-<link rel="import" href="../bower_components/geo-location/geo-location.html">
+<!--<link rel="import" href="../bower_components/geo-location/geo-location.html">-->
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
@@ -32,10 +32,23 @@
 <link rel="import" href="../bower_components/polymerfire/polymerfire.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
+<link rel="import" href="beer-organization-data.html">
+<link rel="import" href="beer-location-data.html">
+<link rel="import" href="beer-geo-data.html">
+<link rel="import" href="beer-geo-location.html">
+<link rel="import" href="beer-search-data.html">
+<link rel="import" href="beer-cache-data.html">
 
-<link rel="import" href="beer-home.html">
+
+
+
+<!--<link rel="import" href="beer-pub.html">-->
+
+<link rel="import" href="beer-home2.html">
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-login.html">
 <link rel="import" href="beer-place-data.html">
@@ -313,12 +326,18 @@
       user="{{user}}">
   </firebase-auth>
 
-  <firebase-document 
+  <!--<firebase-document 
       id="organization"
       app-name="beer" 
       path="organization/[[orgId]]" 
-      data="{{organization}}">
-  </firebase-document>
+      data="{{fireOrg}}">
+  </firebase-document>-->
+
+  <!--<firebase-document 
+      id="firebaseOrg"
+      app-name="beer"
+      path="organization">
+  </firebase-document>-->
 
   <firebase-document 
       id="user"
@@ -326,10 +345,17 @@
       path="user/[[user.uid]]">
   </firebase-document>
 
-  <!--<app-localstorage-document 
-      key="organization_[[orgId]]" 
-      data="{{localOrganizationData}}">
-  </app-localstorage-document>-->
+  <beer-geo-location
+      location = "{{location}}"
+      idle = "{{idle}}">
+  </beer-geo-location>
+
+  <beer-location-data
+      location="{{location}}"
+      location-history="{{locationHistory}}"
+      sorted-location-history="{{sortedLocationHistory}}"
+      search-string="[[searchString]]">
+  </beer-location-data>
 
   <beer-place-data
     place-id="[[orgId]]"
@@ -337,14 +363,35 @@
     data="{{place}}">
   </beer-place-data>
 
-  <geo-location 
-      id="geoLocation"
-      idle="{{idle}}"
-      latitude="{{latitude}}"
-      longitude="{{longitude}}">
-  </geo-location>
 
-  </div>
+   <beer-cache-data
+      location="[[location]]"
+      online="[[online]]"
+      all-object="{{allObject}}"
+      all-array="{{allArray}}">
+  </beer-cache-data>
+
+  <beer-geo-data
+    org-id="[[orgId]]"
+    location="[[location]]"
+    all-object="{{allObject}}"
+    all-array="{{allArray}}"
+    page="[[page]]">
+  </beer-geo-data>
+
+  <beer-search-data
+    org-id="[[orgId]]"
+    location="[[location]]"
+    all-object="{{allObject}}"
+    all-array="{{allArray}}"
+    page="[[page]]">
+  </beer-search-data>
+
+  <beer-organization-data
+      org-id="[[orgId]]"
+      organization="{{organization}}">
+  </beer-organization-data>
+
 
 <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
 
@@ -458,7 +505,11 @@
   <beer-store name="store" category=[[organization.category.STORE]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-store>
   <beer-list name="list" route="[[subroute]]" offline="[[offline]]" place="[[place]]"  owner="[[owner]]"></beer-list>
   <beer-search name="search" latitude="[[latitude]]" longitude="[[longitude]]" idle="{{idle}}" geo-error="[[geoError]]"></beer-search>
-  <beer-home name="home" login="{{login}}" geo-response="[[geoResponse]]" latitude="[[latitude]]" longitude="[[longitude]]" idle="{{idle}}" geo-error="[[geoError]]"></beer-home>
+  <beer-beer-info name="beer-info" location="[[location]]" beer-id="[[beerId]]"></beer-beer-info>
+
+   <beer-home2 name="home" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" all-object="[[allObject]]" all-array="[[allArray]]"></beer-home2>
+
+  <!--<beer-home name="home" all-object="[[allObject]]" all-array="[[allArray]]"   organization="[[organization]]" login="{{login}}" geo-response="[[geoResponse]]" latitude="[[latitude]]" longitude="[[longitude]]" idle="{{idle}}" geo-error="[[geoError]]" page="[[page]]"></beer-home>-->
   <beer-favorite name="favorite"></beer-favorite>
   <beer-browse name="browse"></beer-browse>
 
@@ -496,11 +547,20 @@
       </div>
     </paper-toast>
 
+    <paper-toast class="toast" id="updatingDataToast" duration="2000">
+      <div> 
+        Updating data 
+        <br>
+      </div>
+    </paper-toast>
+
     <footer>
       <div class= "footer-item">
        <iron-image src="/images/powered_by_google_on_non_white.png"></iron-image>
       </div>
     </footer>
+
+    <!--[[_test(organization)]]-->
 
 </template>
 
@@ -518,6 +578,20 @@
           type: String
         },
 
+        allPubs: {
+          type:Object
+        },
+
+        allArray:{
+          type:Array,
+          value: function (){return [];}
+        },
+
+        allObject:{
+          type:Object,
+          value: function (){return {};}
+        },
+
         beerId: {
           type: String,
           computed: '_computeBeerId(queryParams)'
@@ -527,6 +601,13 @@
           type: Array,
           computed: '_computeCategories(organization)'
         },
+
+        fireOrg:{
+          type: Object,
+         
+        },
+
+      
 
         geoError: {
           type: Boolean,
@@ -547,12 +628,20 @@
           value: true
         },
 
+        initialLoad:{
+          type: Boolean,
+          value: true
+        },
+
         firstTimeHomeHasLoaded: {
           type: Boolean,
           value: true
         },
 
-
+        location:{
+          type: Object,
+          // value: function (){return {};}
+        },
         
         // localOrganizationData: {
         //   type: Object
@@ -574,6 +663,7 @@
 
         organization: {
           type: Object,
+          
         },
 
         orgId: {
@@ -671,7 +761,8 @@
         // '_replaceOfflineOrganizationData(organization, online)',
         // '_cacheOrgData(organization, online)',
         '_scrollToTop(orgId)',
-        '_setTimeoutForGeo(page)'
+        // '_setTimeoutForGeo(page)',
+        // '_setOrganizationData(orgId, initialLoad, fireOrg)'
       ],
 
      
@@ -680,9 +771,9 @@
        
        ],
 
-       listeners: {
-                  'geo-error': '_geoError', 
-                  'geo-response':'_geoResponse' },
+      //  listeners: {
+      //             'geo-error': '_geoError', 
+      //             'geo-response':'_geoResponse' },
 
       created: function () {
         window.performance && performance.mark && performance.mark('beer-app.created');
@@ -690,7 +781,103 @@
         this.removeAttribute('unresolved');
       },
 
-     
+      // _computeOrganization: function (allPubs){
+      //     return allPubs[this.orgId]
+      // },
+
+     _setOrganizationData: function (orgId, initialLoad, fireOrg){
+       console.log('fireOrg2', fireOrg);
+       console.log('orgId', orgId);
+      // if(Object.keys(fireOrg).length === 0){
+        
+        if(orgId){
+          console.log('initial load', initialLoad);
+          if(initialLoad){
+            if(orgId){
+            try{
+              var local = window.localStorage.getItem('organization_'+orgId);
+
+              if( local !== undefined){
+                var localData = JSON.parse(local);
+                console.log('got', localData);
+                if(localData){
+                  this.organization = localData;
+                  // this.initialLoad = false;
+
+                }else{
+                  this._defaultOrganizationData();
+                  this.initialLoad = false;
+            
+                 }
+              }else{
+                this._defaultOrganizationData();
+                this.initialLoad = false;
+
+              }
+
+            }catch(error){
+              console.log('ERROR_INITIAL', error);
+              this._defaultOrganizationData();
+              this.initialLoad = false;
+            }
+
+
+          }
+            }else{
+              if(Object.keys(fireOrg).length > 0) {
+                console.log('UPDATING');
+                this.$.updatingDataToast.open();
+                // this.organization = fireOrg;
+              }else{
+                this.organization = this._defaultOrganizationData();
+              }
+            }
+          
+          }else{
+           
+          }
+        
+     },
+
+     _defaultOrganizationData: function(){
+      var noCache = {};
+
+          noCache.category = {};
+          var beer = {};
+          beer.$key = 'TAP';
+          beer.category = 'TAP';
+          beer.name = 'tap';
+          beer.title = 'On-tap';
+          beer.display = true;
+          beer.order = 100;
+          
+          noCache.category['TAP'] = beer;
+
+          var contact = {};
+          contact.$key = 'CONTACT';
+          contact.category = 'CONTACT';
+          contact.name = 'contact';
+          contact.title = 'Contact';
+          contact.display = true;
+          contact.order = 300;
+          
+          noCache.category['CONTACT'] = contact;
+
+          var review = {};
+          review.$key = 'REVIEW';
+          review.category = 'REVIEW';
+          review.name = 'review';
+          review.title = 'Review';
+          review.display = true;
+          review.order = 400;
+          
+          noCache.category['REVIEW'] = review;
+          console.log('nocache', noCache);
+          this.organization = noCache;
+          this.initialLoad = false;
+     },
+
+  
 
       _setTimeoutForGeo: function (page) {
         //if phone has location serves off and does not trigger error message
@@ -730,23 +917,23 @@
 
       // },
 
-       _geoError: function (event){
-        console.log('GEO_ERROR', event);
+      //  _geoError: function (event){
+      //   console.log('GEO_ERROR', event);
       
-        this.geoError = true;
-        this.geoRendered = false;
+      //   this.geoError = true;
+      //   this.geoRendered = false;
         
-      },
+      // },
 
-      _geoResponse: function (event){
-        if(event.returnValue){
-          clearTimeout(this.timeout);
-          this.geoRendered = true;
-          this.idle = true;
-          this.geoResponse = event;
-        }
-        console.log('GEO_RESONSE', JSON.stringify(event));
-      },
+      // _geoResponse: function (event){
+      //   if(event.returnValue){
+      //     clearTimeout(this.timeout);
+      //     this.geoRendered = true;
+      //     this.idle = true;
+      //     this.geoResponse = event;
+      //   }
+      //   console.log('GEO_RESONSE', JSON.stringify(event));
+      // },
 
       _updateUserBaseData: function (user){
         
@@ -812,15 +999,6 @@
         this.owner = owner;
       },
 
-      // _replaceOfflineOrganizationData: function (organization, online){
-         
-      //     if(!online){
-      //       if(!organization){
-      //         //  console.log(this.localOrganizationData);
-      //         // this.organization = this.localOrganizationData;
-      //       }
-      //     }
-      // },
 
         _toastOffline: function(online){
           if(online){
@@ -891,13 +1069,16 @@
             }else{
               page = 'home';
             }
+            
 
-          }else {
+          }else{
             if(subRoute === 'main'){
               page = 'pub';
               
             }else if(subRoute==='beer'){
                page = 'beer';
+            }else if(subRoute ==='description'){
+                page='beer-info';
             }else if(subRoute==='tap'){
                page = 'tap';
             }else if(subRoute==='menu'){
@@ -950,7 +1131,7 @@
         
    
           // this._listScrollTop = window.pageYOffset;
-        
+        console.log('page', page);
         this.returnPage = returnPage
         this.page = page || 'home';
         if (this.page === 'home') {
@@ -1006,6 +1187,10 @@
               case 'near':
                 title = 'Near me';
                 break;
+              case 'home':
+                title = 'Beer-Fly';
+                break;
+              
               default:
                 title = name;
 
@@ -1204,6 +1389,11 @@
 
       _computeCategories: function (organization) {
         var returnArray = [];
+        // console.log('catagory', organization);
+        if(!organization){
+          organization = {};
+          organization.category = {};
+        }
         if (organization) {
          
           if (organization.category) {
@@ -1247,6 +1437,8 @@
             returnArray.push(review);
             this.organization.category['REVIEW'] = review;
           }
+        }else{
+
         }
         
         return returnArray.sort(function (a, b) {
@@ -1311,7 +1503,7 @@
         if(page=='account'){
           hide = true;
         }
-         console.log(hide)
+        //  console.log(hide)
         return hide;
       },
 

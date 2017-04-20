@@ -18,7 +18,9 @@
 <link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 <link rel="import" href="../bower_components/s-slider/s-slider.html">
 <link rel="import" href="../bower_components/geo-query/geo-query.html">
-<link rel="import" href="../bower_components/geofire-elements/geofire-query.html">
+<!--<link rel="import" href="../bower_components/geofire-elements/geofire-query.html">-->
+<link rel="import" href="../bower_components/geo-query/geo-query.html">
+
 
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
@@ -154,7 +156,7 @@
 
     <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
 
-    <geofire-query 
+    <!--<geofire-query 
         id="query" 
         app="beer" 
         path="GeoFire"
@@ -163,7 +165,7 @@
         radius="[[radius]]" 
         results-array="{{breweries}}"
         results-object="{{breweriesObj}}">
-    </geofire-query>
+    </geofire-query>-->
  
 
     <firebase-document 
@@ -174,6 +176,7 @@
 
     <app-localstorage-document 
         key="locationHistory" 
+        log
         data="{{locationHistory}}">
     </app-localstorage-document>
 
@@ -182,6 +185,7 @@
    <!--<div>
       <paper-spinner-lite id="spinner"></paper-spinner-lite>
    </div>-->
+  
 
       <paper-material class="card" elevation="1">
         <div class="locationAddress">[[address]]</div>
@@ -227,9 +231,13 @@
               
       </paper-material>
 
+      <!--<template is="dom-repeat" items="[[allArray]]" as="test">
+          [[test.name]]
+      </template>-->
+
       <div id="pubCards">
       <template id="repeater" is="dom-repeat" 
-          items="[[data]]" as="pub" 
+          items="[[allArray]]" as="pub" 
           initial-count="5"  sort="_sort" 
           observe="sort distance" filter="{{_computeFilter(radius)}}" >
          
@@ -275,8 +283,13 @@
           type: String
         },
 
-        allPubs:{
-          type: Object
+        allObject:{
+          type: Object,
+          // notify: true
+        },
+
+        allArray: {
+          type: Array
         },
 
         breweries: {
@@ -312,7 +325,7 @@
 
         googleSearch:{
           type: Boolean,
-          value: false
+          value: true
         },
 
         gpsIcon:{
@@ -359,6 +372,10 @@
           value: false
         },
 
+        page: {
+          type: String
+        },
+
         // near:{
         //   type: Array
         // },
@@ -400,109 +417,129 @@
         transitioning: {
           type: Boolean,
           value: true
+        },
+        visible: {
+          type: Boolean,
+          value: false
         }
       },
       
       observers:[                 
                   '_resolveGeoError(geoError)',
                   '_watchGeoResponse(geoResponse)',
-                  '_watchLocationHistory(locationHistory)',
+                  // '_watchLocationHistory(locationHistory)',
                   '_watchLocationChange(location)',
-                  '_getBreweryData(breweries, geoFireReady)',
-                  '_getGoogleSearchData(location, mapLoaded, googleSearch)',
-                  '_presetData(location, initialLoad)'
+                  // '_getBreweryData(breweries, geoFireReady, visible)',
+                  '_getGoogleSearchData(location, mapLoaded)',
+                  // '_presetData(location, initialLoad)',
+                  '_isVisible(page)'
                   ],
 
       listeners: {'api-load':'_mapHasLoaded', 'ready': '_geoFireReady'},
 
       ready: function (){
-         this.initialLoad = true;
-        //timer watching for no location data
-        this.data = [];
-        this.allPubs = {};
-        var that = this; 
+        //  this.initialLoad = true;
+        // //timer watching for no location data
+        // this.data = [];
+        // this.allObject = {};
+        // var that = this; 
 
-        this.timeout = setTimeout(function(){ 
-          console.log('timeout');
-          that.initialLoad = false;
-          that._watchLocationChange(that.location);
+        // this.timeout = setTimeout(function(){ 
+        //   console.log('timeout');
+        //   that.initialLoad = false;
+        //   that._watchLocationChange(that.location);
 
-        }, 500);
+        // }, 500);
         
-          
+          // this._getBreweryData();
         
 
       },
 
-      _presetData: function (location, initialLoad){
+      _isVisible: function (page){
+        if(page ==='home'){
+          this.visible = true;
+        }else{
+          this.visible = false;
+        }
+      },
+
+      // _presetData: function (location, initialLoad){
         
-          if(initialLoad){
-            if(location){
-            this.initialLoad = false;
+      //     if(initialLoad){
+      //       if(location){
+      //       this.initialLoad = false;
   
-              for ( var i = 0; i<window.localStorage.length; i++ ) {
+      //         for ( var i = 0; i<window.localStorage.length; i++ ) {
                
-                try{
-                  if(window.localStorage.getItem(window.localStorage.key(i)) !== undefined){
-                    // console.log(window.localStorage.getItem(window.localStorage.key(i)));
+      //           try{
+      //             if(window.localStorage.getItem(window.localStorage.key(i)) !== undefined){
+      //               // console.log(window.localStorage.getItem(window.localStorage.key(i)));
 
-                  var storedItem = JSON.parse(window.localStorage.getItem(window.localStorage.key(i)));
+      //             var storedItem = JSON.parse(window.localStorage.getItem(window.localStorage.key(i)));
 
-                  if(storedItem.cacheTimestamp) {
-                    if(storedItem.place_id){
-                      if(location.location){
-                        storedItem.precached = true;
-                        // var location = this.location.location;
-                        var distance = this._distance (location.location.latitude, location.location.longitude, storedItem.latitude, storedItem.longitude);
-                        // if(distance <=10){
-                          if(storedItem.PREMIUM){
-                            storedItem.sort = distance-10;
-                          }else{
-                            storedItem.sort = distance;
-                          }
-                          storedItem.distance = distance;
-                          if(storedItem.beerfly){
-                            delete storedItem.beerfly
-                          }
+      //             if(storedItem.cacheTimestamp) {
+      //               if(storedItem.place_id){
+      //                 if(location.location){
+      //                   storedItem.precached = true;
+      //                   // var location = this.location.location;
+                        
+      //                   var distance = this._distance (location.location.latitude, location.location.longitude, storedItem.latitude, storedItem.longitude);
+      //                   // if(distance <=10){
+      //                     if(storedItem.PREMIUM){
+      //                       storedItem.sort = distance-10;
+      //                     }else{
+      //                       storedItem.sort = distance;
+      //                     }
+      //                     storedItem.distance = distance;
+      //                     if(storedItem.beerfly){
+      //                       delete storedItem.beerfly
+      //                     }
 
-                          var position = this.push('data', storedItem);
-                          storedItem.arrayPosition = position;
-                          // console.log(position);
-                          this.allPubs[storedItem.place_id] = storedItem;
-                           console.log('inital load');
+      //                     var position = this.push('data', storedItem);
+      //                     storedItem.arrayPosition = position;
+      //                     // console.log(position);
+      //                     // this.allObject[storedItem.place_id] = storedItem;
+      //                     var stringSet = 'allObject.'+storedItem.place_id;
+      //                     if(storedItem.sort){
+      //                     this.set(stringSet, storedItem)
+      //                     // this.notifyPath('allObject.'+storedItem.place_id);
+      //                      console.log('inital load');
+      //                     }
                           
-                          this.$.spinner.active = false;
+      //                     this.$.spinner.active = false;
 
-                        // }
-                      }
-                    }
-                  }
-                  }else{
-                     window.localStorage.removeItem(window.localStorage.key(i));
-                  }
+      //                   // }
+      //                 }
+      //               }
+      //             }
+      //             }else{
+      //                window.localStorage.removeItem(window.localStorage.key(i));
+      //             }
                   
-                }catch (error){
-                  console.log('preset error', error);
-                  console.log('caused-error', window.localStorage.getItem(window.localStorage.key(i)))
-                }
+      //           }catch (error){
+      //             console.log('preset error', error);
+      //             console.log('caused-error', window.localStorage.getItem(window.localStorage.key(i)))
+      //           }
 
 
-                try{
-                  var timestamp = storedItem.cacheTimestamp;
-                  if(timestamp){
-                    if(timestamp < Date.now()){
-                      window.localStorage.removeItem(window.localStorage.key(i));
-                      console.log('removed cache item');
-                    }
-                  }
-                }catch (error) {
-                  console.log('CACHE CLEANUP ERROR: '+error);
-                  window.localStorage.removeItem(window.localStorage.key(i));
-                }
-              }
-            }
-          }
-      },
+      //           try{
+      //             var timestamp = storedItem.cacheTimestamp;
+      //             if(timestamp){
+      //               if(timestamp < Date.now()){
+      //                 window.localStorage.removeItem(window.localStorage.key(i));
+      //                 console.log('removed cache item');
+      //               }
+      //             }
+      //           }catch (error) {
+      //             console.log('CACHE CLEANUP ERROR: '+error);
+      //             window.localStorage.removeItem(window.localStorage.key(i));
+      //           }
+      //         }
+      //       }
+      //     }
+      //     console.log('complete pre');
+      // },
 
 
       _watchGeoResponse: function (geoResponse){
@@ -527,6 +564,7 @@
       _watchLocationHistory: function (locationHistory){
        
         //  console.log('noticed history change');
+        
           if(typeof locationHistory === 'object'){
             var key = Object.keys(locationHistory);
             var locationArray = [];
@@ -577,15 +615,15 @@
             // this.initialLoad = false;
 
           }
-          var data = this.data;
-          // console.log('location', this.data.length);
+          var allArray = this.allArray;
+          // console.log('location', this.allArray.length);
 
-          for(var i=0; i<data.length; i++){
-            var setKey = 'data.'+i.toString();
-            var distance = this._distance (location.location.latitude, location.location.longitude, data[i].latitude, data[i].longitude);
+          for(var i=0; i<allArray.length; i++){
+            var setKey = 'allArray.'+i.toString();
+            var distance = this._distance (location.location.latitude, location.location.longitude, allArray[i].latitude, allArray[i].longitude);
             
             this.set(setKey+'.distance', distance);
-            if(data[i].PREMIUM && distance <=10){
+            if(allArray[i].PREMIUM && distance <=10){
               this.set(setKey+'.sort', distance-20);
             }else{
               this.set(setKey+'.sort', distance);
@@ -607,20 +645,21 @@
       _pushPubData: function (pub){
 
         this.$.pubCards.hidden = false;
-        // console.log('push data');
+        // console.log('push allArray');
 
-        if(!this.data){
-          this.data = [];
-        }
-          if(pub.googleSearch){
-            if(!this.allPubs[pub.place_id]){
-              pub.arrayLocation = this.data.length + 1;
-              this.allPubs[pub.place_id] = pub;
-              this.push('data', pub);
+        // if(!this.allArray){
+        //   this.allArray = [];
+        // }
+          // if(pub.googleSearch){
+            // console.log()
+            if(!this.allObject[pub.place_id]){
+              pub.arrayLocation = this.allArray.length + 1;
+              this.allObject[pub.place_id] = pub;
+              this.push('allArray', pub);
             }
-          }else{
-            this.push('data', pub);
-          }
+          // }else{
+          //   this.push('allArray', pub);
+          // }
       },
 
       _computeIsNear: function (distance){
@@ -654,8 +693,8 @@
         this.$.spinner.active = true;
         // this.$.pubCards.hidden = true;
         this.geoFireReady = false;
-        // this.allPubs = {};
-        // this.data = [];
+        // this.allObject = {};
+        // this.allArray = [];
         this.latitude = null;
         this.longitude = null;
         this.gpsIcon = 'gps-searching'
@@ -665,9 +704,12 @@
       },
 
 
-   _getGoogleSearchData: function(location, mapLoaded, googleSearch){
+   _getGoogleSearchData: function(location, mapLoaded){
+      if(this.visible){
+        console.log('visible');
       if(mapLoaded){
-        if(googleSearch){
+         console.log('loaded');
+        // if(googleSearch){
          
           this.googleSearch = false;
         
@@ -689,7 +731,8 @@
             var returnDataArray = [];
             var returnDataObject = {};
             if(result){
-              var allPubs = {};
+              console.log('google home', result);
+              var allObject = {};
               for (var i=0; i<result.length; i++){
                 var typeOK = 0;
 
@@ -701,6 +744,15 @@
                     if(type === 'bar'){
                       typeOK ++;
                     }
+                  }
+                  if(result[i].name){
+                    if(result[i].name.toLowerCase().indexOf('brewery')>-1){
+                      typeOK ++
+                    }
+                    if(result[i].name.toLowerCase().indexOf('brewing')>-1){
+                      typeOK ++
+                    }
+                    
                   }
 
                     if(typeOK > 0){
@@ -719,8 +771,21 @@
                       result[i].distance = distance;
                       result[i].sort = distance;
                       result[i].googleSearch = true;
+                      console.log('okay', result[i].name+' '+result[i].place_id);
 
-                      that._pushPubData(result[i]);
+                      if(!that.allObject[result[i].place_id]){
+                        result[i].arrayLocation = that.allArray.length + 1;
+                        that.allObject[result[i].place_id] = result[i];
+                        that.push('allArray', result[i]);
+                        console.log('push', result[i].name);
+                      }else{
+                        console.log('already there', that.allObject[result[i].place_id]);
+                        var pubDataSetString = 'allArray.'+(that.allObject[result[i].place_id].arrayPosition-1);
+                        that.set(pubDataSetString, result[i]);
+                      }
+
+
+                      // that._pushPubData(result[i]);
 
                     }
                   }
@@ -729,59 +794,149 @@
           })
         }   
       }
+      // }
    },
 
-   _getBreweryData: function (breweries, geoFireReady){
- 
-     if(geoFireReady){
-       this.geoFireReady = false;
-       console.log('brewery search');
+  //  _getBreweryData: function (breweries, geoFireReady, visible){
+  //   if(visible){
+  //    if(geoFireReady){
+  //      this.geoFireReady = false;
+  //      console.log('brewery search');
 
-        // console.log('brewery data radius', this.radius);
-        // console.log('data length', this.data.length);
+  //       // console.log('brewery allArray radius', this.radius);
+  //       // console.log('allArray length', this.allArray.length);
 
-        if(breweries.length < 10 && this.radius < 50){
-          // this.geoFireReady = false;
-          this.radius += 10;
-        }else{
-          this.googleSearch = true;
-        }
+  //       if(breweries.length < 10 && this.radius < 50){
+  //         // this.geoFireReady = false;
+  //         this.radius += 10;
+  //       }else{
+  //         this.googleSearch = true;
+  //       }
 
-        this.geoFireReady = false;
-        var location = this.location;
-        var that = this;
-        // this.$.spinner.active = false;
-        this.$.pubCards.hidden = false;
+  //       this.geoFireReady = false;
+  //       var location = this.location;
+  //       var that = this;
+  //       // this.$.spinner.active = false;
+  //       this.$.pubCards.hidden = false;
 
-        // if(typeof this.allPubs !== 'object'){
-        //   this.allPubs = {}
-        // }
+  //       // if(typeof this.allObject !== 'object'){
+  //       //   this.allObject = {}
+  //       // }
 
-        var allPubs = this.allPubs;
+  //       var allObject = this.allObject;
 
-        for (var i=0; i<breweries.length; i++){
-          var pub = breweries[i];
+  //       for (var i=0; i<breweries.length; i++){
+  //         var pub = breweries[i];
     
-          if(!allPubs[pub.key]){
-            var setString = 'allPubs.'+pub.key
-            this.set(setString, {});
-          }
+  //         if(!allObject[pub.key]){
+  //           var setString = 'allObject.'+pub.key
+  //           this.set(setString, {});
+  //         }
 
 
 
-            if(!this.allPubs[pub.key].beerfly){
-              console.log('breaking through')
+  //           if(!this.allObject[pub.key].beerfly){
+  //             console.log('breaking through')
 
-              var beerFlyString = 'allPubs.'+pub.key+'.beerfly'
-              this.set(beerFlyString, true);
+  //             var beerFlyString = 'allObject.'+pub.key+'.beerfly'
+  //             this.set(beerFlyString, true);
               
 
-              this.$.pub.ref.child(pub.key).once('value').then(function(snapshot) {
+  //             this.$.pub.ref.child(pub.key).once('value').then(function(snapshot) {
+  //               var pubData =  snapshot.val();
+
+  //               if(pubData){
+  //                 var pubObj = {};
+  //                 var pubDistance = that._distance (location.location.latitude, location.location.longitude, pubData.latitude, pubData.longitude);
+  //                 pubData.distance = pubDistance;
+
+  //               if(pubData.PREMIUM){
+  //                 if(pubDistance <= 10){
+  //                 pubData.sort = pubDistance -10;
+
+  //                 }else{
+  //                   pubData.sort = pubDistance;
+  //                 }
+  //               }else{
+  //                 pubData.sort = pubDistance;
+  //               }
+
+  //               pubData.beerfly = true;
+  //               // if(Array.isArray(that.data)){
+  //               //   console.log('no data array');
+  //               //   that.data = [];
+  //               // }
+
+  //               // pubData.arrayLocation = that.data.length +1;
+
+                
+  //               return pubData;
+            
+  //             }
+  //           }).then( function(pubData){
+  //             if(pubData){
+  //               if(that.allObject[pubData.place_id].precached){
+                  
+  //                 // if(that.allObject[pubData.place_id].precached){
+  //                   // console.log('overwrite');
+  //                   var precacheSetString = ''
+
+  //                   var overwrite = 'dallArrayata.'+(that.allObject[pubData.place_id].arrayPosition-1);
+  //                   console.log('overwrite', pubData)
+  //                   console.log(overwrite);
+  //                   that.set(overwrite, pubData);
+  //                   // }else{
+  //                   //   // that.push('data', pubData); 
+  //                   // }
+
+  //                 }else{
+  //                   var position = that.push('allArray', pubData); 
+  //                   // console.log('push', position);
+  //                   pubData.arrayPosition = position;
+                  
+  //                  }
+
+  //               var pubDataSetString = 'allObject.'+pubData.key;
+  //               that.set(pubDataSetString, pubData);
+  //               return pubData;
+  //             }
+  //           }).then( function(pubData){
+  //             if(pubData){
+  //               that.$.spinner.active = false;
+  //               console.log('cached');
+  //               pubData.cacheTimestamp = Date.now()+604800000;
+  //               pubData.organization=true;
+  //               window.localStorage.setItem('organization_'+pubData.place_id, JSON.stringify(pubData))
+  //             }
+  //           })
+  //         }
+  //       }
+  //    }
+  //    }
+  //  },
+
+   _getBreweryData: function (breweries, geoFireReady, visible){
+        console.log('brewery search');
+        var that = this;
+        var app = this.$.pub.app;
+        var firebaseRef = app.database().ref('GeoFire');
+        var geoFire = new GeoFire(firebaseRef);
+        var ref = geoFire.ref();
+
+        var query = {};
+        var location = this._testLocation();
+        query.center = [location.latitude, location.longitude];
+        query.radius = 10*1.60934;
+
+
+        var locations = geoFire.query(query).on("key_entered", function(key, location, distance) {
+
+            that.$.pub.ref.child(key).once('value').then(function(snapshot) {
                 var pubData =  snapshot.val();
 
                 if(pubData){
                   var pubObj = {};
-                  var pubDistance = that._distance (location.location.latitude, location.location.longitude, pubData.latitude, pubData.longitude);
+                  var pubDistance = distance
                   pubData.distance = pubDistance;
 
                 if(pubData.PREMIUM){
@@ -809,42 +964,59 @@
               }
             }).then( function(pubData){
               if(pubData){
-                if(that.allPubs[pubData.place_id].precached){
+                console.log('teste', that.allObject)
+                // if(that.allObject[pubData.place_id].precached){
                   
-                  // if(that.allPubs[pubData.place_id].precached){
+                  // if(that.allObject[pubData.place_id].precached){
                     // console.log('overwrite');
                     var precacheSetString = ''
 
-                    var overwrite = 'data.'+that.allPubs[pubData.place_id].arrayPosition-1;
-
+                    var overwrite = 'allArray.'+(that.allObject[pubData.place_id].arrayPosition-1);
+                    console.log('overwrite', pubData)
+                    console.log(overwrite);
                     that.set(overwrite, pubData);
                     // }else{
                     //   // that.push('data', pubData); 
                     // }
 
                   }else{
-                    var position = that.push('data', pubData); 
+                    var position = that.push('allArray', pubData); 
                     // console.log('push', position);
                     pubData.arrayPosition = position;
                   
                    }
 
-                var pubDataSetString = 'allPubs.'+pubData.key;
+                var pubDataSetString = 'allObject.'+pubData.key;
                 that.set(pubDataSetString, pubData);
                 return pubData;
-              }
+              // }
             }).then( function(pubData){
               if(pubData){
                 that.$.spinner.active = false;
                 console.log('cached');
                 pubData.cacheTimestamp = Date.now()+604800000;
+                pubData.organization=true;
                 window.localStorage.setItem('organization_'+pubData.place_id, JSON.stringify(pubData))
               }
             })
-          }
-        }
-     }
-   },
+
+
+
+          // console.log(key + " entered query at " + location + " (" + distance*.62 + " km from center)");
+          return true;
+        })
+
+            // locations.cancel();
+
+        },
+
+        _testLocation: function (){
+            var location  = {};
+            location.latitude = 47.6604061
+            location.longitude = -122.3654061
+
+            return location;
+        },
 
   
       _getNearbyGoogleResults: function (mapLoaded, location){
@@ -868,7 +1040,7 @@
         places.nearbySearch(request, function (result){
 
             if(result){
-            var allPubs = {};
+            var allObject = {};
             for (var i=0; i<result.length; i++){
               var typeOK = 0;
 
@@ -1007,7 +1179,7 @@
       },
 
       _distance: function (myLat, myLng, pubLat, pubLng){
-          var R = 6371; 
+          var R = 3959; 
           var dLat = this.deg2rad(pubLat-myLat);  
           var dLon = this.deg2rad(pubLng-myLng); 
           var a = 

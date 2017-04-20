@@ -1,0 +1,424 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../bower_components/iron-location/iron-location.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+
+<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
+<!--<link rel="import" href="../bower_components/s-slider/s-slider.html">-->
+
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<!--<link rel="import" href="../bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
+<link rel="import" href="../bower_components/app-storage/app-storage-behavior.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">-->
+
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-rating-card.html">
+<!--<link rel="import" href="beer-near-breweries.html">-->
+<link rel="import" href="beer-pub-card.html">
+
+
+
+<dom-module id="beer-home2">
+
+  <template>
+
+    <style>
+
+      /*.near-card {
+        --shadow-elevation-2dp: {
+            box-shadow: 0 2px 2px 0 var(--app-selected-color),
+                        0 1px 5px 0 var(--app-selected-color),
+                        0 3px 1px -2px var(--app-selected-color);
+          };
+      }*/
+      /*.body{
+        
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    
+      }
+       iron-list {
+       height: 100vh;
+    }*/
+
+     a{
+      color: var(--app-primary-color);
+      text-decoration: none;
+     }
+
+    paper-spinner-lite{
+      position: absolute;
+      top: 5%;
+      right: 5%;
+      font-size: .4em;
+
+    }
+
+    paper-material > div{
+        margin: 10px
+      }
+
+    .card{
+      padding: 10px;
+      margin: 10px;
+    }
+
+    .title-wrapper{
+       @apply(--layout-horizontal);
+       @apply(--layout-justified);
+       @apply(--layout-wrap);
+    }
+
+    .locationAddress{
+      font-size: 1.2em;
+      font-weight: 500;
+      color: var(--app-primary-color);
+      
+
+    }
+
+   .title{
+     font-size: 1em;
+     font-weight: 500;
+     color: var(--app-accent-color);
+     margin: 10px 0
+   }
+
+   .location-list {
+        color: var(--app-primary-color);
+    }
+
+   .geo-error{
+      font-size: .8em;
+      font-weight: 300;
+      color: var(--app-secondary-color);
+    }
+
+    .distance {
+      color: var(--app-secondary-color);
+      font-size: 1.2em;
+      font-weight: 300;
+    }
+    
+
+    .name{
+      font-size: 1.5em;
+      font-weight: 300;
+      color: var(--app-primary-color);
+    }
+
+    .address{
+      color: var(--app-seconpdary-color);
+      font-size: 1em;
+      font-weight: 400;
+    }
+
+    .wrapper{
+        @apply(--layout-horizontal);
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-accent-color);
+      }
+      .location-label{
+        margin: 10px 0
+      }
+      paper-input{
+        margin: 0 10px;
+        color: var(--app-accent-color);
+      }
+
+      paper-button{
+        color: var(--app-accent-color);
+      }
+
+     
+
+      
+    </style>
+
+        <paper-material class="card" elevation="1">
+        <div class="locationAddress">[[location.address]]</div>
+        <paper-spinner-lite id="spinner"></paper-spinner-lite>
+        <div hidden$="[[!geoError]]">
+          <div class="geo-error">Location not available from this device.</div>
+        </div>
+        <div class="">
+        <iron-label class="wrapper">
+              <paper-icon-button icon="beer-icons:[[gpsIcon]]" on-tap="_resetToLocal"></paper-icon-button>
+              <span class="title">Near my location<span>
+          </iron-label>
+
+
+        <iron-label class="wrapper">
+            <toggle-icon
+                  animation="flip-vertical" 
+                  icon="beer-icons:expand-more"
+                  checked="{{toggle}}"
+                  noink>
+            </toggle-icon>
+            <span class="location-label">Change location</span>
+          </iron-label>
+        </div>
+       
+
+          <iron-collapse opened="[[toggle]]" no-animation>        
+              <paper-listbox
+                attr-for-selected="location"
+                selected-class="location-list" 
+                class="location-list"
+                selected="{{location}}"
+                on-click="close">
+                <template is="dom-repeat" items="[[sortedLocationHistory]]" as="history" sort="_sortLocation">
+                  <paper-item location="[[history]]">[[history.address]]</paper-item>
+              </template>
+            </paper-listbox>
+              <paper-input value="{{address}}" on-keydown="_watchForSubmit" label="City, State; or Zip"></paper-input>
+            <paper-button on-click="_getGeoFromAddress">SET LOCATION</paper-button>
+          </iron-collapse>
+              
+      </paper-material>
+
+   
+      <div id="pubCards">
+      <template id="repeater" is="dom-repeat" 
+          items="[[allArray]]" as="pub" 
+          initial-count="20"  sort="_sort" 
+          observe="sort distance" filter="{{_computeFilter(radius)}}" >
+
+         <beer-pub-card 
+            place-id="[[pub.place_id]]"
+            name="[[pub.name]]"
+            address="[[pub.vicinity]]"
+            motto="[[pub.motto]]"
+            distance="[[pub.distance]]"  
+            photo-url="[[pub.mainImage.banner.url]]"
+            thumbnail="[[pub.mainImage.banner.thumbnail]]"
+            sponsor="[[pub.PREMIUM]]"
+            dog-friendly="[[!pub.dogFriendly]]"
+            patio="[[!pub.patio]]"
+            over21="[[!pub.over21]]"
+            login="{{login}}">
+        </beer-pub-card>
+
+      </template>
+      </div>
+    </div>
+    
+        
+          
+    
+
+    </div>
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-home2',
+
+      properties: {
+
+        address: {
+          type: String
+        },
+
+
+        allObject:{
+          type: Object,
+          notify: true,
+          observer: '_observeAllObj'
+        },
+
+        allArray: {
+          type: Array,
+          notify: true
+        },
+
+
+        idle:{
+          type: Boolean,
+          notify: true
+        },
+
+        geoError:{
+          type: Boolean,
+          value: false
+        },
+
+
+
+        gpsIcon:{
+          type: String,
+          value: 'gps-searching'
+        },
+
+
+        location: {
+          type: Object,
+          notify: true,
+          observer: '_observeLocation'
+        },
+
+        locationHistory: {
+          type: Object,
+          
+        },
+        sortedLocationHistory: {
+          type: Array
+        },
+
+        login: {
+         type: Boolean,
+         notify: true
+       },
+
+       organization: {
+         type: Object
+       },
+
+       radius:{
+          type: Number,
+          value: 10
+       },
+
+        searchString:{
+          type: 'String',
+          notify:true
+        },
+
+        toggle:{
+          type: Boolean,
+          value: false
+        },
+
+      },
+
+
+
+      _observeLocation: function (newLocation, oldLocation){
+
+        console.log('newLocation', newLocation);
+        console.log('oldLocation', oldLocation);
+        this.$.spinner.active = false;
+
+        if(oldLocation){
+          // this.allObject = {};
+          // this.allArray = [];
+        }
+        
+      },
+
+      _observeAllObj: function (newObj, oldObj){
+        console.log('newObj', newObj);
+        console.log('oldObj', oldObj)
+      },
+
+      _isVisible: function (page){
+        if(page ==='home'){
+          this.visible = true;
+        }else{
+          this.visible = false;
+        }
+      },
+
+
+      _resetToLocal: function (){
+        this.$.spinner.active = true;
+        // this.$.pubCards.hidden = true;
+        // this.geoFireReady = false;
+        // this.allObject = {};
+        // this.allArray = [];
+        // this.latitude = null;
+        // this.longitude = null;
+        this.gpsIcon = 'gps-searching'
+        this.toggle = false;
+        this.idle = false;
+       
+      },
+
+
+  
+
+      _watchForSubmit: function (event){
+         var key = event.which || event.keyCode;
+         if(key === 13){
+          this._getGeoFromAddress();
+         }
+      },
+
+      _getGeoFromAddress: function () {
+        // this.allObject = {};
+        // this.allArray = [];
+        this.searchString = this.address;
+        this.searchString = '';
+        this.address = '';
+        this.$.spinner.active = true;
+        this.toggle =false;
+      },
+
+
+
+
+      _sort: function (a,b){
+        // console.log('sorted');
+        return parseFloat(a.sort) - parseFloat(b.sort) ;
+      },
+
+      _sortLocation: function(a,b){
+        'use strict';
+        if (a.address < b.address)
+          return -1;
+        if (a.address > b.address)
+          return 1;
+        return 0;
+      },
+      
+     
+
+      _defaultIcon: function (icon){
+        if(icon){
+          true;
+        }else{
+          false
+        }
+      },
+
+      _computeFilter: function (radius){
+        return function(pub) {
+          if(pub){
+          return pub.distance <=radius;
+          }else{
+            return false
+          }
+        };
+      },
+
+
+      close: function (){
+        this.toggle = false;
+        // this.searchString = this.address;
+      },
+
+      _test: function(obj){
+          console.log("TEST",obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

@@ -142,7 +142,6 @@
       app-name="beer" 
       path="newOrg/[[place.place_id]]">
   </firebase-document>
-
  
     <div hidden="[[!online]]">
       <iron-image 
@@ -226,7 +225,9 @@
                           brewery-city="[[tap.city]]"
                           brewery-state="[[tap.stateAbbreviation]]"
                           abv="[[tap.abv]]"
-                          owner="[[owner]]">
+                          owner="[[owner]]"
+                          beer-id="[[tap.id]]"
+                          name-url="[[nameUrl]]">
                       </beer-beer-card-mini>
                     </template>
                   </template>
@@ -238,7 +239,9 @@
                           beer-name="[[beer.name]]"
                           style-name="[[beer.styleName]]"
                           abv="[[beer.abv]]"
-                          owner="[[owner]]">
+                          owner="[[owner]]"
+                          beer-id="[[beer.id]]"
+                          name-url="[[nameUrl]]">
                       </beer-beer-card-mini>
                     </template>
                   </template>

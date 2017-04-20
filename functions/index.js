@@ -30,11 +30,70 @@ exports.saveNewPub = functions.database.ref('/newOrg/{place_id}')
         return;
       }
       const snapshot = event.data;
+     
 
       return getGoogleData(snapshot.key);
  
   
 });
+
+exports.updateTapGeoData = functions.database.ref('organization/{placeId}/onTap/{beerId}')
+  .onWrite(event => {
+    const snapshot = event.data;
+    const placeId = event.params.placeId;
+    const beerId = event.params.beerId;
+    const data = snapshot.val();
+
+    if(event.data.previous.exists()){
+      if(!event.data.exists()){
+        console.log('tap data deleted');
+        return removeGeoData(placeId, beerId);
+      }else{
+        console.log('tap data changed', data.tapped);
+        if(data.tapped === 'TAPPED'){
+          return setGeoData(data, placeId, beerId);
+        }else{
+          return removeGeoData(placeId, beerId);
+        }
+      }
+
+    }
+    console.log('tap data added');
+ 
+    console.log('beerId', beerId);
+    console.log('placeId', placeId);
+
+    
+    console.log('tap-data', data);
+    return setGeoData(data, placeId, beerId);
+
+  })
+
+  function setGeoData(data, placeId, beerId){
+    if(data.latitude){
+      if(data.longitude){
+        const geoTapRef = admin.database().ref('GeoTap/'+beerId);
+        const geoTapFire = new GeoFire(geoTapRef);
+        geoTapFire.set(placeId, [data.latitude, data.longitude]).then(function() {
+          console.log("Set GeoTapFire");
+          }, function(error) {
+              console.error("GeoTapFireError: " + error);
+          });
+
+      }
+    }
+  }
+
+  function removeGeoData(placeId, beerId){
+  
+    const geoTapRef = admin.database().ref('GeoTap/'+beerId);
+    const geoTapFire = new GeoFire(geoTapRef);
+    geoTapFire.remove(placeId).then(function() {
+      console.log("Remove GeoTapFire");
+      }, function(error) {
+          console.error("GeoTapFireError: " + error);
+      });
+  }
 
 
 
@@ -198,11 +257,17 @@ function getAddressObject(address){
 
 function getBaseCategories(){
     var category = {};
-    // category['BEER'] = {};
-    // category['BEER'].display = true;
-    // category['BEER'].name = 'beer';
-    // category['BEER'].order = 200;
-    // category['BEER'].title = 'Our beers';
+    category['BEER'] = {};
+    category['BEER'].display = false;
+    category['BEER'].name = 'beer';
+    category['BEER'].order = 200;
+    category['BEER'].title = 'Our beers';
+
+    category['MENU'] = {};
+    category['MENU'].display = false;
+    category['MENU'].name = 'menu';
+    category['MENU'].order = 300;
+    category['MENU'].title = 'Menu';
 
     category['CONTACT'] = {};
     category['CONTACT'].display = true;

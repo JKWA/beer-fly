@@ -33,6 +33,7 @@
         font-size: 1.5em;
         font-weight: 300;
         color: var(--app-primary-color);
+        margin: 10px 0 0 0;
       }
 
       .motto {
@@ -67,6 +68,11 @@
         @apply(--layout-center-justified);*/
       }
 
+     
+      /*beer-pub-rating {
+        height: 30px;
+      }*/
+
 
 
     </style>
@@ -94,8 +100,7 @@
         <div  class="sponsor-wrapper" >
             <div id="sponsor" hidden$="[[sponsorHide]]">Sponsoring Organization</div>
         </div>
-         <div class="icons-wrapper">
-            <div>
+            <div class="rating">
               <beer-pub-rating 
                   place-id="[[placeId]]"
                   google-rating="[[googleRating]]"
@@ -107,7 +112,7 @@
            
            
    
-          </div>
+         
        
           <a aria-label$="[[name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
             <div class="items">

@@ -1,0 +1,188 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/geo-location/geo-location.html">
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+
+
+
+<dom-module id="beer-geo-location">
+<template>
+    <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
+    
+    <geo-location 
+      id="geoLocation"
+      idle="{{idle}}"
+      latitude="{{latitude}}"
+      longitude="{{longitude}}">
+   </geo-location>
+
+
+
+
+  </template>
+
+   <script>
+
+    Polymer({
+
+      is: 'beer-geo-location',
+       properties: {
+      
+        location:{
+            type: Object,
+            notify: true
+        }, 
+
+        geoError: {
+          type: Boolean,
+          value: false
+        },
+
+        geoResponse:{
+          type: Object
+        },
+
+         geoRendered: {
+          type: Boolean,
+          value: false
+        },
+
+        idle:{
+            type: Boolean,
+            value: true,
+            notify: true
+        }
+
+       },
+
+       listeners: {
+                  'geo-error': '_geoError', 
+                  'geo-response':'_geoResponse' },
+       
+       observers: ['_watchGeoResponse(geoResponse)'],
+
+        ready: function (){
+           
+
+        },
+
+     _geoError: function (event){
+        console.log('GEO_ERROR', event);
+      
+        this.geoError = true;
+        this.geoRendered = false;
+        
+      },
+
+      _geoResponse: function (event){
+        if(event.returnValue){
+          clearTimeout(this.timeout);
+          this.geoRendered = true;
+          this.idle = true;
+          this.geoResponse = event;
+        }
+        console.log('GEO_RESONSE', JSON.stringify(event));
+      },
+
+    _watchGeoResponse: function (geoResponse){
+        if(geoResponse){
+
+            if(geoResponse.detail){
+             var that = this;
+            var locationObj = {};
+           
+            locationObj.location = {};
+            locationObj.location.lat = geoResponse.detail.latitude;
+            locationObj.location.lng = geoResponse.detail.longitude;
+
+            this.geocode(locationObj, function (location, placeId) {
+                that.location = location;
+               
+            });
+          }
+        }
+      },
+
+    geocode: function(location, onComplete) {
+
+         var geocoder = this._geocoder = this._geocoder || new google.maps.Geocoder();
+
+            geocoder.geocode(location, function(results, status) {
+
+              if (status == google.maps.GeocoderStatus.OK && results[0]) {
+
+                var searchAddressString = '';
+                var neighborhood = '';
+                var city = '';
+                var state = '';
+                var zipcode = '';
+                
+                var address = results[0].address_components;
+  
+                for (var i=0; i<address.length; i++){
+                  var type = address[i].types;
+
+                  for (var j=0; j<type.length; j++){
+                    if(type[j] === 'locality'){
+                      city = address[i].long_name + ', ';
+                    }else if (type[j] === 'administrative_area_level_1') {
+                      state = address[i].long_name + ' ';
+
+                    }else if (type[j] === 'neighborhood') {
+                      neighborhood = address[i].long_name + ', ';
+
+                    }else if (type[j] === 'postal_code') {
+                      zipcode = address[i].long_name + ' ';
+                    }
+                  }
+                }
+                addressKey = neighborhood+city+state
+                searchAddressString = neighborhood+city+state+zipcode;
+
+                var completeObj = {};
+                completeObj.location = {};
+                completeObj.location.latitude = results[0].geometry.location.lat(), 
+                completeObj.location.longitude = results[0].geometry.location.lng(), 
+                completeObj.address = searchAddressString;
+                completeObj.addressKey = addressKey
+                
+                onComplete(completeObj,results[0].place_id);  
+                                         
+              } else {
+                console.warn('Geocode failed for ' + address + '. Status ' + status, results);
+                
+                onComplete();
+              }
+            });
+            return true;
+      },
+
+
+    //      _distance: function (myLat, myLng, pubLat, pubLng){
+    //       var R = 3959 ; 
+    //       var dLat = this.deg2rad(pubLat-myLat);  
+    //       var dLon = this.deg2rad(pubLng-myLng); 
+    //       var a = 
+    //         Math.sin(dLat/2) * Math.sin(dLat/2) +
+    //         Math.cos(this.deg2rad(myLat)) * Math.cos(this.deg2rad(pubLat)) * 
+    //         Math.sin(dLon/2) * Math.sin(dLon/2);
+
+    //       var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    //       var d = R * c; 
+    //       return d
+    //    },
+
+    //    deg2rad: function (deg) {
+    //           return deg * (Math.PI/180)
+    //    },
+
+  
+    
+      _test: function (obj) {
+        console.log(obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

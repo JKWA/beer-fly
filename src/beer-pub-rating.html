@@ -25,15 +25,17 @@
 
 paper-listbox {
     --paper-listbox-color: white;
+ 
 }
 
 /*paper-item {
-    width: 5px
+    height: 15px;
 }*/
 
 .rating-wrapper{
     @apply(--layout-horizontal);
     @apply(--layout-start-justified);
+
 }
 
 .rating-stars{
@@ -51,7 +53,6 @@ paper-listbox {
 .rating-icon{
     /*width: 10px;*/
     margin: 0 -15px 0 -10px;
-    
     font-size: 1em;
     font-weight: 300;
     
@@ -69,6 +70,7 @@ paper-listbox {
 .no-rating{
     color: var(--app-secondary-color); 
 }
+
 
 
 </style>
@@ -96,10 +98,10 @@ paper-listbox {
     </firebase-document>
 
 
+    <div class="wrapper" hidden$="[[!rating]]">
 
-    <div class="rating-wrapper">
-     
-            
+    <div id="ratingWrapper" class="rating-wrapper">
+       <!--<div hidden$="[[!rating]]">RATING<div>-->
             <paper-listbox 
                 id="selectedRating" 
                 class="rating-stars"
@@ -128,6 +130,7 @@ paper-listbox {
             <div class="rating-number">[[rating]]</div>
         </div>
     </div>
+    </div>
 
 
 </template>
@@ -139,12 +142,12 @@ Polymer({
   is: 'beer-pub-rating',
 
   properties: {
-      address:{
-          type: String
-      },
-      name: {
-          type: String
-      },
+    address:{
+        type: String
+    },
+    name: {
+        type: String
+    },
 
     savedRating:{
         type: Object
@@ -181,9 +184,19 @@ Polymer({
     }
   },
  
-observers:['_userSignedIn(user)','_hasUserRating(userRating)'],
+observers:['_userSignedIn(user)',
+            '_hasUserRating(userRating)',
+            '_hideRating(rating)'],
 ready: function () {
     this.rating = this.googleRating;
+},
+
+_hideRating: function (rating){
+    
+    if(rating === 0 || !rating){
+        // console.log('pubrating', rating);
+        // this.$.ratingWrapper.hidden = true;
+    }
 },
 
 _userSignedIn: function (user){

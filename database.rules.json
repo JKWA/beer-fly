@@ -3,7 +3,7 @@
      
     "organization": {
       ".read": "true",
-      ".indexOn": ["brewId","domain","locationId","beerLastUpdated"],
+      ".indexOn": ["brewId","domain","locationId","beerLastUpdated", "latitude"],
       "$orgId":{
         ".write": "auth.email_verified == true && (root.child('admin').child(auth.uid).exists() || root.child('organization').child($orgId).child('crowdSource').val()== true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val()))",
         "brewBeer": {
@@ -75,10 +75,13 @@
         }
       
       },
-      "locationDB": {
-        ".indexOn": "place_id",
-        ".read": "true"
-      },
+    "locationDB": {
+      ".indexOn": "place_id",
+      ".read": "true"
+    },
+    "newOrg":{
+      ".write": "auth.email_verified == true"
+    },
     "onTap": {
       ".read": "true",
       ".write": "true",
@@ -91,6 +94,13 @@
     "favorite": {
     ".read": "true",
     ".write": "true"
+    },
+    "GeoTap": {
+      ".read": "true",
+        "$beerId":{
+          ".read": "true",
+      		".indexOn": "g"
+        }
     },
     "GeoFire": {
       ".read": "true",

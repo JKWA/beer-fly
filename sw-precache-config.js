@@ -6,7 +6,8 @@ module.exports = {
     '/images/*'
   ],
   navigateFallback: '/index.html',
-  navigateFallbackWhitelist: [/^(?!.*\.html$|\/data\/).*/],
+  // navigateFallbackWhitelist: [/^(?!.*\.html$|\/data\/).*/],
+  navigateFallbackWhitelist: [ /^\/home\//, /^\/other\// ],
   runtimeCaching: [
     {
       urlPattern: /\/data\/images\/.*/,

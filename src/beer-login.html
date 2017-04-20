@@ -124,7 +124,7 @@
       }
     },
     _signInWithGoogle: function(){
-        this.$.auth.signInWithPopup('google')
+        this.$.auth.signInWithRedirect('google')
         .then(function(response) {
             console.log("signed in")
         })

@@ -1,0 +1,319 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
+
+
+
+<dom-module id="beer-location-data">
+
+  <template>
+
+   <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
+
+    <app-localstorage-document 
+        id="locationHistory"
+        zero-value="{{zero}}"
+        key="locationHistory" 
+        data="{{locationHistory}}">
+    </app-localstorage-document>
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-location-data',
+
+      properties: {
+
+        location: {
+          type: Object,
+          notify: true
+        },
+
+        locationHistory: {
+          type: Object,
+          value: function (){
+            return {};
+          },
+          notify: true
+          
+        },
+
+        locationSession:{
+          type: Object,
+          value: function (){return {};}
+        },
+
+        mapLoaded:{
+          type:Boolean,
+          value:false
+        },
+
+        searchString:{
+          type: String,
+        },
+
+        sortedLocationHistory: {
+          type: Array,
+          notify: true
+        },
+
+        zero: {
+          type: Object,
+          value: function (){
+            return {};
+          }
+        }
+
+       
+      },
+      
+      observers:[                 
+                  '_watchLocationHistory(locationHistory)',
+                  '_watchLocationChange(location)',
+                  '_setNewLocation(searchString, mapLoaded)'
+                  ],
+
+      listeners: {'api-load':'_mapHasLoaded'},
+
+
+
+      _watchLocationHistory: function (locationHistory){
+       
+         console.log('noticed history change');
+          
+        try{
+          if(typeof locationHistory === 'object'){
+            
+            var key = Object.keys(locationHistory);
+             
+            var locationArray = [];
+            for (var i=0; i<key.length; i++){
+              
+              locationHistory[key[i]].addressKey = key[i];
+              locationArray.push(locationHistory[key[i]]);
+
+            }
+          
+            if(locationArray.length >0){
+              var sortedLocations = locationArray.sort(this._sortTimestamp);
+              if(sortedLocations.length > 5){       
+
+                var trimmed = sortedLocations.splice(0,5);
+
+                // var trimmedObj = {};
+                // for(var i=0; i<trimmed.length; i++){
+                //   trimmedObj[trimmed[i].addressKey] = trimmed[i]
+                // }
+                console.log(trimmed);
+                return this.locationHistory = trimmed;
+                
+              }
+              this.sortedLocationHistory = sortedLocations.slice();
+              var location = sortedLocations.shift();
+           
+              location.first = this._firstTimeSession(location);
+              console.log('location', location);
+              this.location = location;
+            }
+          }
+        }catch (error){
+          console.error('LOCATION_HISTORY_ERROR', error);
+          this.location = {};
+        }
+      },
+
+      _firstTimeSession: function (location){
+        var session = this.locationSession;
+        try{
+          if(Object.keys(session).length === 0){
+            console.log('no session')
+            return true;
+          }
+
+          if(session[location.addressKey]){
+            if(session[location.addressKey].place_id === location.place_id){
+              console.log('matching placeid')
+              return false;
+            }else{
+              console.log('not matching placeid')
+              return true;
+            }
+          }else{
+            console.log('no addreskey')
+            return true;
+          }
+          
+        }catch (error){
+          return true;
+        }
+      },
+
+      _watchLocationChange: function (location){
+        //resets timestamp so preloads final view on reload.
+        this._setToLocalHistory(location);
+        
+        
+      },
+
+     
+
+     
+      _mapHasLoaded: function (){
+        this.mapLoaded = true;
+        
+      },
+
+    
+      _setNewLocation: function (searchString, mapLoaded) {
+        console.log('new location', searchString);
+        if(searchString){
+          if(mapLoaded){
+          this.radius = 10;
+        
+            var that = this;
+            var location = {};
+            location.address = searchString;
+              this.geocode(location, function (location, placeId) {
+                  that._setToLocalHistory(location);
+                        
+              });
+          }
+        }
+      },
+
+
+       geocode: function(location, onComplete) {
+
+         var geocoder = this._geocoder = this._geocoder || new google.maps.Geocoder();
+
+            geocoder.geocode(location, function(results, status) {
+
+              if (status == google.maps.GeocoderStatus.OK && results[0]) {
+
+                var searchAddressString = '';
+                var neighborhood = '';
+                var city = '';
+                var state = '';
+                var zipcode = '';
+                
+                var address = results[0].address_components;
+  
+                for (var i=0; i<address.length; i++){
+                  var type = address[i].types;
+
+                  for (var j=0; j<type.length; j++){
+                    if(type[j] === 'locality'){
+                      city = address[i].long_name + ', ';
+                    }else if (type[j] === 'administrative_area_level_1') {
+                      state = address[i].long_name + ' ';
+
+                    }else if (type[j] === 'neighborhood') {
+                      neighborhood = address[i].long_name + ', ';
+
+                    }else if (type[j] === 'postal_code') {
+                      zipcode = address[i].long_name + ' ';
+                    }
+                  }
+                }
+                addressKey = neighborhood+city+state
+                searchAddressString = neighborhood+city+state+zipcode;
+
+                var completeObj = {};
+                completeObj.location = {};
+                completeObj.location.latitude = results[0].geometry.location.lat(), 
+                completeObj.location.longitude = results[0].geometry.location.lng(), 
+                completeObj.address = searchAddressString;
+                completeObj.addressKey = addressKey;
+                completeObj.place_id = results[0].place_id;
+                
+                
+                onComplete(completeObj,results[0].place_id);  
+                                         
+              } else {
+                console.warn('Geocode failed for ' + address + '. Status ' + status, results);
+                
+                onComplete();
+              }
+            });
+            return true;
+      },
+
+
+      _setToLocalHistory: function (location){
+
+       console.log('location history');
+
+       try{
+         if(location){
+          location.cacheTimestamp = Date.now();
+          // delete location.first;
+          if(this.locationHistory){
+            
+            this.set(["locationHistory", location.addressKey], location);
+          }else{
+            var newLocationObj = {};
+            newLocationObj[location.addressKey] = location;
+            this.locationHistory = newLocationObj
+          }
+          this._watchLocationHistory(this.locationHistory);
+         }
+       }catch (error){
+         console.error('LOCATION_SET_ERROR', error);
+       }
+
+       try{
+        this.locationSession[location.addressKey] = location;
+        console.log('session', this.locationSession)
+       }catch(error){
+          console.error("LOCATION_SESSION_ERROR", error);
+       }
+      },
+
+      _distance: function (myLat, myLng, pubLat, pubLng){
+          var R = 3959; 
+          var dLat = this.deg2rad(pubLat-myLat);  
+          var dLon = this.deg2rad(pubLng-myLng); 
+          var a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(myLat)) * Math.cos(this.deg2rad(pubLat)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+
+          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+          var d = R * c; 
+          return d
+       },
+
+      
+
+       deg2rad: function (deg) {
+              return deg * (Math.PI/180)
+       },
+
+
+      _sort: function (a,b){
+        return parseFloat(a.sort) - parseFloat(b.sort) ;
+      },
+      
+      _sortTimestamp: function(a,b){
+        'use strict';
+        if (a.cacheTimestamp > b.cacheTimestamp)
+          return -1;
+        if (a.cacheTimestamp < b.cacheTimestamp)
+          return 1;
+        return 0;
+      },
+
+
+      _test: function(obj){
+          console.log("TEST",obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

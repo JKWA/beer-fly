@@ -90,7 +90,7 @@
            
             //get details data
             if(mapHasLoaded){
-                console.log('google');
+                
                 this._getGoogleDetails(placeId);
           
             }
@@ -109,9 +109,8 @@
             var places = new google.maps.places.PlacesService(map);
               places.getDetails(parameter, function (result, status){
                     that.data = result;
-                    
-                    // console.log(status);
-                    // console.log(result);
+
+                    console.log('google_place', result);
 
                     if(result){
                       result.cacheTimestamp = Date.now()+86400000;

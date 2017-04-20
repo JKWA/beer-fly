@@ -9,6 +9,7 @@
     "src/beer-pub.html",
     "src/beer-tap.html",
     "src/beer-tv.html",
+    "src/beer-tap-add.html",
     "src/lazy-resources.html"
   ],
   "sourceGlobs": [

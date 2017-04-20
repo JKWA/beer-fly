@@ -1,0 +1,181 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+
+<dom-module id="beer-search-data">
+
+  <template>
+    <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
+
+  </template>
+   <script>
+
+    Polymer({
+
+      is: 'beer-search-data',
+       properties: {
+      
+        orgId:{
+            type: String
+        },
+
+        allObject:{
+            type: Object,
+            notify: true
+        },
+
+        allArray:{
+            type: Array,
+            notify: true
+        },
+
+        mapLoaded: {
+            type: Boolean
+        },
+
+        location:{
+            type:Object,
+            
+        },
+
+        page:{
+            type: String
+        }
+
+       },
+       
+       observers: ['_getGoogleSearchData(mapLoaded, location, page)'],
+
+       listeners: {'api-load':'_mapHasLoaded'},
+
+        ready: function (){
+
+        },
+
+     _mapHasLoaded: function (){
+        this.mapLoaded = true;
+      },
+
+       _getGoogleSearchData: function(mapLoaded, location, page){
+       if(page === 'home'){
+      if(mapLoaded){
+        console.log('search', location)
+       if(location){
+         
+
+          //  location.first = false;
+        
+        
+          var searchLocation = {};
+          searchLocation.lat = location.location.latitude;
+          searchLocation.lng = location.location.longitude;
+
+          var that = this;
+          var request = {};
+          request.location = searchLocation;
+          request.radius = 10000
+          request.query = 'Brewery in '+location.address+' Craft Beer';
+          
+          var places = new google.maps.places.PlacesService(this.$.map);
+          places.textSearch(request, function (result){
+         
+          
+            if(result){
+              console.log('google data', result);
+            
+              for (var i=0; i<result.length; i++){
+                var typeOK = 0;
+
+                var types = result[i].types;
+
+                if(types){
+                  for (var j=0; j<types.length; j++){
+                    var type = types[j];
+                    if(type === 'bar'){
+                      typeOK ++;
+                    }
+                  }
+                  if(result[i].name){
+                    if(result[i].name.toLowerCase().indexOf('brewery')>-1){
+                      typeOK ++
+                    }
+                    if(result[i].name.toLowerCase().indexOf('brewing')>-1){
+                      typeOK ++
+                    }
+                    
+                  }
+
+                    if(typeOK > 0){
+                      var formatted_address = result[i].formatted_address;
+                      
+                      if(formatted_address){
+                        var addressArray = formatted_address.split(', ').slice(0,2);
+                        result[i].vicinity = addressArray.join(', ');
+
+                      }
+                      
+                      var resultLocation = result[i].geometry.location;
+                      var distance = that._distance (location.location.latitude, location.location.longitude, resultLocation.lat(), resultLocation.lng())
+                      result[i].latitude = resultLocation.lat();
+                      result[i].longitude = resultLocation.lng();
+                      result[i].distance = distance;
+                      result[i].sort = distance;
+                      result[i].googleSearch = true;
+                    //   console.log('okay', result[i].name+' '+result[i].place_id);
+
+                      if(!that.allObject[result[i].place_id]){
+                        result[i].arrayLocation = that.allArray.length + 1;
+                        that.allObject[result[i].place_id] = result[i];
+                        that.set('allObject.'+[result[i].place_id], result[i])
+                        that.push('allArray', result[i]);
+                        // console.log('push', result[i]);
+                      }else{
+                        // console.log('already there', that.allObject[result[i].place_id]);
+                        // var pubDataSetString = 'allArray.'+(that.allObject[result[i].place_id].arrayPosition-1);
+                        // that.set(pubDataSetString, result[i]);
+                      }
+
+                      
+                      // that._pushPubData(result[i]);
+
+                    }
+                  }
+                }
+              }
+          })
+        // }   
+      
+    }
+       }
+       }
+      //  console.log('after', this.allObject)
+   },
+
+   _distance: function (myLat, myLng, pubLat, pubLng){
+          var R = 3959; 
+          var dLat = this.deg2rad(pubLat-myLat);  
+          var dLon = this.deg2rad(pubLng-myLng); 
+          var a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(myLat)) * Math.cos(this.deg2rad(pubLat)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+
+          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+          var d = R * c; 
+          return d
+       },
+
+       deg2rad: function (deg) {
+              return deg * (Math.PI/180)
+       },
+
+    
+    
+      _test: function (obj) {
+        console.log(obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

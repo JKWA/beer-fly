@@ -35,9 +35,7 @@
 
 
     <template is="dom-repeat" items=[[_toArray(favorite)]] as="pub" sort="_sortByRating">
-       <!--<beer-near-breweries-card
-          place-id="[[item.id]]">
-      </beer-near-breweries-card>-->
+      
       <beer-pub-card 
             place-id="[[pub.place_id]]"
             name="[[pub.name]]"
