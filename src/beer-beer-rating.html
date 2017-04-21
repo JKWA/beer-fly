@@ -187,10 +187,13 @@ _computeRating: function (savedRating){
         var key = Object.keys(ratings);
         for (var i=0; i<key.length; i++){
             var rating = ratings[key[i]];
-            if(this.user.uid === key[i]){
-                this.ratingType = 'user'
-                this.rating = rating.rating;
-                return;
+            var user = this.user;
+            if(user){
+                if(this.user.uid === key[i]){
+                    this.ratingType = 'user'
+                    this.rating = rating.rating;
+                    return;
+                }
             }
             total += rating.rating;
         }
