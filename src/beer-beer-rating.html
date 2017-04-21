@@ -1,5 +1,9 @@
 
 
+<!--TODO fix occastional background color on select
+TODO default no rating back to average rating when user removes rating-->
+
+
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/neon-animation/animations/fade-in-animation.html">
@@ -13,10 +17,8 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 
 
-
-
 <dom-module id="beer-beer-rating">
-<template strip-whitespace>
+<template>
 
 
 
@@ -24,85 +26,89 @@
 
 
 
-paper-listbox {
-    --paper-listbox-color: white;
-}
+    paper-listbox {
+        --paper-listbox-color: white;
+        --paper-listbox-background-color: white;
+    }
 
-.rating-wrapper{
-    @apply(--layout-horizontal);
-    @apply(--layout-start-justified);
-}
+    .selected-class{
+        background-color: white;
+    }
 
-.rating-stars{
-    @apply(--layout-horizontal);
-    @apply(--layout-start-justified);
-}
+    .rating-wrapper{
+        @apply(--layout-horizontal);
+        @apply(--layout-start-justified);
+    }
 
-.rating-number{
-    margin: 25px 0 0 15px;
-  
-    font-size: 1em;
-    font-weight: 300;
-    color: var(--app-primary-color); 
-}
+    .rating-stars{
+        @apply(--layout-horizontal);
+        @apply(--layout-start-justified);
+    }
 
-.rating-icon{
-    /*width: 10px;*/
-    margin: 0 -20px 0 0;
-    font-size: 1em;
-    font-weight: 300;
+    .rating-number{
+        margin: 25px 0 0 15px;
     
-}
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color); 
+    }
 
-.has-rating{
-    color: var(--app-accent-color); 
+    .rating-icon{
+        /*width: 10px;*/
+        margin: 0 -20px 0 0;
+        font-size: 1em;
+        font-weight: 300;
+        
+    }
 
-}
+    .has-rating{
+        color: var(--app-accent-color); 
+    }
 
-.user-rating{
-    color: var(--app-selected-color);
-}
+    .user-rating{
+        color: var(--app-selected-color);
+    }
 
-.no-rating{
-    color: var(--app-secondary-color); 
-}
+    .no-rating{
+        color: var(--app-secondary-color); 
+    }
 
 
 </style>
 
-<firebase-auth 
-    id="auth" 
-    app-name="beer"
-    user="{{user}}" 
-    status-known="{{statusKnown}}"
-    on-error="handleError">
-</firebase-auth>
+    <firebase-auth 
+        id="auth" 
+        app-name="beer"
+        user="{{user}}">
+    </firebase-auth>
 
-<firebase-document
-    app-name="beer"
-    id="beerRating"
-    path="rating/[[beerId]]/[[user.uid]]/rating"
-    >
-</firebase-document>
+    <firebase-document
+        app-name="beer"
+        id="rating"
+        path="rating/[[beerId]]/[[user.uid]]/rating">
+    </firebase-document>
 
-<firebase-document
-    id="rating"
-    app-name="beer"
-    path="rating/[[beerId]]"
-    data="{{savedRating}}">
-</firebase-document>
+    <firebase-document
+        id="savedRating"
+        app-name="beer"
+        path="rating/[[beerId]]"
+        data="{{savedRating}}">
+    </firebase-document>
 
 
-    <div class="rating-wrapper">
-        <div>
+    <div id="ratingWrapper" class="rating-wrapper">
+       <!--<div hidden$="[[!rating]]">RATING<div>-->
             <paper-listbox 
                 id="selectedRating" 
                 class="rating-stars"
+                selected-class="selected-class" 
                 selected="{{selectedRating}}" 
                 on-click="_selectedRating">
+                
                 <template is="dom-repeat" items="[[_positiveStars(rating)]]" as="rating">
+                    
                     <paper-item>
-                        <iron-icon class="rating-icon" icon="beer-icons:star"></iron-icon>
+                       <iron-icon class="rating-icon" icon="beer-icons:star"></iron-icon>
                     </paper-item>
                 </template>
                 <template is="dom-if" if="[[_middleRating(rating)]]">
@@ -116,14 +122,11 @@ paper-listbox {
                     </paper-item>
                 </template>
             </paper-listbox>
-        </div>
             
         <div hidden$="[[!rating]]">
             <div class="rating-number">[[rating]]</div>
         </div>
     </div>
-
-
 
 
 
@@ -136,122 +139,146 @@ Polymer({
   is: 'beer-beer-rating',
 
   properties: {
+ 
+    savedRating:{
+        type: Object
+    },
 
     beerId:{
         type: String
     },
 
-    login: {
-        type: Boolean,
-        notify: true
-    },
-
     rating:{
         type: Number,
-        computed: '_computeRating(savedRating)'
-    },
-
-    savedRating:{
-        type: Object
     },
 
     selectedRating:{
         type: Number
     },
+
     user:{
         type: Object
+    },
+
+    ratingType: {
+        type: String
+    },
+
+    login: {
+         type: Boolean,
+         notify: true
     }
-   
   },
  
+observers:['_userSignedIn(user)',
+            '_updateRatingCSS(ratingType)',
+            '_computeRating(savedRating)'
+            ],
+ready: function () {
+    // this.rating = this.googleRating;
+    // _calculateRating();
+},
 
 
-_computeRating: function (rating){
-
-  var totalRating = 0;
-  var numberRatings = 0;
-  var selectedRating = this.$.selectedRating;
-    if(this.user){
-        var userId = this.user.uid;
-    }
-
-    if(typeof rating === 'object'){
-      
-        var key = Object.keys(rating);
-        for (var i=0; i< key.length; i++){
-            if(userId){
-                if(userId === key[i]){
-                    selectedRating.classList.remove('no-rating');
-                    selectedRating.classList.remove('has-rating');
-                    selectedRating.classList.add('user-rating');
-                    return rating[key[i]].rating;
-                }
+_computeRating: function (savedRating){
+    var ratings = savedRating;
+    if(typeof ratings === 'object'){
+        var total = 0;
+        var key = Object.keys(ratings);
+        for (var i=0; i<key.length; i++){
+            var rating = ratings[key[i]];
+            if(this.user.uid === key[i]){
+                this.ratingType = 'user'
+                this.rating = rating.rating;
+                return;
             }
-            if(rating[key[i]].rating){
-                totalRating += rating[key[i]].rating;
-                numberRatings ++;
-            }
+            total += rating.rating;
+        }
+        if(key.length >=5){
+          
+            this.rating = total/key.length;
+            this.ratingType = 'aggregate'
         }
     }
-    if(numberRatings < 4){
-        selectedRating.classList.add('no-rating');
-        selectedRating.classList.remove('has-rating');
-        selectedRating.classList.remove('user-rating');
-        return 0;
+    this.ratingType = 'none'
+    this.rating = 0;
+   
 
+},
+
+
+
+_userSignedIn: function (user){
+    if(user){
+        this.$.rating.disabled = false;
     }else{
+        this.$.rating.disabled = true;
+    }
+},
+
+_updateRatingCSS: function (ratingType) {
+    var selectedRating = this.$.selectedRating;
+    if(ratingType === 'user'){
+        // this.rating = ratingType;
+        selectedRating.classList.remove('no-rating');
+        selectedRating.classList.remove('has-rating');
+        selectedRating.classList.add('user-rating');
+
+    }else if(ratingType === 'aggregate') {
+        this.rating = this.googleRating;
         selectedRating.classList.remove('no-rating');
         selectedRating.classList.add('has-rating');
         selectedRating.classList.remove('user-rating');
-        return Math.round((totalRating/numberRatings)*100)/100;
+
+    }else{
+        // this.rating = 0;
+        selectedRating.classList.add('no-rating');
+        selectedRating.classList.remove('has-rating');
+        selectedRating.classList.remove('user-rating');
     }
-    
 },
+
+
 
 _selectedRating: function (){
     var rating = this.selectedRating +1;
-    var saved = this.$.beerRating.data;
+    var saved = this.$.rating.data;
     if(this.user){
         var obj = {};
+        var favorite = {};
         if(saved === rating){
+          favorite = null;
           rating = null;
         } 
-                
+
         obj['rating/'+this.beerId+'/'+this.user.uid+'/rating'] = rating;
-        obj['user/'+this.user.uid+'/rating/'+this.beerId+'/rating'] = rating;
-        // console.log(obj);
+        obj['user/'+this.user.uid+'/rating/'+this.beerId] = rating;
+
         var app = this.$.rating.app;
         var that = this;
         firebase.database(app).ref().update(obj, function(error) {
             if (error){
                 console.log("Error" + error);
             }else{
+                if(rating === null){
+                    that.rating = 0;
+                    that.ratingType = 'none'
+                }else{
+                that.rating = rating;
+                that.ratingType = 'user'
+                }
                 console.log("Saved");
             }
         })
           
     }else{
-
-        //SEND SIGN IN ISSUE
         this.login = true;
-
     }
 },
 
 
-
-
-//   _onKeyDown: function(event) {
-//     var currentRating = this.value || 0;
-
-//     if (event.keyCode === 37) {
-//       this.value = Math.max(currentRating - 1, 0);
-//     } else if (event.keyCode === 39) {
-//       this.value = Math.min(currentRating + 1, 5);
-//     }
-//   },
-
   _positiveStars: function (rating) {
+     
       var returnArray = []
       var positiveRating = Math.floor(rating);
       
@@ -291,6 +318,9 @@ _selectedRating: function (){
   }
 
 });
+
+
+   
 
 </script>
 </dom-module>
