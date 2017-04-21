@@ -229,18 +229,6 @@
 
         query.center = [location.location.latitude, location.location.longitude];
         query.radius = radius*1.609344;
-        // console.log(query);
-
-        // geoFire.get("ChIJx7tYYvUTkFQRWcV6xo7WF8U").then(function(location) {
-        //   if (location === null) {
-        //     console.log("Provided key is not in GeoFire");
-        //   }
-        //   else {
-        //     console.log("Provided key has a location of " + location);
-        //   }
-        // }, function(error) {
-        //   console.log("Error: " + error);
-        // });
 
 
         var locations = geoFire.query(query).on("key_entered", function(key, location, distance) {
@@ -282,6 +270,17 @@
 
         })
       })
+      geoFire.query(query).on('key_exited', function(key){
+          var pubs = that.pubArray
+          if(Array.isArray(pubs)){
+            for(var i=0; i<pubs.length; i++){
+              var pub = pubs[i];
+              if(pub.place_id === key){
+                that.splice('pubArray', i, 1);
+              }
+            }
+          }
+      })
         
 
     },
@@ -294,6 +293,7 @@
 
       _test: function(obj){
           console.log("TEST",obj);
+
       }
 
     });
