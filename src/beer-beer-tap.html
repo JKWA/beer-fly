@@ -119,10 +119,17 @@
         user="{{user}}">
     </firebase-auth>
 
-     <firebase-document
+     <!--<firebase-document
         app-name="beer"
         id="tapped"
         path="organization/[[orgId]]/onTap/[[beerId]]"
+        data="{{tappedData}}">
+    </firebase-document>-->
+
+    <firebase-document
+        app-name="beer"
+        id="tapped"
+        path="organization/[[orgId]]/onTap/[[beerId]]/tapped"
         data="{{tappedData}}">
     </firebase-document>
 
@@ -276,16 +283,17 @@
                   '_watchTappedData(tappedData)'],
 
       _watchTappedData: function (tappedData){
-        // console.log('tappedData', tappedData)
+        console.log('tappedData', tappedData)
           if(typeof tappedData === 'object'){
-          if(Object.keys(tappedData).length > 0){
-            this.tapped = tappedData.tapped;
-            this.$.REMOVE.hidden = false;
-          }else{
+            console.log('dataexis')
             this.$.REMOVE.hidden = true;
             this.tapped=false;
+          }else{
+            
+            this.tapped = tappedData;
+            this.$.REMOVE.hidden = false;
           }
-        }
+        
       },
 
       _watchTappedStatus: function (tapped){
@@ -321,7 +329,7 @@
 
       _computeTapped: function (tappedData){
         
-        return tappedData.tapped ;
+        return tappedData;
       },
       
 
@@ -455,8 +463,8 @@
               that.toggle = false;
             }else{
               console.log("Saved");
-              that.toggle=false;
-              that._watchTappedData(that.tappedData);
+              // that.toggle=false;
+              // that._watchTappedData(that.tappedData);
 
             }
           });
