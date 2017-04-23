@@ -15,6 +15,8 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-database-behavior.html">
+
 
 
 <!--<link rel="import" href="beer-beer-rating.html">-->
@@ -133,6 +135,12 @@
         data="{{tappedData}}">
     </firebase-document>
 
+     <firebase-document
+        app-name="beer"
+        path="organization/[[orgId]]/onTap"
+        id="saveTapp">
+    </firebase-document>
+
     <firebase-document
         app-name="beer"
         id="beer"
@@ -161,8 +169,7 @@
           <paper-listbox
             id="tappedListBox"
             attr-for-selected="tapstatus"
-            selected="{{tapped}}"
-            on-click="updateTappedInformation">
+            selected="{{tapped}}">
             
             <paper-item id="TAPPED" hidden$="[[_hideChoice(tapped, 'TAPPED')]]" tapstatus="TAPPED">
               <div class="tapped tap-status-wrapper">
@@ -184,13 +191,6 @@
                 <div class="tap-status">On deck</div>
               </div>
             </paper-item>
-
-            <!--<paper-item hidden="[[_hideChoice(tapped, 'NOT_AVAILABLE')]]" tapstatus="NOT_AVAILABLE">
-              <div class="not-available tap-status-wrapper">
-                <div><iron-icon icon="beer-icons:remove"></iron-icon></div>
-                <div class="tap-status">Not on tap</div>
-              </div>
-            </paper-item>-->
 
               <paper-item id="REMOVE" hidden tapstatus="REMOVE">
               <div class="not-available tap-status-wrapper">
@@ -227,7 +227,11 @@
 
         icon:{
           type: String,
-          computed: '_computeIcon(tapped)'
+          computed: '_computeIcon(tappedData)'
+        },
+
+        message: {
+          type: String
         },
 
         organization:{
@@ -255,7 +259,6 @@
         tapped:{
           type: String,
           value:'',
-          // computed: '_computeTapped(tappedData)'
         },
 
         tappedData:{
@@ -264,7 +267,7 @@
 
         tapStatus:{
           type: String,
-          computed: '_computeTapStatus(tapped)'
+          computed: '_computeTapStatus(tappedData)'
         },
 
         toggle:{
@@ -279,13 +282,14 @@
           type: Object
         }
       },
-      observers: ['_watchTappedStatus(tapped)',
-                  '_watchTappedData(tappedData)'],
+      observers: ['_watchTappedStatus(tappedData)',
+                  '_watchTappedData(tappedData)',
+                  'updateTappedInformation(tapped)'],
+
 
       _watchTappedData: function (tappedData){
-        console.log('tappedData', tappedData)
+      
           if(typeof tappedData === 'object'){
-            console.log('dataexis')
             this.$.REMOVE.hidden = true;
             this.tapped=false;
           }else{
@@ -298,9 +302,7 @@
 
       _watchTappedStatus: function (tapped){
         var tap = this.$.tapStatusMessage
-      //  console.log('tappedStatus', tapped)
         this.toggle = false;
-        // console.log('tapped', tapped)
 
         if(tapped==='TAPPED'){
           tap.classList.remove('blown');
@@ -361,22 +363,20 @@
       },
 
    
-      updateTappedInformation: function (event){
-          var target = event.currentTarget;
-          var tapped = target.selected;
+      updateTappedInformation: function (tapped){
+
+        this.message = 'working'
           var beer = {};
           var org = {};
           var obj = {};
           var beer = this.$.beer.data;
           var pub = this.$.pub.data;
           if(this.user){
-
-          var orgPre = 'organization/'+pub.place_id+'/onTap/'+this.beerId;
+          var orgPre = this.beerId;
 
           if(tapped === 'REMOVE'){
             console.log('DELETE');
 
-            // obj['onTap/'+id] = null;
             obj[orgPre] = null;
             this.$.TAPPED.hidden = false;
             this.$.BLOWN.hidden = false;
@@ -449,23 +449,14 @@
               obj[orgPre+'/stateAbbreviation'] = beer.stateAbbreviation; 
             }
           }
-          
         
-          
-    
-          var app = this.$.beer.app;
           var that = this;
-          // this.tapped = tapped;
-
-          firebase.database(app).ref().update(obj, function(error) {
+            this.$.saveTapp.ref.update(obj, function(error) {
             if (error){
               console.log("Error" + error);
               that.toggle = false;
             }else{
               console.log("Saved");
-              // that.toggle=false;
-              // that._watchTappedData(that.tappedData);
-
             }
           });
           }
