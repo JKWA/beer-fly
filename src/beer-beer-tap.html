@@ -432,8 +432,12 @@
             if(beer.breweryId){
               obj[orgPre+'/breweryId'] = beer.breweryId; 
             }
-            if(beer.name){
+            if(beer.breweryName){
               obj[orgPre+'/breweryName'] = beer.breweryName; 
+            }else{
+              if(pub.name){
+                obj[orgPre+'/breweryName'] = pub.name; 
+              }
             }
             if(beer.city){
               obj[orgPre+'/city'] = beer.city; 
