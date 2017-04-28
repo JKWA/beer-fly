@@ -4,7 +4,6 @@
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 
@@ -13,7 +12,7 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="beer-icons.html">
 
-<dom-module id="beer-beer-edit">
+<dom-module id="beer-beer-add">
 
 
   <template>
@@ -120,22 +119,12 @@
 
     </style>
 
-    <firebase-auth  
-        app-name="beer" 
-        user="{{user}}"
-        status-known="{{statusKnown}}">
-    </firebase-auth>
+    <firebase-auth  app-name="beer" user="{{user}}"></firebase-auth>
 
     <firebase-document 
         id="newOrg"
         app-name="beer" 
         path="newOrg/[[place.place_id]]">
-    </firebase-document>
-
-    <firebase-document 
-        id="pub"
-        app-name="beer" 
-        path="organization/[[place.place_id]]">
     </firebase-document>
 
     <firebase-query
@@ -151,6 +140,12 @@
         path="category/STYLE/[[styleId]]">
     </firebase-document>
 
+     <firebase-document
+        app-name="beer"
+        id="saveBeer"
+        path="organization/[[orgId]]">
+    </firebase-document>
+
     <firebase-document
         app-name="beer"
         id="newBeer"
@@ -159,36 +154,45 @@
 
     <firebase-document
         app-name="beer"
-        id="newBeer2"
-        path="beer">
+        id="userDomain"
+        path="user/[[user.uid]]/domain"
+        data="[[userDomain]]">
     </firebase-document>
 
-    <firebase-document
+    <!--<firebase-document
+        app-name="beer"
+        id="saveBeer"
+        path="organization/[[orgId]]/brewBeer">
+    </firebase-document>-->
+
+
+
+    <!--<firebase-document
         app-name="beer"
         id="onTap"
         path="organization/[[orgId]]/onTap/[[beerId]]">
-    </firebase-document>
+    </firebase-document>-->
 
-    <firebase-document
+    <!--<firebase-document
         app-name="beer"
-        id="allData">
-    </firebase-document>
+        id="allData"
+        path="">
+    </firebase-document>-->
 
-     <firebase-document
+     <!--<firebase-document
         app-name="beer"
         id="beer"
         disabled
         path="beer/[[beerId]]"
         data="{{beer}}">
-    </firebase-document>
-
-    <!--<firebase-document
-        id="userData"
-        app-name="beer"
-        disabled
-        path="user/[[user.uid]]"
-        data="{{userData}}">
     </firebase-document>-->
+
+    <firebase-document
+        app-name="beer"
+        id="beer"
+        path="organization/[[orgId]]/brewBeer/[[beerId]]"
+        data="{{beer}}">
+    </firebase-document>
 
     <!--THIS "beer/[[beerId]]" [[beer.name]]-->
 
@@ -204,10 +208,7 @@
           [[returnName]]</a>
       </iron-label>
       </div>
-
-      OWNER [[owner]] 
-      
-  
+  TEST
     <paper-material  class="card"  elevation="0">
 
       <div>
@@ -294,7 +295,7 @@
 
     Polymer({
 
-      is: 'beer-beer-edit',
+      is: 'beer-beer-add',
   
 
       properties:{
@@ -317,9 +318,9 @@
           type: String
         },
 
-         domain:{
+        domain:{
           type: String,
-          computed: '_computeDomain(organization)'
+          computed: '_computeDomain()'
         },
         
         beerId:{
@@ -352,10 +353,6 @@
           type: String,
         },
 
-        statusKnown:{
-          type: Boolean
-        },
-
         styles:{
           type: Array
         },
@@ -377,15 +374,28 @@
           type:Object
         },
 
-        userData:{
-          type:Object
-        },
-
-         userDomain:{
+        userDomain:{
           type:String
         }
        
-   
+        // animationConfig: {
+        //   value: function() {
+        //     return {
+        //       'entry': {
+        //         // provided by neon-animation/animations/scale-up-animation.html
+        //         name: 'scale-up-animation',
+        //         node: this
+        //       },
+        //       'exit': {
+        //         // provided by neon-animation-animations/fade-out-animation.html
+        //         name: 'fade-in-animation',
+        //         node: this.$.saved,
+        //         timing: {delay: 1000}
+                
+        //       }
+        //     }
+        //   }
+        // }
       },
 
       observers:[
@@ -396,10 +406,21 @@
         '_validateAll(name, description, abv, searchString)',
         '_prefillData(beer)',
         '_ifBeerId(beerId)',
-        '_addNewOrg(orgId, user)',
-        // '_watchLoginStatus(statusKnown)'
+        '_stylesAreLoaded(styles)',
+        '_addNewOrg(orgId, user)'
       ],
 
+      ready: function (){
+        // this.$.description.invalid = true;
+        
+      },
+
+      _stylesAreLoaded: function (styles){
+        // console.log(this.$.styles.valueIsEmpty());
+        // if(Object.keys(styles).length > 0){
+        //    this.$.editCard.hidden = false;
+        // }
+      },
 
        _addNewOrg: function (orgId, user){
           if(user){
@@ -435,7 +456,7 @@
       },
 
       _prefillData: function (beer) {
-        console.log(beer);
+        // console.log(beer);
         if(beer){
 
             this.name = beer.name;
@@ -550,35 +571,43 @@
 
       },
 
-     _addNewBeer: function (){
+      _addNewBeer: function (){
         this._validateAll();
         if(this.valid){
-
+          // this.$.spinner.active = true;
+          // this.$.saved.hidden = true;
+          // this.$.error.hidden = true;
           var beer = {};
           var org = {};
           var obj = {};
           var category = this.$.category.data;
           var pub = this.organization;
+          // var onTap = this.$.onTap.data;
+          // var isOnTap = (Object.keys(onTap).length > 0) ? true : false;
+          // // var isOnTap = (onTap.id) ? true : false;
+          // console.log('onTap', isOnTap);
 
-          var pre = 'brewBeer/';
-         
-          obj['beerLastUpdated'] = Date.now();
-          
           if(this.beerId){
             var id = this.beerId
-            obj[pre+id+'/lastEdited'] = Date.now();
-            obj[pre+id+'/edited'] = true;
+            obj['brewBeer/'+id+'/lastEdited'] = Date.now();
+            obj['brewBeer/'+id+'/edited'] = true;
             
           }else{
             var id = this.$.newBeer.ref.push().key;
-            obj[pre+id+'/createDate'] = Date.now();
-            obj[pre+id+'/new'] = true
+            obj['brewBeer/'+id+'/createDate'] = Date.now();
+            obj['brewBeer/'+id+'/new'] = true
           }
-          var orgPre = pre+id;
 
+          // var orgPre = 'organization/'+pub.place_id+'/brewBeer/'+id;
+          var orgPre = 'brewBeer/'+id;
+
+          obj['beerLastUpdated'] = Date.now();
+
+          // console.log('category', category)
           
           if(this.abv){
             obj[orgPre+'/abv'] = Number(this.abv);
+           
           }
           if(category.category){
             obj[orgPre+'/category'] = category.category;
@@ -592,38 +621,36 @@
           if(category.order){
             obj[orgPre+'/order'] = Number(category.order);
           }
+
           if(this.description){
             obj[orgPre+'/description'] = this.description;
           }
           if(id){
             obj[orgPre+'/id'] = id;
           }
-          //only replace name if new, not editing
           if(this.name){
             if(!this.beerId){
               obj[orgPre+'/name'] = this.name;
             }
           }
+  
           if(this.styleId){
             obj[orgPre+'/styleId'] = Number(this.styleId);
           }
           if(this.styleName){
             obj[orgPre+'/styleName'] = this.styleName; 
           }
+          if(this.userDomain){
+            if(this.userDomain === this.domain){
+
+            }
+          }
+          obj[orgPre+'/status'] = 'verified';
+
 
           var that = this;
-         
-          if(this.owner){
-            obj[orgPre+'/status'] = 'verified';
-            console.log('owner', JSON.stringify(obj));
-          }else{
-            obj[orgPre+'/status'] = 'not_verified';
-            console.log('not owner', JSON.stringify(obj));
-
-          }
-            
-             
-          this.$.pub.ref.update(obj, function (error) {
+          console.log(obj);
+          this.$.saveBeer.ref.update(obj, function (error) {
             if(error){
               console.log("Error" + error);
             }else{
@@ -639,45 +666,41 @@
               }
             }
           })
-        // }else{
-        //   obj[orgPre+'/status'] = 'not_verified';
-        //   var org = this.organization;
-        //   if(org.breweryName){
-        //     obj[orgPre+'/breweryName'] = org.breweryName;
-        //   }else if(org.name){
-        //     obj[orgPre+'/breweryName'] = org.name;
-        //   }
-        //   if(org.place_id){
-        //     obj[orgPre+'/place_id'] = org.place_id;
-        //     obj[orgPre+'/location/'+org.place_id] = true;
-        //   }
-        
-          
-        //   var testObj = {};
-        //   testObj.name = 'testing';
+          // firebase.database(app).ref().update(obj, function(error) {
+          //   if (error){
+          //     // that.$.spinner.active = false;
+          //     // that.$.saved.hidden = true;
+          //     // that.$.error.hidden = false;
+          //     // that.playAnimation('exit');
 
-        //   //go back to the initial without a path  setting on newBeer ends up hanging.
-        //   //but probably won't work on iphone
-        //   firebase.database(this.$.newBeer.app).ref().update(obj, function(error) {
-        //     if (error){
-        //       console.log('catcherror', error)
-        //     }else{
-        //       that.$.savedToast.open();
-        //       if(!that.beerId){
-        //         that.abv = '';
-        //         that.name = '';
-        //         that.description = '';
-        //         that.valid = false;
-        //         that.searchString = '';
-        //         that._resetFormStyleData();
-        //       }
-        //     }
-        //   })
-        // }
-       
-         
+          //     console.log("Error" + error);
+          //   }else{
+          //     console.log("Saved");
+          //     that.$.savedToast.open();
+          //     // that.$.spinner.active = false;
+          //     // that.$.saved.hidden = false;
+          //     // that.playAnimation('exit');
+          //     // that.$.error.hidden = true;
+          //     if(that.savedBeerName){
+          //       that.savedBeerName += ', '+beer.name;
+          //     }else{
+          //       that.savedBeerName = beer.name;
+          //     }
+          //     if(!that.beerId){
+          //     that.abv = '';
+          //     that.name = '';
+          //     that.description = '';
+          //     that.valid = false;
+          //     that.searchString = '';
+          //     that._resetFormStyleData();
+          //     }
+          //   }
+          // });
         }else{
           console.log('not valid');
+          // this.$.saved.hidden = true;
+          // this.$.error.hidden = false;
+          // this.playAnimation('exit');
         }
 
       },
@@ -691,11 +714,10 @@
         } else {
           return 'unknown-name'
         }
-      },
-
-      _computeDomain: function (organization) {
-        return organization.domain;
       }
+
+  
+      
 
 
     });

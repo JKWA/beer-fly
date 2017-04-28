@@ -83,7 +83,7 @@
 
       _watchLocationHistory: function (locationHistory){
        
-         console.log('noticed history change');
+        //  console.log('noticed history change');
           
         try{
           if(typeof locationHistory === 'object'){
@@ -108,7 +108,7 @@
                 for(var i=0; i<trimmed.length; i++){
                   trimmedObj[trimmed[i].addressKey] = trimmed[i]
                 }
-                console.log(trimmedObj);
+                // console.log(trimmedObj);
                 return this.locationHistory = trimmedObj;
                 
               }
@@ -116,7 +116,7 @@
               var location = sortedLocations.shift();
            
               location.first = this._firstTimeSession(location);
-              console.log('location', location);
+              // console.log('location', location);
               this.location = location;
             }
           }
@@ -130,20 +130,20 @@
         var session = this.locationSession;
         try{
           if(Object.keys(session).length === 0){
-            console.log('no session')
+            // console.log('no session')
             return true;
           }
 
           if(session[location.addressKey]){
             if(session[location.addressKey].place_id === location.place_id){
-              console.log('matching placeid')
+              // console.log('matching placeid')
               return false;
             }else{
-              console.log('not matching placeid')
+              // console.log('not matching placeid')
               return true;
             }
           }else{
-            console.log('no addreskey')
+            // console.log('no addreskey')
             return true;
           }
           
@@ -169,7 +169,7 @@
 
     
       _setNewLocation: function (searchString, mapLoaded) {
-        console.log('new location', searchString);
+        // console.log('new location', searchString);
         if(searchString){
           if(mapLoaded){
           this.radius = 10;
@@ -245,7 +245,7 @@
 
       _setToLocalHistory: function (location){
 
-       console.log('location history');
+      //  console.log('location history');
 
        try{
          if(location){
@@ -267,7 +267,7 @@
 
        try{
         this.locationSession[location.addressKey] = location;
-        console.log('session', this.locationSession)
+        // console.log('session', this.locationSession)
        }catch(error){
           console.error("LOCATION_SESSION_ERROR", error);
        }

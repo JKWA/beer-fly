@@ -77,56 +77,47 @@ exports.beerDataChanged = functions.database.ref('organization/{placeId}/brewBee
     const placeId = event.params.placeId;
     const beerId = event.params.beerId;
     const data = snapshot.val();
-    // const delta = functions.database.DeltaSnapshot
-    
-  //   const ref = snapshot.ref();
-  // // Now simply find the parent and return the name.
-  //   const pub =  ref.parent().parent().snapshot().val();
 
-    // console.log('allPub', pub);
     console.log('beerId', beerId);
     console.log('placeId', placeId);
-    console.log('brew-data', data);
-
-    
-    // console.log('delta', event.data.DeltaSnapshot.val());
+    console.log('beer-data', data);
    
       
     if(event.data.previous.exists()){
       if(!event.data.exists()){
-        console.log('brew data deleted');
+        console.log('beer data deleted');
         return 
 
       }else{
-        console.log('brew data changed');
-        console.log('changed', event.data.changed());
-        updateBeer(beerId, placeId, data);
-        return updateAllBeerData(beerId, placeId, data)
+        
+        if(event.data.changed()){
+          console.log('beer data changed');
+          updateBeer(beerId, placeId, data);
+
+          //don't update ontap beers
+          // updateOnTap();
+
+          return updateAllBeerData(beerId, placeId, data);
+        }else{
+          console.log('beer data unchanged')
+          return;
+        }
       }
 
+    }else{
+      console.log('beer data added');
+      updateBeer(beerId, placeId, data);
+      return updateAllBeerData(beerId, placeId, data);
     }
-    console.log('brew data added');
-    return
 
   });
   
   function updateBeer (beerId, beerData, pubData) {
-    let saveObj = {};
- let beerItems = ['abv',
-  'beerId',
-  'breweryName',
-  'category',
-  'categoryName',
-  'categoryTitle',
-  'createDate',
-  'description',
-  'id',
-  'name',
-  'order',
-  'status',
-  'styleId',
-  'styleName',
-  'updateDate']
+  let saveObj = {};
+  let beerItems = ['abv', 'beerId', 'breweryName', 
+                   'category', 'categoryName', 'categoryTitle', 
+                   'createDate', 'description', 'id', 'name', 
+                   'order', 'status', 'styleId', 'styleName', 'updateDate']
 
   for (var i=0; i<beerItems.length; i++){
     let item = beerItems[i];
@@ -135,16 +126,10 @@ exports.beerDataChanged = functions.database.ref('organization/{placeId}/brewBee
     }
   }
 
+  let pubItems = ['city', 'domain', 'latitude', 'location',
+                  'longitude', 'state', 'stateAbbreviation']
 
- let pubItems = ['city',
- 'domain',
- 'latitude',
- 'location',
- 'longitude',
- 'state',
- 'stateAbbreviation']
-
- for (var i=0; i<pubItems.length; i++){
+  for (var i=0; i<pubItems.length; i++){
     let pubItem = pubItems[i];
     if(pubData[pubItem]){
       saveObj[pubItem] = pubData[pubItem];
@@ -167,13 +152,13 @@ exports.beerDataChanged = functions.database.ref('organization/{placeId}/brewBee
     saveObj['place_id'] = pubData.place_id;
   }
 
-  console.log('saving beer', saveObj);
+  // console.log('saving beer', saveObj);
   admin.database().ref('beer').child(beerId)
     .update(saveObj)
     .catch( function (error){
       console.log('SAVE_ERROR', error)
     }).then(function (){
-      console.log('SAVED BEER');
+      console.log('SAVED_BEER');
     })
   }
 
@@ -230,13 +215,6 @@ exports.beerDataChanged = functions.database.ref('organization/{placeId}/brewBee
       })
   }
 
-  // function updateLocationsWithNewBeerData (locationId, placeId, beerData){
-  //     console.log('updating location', locationId);
-  //     // admin.database.ref('organization').child(locationId).child('brewBeer').child(beerId)
-  //     //   .update()
-
-      
-  // }
 
   function setGeoData(data, placeId, beerId){
     if(data.latitude){

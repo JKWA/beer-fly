@@ -321,7 +321,8 @@
   <firebase-auth 
       id="auth" 
       app-name="beer"
-      user="{{user}}">
+      user="{{user}}"
+      status-known="{{statusKnown}}">
   </firebase-auth>
 
   <!--<firebase-document 
@@ -338,9 +339,10 @@
   </firebase-document>-->
 
   <firebase-document 
-      id="user"
+      id="userData"
       app-name="beer" 
-      path="user/[[user.uid]]">
+      path="user/[[user.uid]]"
+      data="{{userData}}">
   </firebase-document>
 
   <beer-geo-location
@@ -728,6 +730,10 @@
           type: Object
         },
 
+        userData:{
+          type: Object
+        },
+
         returnPage: {
           type: String,
           value: 'main'
@@ -751,7 +757,7 @@
         '_routePageChanged(route)',
         '_pageChanged(page)',
         '_routeOrgIdChanged(orgId)',
-        '_isOwner(user, organization)',
+        '_isOwner(userData.domain, userData.ADMIN, organization.domain)',
         '_toastOffline(online)',
         '_setBackArrowInHeader(page)',
         '_updateUserBaseData(user)',
@@ -935,15 +941,15 @@
 
       _updateUserBaseData: function (user){
         
-          if(user){
-            var obj = {};
-            this.login = false;
-            obj.displayName = user.displayName;
-            obj.domain = user.email.split('@')[1];
-            obj.verified = user.emailVerified;
+          // if(user){
+          //   var obj = {};
+          //   this.login = false;
+          //   obj.displayName = user.displayName;
+          //   obj.domain = user.email.split('@')[1];
+          //   obj.verified = user.emailVerified;
 
-            this.$.user.ref.update(obj)
-          }
+          //   this.$.user.ref.update(obj)
+          // }
       },
 
 
@@ -958,50 +964,53 @@
         }
       },
 
-      _isOwner: function(user, organization){
+      _isOwner: function(domain, admin, orgDomain){
         var owner = false;
-        try{
-          if(user){
-            if(!user.isAnonymous){
-              if(user.email){
-
-              if(organization){
-                  if(organization.website){
-                    var email = user.email;
-                    var emailDomain = email.split('@')[1];
-                    var website = organization.website;
-                    var websiteArray = website.split('//');
-                    if(websiteArray.length === 2){
-                    
-                      var domainSection = websiteArray[1];
-                      if(domainSection){
-                        var domain =  domainSection.split('/')[0];
-                        if (domain === emailDomain){
-                          owner = true;  
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }catch(error){
-
-        }
-        if(user){
-          if(user.uid === 'ng5kXizJbsTZZ2UIupDD0Vebzf13'){
-          owner = true;
-          }
+       if(admin){
+         this.owner = true;
+         return;
+       }
+       try{
+       if(domain){
+         upperDomain = domain.toUpperCase();
+         if(orgDomain){
+           upperOrgDomain = orgDomain.toUpperCase();
+           if(upperDomain === upperOrgDomain){
+             this.owner = true;
+             return;
+           }
          }
-        this.owner = owner;
+       }
+       }catch(error){
+         this.owner = false;
+       }
+      //  }
+      //   if(organization){
+           
+      //    if(){
+        
+      //     console.log('owner', userData);
+      //     if(userData){
+
+      //       if(userData.ADMIN){
+      //         this.owner = true;
+      //         return 
+      //       }
+      //       if(organization.domain === userData.domain){
+      //         this.owner = true;
+      //         return;
+      //       }
+      //     }
+      //   }
+      //   }
+       this.owner = false;
       },
 
 
         _toastOffline: function(online){
           if(online){
             this.$.offLineToast.close();
-            this._isOwner(this.user, this.organization);
+            // this._isOwner(this.userData.domain, this.userData.ADMIN, this.organization.domain);
           }else{
             this.$.offLineToast.open();
             this.owner = false;
@@ -1129,7 +1138,7 @@
         
    
           // this._listScrollTop = window.pageYOffset;
-        console.log('page', page);
+      
         this.returnPage = returnPage
         this.page = page || 'home';
         if (this.page === 'home') {

@@ -276,7 +276,7 @@
 
         _toggleIfOwner:{
           type: Boolean,
-          computed: '_computeIfToggle(toggle, owner, crowdSource)'
+          computed: '_computeIfToggle(toggle, owner)'
         },
         user:{
           type: Object
@@ -475,8 +475,8 @@
        }
       },
 
-      _computeIfToggle: function (toggle, owner, crowdSource){
-        if(owner || crowdSource){
+      _computeIfToggle: function (toggle, owner){
+        if(owner){
           
           return toggle;
         }else{

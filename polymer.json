@@ -3,21 +3,22 @@
   "shell": "src/beer-app.html",
   "fragments": [
     "src/beer-beer.html",
-    "src/beer-home.html",
+    "src/beer-beer-edit.html",
+    "src/beer-home2.html",
     "src/beer-contact.html",
     "src/beer-menu.html",
     "src/beer-pub.html",
     "src/beer-tap.html",
     "src/beer-tv.html",
-    "src/beer-tap-add.html",
+    "src/beer-tap-edit.html",
     "src/lazy-resources.html"
   ],
-  "sources": [
+  "sourceGlobs": [
    "src/**/*",
    "images/**/*",
    "bower.json"
   ],
-  "extraDependencies": [
+  "includeDependencies": [
     "manifest.json",
     "bower_components/webcomponentsjs/webcomponents-lite.min.js"
   ]
