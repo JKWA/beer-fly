@@ -5,6 +5,7 @@
 
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 
@@ -14,10 +15,13 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
+
 
 
 <link rel="import" href="beer-beer-rating.html">
 <link rel="import" href="beer-beer-tap.html">
+<link rel="import" href="beer-beer-admin.html">
 
 
 
@@ -32,10 +36,19 @@
         }
 
       .card{
-        
         margin: 10px;
         padding: 20px;
       }
+
+      .verify{
+        --toggle-icon: {
+          color: red;
+        };
+        --toggle-icon-active: {
+          color: green;
+        };
+      }
+      
 
        
       .title{
@@ -58,8 +71,6 @@
       .wrapper > div{
         padding: 10px 0 5px 0
       }
-
- 
 
       .name {
         font-size: 1.5em;
@@ -93,8 +104,6 @@
         padding: 0 5px 0 0;
       }
 
-
-      
       .footer-abv{
         text-align: right;
         margin: 0 20px 0 0;
@@ -111,37 +120,48 @@
       }
 
     </style>
-      <!--<firebase-document
-        app-name="beer"
-        path="beer/[[beerId]]"
-        data="{{beer}}">
-     </firebase-document>-->
+     
 
       <paper-material class='card' elevation="1" animated-shadow="false">
           
-          <div class="title">
+          <template is="dom-if"  if="[[!owner]]">
             <div>
               <beer-beer-rating 
                   beer-id="[[beerId]]"
                   login="{{login}}">
               </beer-beer-rating>
             </div>
-            <div hidden$="[[!owner]]">
-              <a aria-label$="TEST" href$="/[[nameUrl]]/beer-edit?orgid=[[placeId]]&beerId=[[beerId]]">
-                <paper-icon-button icon="beer-icons:edit"></paper-icon-button>
-              </a>
-                <!--<paper-icon-button icon="beer-icons:edit" on-tap="changeEditId"></paper-icon-button>-->
-            </div>  
-          </div>
-
+          </template>
+            
           
-
-          <beer-beer-tap
-            org-id="[[placeId]]"
-            beer-id="[[beerId]]"
-            owner="[[owner]]"
-            crowd-source="[[crowdSource]]">
-          </beer-beer-tap>
+          <template is="dom-if"  if="[[owner]]">
+            <div class="title">
+              <div>
+                <beer-beer-admin
+                    place-id="[[placeId]]"
+                    beer-id="[[beerId]]"
+                    status="[[status]]">
+                </beer-beer-admin>
+              </div>
+              <div>
+                <a aria-label$="TEST" href$="/[[nameUrl]]/beer-edit?orgid=[[placeId]]&beerId=[[beerId]]">
+                  <paper-icon-button icon="beer-icons:edit"></paper-icon-button>
+                  Edit
+                </a>
+              </div>
+            </div>
+          </template>
+          
+          <!--BeerId: [[beerId]]-->
+          <div>
+            <beer-beer-tap
+              org-id="[[placeId]]"
+              beer-id="[[beerId]]"
+              owner="[[owner]]"
+              crowd-source="[[crowdSource]]">
+            </beer-beer-tap>
+          </div>
+           
 
           <div class="wrapper">
             <div class="name">[[beerName]]</div>
@@ -156,6 +176,45 @@
               
           </div>
 
+          
+            <!--<div>
+              <div id="verify" hidden$="[[verified]]">
+                <iron-label>
+                    <paper-checkbox id="status" checked="{{verifiedCheck}}"></paper-checkbox>
+                    Verify beer
+                  </iron-label>
+              </div>
+            </div>
+            <div>-->
+              <!--<div>
+                <iron-label>
+                  <toggle-icon 
+                      class="verify" 
+                      icon="beer-icons:warning" 
+                      icon-active="beer-icons:checked"
+                      active="{{verified}}">
+                  </toggle-icon>
+                  <span>[[verifiedLabel]]</span>
+                </iron-label>
+
+              </div>
+              <div>
+                <iron-label>
+                  <toggle-icon icon="beer-icons:delete"></toggle-icon>
+                  <span>Remove</span>
+                </iron-label>
+              </div>-->
+              <!--<paper-icon-button icon="beer-icons:delete"></paper-icon-button>-->
+              
+            <!--</div>-->
+          
+           
+
+        
+
+    
+
+        
       
       </paper-material>
   </template>
@@ -221,16 +280,71 @@
         placeId:{
           type: String
         },
+
+        status:{
+          type:String,
+          // observer:'_watchForStatusChange'
+        },
+
+        intialStatusLoaded:{
+          type:Boolean,
+          value: false
+        },
         
         styleName:{
           type: String
-        }
+        },
+        // verified:{
+        //   type:String
+          
+        // },
+
+        // verifiedCheck:{
+        //   type:Boolean,
+        //   observer:'_watchForStatusChange'
+        // },
+
+        // verifiedLabel:{
+        //   type:String
+        // }
        
       },
+      observers:[
+        // '_watchForStatusChange(status)'
+                ],
       
-      changeEditId: function (){
-        this.editBeerId = this.beerId;
-      },
+      // _updateVerifiedStatus: function (status){
+
+      //   if(status){
+      //     if(status === 'verified'){
+      //       this.verified = true;
+      //       this.verifiedLabel = "Verified"
+      //     }else{
+      //       this.verified  = false;
+      //       this.verifiedLabel = "Not Verified"
+      //     }
+      //   }else{
+      //     this.verified  = false;
+      //     this.verifiedLabel = "Not Verified"
+
+      //   }
+       
+      // },
+
+     
+
+      // changeEditId: function (){
+      //   this.editBeerId = this.beerId;
+      // },
+
+      // _computeVerified: function (status){
+      //   // console.log('test')
+      //   if(status === 'verified'){
+      //     return true;
+      //   }else{
+      //     return false;
+      //   }
+      // },
 
       _test: function (obj){
         console.log(obj);

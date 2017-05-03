@@ -233,7 +233,7 @@
                   </template>
 
                   <template is="dom-if" if="[[_isBeer(item.$key)]]"> 
-                    <template is="dom-repeat" items="[[_getArray(organization.brewBeer)]]" sort="_sortOrder" as="beer">
+                    <template is="dom-repeat" items="[[_getArray(organization.brewBeer)]]" sort="_sortOrder" filter="_filterBeer" as="beer">
                       <beer-beer-card-mini 
                           org-id="[[orgId]]" 
                           beer-name="[[beer.name]]"
@@ -609,6 +609,20 @@
 
        }
       },
+
+      _filterBeer: function (beer){
+
+        if(!beer.status){
+          return true;
+        }else{
+          if(beer.status ==='not_verified' || beer.status ==='deleted'){
+            return false
+          }else{
+            return true
+          }
+        }
+      },
+
 
 
       _test: function(obj){

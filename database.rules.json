@@ -4,9 +4,15 @@
     "organization": {
       ".read": "true",
       ".indexOn": ["brewId","domain","locationId","beerLastUpdated", "latitude"],
+
       "$orgId":{
-        ".write": "auth.email_verified == true && (root.child('admin').child(auth.uid).exists() || root.child('organization').child($orgId).child('crowdSource').val()== true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val()))",
+				".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+        "beerLastUpdated":{
+          ".write": "auth.email_verified == true", 
+          ".validate": "newData.isNumber()"      
+        },
         "brewBeer": {
+ 					".write": "auth.email_verified == true", 
           "$orgBeerId": {
             "abv": {
               ".validate": "newData.isNumber()"
@@ -51,29 +57,44 @@
                 ".validate": "newData.val() === true"
               }
             }
-          }
-      }
-    },
+          },
+          "crowdSource": {
+						 ".validate": "newData.isBoolean()"
+          },
+          "dogFriendly": {
+               ".validate": "newData.isBoolean()"
+          },
+          "mainImage": {
+          },
+          "motto": {
+               ".validate": "newData.isString()"
+          },
+          "onTap": {
+          },
+          "over21": {
+               ".validate": "newData.isBoolean()"
+          },
+          "patio": {
+             ".validate": "newData.isBoolean()"
+          }    
+        }
+      },
     "breweryDB": {
       ".read": "true",
-      ".write": "true",
       ".indexOn": "addedToOrganization"
     },
     "category": {
-      ".read": "true",
-      ".write": "true"
+      ".read": "true"
       },
     "beerStyle": {
-      ".read": "true",
-      ".write": "true"
+      ".read": "true"
       },
     "beer": {
       ".read": "true",
       ".indexOn": ["styleId","category","place_id", "place","stateAndCategory", "beerId"],
         "$beerId": {
-      		".write": "auth.email_verified == true && (root.child('admin').child(auth.uid).exists() || root.child('organization').child(newData.child('place_id').val()).child('crowdSource').val()==true  || root.child('organization').child(root.child('beer').child($beerId).child('place_id').val()).child('crowdSource').val()==true || root.child('organization').child(newData.child('place_id').val()).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val()) || root.child('organization').child(root.child('beer').child($beerId).child('place_id').val()).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val()))"
+      		".write": "auth.email_verified == true"
         }
-      
       },
     "locationDB": {
       ".indexOn": "place_id",
@@ -82,40 +103,46 @@
     "newOrg":{
       ".write": "auth.email_verified == true"
     },
-    "onTap": {
+
+    "rating": {
       ".read": "true",
-      ".write": "true",
-      ".indexOn": "place_id"
-    },
-     "rating": {
-    ".read": "true",
-    ".write": "true"
+       "$beerId":{
+          "$uid":{
+          ".write": "$uid==auth.uid"
+      	}          
+      }
     },
     "favorite": {
-    ".read": "true",
-    ".write": "true"
+      ".read": "true",
+        "$orgId":{
+          "$uid":{
+          ".write": "$uid==auth.uid"
+      	}          
+      }
     },
     "GeoTap": {
       ".read": "true",
         "$beerId":{
-          ".read": "true",
       		".indexOn": "g"
         }
     },
     "GeoFire": {
       ".read": "true",
-      ".write": "true",
       ".indexOn": "g"
     },
     "user": {
         "$uid":{
           ".read": "$uid==auth.uid",
-     		  ".write": "$uid==auth.uid"
+          "favorite":{
+     		  	".write": "$uid==auth.uid"
+          },
+          "rating":{
+     		  	".write": "$uid==auth.uid"
+          }
         }
     },
     "breweryDbBeer": {
-      ".read": "true",
-      ".write": "true"
+      ".read": "true"
     }
   }
 }

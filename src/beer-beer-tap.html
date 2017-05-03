@@ -121,12 +121,6 @@
         user="{{user}}">
     </firebase-auth>
 
-     <!--<firebase-document
-        app-name="beer"
-        id="tapped"
-        path="organization/[[orgId]]/onTap/[[beerId]]"
-        data="{{tappedData}}">
-    </firebase-document>-->
 
     <firebase-document
         app-name="beer"
@@ -153,6 +147,8 @@
         path="organization/[[orgId]]">
     </firebase-document>
 
+   <!--Beer Id: [[beerId]]-->
+
       <div id="tapStatusMessage" >
         <iron-label class="tap-status-wrapper">
           <toggle-icon
@@ -169,7 +165,7 @@
           <paper-listbox
             id="tappedListBox"
             attr-for-selected="tapstatus"
-            selected="{{tapped}}">
+            selected="{{tapSelected}}">
             
             <paper-item id="TAPPED" hidden$="[[_hideChoice(tapped, 'TAPPED')]]" tapstatus="TAPPED">
               <div class="tapped tap-status-wrapper">
@@ -193,11 +189,17 @@
             </paper-item>
 
               <paper-item id="REMOVE" hidden tapstatus="REMOVE">
-              <div class="not-available tap-status-wrapper">
+              <div class="not-available tap-status-wrapper" >
                 <div><iron-icon icon="beer-icons:delete-forever"></iron-icon></div>
                 <div class="tap-status">Delete from taplist</div>
               </div>
             </paper-item>
+
+            <!--<paper-item id="NOT_AVAILABLE"  tapstatus="NOT_AVAILABLE">
+              
+                <div>NOT_AVAILABLE</div>
+
+            </paper-item>-->
 
           </paper-listbox>
 
@@ -220,10 +222,10 @@
           type:Object,
         },
 
-        crowdSource:{
-          type: Boolean,
-          value:false
-        },
+        // crowdSource:{
+        //   type: Boolean,
+        //   value:false
+        // },
 
         icon:{
           type: String,
@@ -255,14 +257,13 @@
         statusKnown:{
           type: Boolean
         },
-
+     
         tapped:{
           type: String,
-          value:'',
         },
 
-        tappedData:{
-          type: Object
+        tapSelected:{
+          type: String
         },
 
         tapStatus:{
@@ -283,26 +284,26 @@
         }
       },
       observers: ['_watchTappedStatus(tappedData)',
-                  '_watchTappedData(tappedData)',
-                  'updateTappedInformation(tapped)'],
+                  '_showDeleteTapOption(tappedData)',
+                  '_watchTapSelected(tapSelected)'
+                  ],
 
 
-      _watchTappedData: function (tappedData){
-      
+      _showDeleteTapOption: function (tappedData){
           if(typeof tappedData === 'object'){
             this.$.REMOVE.hidden = true;
-            this.tapped=false;
+            // this.tapped=false;
           }else{
-            
-            this.tapped = tappedData;
             this.$.REMOVE.hidden = false;
           }
         
       },
 
+
       _watchTappedStatus: function (tapped){
         var tap = this.$.tapStatusMessage
         this.toggle = false;
+        
 
         if(tapped==='TAPPED'){
           tap.classList.remove('blown');
@@ -319,6 +320,11 @@
           tap.classList.remove('blown');
           tap.classList.add('on-deck');
           tap.classList.remove('not-available');
+        }else if(tapped === 'NOT_AVAILABLE'){
+          tap.classList.remove('tapped');
+          tap.classList.remove('blown');
+          tap.classList.remove('on-deck');
+          tap.classList.add('not-available');
         }else{
           tap.classList.remove('tapped');
           tap.classList.remove('blown');
@@ -343,8 +349,8 @@
           return 'blown'
         }else if (tapped ==='ON_DECK'){
           return 'add'
-        // }else if (tapped ==='NOT_AVAILABLE'){
-        //   return 'remove'
+        }else if (tapped ==='NOT_AVAILABLE'){
+          return 'remove'
         }else{
           return 'remove'
         }
@@ -357,114 +363,116 @@
           return 'Blown'
         }else if (tapped ==='ON_DECK'){
           return 'On deck'
+        }else if (tapped ==='NOT_AVAILABLE'){
+          return 'Not on tap'
         }else{
           return 'Not on tap'
         }
       },
 
    
-      updateTappedInformation: function (tapped){
+      _watchTapSelected: function (tapped){
 
-        this.message = 'working'
-          var beer = {};
-          var org = {};
-          var obj = {};
-          var beer = this.$.beer.data;
-          var pub = this.$.pub.data;
-          if(this.user){
-          var orgPre = this.beerId;
+          this.message = 'working'
+            var beer = {};
+            var org = {};
+            var obj = {};
+            var beer = this.$.beer.data;
+            var pub = this.$.pub.data;
+            if(this.user){
+            var orgPre = this.beerId;
 
-          if(tapped === 'REMOVE'){
-            console.log('DELETE');
+            if(tapped === 'REMOVE'){
+              console.log('DELETE');
 
-            obj[orgPre] = null;
-            this.$.TAPPED.hidden = false;
-            this.$.BLOWN.hidden = false;
-            this.$.ON_DECK.hidden = false;
-            this.$.REMOVE.hidden = true;
+              obj[orgPre] = null;
+              this.$.TAPPED.hidden = false;
+              this.$.BLOWN.hidden = false;
+              this.$.ON_DECK.hidden = false;
+              this.$.REMOVE.hidden = true;
 
-          }else{
-
-
-            if(tapped){
-              obj[orgPre+'/tapped'] = tapped;
-            }
-            
-            if(beer.abv){
-              obj[orgPre+'/abv'] = Number(beer.abv);
-            }
-            if(beer.category){
-              obj[orgPre+'/category'] = beer.category;
-            }
-            if(beer.categoryName){
-              obj[orgPre+'/categoryName'] = beer.categoryName;
-            }
-            if(beer.categoryTitle){
-              obj[orgPre+'/categoryTitle'] = beer.categoryTitle;
-            }
-            if(beer.order){
-              obj[orgPre+'/order'] = Number(beer.order);
-            }
-            if(beer.description){
-              obj[orgPre+'/description'] = beer.description;
-            }
-            if(pub.latitude){
-              obj[orgPre+'/latitude'] = pub.latitude;
-            }
-            if(pub.longitude){
-              obj[orgPre+'/longitude'] = pub.longitude;
-            }
-            if(beer.id){
-              obj[orgPre+'/id'] = beer.id;
-            }
-
-            if(beer.name){
-                obj[orgPre+'/name'] = beer.name;
-            }
-    
-            if(beer.styleId){
-              obj[orgPre+'/styleId'] = Number(beer.styleId);
-            }
-            if(beer.styleName){
-              obj[orgPre+'/styleName'] = beer.styleName; 
-            }
-
-            if(beer.breweryId){
-              obj[orgPre+'/breweryId'] = beer.breweryId; 
-            }
-            if(beer.breweryName){
-              obj[orgPre+'/breweryName'] = beer.breweryName; 
             }else{
-              if(pub.name){
-                obj[orgPre+'/breweryName'] = pub.name; 
+
+
+              if(tapped){
+                obj[orgPre+'/tapped'] = tapped;
+              }
+              
+              if(beer.abv){
+                obj[orgPre+'/abv'] = Number(beer.abv);
+              }
+              if(beer.category){
+                obj[orgPre+'/category'] = beer.category;
+              }
+              if(beer.categoryName){
+                obj[orgPre+'/categoryName'] = beer.categoryName;
+              }
+              if(beer.categoryTitle){
+                obj[orgPre+'/categoryTitle'] = beer.categoryTitle;
+              }
+              if(beer.order){
+                obj[orgPre+'/order'] = Number(beer.order);
+              }
+              if(beer.description){
+                obj[orgPre+'/description'] = beer.description;
+              }
+              if(pub.latitude){
+                obj[orgPre+'/latitude'] = pub.latitude;
+              }
+              if(pub.longitude){
+                obj[orgPre+'/longitude'] = pub.longitude;
+              }
+              if(beer.id){
+                obj[orgPre+'/id'] = beer.id;
+              }
+
+              if(beer.name){
+                  obj[orgPre+'/name'] = beer.name;
+              }
+      
+              if(beer.styleId){
+                obj[orgPre+'/styleId'] = Number(beer.styleId);
+              }
+              if(beer.styleName){
+                obj[orgPre+'/styleName'] = beer.styleName; 
+              }
+
+              if(beer.breweryId){
+                obj[orgPre+'/breweryId'] = beer.breweryId; 
+              }
+              if(beer.breweryName){
+                obj[orgPre+'/breweryName'] = beer.breweryName; 
+              }else{
+                if(pub.name){
+                  obj[orgPre+'/breweryName'] = pub.name; 
+                }
+              }
+              if(beer.city){
+                obj[orgPre+'/city'] = beer.city; 
+              }
+    
+              if(beer.place_id){
+                obj[orgPre+'/place_id'] = beer.place_id; 
+              }
+              if(beer.state){
+                obj[orgPre+'/state'] = beer.state; 
+              }
+              if(beer.stateAbbreviation){
+                obj[orgPre+'/stateAbbreviation'] = beer.stateAbbreviation; 
               }
             }
-            if(beer.city){
-              obj[orgPre+'/city'] = beer.city; 
-            }
-  
-            if(beer.place_id){
-              obj[orgPre+'/place_id'] = beer.place_id; 
-            }
-            if(beer.state){
-              obj[orgPre+'/state'] = beer.state; 
-            }
-            if(beer.stateAbbreviation){
-              obj[orgPre+'/stateAbbreviation'] = beer.stateAbbreviation; 
-            }
-          }
-        
-          var that = this;
-            this.$.saveTapp.ref.update(obj, function(error) {
-            if (error){
-              console.log("Error" + error);
-              that.toggle = false;
-            }else{
-              console.log("Saved");
-            }
-          });
-          }
-
+          
+            var that = this;
+            console.log('SAVED', obj);
+              this.$.saveTapp.ref.update(obj, function(error) {
+              if (error){
+                console.log("Error" + error);
+                that.toggle = false;
+              }else{
+                console.log("Saved");
+              }
+            });
+        }
       },
 
       _hideChoice: function (tap, choice){

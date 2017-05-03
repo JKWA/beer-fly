@@ -17,6 +17,46 @@ const geoRef = admin.database().ref('GeoFire');
 const geoFire = new GeoFire(geoRef);
 
 
+exports.createNewUser = functions.auth.user().onCreate(function(event) {
+  
+  
+  var data = event.data;
+  var uid = data.uid;
+  var obj = {};
+  
+  if(data.displayName){
+    obj.displayName = data.displayName;
+  }
+
+  if(data.email){
+    obj.email = data.email;
+  }
+
+  if(data.emailVerified){
+    obj.verified = data.emailVerified;
+  }
+
+  if(data.email){
+    obj.domain = data.email.split('@')[1];
+  }
+
+  obj.initialLogin = Date.now(obj);
+
+  console.log('USER', obj);
+
+   admin.database().ref('user').child(uid)
+    .update(obj)
+    .catch( function (error){
+      console.log('SAVE_ERROR', error)
+    }).then(function (){
+      console.log('SAVED_INITIAL_USER');
+    })
+
+  return 
+});
+
+
+
 exports.saveNewPub = functions.database.ref('/newOrg/{place_id}')
     .onWrite(event => {
       // Only edit data when it is first created.

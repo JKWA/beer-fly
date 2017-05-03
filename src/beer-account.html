@@ -1,22 +1,13 @@
 
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
 
-<link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
-<link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
-
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/paper-card/paper-card.html">
-<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
-<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
@@ -155,7 +146,10 @@
             </div>
            
             <div hidden$="[[user.emailVerified]]">
-              You cannot save or edit information because your emial has not been verified by [[provider]].
+              You cannot save or edit information because your email has not been verified.
+              
+              <paper-button on-tap="_verifyAccount" raised>Verify Email</paper-button>
+              
             </div>
             <div hidden$="[[!user.emailVerified]]">
               You may edit comment and rating data associated with the account "[[user.email]]".
@@ -184,7 +178,7 @@
           </div>
      
 
-      <div class="wrapper">
+      <!--<div class="wrapper">
           
           <template is="dom-if" if="[[!smallScreen]]">
             <div class="item">
@@ -222,7 +216,23 @@
             
           </template>
            
+      </div>-->
+      <div hidden$="[[!user]]">
+      <beer-button>
+          <a on-tap="_logout" aria-label="Sign out">
+            <iron-icon icon="beer-icons:account"></iron-icon>Sign out
+            </a>
+        </beer-button>
       </div>
+      
+     <paper-toast 
+        id="verificationToast" 
+        duration="0" 
+        vertical-offset="100">
+        <div>Verification sent to [[user.email]]</div>
+        <div>Please refresh the app after verifying.</div>
+      </paper-toast>
+      
 
           
      
@@ -230,35 +240,7 @@
      </div>
 
 
-      <paper-dialog 
-        id="editDialog"
-        with-backdrop
-        style="width: 90vw;"
-        entry-animation="slide-from-right-animation"
-        exit-animation="slide-right-animation">
       
-     
-        <paper-dialog-scrollable>
-          
-
-          <h3>Upload Images</h3>
-          <upload-image org-id="home" type="banner" key="mainImage"></upload-image>
-        
-          
-          <h3>Basic Information</h3>
-          <paper-input label="Motto" value="{{organization.motto}}"maxlength=100 char-counter></paper-input>
-          <paper-textarea label="History" value="{{organization.description}}" maxlength=2000 char-counter></paper-textarea>
-          
-          
-          </div>
-          
-        </paper-dialog-scrollable>
-
-
-      <div>
-        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
-      </div>
-    </paper-dialog>
 
 </template>
   <script>
@@ -326,105 +308,38 @@
         Polymer.dom(body).appendChild(this.$.editDialog);
         this.$.editDialog.open()
       },
-       
-      // login: function(){
-      //   'use strict';
-      //   this.$.loginDialog.open();
-      // },
 
-      // _addPub: function () {
-      //   var query = this.$.organizations;
-      //   var org = {};
-      //   org.PUB = true;
-      //   org.category = {}
+      _verifyAccount: function (){
+        var that = this;
+        console.log(this.$.auth);
+        var app = this.$.auth.app;
 
-      //   org.category.BEER = {};
-      //   org.category.BEER.name = 'beer';
-      //   org.category.BEER.title = 'Beer';
-      //   org.category.BEER.order = '1';
-      //   org.category.BEER.display = false;
+        firebase.auth(app).currentUser.sendEmailVerification()
+         .then(function(response) {
+            console.log("Email Sent")
+            that.$.verificationToast.open();
 
-      //   org.category.MENU = {};
-      //   org.category.MENU.name = 'menu';
-      //   org.category.MENU.title = 'Menu';
-      //   org.category.MENU.order = '2';
-      //   org.category.MENU.display = false;
+        })
+        .catch(function(error) {
+          console.log('error', JSON.stringify(error))
 
-      //   org.category.TRUCK = {};
-      //   org.category.TRUCK.name = 'truck';
-      //   org.category.TRUCK.title = 'Food Truck';
-      //   org.category.TRUCK.order = '3';
-      //   org.category.TRUCK.display = false;
+        });
 
-      //   org.category.CONTACT = {};
-      //   org.category.CONTACT.name = 'contact';
-      //   org.category.CONTACT.title = 'Contact';
-      //   org.category.CONTACT.order = '4';
-      //   org.category.CONTACT.display = false;
+        // this.$.auth.sendEmailVerification()
+        //  .then(function(response) {
+        //     console.log("Email Sent")
+        //     that.$.verificationToast.open();
 
-      //   org.category.EVENT = {};
-      //   org.category.EVENT.name = 'event';
-      //   org.category.EVENT.title = 'Event';
-      //   org.category.EVENT.order = '5';
-      //   org.category.EVENT.display = false;
+        // })
+        // .catch(function(error) {
+        //   console.log('error', JSON.stringify(error))
 
-      //   org.category.STORE = {};
-      //   org.category.STORE.name = 'store';
-      //   org.category.STORE.title = 'Store';
-      //   org.category.STORE.order = '6';
-      //   org.category.STORE.display = false;
+        // });
+               
 
-      //   org.uid = 'test';
-      //   org.name = 'New Pub'
-      //   query.ref.push(org);
-      // },
-
-      // _addTruck(){
-      //   var query = this.$.organizations;
-      //   var org = {};
-      //   org.TRUCK = true;
-      //   org.category = {}
-
-      //   org.category.MENU = {};
-      //   org.category.MENU.name = 'menu';
-      //   org.category.MENU.title = 'Menu';
-      //   org.category.MENU.order = '1';
-      //   org.category.BEER.display = false;
-
-      //   org.category.LOCATION = {};
-      //   org.category.LOCATION.name = 'location';
-      //   org.category.LOCATION.title = 'Location';
-      //   org.category.LOCATION.order = '2';
-      //   org.category.LOCATION.display = false;
-
-      //   org.category.PUB = {};
-      //   org.category.PUB.name = 'pub';
-      //   org.category.PUB.title = 'PUB';
-      //   org.category.PUB.order = '3';
-      //   org.category.PUB.display = false;
-
-      //   org.category.CONTACT = {};
-      //   org.category.CONTACT.name = 'contact';
-      //   org.category.CONTACT.title = 'Contact';
-      //   org.category.CONTACT.order = '4';
-      //   org.category.CONTACT.display = false;
-
-      //   org.category.EVENT = {};
-      //   org.category.EVENT.name = 'event';
-      //   org.category.EVENT.title = 'Event';
-      //   org.category.EVENT.order = '5';
-      //   org.category.EVENT.display = false;
-
-      //   org.category.STORE = {};
-      //   org.category.STORE.name = 'store';
-      //   org.category.STORE.title = 'Store';
-      //   org.category.STORE.order = '6';
-      //   org.category.STORE.display = false;
-
-      //   org.uid = 'test';
-      //   org.name = 'New Truck'
-      //   query.ref.push(org);
-      // },
+                   
+      },
+ 
 
       _logout: function(){
         'use strict';

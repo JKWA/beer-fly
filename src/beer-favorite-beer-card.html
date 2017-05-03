@@ -1,0 +1,334 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+
+
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/geo-query/geo-query.html">
+
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-beer-rating.html">
+
+<dom-module id="beer-favorite-beer-card">
+
+  <template>
+
+    <style>
+
+
+     a{
+      color: var(--app-primary-color);
+      text-decoration: none;
+     }
+
+    paper-spinner-lite{
+      position: absolute;
+      top: 5%;
+      right: 5%;
+      font-size: .4em;
+
+    }
+
+
+    /*.card{
+      padding: 10px;
+      margin: 10px;
+    }*/
+
+    .title{
+        @apply(--layout-horizontal);
+        @apply(--layout-justified);
+        @apply(--layout-wrap);
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+       .title > div{
+        padding: 0 5px 0 0;
+      }
+     
+      .wrapper{
+         @apply(--layout-vertical);        
+      }
+
+      .wrapper > div{
+        padding: 10px 0 5px 0
+      }
+
+      .pub-wrapper{
+         @apply(--layout-vertical); 
+         margin: 10px 0 10px 0;
+      }
+
+      .pub-wrapper > div{
+        padding: 7px 0 0 0
+      }
+
+      .name {
+        font-size: 1.5em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .pub-name {
+        font-size: 1.2em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+      .pub-vicinity{
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+      .pub-distance{
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+      .style {
+        font-size: 1.0em;
+        font-weight: 500;
+        color: var(--app-primary-color);
+       
+      }
+
+      .description {
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .location{
+        @apply(--layout-horizontal);
+        @apply(--layout-start-justified);
+        @apply(--layout-wrap);
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+       .location > div{
+        padding: 0 5px 0 0;
+      }
+
+      .footer-abv{
+        text-align: right;
+        margin: 0 20px 0 0;
+        font-weight: 500;
+      }
+
+      .tap-title {
+        font-size: 1.2em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .your-location {
+        font-size: .8em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+
+
+  
+      
+    </style>
+
+    <firebase-document 
+      id="beer"
+      app-name="beer"
+      path="beer/[[beerId]]"
+      data="{{beer}}">
+    </firebase-document>
+
+    
+    
+     <paper-material class='card' elevation="0" animated-shadow="false">
+          
+          <div class="title">
+            <div>
+              <beer-beer-rating 
+                  beer-id="[[beerId]]"
+                  login="{{login}}">
+              </beer-beer-rating>
+            </div> 
+          </div>
+
+          <div class="wrapper">
+            <div class="name">[[beer.name]]</div>
+            <div class="style">[[beer.styleName]]</div>
+            <div class="description">[[beer.description]]</div>       
+            <div class="location">
+              <div>[[beer.breweryName]] - </div>
+              <div>[[beer.city]],</div>
+              <div>[[beer.state]]</div>
+            </div>
+            <div class="footer-abv" hidden$="[[!abv]]">ABV: [[beer.abv]]</div>
+              
+          </div>
+
+      </paper-material>
+    
+    <!--<paper-input label="beerId" value></paper-input>-->
+    
+      <div id="pubCards" >
+     
+      <template id="repeater" is="dom-repeat" 
+          items="[[pubArray]]" as="pub" 
+          initial-count="20"  sort="_sort" 
+          observe="sort distance">
+          <a aria-label$="[[pub.name]]" href$="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
+          <!--[[pub.place_id]]-->
+            <paper-material class="pub-wrapper" elevation="0">
+              <div class="pub-name">[[pub.name]]</div>
+              <div class="pub-vicinity">[[pub.vicinity]]</div>
+              <div class="pub-distance">[[_computeDisplayDistance(pub.distance)]] miles from you.</div>
+            </paper-material>
+          </a>
+
+        
+
+      </template>
+      </div>
+    </div>
+
+    </div>
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-favorite-beer-card',
+
+      properties: {
+
+       beerId:{
+         type: String
+       },
+      
+       location: {
+         type:Object
+       },
+
+       login:{
+         type: Boolean,
+         notify: true
+       },
+
+       pubArray:{
+         type: Array,
+         value: function (){return [];}
+       }
+
+      },
+      observers:['_getPubs(beerId, location)'],
+
+      _getPubs: function (beerId, location){
+
+        this.pubArray = [];
+
+
+        var that = this;
+        var app = this.$.beer.app;
+        var firebaseRef = app.database().ref('GeoTap/'+beerId);
+        var geoFire = new GeoFire(firebaseRef);
+
+        var query = {};
+        var number = 0;
+        var radius = 100;
+
+        query.center = [location.location.latitude, location.location.longitude];
+        query.radius = radius*1.609344;
+
+
+        var locations = geoFire.query(query).on("key_entered", function(key, location, distance) {
+            // console.log('geofire', key);
+            app.database().ref('/organization/'+key).once('value').then( function(snapshot) {
+            
+            var pub = snapshot.val();
+            
+            var pubDistance = distance*0.621371;
+            pub.distance = pubDistance;
+            pub.sort = pubDistance
+
+            if(location){
+                // console.log('geo-location', location)
+                pub.latitude = location[0];
+                pub.longitude = location[1];
+            }
+
+            // if(pub.PREMIUM){
+            //         if(pubDistance <= 10){
+            //             pub.sort = pubDistance -10;
+
+            //         }else{
+            //             pub.sort = pubDistance;
+            //         }
+            //     }else{
+            //         pub.sort = pubDistance;
+            //     }
+
+            pub.beerfly = true;
+            pub.organization = true;
+            return pub;
+
+        }).then(function (pub){
+           
+            that.push('pubArray', pub);
+            
+            // return pub;
+
+        })
+      })
+      geoFire.query(query).on('key_exited', function(key){
+          var pubs = that.pubArray
+          if(Array.isArray(pubs)){
+            for(var i=0; i<pubs.length; i++){
+              var pub = pubs[i];
+              if(pub.place_id === key){
+                that.splice('pubArray', i, 1);
+              }
+            }
+          }
+      })
+        
+
+    },
+    
+    _sort: function (a,b){
+        // console.log('sorted');
+        return parseFloat(a.sort) - parseFloat(b.sort) ;
+      },
+      
+      _computeDisplayDistance: function (distance){
+          return Math.round(distance*10)/10
+        },
+
+      _computeNameForUrl: function (name) {
+        'use strict';
+        if (name) {
+          name = name.replace(/\s/g, '-')
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'pub-name-missing'
+        }
+      },
+
+      _test: function(obj){
+          console.log("TEST",obj);
+
+      }
+
+    });
+
+  </script>
+
+</dom-module>

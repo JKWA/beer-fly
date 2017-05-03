@@ -83,11 +83,12 @@
   
 
     
-    <template is="dom-repeat" items="[[_getArray(organization.brewBeer)]]" sort="_sortOrder" as="beer">
+    <template is="dom-repeat" items="[[_getArray(organization.brewBeer)]]" sort="_sortOrder" as="beer" filter="[[_filterBeers(owner)]]">
       <beer-beer-card 
           beer-id="[[beer.id]]"
           beer-name="[[beer.name]]"
           beer-description="[[beer.description]]"
+          status="[[beer.status]]"
           brewery-name="[[place.name]]"
           brewery-city="[[organization.city]]"
           brewery-state="[[organization.stateAbbreviation]]"
@@ -97,7 +98,6 @@
           crowd-source="[[organization.crowdSource]]"
           owner="[[owner]]" 
           uid="[[user.uid]]"
-          edit="[[canEdit]]"
           edit-beer-id="{{editBeerId}}"
           name-url="[[nameUrl]]"
           login="{{login}}">
@@ -184,44 +184,11 @@
 
         editBeerId:{
           type: String
-        },
-
-
-        canEdit:{
-          type: Boolean,
-          computed: '_computeCanEdit(user, owner, organization)'
         }
         
       },
     
 
-      _computeCanEdit: function (user, owner, organization){
-      
-       if(!user){
-        return false;
-       }
-
-       var uid = user.uid;
-        var crowdSource = true;
-        if(!organization){
-          return false
-        }else{
-          if(owner){
-            return true;
-          }
-          if(organization.stopCrowdSourcedData){
-            crowdSource = false;
-          }
-          if(crowdSource && uid){
-            return true
-          }
-         
-        }
-        return false;
-      },
-
-
-     
 
      _edit: function(){
         'use strict';
@@ -303,6 +270,24 @@
         }catch (error){
 
        }
+      },
+
+      _filterBeers: function (owner){
+        // console.log(beer);
+        return function(beer) {
+          // console.log('beer',beer)
+          // console.log('owner', owner)
+          if(owner){
+            return true;
+          }else{
+            if(beer.status === 'verified'){
+              return true;
+            }else{
+              return false;
+            }
+          }
+          return true;
+        };
       },
 
       _test: function (obj) {

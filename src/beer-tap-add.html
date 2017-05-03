@@ -7,12 +7,15 @@
 
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 
 
-<link rel="import" href="beer-beer-card.html">
+<!--<link rel="import" href="beer-beer-card.html">-->
+<link rel="import" href="beer-beer-tap.html">
 <link rel="import" href="beer-beer-edit.html">
 <link rel="import" href="beer-icons.html">
 
@@ -53,6 +56,19 @@
         color:red;
       }
 
+      .name {
+        font-size: 1.5em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .style {
+        font-size: 1.0em;
+        font-weight: 500;
+        color: var(--app-primary-color);
+       
+      }
+
 
     </style>
 
@@ -85,43 +101,63 @@
       path="newOrg/[[place.place_id]]">
   </firebase-document>
 
-   
-   <paper-material class="card" elevation="0">
-   <paper-input label="Search for brewery" value="{{queryString}}">
-     <iron-icon icon="beer-icons:search" prefix></iron-icon>
-      <paper-icon-button class="clear" suffix onclick="clearInput()" icon="beer-icons:clear" alt="clear" title="clear">
+   <template is="dom-if" if="[[owner]]">
+      <paper-material class="card" elevation="0">
+      <paper-input label="Search for brewery" value="{{queryString}}">
+        <iron-icon icon="beer-icons:search" prefix></iron-icon>
+          <paper-icon-button class="clear" suffix onclick="clearInput()" icon="beer-icons:clear" alt="clear" title="clear">
 
-   </paper-input>
+      </paper-input>
 
-   
-   <iron-collapse id="collapse" opened="[[toggle]]" no-animation>
-   
-    <paper-listbox
-        attr-for-selected="brewery"
-        selected-class="location-list" 
-        class="location-list"
-        selected="{{brewery}}"
-        on-click="_close">
-      <template is="dom-repeat" items="[[data]]" as="brewery">
-          <paper-item brewery="[[brewery]]">[[brewery.name]]</paper-item>
-      </template>
-    </paper-listbox>
-    </iron-collapse>
-   
-    <div class="brewery-info" hidden="[[!placeId]]">
-      <div class="brewery-name">[[brewery.name]]</div>
-      <div class="address">[[brewery.formatted_address]]</div>
-      <iron-label>
-        <a aria-label$="TEST" href$="/[[_computeNameForUrl(brewery.name)]]/beer-edit?orgid=[[brewery.place_id]]&returnName=[[_computeEncodeName(organization.name)]]&returnOrgId=[[orgId]]">
-          <paper-icon-button icon="beer-icons:add"></paper-icon-button>
-          Add a missing beer</a>
-      </iron-label>
-    </div>
-    </paper-material>
+      
+      <iron-collapse id="collapse" opened="[[toggle]]" no-animation>
+      
+        <paper-listbox
+            attr-for-selected="brewery"
+            selected-class="location-list" 
+            class="location-list"
+            selected="{{brewery}}"
+            on-click="_close">
+          <template is="dom-repeat" items="[[data]]" as="brewery">
+              <paper-item brewery="[[brewery]]">[[brewery.name]]</paper-item>
+          </template>
+        </paper-listbox>
+        </iron-collapse>
+      
+        <div class="brewery-info" hidden="[[!placeId]]">
+          <div class="brewery-name">[[brewery.name]]</div>
+          <div class="address">[[brewery.formatted_address]]</div>
+          <iron-label>
+            <a aria-label$="TEST" href$="/[[_computeNameForUrl(brewery.name)]]/beer-edit?orgid=[[brewery.place_id]]&returnName=[[_computeEncodeName(organization.name)]]&returnOrgId=[[orgId]]">
+              <paper-icon-button icon="beer-icons:add"></paper-icon-button>
+              Add a missing beer</a>
+          </iron-label>
+        </div>
+        </paper-material>
+
+    </template>
     
     <div id="beerCards">
     <template is="dom-repeat" items="[[beers]]" as="beer" sort="_sortOrder">
-      <beer-beer-card 
+      
+      <paper-material class="card" elevation="1">
+        <div>
+            <beer-beer-tap
+              org-id="[[orgId]]"
+              beer-id="[[beer.id]]"
+              owner="[[owner]]">
+            </beer-beer-tap>
+        </div>
+        <div class="name">[[beer.name]]</div>
+        <div class="style">[[beer.styleName]]</div>
+        <div class="address">[[brewery.formatted_address]]</div>
+        
+      </paper-material>
+      
+      
+
+
+      <!--<beer-beer-card 
           beer-id="[[beer.id]]"
           beer-name="[[beer.name]]"
           beer-description="[[beer.description]]"
@@ -136,7 +172,7 @@
           uid="[[user.uid]]"
           name-url="[[nameUrl]]"
           login="{{login}}">
-      </beer-beer-card>
+      </beer-beer-card>-->
     </template>
     </div>
 
@@ -236,16 +272,16 @@
         
         _addNewOrg: function (orgId, user){
           if(user){
-            if(orgId){
-                console.log('update edit');
-                var obj = {};
-                obj['user/'+user.uid] = {};
-                obj['user/'+user.uid].uid = this.user.uid;
-                obj['user/'+user.uid].timestamp = Date.now();
+            // if(orgId){
+            //     console.log('update edit');
+            //     var obj = {};
+            //     obj['user/'+user.uid] = {};
+            //     obj['user/'+user.uid].uid = this.user.uid;
+            //     obj['user/'+user.uid].timestamp = Date.now();
             
-                this.$.newOrg.ref.update(obj);
+            //     this.$.newOrg.ref.update(obj);
 
-            }
+            // }
           }
         },
 

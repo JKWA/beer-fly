@@ -21,11 +21,6 @@
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 
-<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
-<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
-
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
@@ -277,6 +272,22 @@
         text-transform: uppercase;*/
       }
 
+      section {
+        width: 100%;
+        height: 400px;
+        @apply(--layout-vertical);
+      }
+      section paper-dialog-scrollable {
+        @apply(--layout-flex);
+      }
+      /*.header {
+        padding: 8px 24px;
+      }
+      .footer {
+        padding: 8px 24px;
+        text-align: right;
+      }*/
+
       /* small screen */
       @media (max-width: 767px) {
         :host {
@@ -474,7 +485,7 @@
         <a name="browse" aria-label="Browse beers" href$="/[[nameUrl]]/browse[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:near-me"></iron-icon>Browse</a>
 
       </iron-selector>
-      
+      <div class="extra-links" hidden$="[[verified]]" on-tap="_verifyAccount"><iron-icon class="drawer-icon" icon="beer-icons:account"></iron-icon>Verify account</div>
       <div class="extra-links" hidden$="[[!user]]" on-tap="_logout"><iron-icon class="drawer-icon" icon="beer-icons:account"></iron-icon>Sign out</div>
       <div class="extra-links" hidden$="[[user]]" on-tap="_login"><iron-icon class="drawer-icon" icon="beer-icons:account"></iron-icon>Sign in</div>
       <div class="extra-links">Terms of use</div>
@@ -492,7 +503,7 @@
   <beer-tap name="tap" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.TAP]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap>
   <beer-beer name="beer" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-beer>
   <beer-tv name="tv" organization="[[organization]]" place="[[place]]" org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-tv>
-  <beer-favorite-beer name="favorite-beer" offline="[[offline]]"></beer-favorite-beer>
+  <beer-favorite-beer name="favorite-beer" location="[[location]]" offline="[[offline]]"></beer-favorite-beer>
   <beer-favorite-brewery name="favorite-brewery" offline="[[offline]]"></beer-favorite-brewery>
   <beer-favorite-pub name="favorite-pub" offline="[[offline]]"></beer-favorite-pub>
 
@@ -533,8 +544,11 @@
         with-backdrop 
         id="loginDialog"
         opened="{{login}}">
-    
-     <beer-login></beer-login>
+    <paper-dialog-scrollable>
+      <section>
+      <beer-login></beer-login>
+      </section>
+    </paper-dialog-scrollable>
       <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
      
    </paper-dialog>
@@ -553,6 +567,14 @@
         <br>
       </div>
     </paper-toast>
+
+     <paper-toast 
+        id="verificationToast" 
+        duration="0" 
+        vertical-offset="100">
+        <div>Verification sent to [[user.email]]</div>
+        <div>Please refresh the app after verifying.</div>
+      </paper-toast>
 
     <footer>
       <div class= "footer-item">
@@ -604,10 +626,7 @@
 
         fireOrg:{
           type: Object,
-         
         },
-
-      
 
         geoError: {
           type: Boolean,
@@ -686,7 +705,6 @@
           computed: '_computeOrgParam(orgId)'
         },
 
-
         owner:{
           type: Boolean,
           value: false
@@ -724,6 +742,11 @@
 
         subRouteData: {
           type: Object
+        },
+
+        verified: {
+          type: Boolean,
+          value: true
         },
 
         user:{
@@ -941,15 +964,15 @@
 
       _updateUserBaseData: function (user){
         
-          // if(user){
-          //   var obj = {};
-          //   this.login = false;
-          //   obj.displayName = user.displayName;
-          //   obj.domain = user.email.split('@')[1];
-          //   obj.verified = user.emailVerified;
-
-          //   this.$.user.ref.update(obj)
-          // }
+          if(user){
+            this.login = false;
+            console.log('user', user);
+            if(user.emailVerified){
+              this.verified = true;
+            }else{
+              this.verified = false;
+            }
+          }
       },
 
 
@@ -1525,6 +1548,23 @@
         this.drawerOpened = false;
         return this.$.auth.signOut();
       }, 
+
+      _verifyAccount: function (){
+        var that = this;
+        var app = this.$.auth.app;
+        // this.$.verificationToast.open();
+        // this.drawerOpened = false;
+
+        firebase.auth(app).currentUser.sendEmailVerification()
+         .then(function(response) {
+            console.log("Email Sent");
+            that.drawerOpened = false;
+            that.$.verificationToast.open();
+        })
+        .catch(function(error) {
+          console.log('error', JSON.stringify(error))
+        });
+      },
 
       _test: function (obj) {
         console.log("TEST",obj)

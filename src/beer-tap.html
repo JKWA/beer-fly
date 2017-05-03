@@ -11,12 +11,14 @@
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<link rel="import" href="beer-beer-card.html">
+<!--<link rel="import" href="beer-beer-card.html">-->
 <link rel="import" href="beer-icons.html">
 
 <link rel="import" href="../my_components/data/upload-image.html">
 <link rel="import" href="beer-fab.html">
-<link rel="import" href="beer-fab-search.html">
+<link rel="import" href="beer-beer-tap.html">
+<link rel="import" href="beer-beer-rating.html">
+
 
 
 <dom-module id="beer-tap">
@@ -37,6 +39,14 @@
         padding: 20px;
       }
 
+      .wrapper{
+         @apply(--layout-vertical);        
+      }
+
+      .wrapper > div{
+        padding: 10px 0 5px 0
+      }
+
       .motto {
         font-size: 2.0em;
         font-weight: 500;
@@ -47,6 +57,44 @@
         font-size: 1.2em;
         font-weight: 300;
         margin: 10px 5px 0 20px;
+      }
+
+      .name {
+        font-size: 1.5em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .style {
+        font-size: 1.0em;
+        font-weight: 500;
+        color: var(--app-primary-color);
+       
+      }
+
+      .beer-description {
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .location{
+        @apply(--layout-horizontal);
+        @apply(--layout-start-justified);
+        @apply(--layout-wrap);
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+       .location > div{
+        padding: 0 5px 0 0;
+      }
+
+      .footer-abv{
+        text-align: right;
+        margin: 0 20px 0 0;
+        font-weight: 500;
       }
 
     </style>
@@ -83,19 +131,51 @@
     </a>
    </paper-material>
    </div>
-
-   <paper-material class="card" elevation="1">
-     <iron-label>
-        <a aria-label$="TEST" href$="/[[nameUrl]]/tap-add?orgid=[[orgId]]">
-          <paper-icon-button icon="beer-icons:add"></paper-icon-button>
-          Add a beer on tap</a>
-      </iron-label>
-   </paper-material>
+   <template is="dom-if" if="[[owner]]">
+      <paper-material class="card" elevation="1">
+        <iron-label>
+            <a aria-label$="TEST" href$="/[[nameUrl]]/tap-add?orgid=[[orgId]]">
+              <paper-icon-button icon="beer-icons:add"></paper-icon-button>
+              Add a beer on tap</a>
+          </iron-label>
+      </paper-material>
+   </template>
    
 
     <template is="dom-repeat" items="[[_getArray(organization.onTap)]]" sort="_sortOrder" as="beer">
+      <paper-material class="card" elevation="1">
 
-     <beer-beer-card 
+        <template is="dom-if"  if="[[!owner]]">
+            <div>
+              <beer-beer-rating 
+                  beer-id="[[beer.id]]"
+                  login="{{login}}">
+              </beer-beer-rating>
+            </div>
+        </template>
+
+        <div>
+            <beer-beer-tap
+              org-id="[[orgId]]"
+              beer-id="[[beer.id]]"
+              owner="[[owner]]">
+            </beer-beer-tap>
+          </div>
+           
+
+          <div class="wrapper">
+            <div class="name">[[beer.name]]</div>
+            <div class="style">[[beer.styleName]]</div>
+            <div class="beer-description">[[beer.description]]</div>       
+            <div class="location">
+              <div>[[beer.breweryName]] - </div>
+              <div>[[beer.city]],</div>
+              <div>[[beer.stateAbbreviation]]</div>
+            </div>
+            <div class="footer-abv" hidden$="[[!beer.abv]]">ABV: [[beer.abv]]</div>
+              
+          </div>
+     <!--<beer-beer-card 
           beer-id="[[beer.id]]"
           beer-name="[[beer.name]]"
           beer-description="[[beer.description]]"
@@ -111,8 +191,8 @@
           edit="[[canEdit]]"
           edit-beer-id="{{editBeerId}}"
           login="{{login}}">
-      </beer-beer-card>
-
+      </beer-beer-card>-->
+      </paper-material>
     </template>
 
 

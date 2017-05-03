@@ -255,10 +255,11 @@ _selectedRating: function (){
         } 
 
         obj['rating/'+this.beerId+'/'+this.user.uid+'/rating'] = rating;
-        obj['user/'+this.user.uid+'/rating/'+this.beerId] = rating;
+        obj['user/'+this.user.uid+'/rating/'+this.beerId+'/rating'] = rating;
 
         var app = this.$.rating.app;
         var that = this;
+        console.log('SAVE', obj);
         firebase.database(app).ref().update(obj, function(error) {
             if (error){
                 console.log("Error" + error);
