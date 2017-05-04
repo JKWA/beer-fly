@@ -401,16 +401,13 @@
                 obj['user/'+user.uid] = {};
                 obj['user/'+user.uid].uid = this.user.uid;
                 obj['user/'+user.uid].timestamp = Date.now();
-
-                // console.log('new', obj);
             
-                this.$.newOrg.ref.update(obj, function(error){
-                  if(!error){
-                    console.log('SAVED_NEW_PUB');
-                  }else{
-                    console.log('SAVED_NEW_PUB_ERROR', error);
-                  }
-                });
+                this.$.newOrg.ref.update(obj)
+                  .then(function(){
+                    console.log('SAVED_NEW_PUB')
+                  }).catch(function(error){
+                     console.log('SAVED_NEW_PUB_ERROR', error);
+                  })
             }
           }
         }
