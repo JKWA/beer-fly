@@ -13,13 +13,18 @@
     "src/beer-tap-edit.html",
     "src/lazy-resources.html"
   ],
-  "sourceGlobs": [
+  "sources": [
    "src/**/*",
    "images/**/*",
    "bower.json"
   ],
-  "includeDependencies": [
+  "extraDependencies": [
     "manifest.json",
     "bower_components/webcomponentsjs/webcomponents-lite.min.js"
-  ]
+  ],
+  
+  "lint": {
+    "rules": ["polymer-1"]
+  }
+
 }

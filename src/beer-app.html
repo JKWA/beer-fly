@@ -4,6 +4,8 @@
 <link rel="import" href="../bower_components/app-layout/app-scroll-effects/effects/waterfall.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 
 <link rel="import" href="../bower_components/app-layout/helpers/helpers.html">
 <link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
@@ -45,7 +47,6 @@
 
 <link rel="import" href="beer-home2.html">
 <link rel="import" href="beer-icons.html">
-<link rel="import" href="beer-login.html">
 <link rel="import" href="beer-place-data.html">
 <link rel="import" href="beer-tabs.html">
 <link rel="import" href="beer-tab.html">
@@ -480,7 +481,7 @@
           <hr>
         </template>
         <a name="near" aria-label="Breweries near me" href="/home"><iron-icon class="drawer-icon" icon="beer-icons:gps-fixed"></iron-icon>Near me</a>
-        <!--<a name="search" aria-label="Search for breweries" href$="/[[nameUrl]]/search[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:search"></iron-icon>Search</a>-->
+        <a name="search" aria-label="Search for breweries" href$="/[[nameUrl]]/search[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:search"></iron-icon>Search</a>
         <a name="favorite" aria-label="My favorites" href$="/[[nameUrl]]/favorite[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:favorite"></iron-icon>Favorites</a>
         <a name="browse" aria-label="Browse beers" href$="/[[nameUrl]]/browse[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:near-me"></iron-icon>Browse</a>
 
@@ -515,7 +516,7 @@
   <beer-event name="event" category=[[organization.category.EVENT]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-event>
   <beer-store name="store" category=[[organization.category.STORE]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-store>
   <beer-list name="list" route="[[subroute]]" offline="[[offline]]" place="[[place]]"  owner="[[owner]]"></beer-list>
-  <beer-search name="search" latitude="[[latitude]]" longitude="[[longitude]]" idle="{{idle}}" geo-error="[[geoError]]"></beer-search>
+  <beer-search name="search" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" geo-error="[[geoError]]"></beer-search>
   <beer-beer-info name="beer-info" login="{{login}}" location="[[location]]" beer-id="[[beerId]]"></beer-beer-info>
 
    <beer-home2 name="home" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" all-object="[[allObject]]" all-array="[[allArray]]"></beer-home2>

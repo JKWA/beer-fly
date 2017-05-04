@@ -2,18 +2,16 @@
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
-
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-material/paper-material.html">
-<link rel="import" href="../bower_components/google-map/google-map.html">
-<link rel="import" href="../bower_components/google-map/google-map-search.html">
-<link rel="import" href="../bower_components/google-map/google-map-marker.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="beer-icons.html">
-<link rel="import" href="beer-rating-card.html">
+
+<link rel="import" href="beer-location.html">
 
 
 <dom-module id="beer-search">
@@ -53,60 +51,68 @@
         font-weight: 400;
       }
 
+      .clear{
+        color:red;
+      }
+
+      .pub-wrapper{
+         @apply(--layout-vertical); 
+      }
+
+      .pub-wrapper > div{
+        padding: 7px 0 0 0
+      }
+
+      .pub-name {
+        font-size: 1.2em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+      .pub-vicinity{
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+      .pub-distance{
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
     </style>
 
-    <firebase-document
-        id="organizations"
-         app-name="beer"
-        path="organization">
-    </firebase-document>
+    <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
 
-  <!--KEEP THIS ABOVE THE MAP-->
- <paper-material class="card" elevation="0">
-  <paper-input class="search" label="Search"value="{{queryInput}}">
-        <div prefix><iron-icon icon="beer-icons:search"></iron-icon></div>
-    </paper-input>
-    
-    <paper-checkbox disabled="[[error]]" checked="{{geoPermission}}">Near my location</paper-checkbox>
-    
-    
+    <beer-location
+      location={{location}} 
+      search-string="{{searchString}}" 
+      sorted-location-history="[[sortedLocationHistory]]">
+    </beer-location>
 
-    <google-map-search 
-        id="search"
-        map="[[map]]" 
-        query="{{query}}" 
-        latitude="[[gLatitude]]"
-        longitude="[[gLongitude]]"
-        radius="50000"
-        results="{{results}}">
-    </google-map-search>
+      <paper-material class="card" elevation="0">
+          <paper-input label="Search for brewery" value="{{queryString}}">
+            <iron-icon icon="beer-icons:search" prefix></iron-icon>
+              <paper-icon-button class="clear" suffix on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
+          </paper-input>
+      </paper-material>
 
-    <div hidden>
-    <google-map 
-        id="map"
-        map="{{map}}" 
-        latitude="[[gLatitude]]"
-        longitude="[[gLongitude]]"
-        radius="50000"
-        type="bar"
-        api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" >
-    </google-map>
-    </div>
-    <!--LAT [[gLatitude]]  Long [[gLongitude]]-->
-      <div class="search-wrapper">
-        <template is="dom-repeat" items="{{results}}" as="pub">
-          <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
-            <paper-material class="card" elevation="1">
-                <div class="search-name">[[pub.name]]</div>
-                <div class="search-address">[[pub.formatted_address]]</div>
-                <div>
-                  <beer-rating-card rating="[[pub.rating]]"></beer-rating-card>
-                </div>
-            </paper-material> 
-          </a> 
-        </template>
-      </div>
-  </paper-material>
+
+       <template id="repeater" is="dom-repeat" 
+          items="[[data]]" as="pub" 
+          initial-count="20"  sort="_sort" 
+          observe="sort distance">
+          <a aria-label$="[[pub.name]]" href$="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
+         
+            <paper-material class="pub-wrapper card" elevation="1">
+              <div class="pub-name">[[pub.name]]</div>
+              <div class="pub-vicinity">[[pub.vicinity]]</div>
+              <div class="pub-distance">[[_computeDisplayDistance(pub.distance)]] miles from you.</div>
+            </paper-material>
+          </a>
+      </template>
+
+    
  
 </template>
   <script>
@@ -117,176 +123,115 @@
 
       properties: {
 
-       url:{
-         type:String,
-         computed: '_computeUrl()'
-       },
-       query:{
-         type: String
-       },
-       queryInput:{
-         type: String
-       },
-       details:{
-         type: Object
-       },
-
-       idle:{
-          type: Boolean,
-          notify: true
-        },
-        error:{
-          type: Boolean
+        allPub:{
+          type: Object
         },
 
-        geoPermission:{
-          type: Boolean,
-          value: false
-        },
-
-       latitude: {
-          type: Number
-          
+       location:{
+         type: Object,
+         notify: true
        },
 
-       
-       longitude:{
-         type: Number
-         
+       data:{
+         type: Array
        },
 
-       gLatitude:{
-         type: Number,
-         value:0
-       },
-
-       gLongitude:{
-         type: Number,
-         value:0
-       },
-
-       
-
-      // nameUrl: {
-      //   type: String,
-      //   computed: '_computeNameForUrl(organization.name)'
-      // },
-
-       placeId: {
+       queryString:{
          type: String
        }
       },
-      observers:['_observeQuery(queryInput)',
-                  '_observeDetails(details)',
-                  '_observeLocation(latitude, longitude)',
-                  '_observeGeoPermission(geoPermission)'],
-
- 
-
-      _observeLocation: function (latitude, longitude){
-          // console.log("TEST")
-          if(latitude){
-            if(longitude){
-              this.gLatitude =latitude;
-              this.gLongitude =longitude;
-              this.geoPermission = true;
-            }
-          }
-      },
-
-      _observeGeoPermission: function (geoPermission){
-       
-        if(!geoPermission){
-          
-          this.gLatitude =0;
-          this.gLongitude =0;
-        }else{
-          this.gLatitude = this.latitude
-          this.gLongitude = this.longitude
-          
-        }
-      },
-
-      _observeQuery: function (queryInput){
-        
-        if(queryInput.length >2){
-          this.query = queryInput+'+beer';
-        }
-      },
 
 
+      observers:['_getGoogleSearchData(queryString)'],
 
-      _observeDetails: function (details){
-        console.log('DETAILS', details);
-        var obj = {};
-        var key = ['formatted_address',
-                   'formatted_phone_number',
-                    'id',
-                    'latitude',
-                    'longitude',
-                    'name',
-                    'opening_hours',
-                    'url',
-                    'place_id',
-                    'website',
-                    'reference'];
-        var obj = {};
-        obj.PUB = true;
-        obj.uid = 'test';
-        for (var i=0; i<key.length; i++){
-          if(details[key[i]]){obj[key[i]] = details[key[i]]}
-        }
-        if(details.place_id){
-          this.$.organizations.ref.child(details.place_id).update(obj);
-        }
-        
-      },
 
-      
+      _getGoogleSearchData: function(queryString){
+   
+        if(queryString.length >=4){
 
-      _getPlace: function(e){
-        'use strict';
-     
-          var target = e.currentTarget;
-          var place = target.place;
+          this.data = [];
+          this.allPub = {};
 
-          // var place = "ChIJeVKwbHoRkFQR17m_DCgxrGc"
-          var details = this.$.search.getDetails(place.place_id);
           var that = this;
+          var request = {};
+          
+          request.query = queryString+' Brewery or beer';
+          // request.location = this.location.location.latitude.toString()+','+this.location.location.longitude.toString();
+          request.location = {};
+          request.location.lat = this.location.location.latitude;
+          request.location.lng = this.location.location.longitude;
+          request.radius = 50000;
+          console.log('request', request);
+          
+          var places = new google.maps.places.PlacesService(this.$.map);
+          places.textSearch(request, function (result){
+        
+            var returnDataArray = [];
+            var returnDataObject = {};
+            if(result){
+              that.toggle = true;
+          
+              for (var i=0; i<result.length; i++){
+       
+                if(result[i].formatted_address){
+                  result[i].vicinity = result[i].formatted_address;
+                }
+                var resultLocation = result[i].geometry.location;
+                  result[i].distance = that._distance (that.location.location.latitude, that.location.location.longitude, resultLocation.lat(), resultLocation.lng())
+                // console.log(result[i]);
+                if(!that.allPub[result[i].place_id]){
+                  that.push('data', result[i]);
+                  that.allPub[result[i].place_id] = true;
+                }
+              }  
+                
+            }
+          })
+        }   
+      // }
+   },
 
-          details.then(function(result) {
-                          // console.log(result); 
-                          result.latitude = place.latitude;
-                          result.longitude = place.longitude;
-                          that.details = result;
-                          
-                        }, function(err) {
-                          console.log(err); 
-                        });
 
-      },
+      _distance: function (myLat, myLng, pubLat, pubLng){
+          var R = 3959; 
+          var dLat = this.deg2rad(pubLat-myLat);  
+          var dLon = this.deg2rad(pubLng-myLng); 
+          var a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(myLat)) * Math.cos(this.deg2rad(pubLat)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
 
-     _computeNameForUrl: function (name) {
+          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+          var d = R * c; 
+          return d
+       },
+
+       deg2rad: function (deg) {
+              return deg * (Math.PI/180)
+       },
+
+     _computeDisplayDistance: function (distance){
+          return Math.round(distance*10)/10
+        },
+
+      _computeNameForUrl: function (name) {
         'use strict';
         if (name) {
           name = name.replace(/\s/g, '-')
-
           return name.replace(/[^a-zA-Z\d\s:]/g, '');
         } else {
           return 'pub-name-missing'
         }
       },
 
-      _sortRating: function(a,b){  
-        'use strict';
-        if(!a.rating)
-        return 0;
-        if (a.rating > b.rating)
-          return -1;
-        if (a.rating < b.rating)
-          return 1;
-        return 0;
+      _sort: function (a,b){
+        return parseFloat(a.distance) - parseFloat(b.distance) ;
       },
+
+      clearInput: function (){
+        this.queryString = ''
+      },
+
 
       _test: function(obj){
           console.log("TEST",obj);
