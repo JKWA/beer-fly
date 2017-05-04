@@ -95,11 +95,7 @@
       data="{{beers}}">
   </firebase-query>
 
-   <firebase-document 
-      id="newOrg"
-      app-name="beer" 
-      path="newOrg/[[place.place_id]]">
-  </firebase-document>
+   
 
    <template is="dom-if" if="[[owner]]">
       <paper-material class="card" elevation="0">
@@ -270,20 +266,7 @@
                   '_addNewOrg(orgId, user)'
                   ],
         
-        _addNewOrg: function (orgId, user){
-          if(user){
-            // if(orgId){
-            //     console.log('update edit');
-            //     var obj = {};
-            //     obj['user/'+user.uid] = {};
-            //     obj['user/'+user.uid].uid = this.user.uid;
-            //     obj['user/'+user.uid].timestamp = Date.now();
-            
-            //     this.$.newOrg.ref.update(obj);
-
-            // }
-          }
-        },
+      
 
        _mapHasLoaded: function (){
          console.log('map loaded');

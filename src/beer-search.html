@@ -161,7 +161,7 @@
           request.location.lat = this.location.location.latitude;
           request.location.lng = this.location.location.longitude;
           request.radius = 50000;
-          console.log('request', request);
+          // console.log('request', request);
           
           var places = new google.maps.places.PlacesService(this.$.map);
           places.textSearch(request, function (result){

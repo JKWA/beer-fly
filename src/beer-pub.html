@@ -142,6 +142,7 @@
       app-name="beer" 
       path="newOrg/[[place.place_id]]">
   </firebase-document>
+
  
     <div hidden="[[!online]]">
       <iron-image 
@@ -168,10 +169,7 @@
         </div>
       
         <div>
-          <!--DOG
-          PATIO
-          21
-          CROWD-->
+
           <beer-pub-icons
               dogs="[[!dogs]]"
               patio="[[!patio]]"
@@ -265,8 +263,6 @@
                        organization="[[place]]">
                      </beer-review-card-mini>
                   </template>
-
-
 
                       <div class="category-button">
                         <div>
@@ -367,20 +363,18 @@
          type: Boolean,
          notify: true
        },
+
        nameUrl:{
         type: String
        },
+
        online:{
          type: Boolean
        },
+
        orgId:{
          type: String
        },
-
-        // visible: {
-        //   type: Boolean,
-        //   observer: '_visibleChanged'
-        // },
         
         photoUrl: {
           type: String,
@@ -394,18 +388,33 @@
         user:{
           type: Object
         }
-
-        
       },
 
- 
-    
+      observers:['_addNewOrg(orgId, user)'],
 
-      // _visibleChanged: function(visible) {
-      //   if (visible) {
-      //     this.fire('change-section', { title: 'Home' });
-      //   }
-      // },
+      _addNewOrg: function (orgId, user){
+        if(user){
+          if(user.emailVerified){
+          
+            if(orgId){
+                var obj = {};
+                obj['user/'+user.uid] = {};
+                obj['user/'+user.uid].uid = this.user.uid;
+                obj['user/'+user.uid].timestamp = Date.now();
+
+                // console.log('new', obj);
+            
+                this.$.newOrg.ref.update(obj, function(error){
+                  if(!error){
+                    console.log('SAVED_NEW_PUB');
+                  }else{
+                    console.log('SAVED_NEW_PUB_ERROR', error);
+                  }
+                });
+            }
+          }
+        }
+      },
 
       _computeCategories: function(organization) {
         var returnArray = [];
@@ -429,14 +438,6 @@
         'use strict';
         // console.log('tapped');
         if(this.user){
-          var obj = {};
-          obj['user/'+this.user.uid] = {};
-          obj['user/'+this.user.uid].uid = this.user.uid;
-          obj['user/'+this.user.uid].timestamp = Date.now();
-          console.log(obj);
-         
-          this.$.newOrg.ref.update(obj);
-
           var body = document.querySelector('body');
           Polymer.dom(body).appendChild(this.$.editDialog);
           this.$.editDialog.open();
