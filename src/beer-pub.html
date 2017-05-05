@@ -135,13 +135,13 @@
 
     </style>
 
-  <firebase-auth app-name="beer" user="{{user}}"></firebase-auth>
+  <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
 
-  <firebase-document 
+  <!--<firebase-document 
       id="newOrg"
       app-name="beer" 
       path="newOrg/[[place.place_id]]">
-  </firebase-document>
+  </firebase-document>-->
 
  
     <div hidden="[[!online]]">
@@ -390,6 +390,9 @@
       },
 
       observers:['_addNewOrg(orgId, user)'],
+      ready: function (){
+        // this.user
+      },
 
       _addNewOrg: function (orgId, user){
         if(user){
@@ -399,16 +402,17 @@
                 obj['user/'+user.uid] = {};
                 obj['user/'+user.uid].uid = this.user.uid;
                 obj['user/'+user.uid].timestamp = Date.now();
-            
-                this.$.newOrg.ref.update(obj)
-                  .then(function(){
+                firebase.database(this.$.auth.app).ref('newOrg/'+orgId).update(obj)
+                  .then(function (){
                     console.log('SAVED_NEW_PUB')
-                  }).catch(function(error){
-                     console.log('SAVED_NEW_PUB_ERROR', error);
                   })
+                  .catch(function (error){
+                    console.log('SAVED_NEW_PUB_ERROR', error);
+                  })
+                }
             }
           }
-        }
+        
       },
 
       _computeCategories: function(organization) {
