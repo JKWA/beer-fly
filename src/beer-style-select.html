@@ -1,0 +1,185 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="beer-icons.html">
+
+<dom-module id="beer-style-select">
+
+
+  <template>
+
+    <style>
+
+      .style {
+         max-width: 500px;
+         margin: 0 0 30px 0
+      }
+
+      .option {
+        height:100px;
+        overflow-y: scroll;
+        
+      }
+      
+      paper-item {
+          color: var(--app-primary-color);
+          --paper-item-min-height: 20px;
+          font-size: 1em;
+          font-weight: 400;
+      }
+
+      .clear{
+        color: red;
+      }
+
+
+    </style>
+
+    <firebase-query
+        app-name="beer"
+        id="styles"
+        path="category/STYLE"
+        data="{{styles}}">
+    </firebase-query>
+
+        <paper-input 
+            id="search"
+            class="style"
+            label="Beer Style" 
+            value="{{searchString}}" 
+            validator="_validateStyle"
+            on-keydown="_resetStyleData"
+            error-message="Choose a style from below">
+             <iron-icon icon="beer-icons:search" prefix></iron-icon>
+             <paper-icon-button class="clear" suffix on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
+        </paper-input>
+
+        <div id="options" class="option">
+
+        <paper-listbox
+            id="tappedListBox"
+            attr-for-selected="styleobj"
+            selected="{{selectedStyle}}">
+          
+         <template is="dom-repeat" 
+                   items="[[styles]]" 
+                   filter="{{_filterByName(searchString)}}" 
+                   as="style">
+
+            <paper-item styleobj="[[style]]">
+                <div option-name>[[style.styleName]]</div>
+            </paper-item>
+
+          </template>
+        </paper-listbox>
+        </div>
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-style-select',
+  
+
+      properties:{
+
+       searchString:{
+         type:String
+       },
+
+        styles:{
+          type: Array
+        },
+
+
+        styleId:{
+          type: Number,
+          notify:true
+        },
+
+        styleName:{
+          type: String,
+          notify: true
+        },
+
+        selectedStyle:{
+          type: Object,
+          notify: true
+        }
+      },
+
+      observers:[
+        '_validateStyleData(searchString)',
+        '_watchselectedStyle(selectedStyle)'
+      ],
+
+      _watchselectedStyle: function (selectedStyle) {
+        // console.log(selectedStyle)
+        this.styleId = selectedStyle.styleId;
+        this.styleName = selectedStyle.styleName;
+        // this.beerStyle = selectedStyle;
+        if(selectedStyle.styleName){
+          this.searchString = selectedStyle.styleName;
+        }
+      },
+      
+
+      _validateStyleData: function (searchString){
+          if(searchString){
+            if(searchString === this.styleName){
+              this.$.search.invalid = false;
+              this.$.options.hidden = true;
+            }else{
+              this.$.search.invalid = true;
+              this.$.options.hidden = false;
+            }
+          }else{
+            this.$.search.invalid = true;
+            this.$.options.hidden = false;
+          }
+      },
+        
+
+       _filterByName: function(string) {
+        if (!string) {
+          
+          return null;
+        } else {
+          string = string.toLowerCase();
+          return function(style) {
+            var first = style.styleName.toLowerCase();
+            return (first.indexOf(string) != -1);
+          };
+        }
+      },
+
+      _resetStyleData: function () {
+        this.styleName = '';
+        this.styleId = null;
+        this.selectedStyle={};
+        // this.beerStyle={};
+      },
+
+      clearInput: function (){
+        this.searchString = '';
+        this.styleName = '';
+        this.styleId = null;
+        this.selectedStyle={};
+        // this.beerStyle={};
+      },
+
+      _test(obj){
+        console.log('TEST', obj)
+      }
+
+    });
+
+  </script>
+
+</dom-module>

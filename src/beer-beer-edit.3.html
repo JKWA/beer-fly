@@ -1,0 +1,692 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="beer-icons.html">
+
+<dom-module id="beer-beer-edit">
+
+
+  <template>
+
+    <style>
+
+      a{
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 0.3em;
+        color: var(--app-primary-color);
+        text-decoration: none;
+        /* required for IE 11, so this <a> can receive pointer events */
+        display: inline-block;
+        pointer-events: auto;
+        }
+
+      paper-spinner-lite{
+        position: absolute;
+        top: 40%;
+        left: 50%;
+      }
+
+      .card{
+        margin: 10px;
+        padding: 20px;
+      }
+
+      .abv {
+        width: 100px;
+      }
+
+      .style {
+         max-width: 500px;
+         margin: 0 0 30px 0
+      }
+
+      .option {
+        height:100px;
+        overflow-y: scroll;
+        
+      }
+      .beer-name{
+        font-size: 1.25em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+      .return-link{
+        margin: 0 0 0 15px;
+      }
+
+      .brewed-by{
+        font-size: 1em;
+        font-weight: 600;
+        color: var(--app-primary-color);
+      }
+
+      .saved-message{
+        font-size: 1em;
+        font-weight: 400;
+        color: green;
+      }
+
+      .error-message{
+        font-size: 1em;
+        font-weight: 400;
+        color: red;
+      }
+
+      
+      paper-item {
+          color: var(--app-primary-color);
+          --paper-item-min-height: 20px;
+          font-size: 1em;
+          font-weight: 400;
+      }
+
+      .button{
+         color: var(--app-accent-color);
+      }
+
+      .brewery-name {
+        font-size: 1.7em;
+        font-weight: 500;
+        color: var(--app-primary-color);
+      }
+
+      .address {
+        font-size: .9em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .action-wrapper{
+         @apply(--layout-horizontal);
+         @apply(--layout-justified);
+      }
+
+      .message-wrapper{
+         @apply(--layout-horizontal);
+         @apply(--layout-end-justified);
+      }
+
+    </style>
+
+    <firebase-auth  
+        app-name="beer" 
+        user="{{user}}"
+        status-known="{{statusKnown}}">
+    </firebase-auth>
+
+    <firebase-document 
+        id="newOrg"
+        app-name="beer" 
+        path="newOrg/[[place.place_id]]">
+    </firebase-document>
+
+    <firebase-document 
+        id="pub"
+        app-name="beer" 
+        path="organization/[[place.place_id]]">
+    </firebase-document>
+
+    <firebase-query
+        app-name="beer"
+        id="styles"
+        path="beerStyle"
+        data="{{styles}}">
+    </firebase-query>
+
+    <firebase-document
+        app-name="beer"
+        id="category"
+        path="category/STYLE/[[styleId]]">
+    </firebase-document>
+
+    <firebase-document
+        app-name="beer"
+        id="newBeer"
+        path="beer">
+    </firebase-document>
+
+    <firebase-document
+        app-name="beer"
+        id="newBeer2"
+        path="beer">
+    </firebase-document>
+
+    <firebase-document
+        app-name="beer"
+        id="onTap"
+        path="organization/[[orgId]]/onTap/[[beerId]]">
+    </firebase-document>
+
+    <firebase-document
+        app-name="beer"
+        id="allData">
+    </firebase-document>
+
+     <firebase-document
+        app-name="beer"
+        id="beer"
+        disabled
+        path="beer/[[beerId]]"
+        data="{{beer}}">
+    </firebase-document>
+
+    <!--<firebase-document
+        id="userData"
+        app-name="beer"
+        disabled
+        path="user/[[user.uid]]"
+        data="{{userData}}">
+    </firebase-document>-->
+
+    <!--THIS "beer/[[beerId]]" [[beer.name]]-->
+
+    <!--TEST [[beerId]]-->
+    <!--<paper-spinner-lite active id="spinner"></paper-spinner-lite>-->
+
+    <div id="editCard" >
+
+    <div class="return-link" hidden="[[!returnOrgId]]">
+        <iron-label>
+        <a aria-label$="TEST" href$="/[[_computeNameForUrl(returnName)]]/tap-add?orgid=[[returnOrgId]]">
+          <paper-icon-button icon="beer-icons:arrow-back"></paper-icon-button>
+          [[returnName]]</a>
+      </iron-label>
+      </div>
+
+      <!--OWNER [[owner]] -->
+      
+  
+    <paper-material  class="card"  elevation="0">
+
+      <div>
+        <div class="brewery-name">[[organization.name]]</div>
+        <div class="address">[[organization.city]], [[organization.stateAbbreviation]]</div>
+      </div>
+
+      TEST NAME [[beerName]]
+
+       <div class="beer-name" hidden$="[[!beerId]]">[[beerName]]</div>
+        <paper-input 
+          hidden$="[[beerId]]"
+          id="beerName"
+          label="Beer Name" 
+          char-counter 
+          maxlength="100" 
+          error-message="Required"
+          value="{{beerName}}">
+        </paper-input>
+
+        <paper-textarea 
+          id="description"
+          label="Beer Description" 
+          char-counter 
+          maxlength="500" 
+          value="{{description}}">
+        </paper-textarea>
+
+        <paper-input 
+            id="abv" 
+            class="abv" 
+            label="ABV" 
+            error-message="Invalid"
+            value="{{abv}}">
+          <div suffix>%</div>
+        </paper-input>
+
+        <paper-input 
+            id="search"
+            class="style"
+            label="Beer Style" 
+            value="{{searchString}}" 
+            validator="_validateStyle"
+            error-message="Choose a style from below"
+            on-keydown="_resetFormStyleData">
+        </paper-input>
+
+        <div id="options" class="option">
+          
+         <template is="dom-repeat" items="[[styles]]" filter="{{_filterByName(searchString)}}" as="style" >
+            <paper-item beer="[[style]]" on-click="_setInputString">
+                <div option-name>[[style.name]]</div>
+            </paper-item>
+          </template>
+        </div>
+    
+          <input type="hidden" name="styleName" value="{{styleName}}">
+          <input type="hidden" name="styleId" value="{{styleId}}">
+
+          <div class="action-wrapper">
+            <div>
+              <iron-label>
+                  <paper-button 
+                    id="submitButton" 
+                    on-tap="_addNewBeer" 
+                    class="button">[[buttonName]]</paper-button>
+              </iron-label>
+            </div>
+   
+          </div>
+    
+    </paper-material>
+    </div>
+
+    <paper-toast class="toast" id="savedToast" duration="5000" vertical-offset="150">
+      <div> 
+        Saved [[savedMessage]]
+        <br>
+      </div>
+    </paper-toast>
+ 
+    
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-beer-edit',
+  
+
+      properties:{
+
+        abv:{
+          type: Number
+        },
+
+        beer: {
+          type: Object
+        },
+
+        buttonName:{
+          type:String,
+          value: 'Add Beer'
+
+        },
+
+        description:{
+          type: String
+        },
+
+         domain:{
+          type: String,
+          computed: '_computeDomain(organization)'
+        },
+        
+        beerId:{
+          type: String,
+          
+        },
+
+        beerName:{
+          type: String
+        },
+
+        name:{
+          type: String
+        },
+
+        orgId:{
+          type: String
+        },
+
+        organization:{
+          type: Object
+        },
+
+        place:{
+          type: Object
+        },
+
+        returnOrgId:{
+            type: String
+        },
+
+        returnName:{
+            type: String
+        },
+
+        savedBeerName:{
+          type: String
+        },
+
+        savedMessage:{
+          type: String,
+          value: 'test'
+        },
+
+        searchString:{
+          type: String,
+        },
+
+        statusKnown:{
+          type: Boolean
+        },
+
+        styles:{
+          type: Array
+        },
+
+        styleId:{
+          type: Number
+        },
+
+        styleName:{
+          type: String,
+        },
+
+        valid:{
+          type: Boolean,
+          value: false
+        },
+        
+        user:{
+          type:Object
+        },
+
+        userData:{
+          type:Object
+        },
+
+         userDomain:{
+          type:String
+        }
+       
+      },
+
+      observers:[
+        '_validateStyleData(searchString)',
+        '_validateABV(abv)',
+        '_validateName(name)',
+        // '_validateDescription(description)',
+        '_validateAll(name, description, abv, searchString)',
+        // '_prefillData(beer)',
+        // '_ifBeerId(beerId)',
+        // '_addNewOrg(orgId, user)',
+        // '_watchLoginStatus(statusKnown)'
+      ],
+
+
+      //  _addNewOrg: function (orgId, user){
+      //     if(user){
+      //       if(orgId){
+      //           console.log('update edit');
+      //           var obj = {};
+      //           obj['user/'+user.uid] = {};
+      //           obj['user/'+user.uid].uid = this.user.uid;
+      //           obj['user/'+user.uid].timestamp = Date.now();
+            
+      //           // this.$.newOrg.ref.update(obj);
+      //       }
+      //     }
+      //   },
+
+      _ifBeerId: function (beerId) {
+        console.log('getting beer id');
+        
+        if(beerId){
+          this.$.beer.disabled = false;
+          this.buttonName = "SAVE";
+        }else{
+          this.$.beer.disabled = true;
+          this.beerName = null;
+          this.description = null;
+          this.searchString = null;
+          this.styleName = null;
+          this.styleId = null;
+          this.abv = null;
+          this.buttonName = "ADD BEER";
+
+        }
+      },
+
+      _prefillData: function (beer) {
+        console.log(beer);
+        if(beer){
+
+            this.beerName = beer.name;
+            this.description = beer.description;
+            if(beer.abv){
+              this.abv = beer.abv;
+            }
+            this.searchString = beer.styleName;
+            this.styleName = beer.styleName;
+            this.styleId = beer.styleId;
+            this._validateStyleData(beer.styleName);
+            this._validateAll();
+            
+        }else{
+           
+        
+        }
+        if(Object.keys(beer).length >0){
+        this.$.editCard.hidden = false;
+        // this.$.spinner.active = false;
+        }
+        // this.beerId = false
+      },
+
+
+      _validateStyleData: function (searchString){
+          if(searchString){
+            if(searchString === this.styleName){
+              this.$.search.invalid = false;
+              this.$.options.hidden = true;
+            }else{
+              this.$.search.invalid = true;
+              this.$.options.hidden = false;
+            }
+          }else{
+            this.$.search.invalid = true;
+            this.$.options.hidden = false;
+          }
+      },
+
+      _validateABV: function (abv){
+        if(abv){
+          if(abv >0 && abv <=30){
+            this.$.abv.invalid = false;
+          }else{
+            this.$.abv.invalid = true;
+          }
+        }else{
+          this.$.abv.invalid = false;
+        }
+      },
+
+      _validateName: function (name){
+        if(name){
+            this.$.beerName.invalid = false;
+          }else{
+            this.$.beerName.invalid = true;
+          }
+      },
+
+      // _validateDescription: function (description){
+      //   if(description){
+      //       this.$.description.invalid = false;
+      //     }else{
+      //       this.$.description.invalid = true;
+      //     }
+      // },
+
+      _validateAll: function (){
+        var name  = !this.$.beerName.invalid;
+        // var description  = !this.$.description.invalid;
+        var abv  = !this.$.abv.invalid;
+        var search  = !this.$.search.invalid;
+
+        if(name && abv && search){
+          this.valid = true;
+
+        }else{
+          this.valid = false;
+        }
+
+      },
+
+   
+        _resetFormStyleData: function (){
+          this.styleName = ''
+          this.styleId = ''
+          this.$.options.hidden = false;
+
+        },
+        
+
+       _filterByName: function(string) {
+        if (!string) {
+          
+          return null;
+        } else {
+          string = string.toLowerCase();
+          return function(style) {
+            var first = style.name.toLowerCase();
+            return (first.indexOf(string) != -1);
+          };
+        }
+      },
+
+      _setInputString: function(event){
+        var style = event.currentTarget.beer;
+        this.styleName = style.name;
+        this.styleId = style.$key;
+        this.searchString = style.name;
+        this.$.options.hidden = true;
+
+      },
+
+     _addNewBeer: function (){
+        this._validateAll();
+        if(this.valid){
+
+          var beer = {};
+          var org = {};
+          var obj = {};
+          var category = this.$.category.data;
+          var pub = this.organization;
+
+          var pre = 'brewBeer/';
+         
+          obj['beerLastUpdated'] = Date.now();
+          
+          if(this.beerId){
+            var id = this.beerId
+            obj[pre+id+'/lastEdited'] = Date.now();
+            obj[pre+id+'/edited'] = true;
+            
+          }else{
+            var id = this.$.newBeer.ref.push().key;
+            obj[pre+id+'/createDate'] = Date.now();
+            obj[pre+id+'/new'] = true
+          }
+          var orgPre = pre+id;
+
+          
+          if(this.abv){
+            obj[orgPre+'/abv'] = Number(this.abv);
+          }
+          if(category.category){
+            obj[orgPre+'/category'] = category.category;
+          }
+          if(category.categoryName){
+            obj[orgPre+'/categoryName'] = category.categoryName;
+          }
+          if(category.categoryTitle){
+            obj[orgPre+'/categoryTitle'] = category.categoryTitle;
+          }
+          if(category.order){
+            obj[orgPre+'/order'] = Number(category.order);
+          }
+          if(this.description){
+            obj[orgPre+'/description'] = this.description;
+          }
+          if(id){
+            obj[orgPre+'/id'] = id;
+          }
+          //only replace name if new, not editing
+          if(this.beerName){
+            if(!this.beerId){
+              obj[orgPre+'/name'] = this.beerName;
+            }
+          }
+          if(this.styleId){
+            obj[orgPre+'/styleId'] = Number(this.styleId);
+          }
+          if(this.styleName){
+            obj[orgPre+'/styleName'] = this.styleName; 
+          }
+
+          var that = this;
+         
+          if(this.owner){
+            obj[orgPre+'/status'] = 'verified';
+            console.log('owner', JSON.stringify(obj));
+          }else{
+            obj[orgPre+'/status'] = 'not_verified';
+            console.log('not owner', JSON.stringify(obj));
+
+          }
+            
+             
+          this.$.pub.ref.update(obj)
+            .then(function(){
+
+              console.log("Saved");
+              that.$.savedToast.open();
+              that.savedMessage = that.beerName;
+              if(!that.beerId){
+                that.abv = '';
+                that.beerName = '';
+                that.description = '';
+                that.valid = false;
+                that.searchString = '';
+                that._resetFormStyleData();
+              }
+            })
+            .catch(function (error) {
+              console.log("Error" + error);
+            })
+    
+        }else{
+          console.log('not valid');
+        }
+
+      },
+
+
+      _computeNameForUrl: function (name) {
+        'use strict';
+        if (name) {
+          name = name.replace(/\s/g, '-')
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'unknown-name'
+        }
+      },
+
+      _computeDomain: function (organization) {
+        return organization.domain;
+      }
+
+
+    });
+
+  </script>
+
+</dom-module>

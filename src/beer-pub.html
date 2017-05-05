@@ -213,7 +213,6 @@
                   </a>
 
                   <template is="dom-if" if="[[_isTap(item.$key)]]"> 
-                  
                     <template is="dom-repeat" items="[[_getArray(organization.onTap)]]" sort="_sortOrder" filter="_filterForTapped" as="tap">
                       <beer-beer-card-mini 
                           org-id="[[orgId]]" 
@@ -395,7 +394,6 @@
       _addNewOrg: function (orgId, user){
         if(user){
           if(user.emailVerified){
-          
             if(orgId){
                 var obj = {};
                 obj['user/'+user.uid] = {};
