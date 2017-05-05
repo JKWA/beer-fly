@@ -120,13 +120,13 @@
     </firebase-document>
 
 
-     <!--<firebase-document
+     <firebase-document
         app-name="beer"
         id="beer"
         disabled
         path="beer/[[beerId]]"
         data="{{beer}}">
-    </firebase-document>-->
+    </firebase-document>
 
     <paper-material class="card" elevation="0">
 
@@ -159,7 +159,7 @@
         </paper-input>
 
         <beer-style-select
-            style-id="{{styleId}}"
+            preset-style-name="{{presetStyleName}}"
             selected-style="{{selectedStyle}}">
         </beer-style-select>
 
@@ -270,57 +270,54 @@
       observers:[
         '_validateABV(abv)',
         '_validateName(beerName)',
-        '_validateAll(name, abv)'
-        // '_prefillData(beer)',
-        // '_ifBeerId(beerId)'
+        '_validateAll(name, abv)',
+        '_ifBeerId(beerId)',
+        '_prefillData(beer)'
       ],
 
 
 
-      // _ifBeerId: function (beerId) {
-      //   console.log('getting beer id');
+      _ifBeerId: function (beerId) {
+        console.log('getting beer id', beerId);
         
-      //   if(beerId){
-      //     this.$.beer.disabled = false;
-      //     this.buttonName = "SAVE";
-      //   }else{
-      //     this.$.beer.disabled = true;
-      //     this.beerName = null;
-      //     this.description = null;
-      //     this.searchString = null;
-      //     this.styleName = null;
-      //     this.styleId = null;
-      //     this.abv = null;
-      //     this.buttonName = "ADD BEER";
+        if(beerId){
+          this.$.beer.disabled = false;
+          this.buttonName = "SAVE";
+        }else{
+          this.$.beer.disabled = true;
+          this.beerName = null;
+          this.description = null;
+          this.searchString = null;
+          this.styleName = null;
+          this.styleId = null;
+          this.abv = null;
+          this.buttonName = "ADD BEER";
 
-      //   }
-      // },
+        }
+      },
 
-      // _prefillData: function (beer) {
-      //   console.log(beer);
-      //   if(beer){
+      _prefillData: function (beer) {
+      
+        if(beer){
 
-      //       this.beerName = beer.name;
-      //       this.description = beer.description;
-      //       if(beer.abv){
-      //         this.abv = beer.abv;
-      //       }
-      //       this.searchString = beer.styleName;
-      //       this.styleName = beer.styleName;
-      //       this.styleId = beer.styleId;
-      //       this._validateStyleData(beer.styleName);
-      //       this._validateAll();
+            this.beerName = beer.name;
+            this.description = beer.description;
+            if(beer.abv){
+              this.abv = beer.abv;
+            }
+
+            this.presetStyleName = beer.styleName;
+            this._validateAll();
             
-      //   }else{
+        }else{
            
         
-      //   }
-      //   if(Object.keys(beer).length >0){
-      //   this.$.editCard.hidden = false;
-      //   // this.$.spinner.active = false;
-      //   }
-      //   // this.beerId = false
-      // },
+        }
+        // if(Object.keys(beer).length >0){
+        // this.$.editCard.hidden = false;
+        // this.$.spinner.active = false;
+        },
+
 
 
       _validateABV: function (abv){
@@ -348,8 +345,11 @@
         var name  = !this.$.beerName.invalid;
         // var description  = !this.$.description.invalid;
         var abv  = !this.$.abv.invalid;
-        var search  = (Object.keys(this.selectedStyle).length >0) ? true:false;
-        
+        var search = false;
+
+        if(typeof this.selectedStyle === 'object'){
+          search  = (Object.keys(this.selectedStyle).length >0) ? true:false;
+        }
 
         if(name && abv && search){
           this.valid = true;

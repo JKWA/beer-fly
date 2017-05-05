@@ -24,6 +24,13 @@
         overflow-y: scroll;
         
       }
+
+      .style-option {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          overflow-y: scroll;
+      }
       
       paper-item {
           color: var(--app-primary-color);
@@ -33,7 +40,7 @@
       }
 
       .clear{
-        color: red;
+        color: var(--app-secondary-color);
       }
 
 
@@ -42,6 +49,7 @@
     <firebase-query
         app-name="beer"
         id="styles"
+        order-by-child="styleName"
         path="category/STYLE"
         data="{{styles}}">
     </firebase-query>
@@ -61,8 +69,9 @@
         <div id="options" class="option">
 
         <paper-listbox
-            id="tappedListBox"
+            id="listBox"
             attr-for-selected="styleobj"
+            items="[[listItems]]"
             selected="{{selectedStyle}}">
           
          <template is="dom-repeat" 
@@ -71,12 +80,12 @@
                    as="style">
 
             <paper-item styleobj="[[style]]">
-                <div option-name>[[style.styleName]]</div>
+                <div class="style-option">[[style.styleName]]</div>
             </paper-item>
 
           </template>
         </paper-listbox>
-        </div>
+      </div>
 
   </template>
 
@@ -89,6 +98,9 @@
 
       properties:{
 
+        listItems:{
+          type:Array
+        },
        searchString:{
          type:String
        },
@@ -97,10 +109,13 @@
           type: Array
         },
 
+        presetStyleName:{
+          type: Number
+        },
+
 
         styleId:{
-          type: Number,
-          notify:true
+          type: Number
         },
 
         styleName:{
@@ -116,16 +131,43 @@
 
       observers:[
         '_validateStyleData(searchString)',
-        '_watchselectedStyle(selectedStyle)'
+        '_watchselectedStyle(selectedStyle)',
+        '_watchForPreset(presetStyleName)'
       ],
+
+      _watchForPreset: function (presetStyleName){
+        // console.log(presetStyleName);
+        if(presetStyleName){
+          this.searchString = presetStyleName;
+          var selectItems = this.$.listBox.items;
+          for(var i=0; i<selectItems.length; i++){
+            var selectItem = selectItems[i].innerText
+            // console.log(selectItem, presetStyleName)
+            if(selectItem){
+              if(selectItem.toString().trim() === presetStyleName){
+                
+                this.$.listBox.selectIndex(i);
+              
+                this._validateStyleData(presetStyleName);
+                return 
+              }
+            }
+          }
+        }else{
+          this.searchString = '';
+          this.$.listBox.selectIndex(-1);
+        }
+      },
 
       _watchselectedStyle: function (selectedStyle) {
         // console.log(selectedStyle)
-        this.styleId = selectedStyle.styleId;
-        this.styleName = selectedStyle.styleName;
-        // this.beerStyle = selectedStyle;
-        if(selectedStyle.styleName){
-          this.searchString = selectedStyle.styleName;
+        if(selectedStyle){
+          this.styleId = selectedStyle.styleId;
+          this.styleName = selectedStyle.styleName;
+          // this.beerStyle = selectedStyle;
+          if(selectedStyle.styleName){
+            this.searchString = selectedStyle.styleName;
+          }
         }
       },
       
