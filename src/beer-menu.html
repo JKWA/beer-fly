@@ -1,19 +1,20 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
 <link rel="import" href="../my_components/data/upload-image.html">
-<link rel="import" href="beer-menu-meta.html">
 
 <link rel="import" href="beer-fab.html">
-<link rel="import" href="beer-fab-search.html">
-<link rel="import" href="beer-menu-edit.html">
 <link rel="import" href="beer-icons.html">
 
 <dom-module id="beer-menu">
@@ -21,6 +22,20 @@
   <template>
 
     <style>
+      a{
+        color: var(--app-accent-color);
+        text-decoration: none;
+        }
+
+      .add{
+        color: green;
+        margin: 20px 0 20px 20px;
+      }
+
+      .card{
+        margin: 10px;
+        padding: 20px;
+      }
 
       .motto {
         font-size: 2.0em;
@@ -44,25 +59,28 @@
       }
 
       .category-title{
-        font-size: 2.25em;
+        font-size: 2em;
         font-weight: 200;
         line-height: 70px;
         color: var(--app-accent-color);
       }
 
       .category-description{
-        font-size: 1.5em;
-        font-weight: 200;
-        line-height: 40px;
-
+        font-size: 1em;
+        font-weight: 300;
+        text-align: center;
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
       }
-      .category-break{
+
+      /*.category-break{
          @apply(--layout-horizontal);
          @apply(--layout-center-justified);
          font-size: 2.25em;
          color: var(--app-accent-color);
          margin: 20px 0 10px 0;
-      }
+      }*/
+
 
       .menu-category{
          @apply(--layout-horizontal);
@@ -73,7 +91,7 @@
         @apply(--layout-horizontal);
         @apply(--layout-center-justified);
         color: var(--app-primary-color);
-        font-size: 1.5em;
+        font-size: 1.2em;
         font-weight: 400;
         line-height: 40px;
       }
@@ -81,36 +99,58 @@
       .menu-description{
         @apply(--layout-horizontal);
         @apply(--layout-center-justified);
-        font-size: 1.25em;
+        font-size: .9em;
         font-weight: 300;
-        line-height: 40px;
         color: var(--app-secondary-color);
         text-align: center;
       }
 
-      .menu-price{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
-        font-size: 1.25em;
-        font-weight: 300;
-        line-height: 40px;
-        color: var(--app-secondary-color);
+      .menu-item{
+        margin: 20px 0
       }
+
+      .menu-item > div{
+        margin: 5px 0
+      }
+
+      .price-wrapper{
+         @apply(--layout-horizontal);
+         @apply(--layout-around-justified);
+         @apply(--layout-wrap);
+         color: var(--app-primary-color);
+         font-size: 1em;
+         font-weight: 300;
+      }
+
+      /*.price-cost{
+        font-size: 1em;
+        font-weight: 300;
+      }
+
+      .price-size{
+        font-size: 1em;
+        font-weight: 300;
+      }*/
 
     </style>
 
-    <!--<iron-image 
+    <firebase-auth  
+        app-name="beer" 
+        id="auth"
+        user="{{user}}">
+    </firebase-auth>
+
+
+    <iron-image 
         style="width:100%; height:300px; background-color: #F8F8F8;"
         sizing="cover" 
         preload 
+        placeholder="[[placeholder]]"
         fade
-        src="[[category.image.banner.url]]">
+        src="[[photoUrl]]">
     </iron-image>
 
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
-    <a href$="[[homeLink]]">
-    <iron-icon icon="beer-icons:back" ></iron-icon>
-    </a>
 
     <div class="motto">
         [[category.motto]]
@@ -119,28 +159,68 @@
         [[category.description]]
     </div>
 
-    <div class="menu">
-    <template is="dom-repeat" items="[[_toArray(category.menu)]]" as="menu" sort="_categoryOrder">
-        <div class="category">
-          <div class=" menu-category category-title">[[menu.title]]</div>
-          <div class=" menu-category category-description">[[menu.description]]</div>
 
-          <template is="dom-repeat" items="[[_toArray(menu.items)]]" as="menuItem">
-            
+    <div class="menu">
+
+      [[menuItemId]]
+
+       <paper-material class="card"  elevation="1">
+         <iron-label  class="add">
+            <paper-icon-button 
+                  icon="beer-icons:add" 
+                  on-tap="_addMenuCategory">
+                  
+            </paper-icon-button>
+          Add Category
+         </iron-label>
+      </paper-material>
+
+
+    <template is="dom-repeat" items="[[_toArray(category.menu)]]" as="menu" sort="_categoryOrder">
+      <paper-material class="card" elevation="1">
+      <iron-label>
+        <a aria-label$="TEST" href$="/[[nameUrl]]/menu-edit?orgid=[[orgId]]&menuCategory=[[menu.id]]">
+          <paper-icon-button icon="beer-icons:edit"></paper-icon-button>
+          Edit</a>
+      </iron-label>
+    
+        <div class="category">
+          <div class=" menu-category category-title">[[menu.name]]</div>
+          
+          
+            <template is="dom-repeat" items="[[_addBreaks(menu.description)]]" as="categoryDescription">
+              <div class="category-description">[[categoryDescription]]</div>
+            </template>
+          
+          
+
+          <template is="dom-repeat" items="[[_toArray(menu.item)]]" as="menuItem">
+            <!--[[menuItem.id]]-->
+            <div id="[[menuItem.id]]" class="menu-item">
             <div class="menu-title">[[menuItem.name]]</div>
             <template is="dom-repeat" items="[[_addBreaks(menuItem.description)]]" as="description">
                 <div class="menu-description">[[description]]</div> 
             </template>
-            
-            <div hidden="[[!menuItem.price]]">
-                <div class="menu-price">$[[menuItem.price]]</div> 
+            <div class="price-wrapper">
+            <template is="dom-repeat" items="[[_toArray(menuItem.price)]]" as="price">
+              <div class="price-wrapper">
+                <div hidden="[[!price.size]]" class="price-size">[[price.size]]:&nbsp</div> 
+                <div class="price-cost">$[[price.cost]]</div> 
+              </div>
+            </template>
             </div>
+
+          
             
+            <!--<div hidden="[[!menuItem.price]]">
+                <div class="menu-price">$[[menuItem.price]]</div> 
+            </div>-->
+
+        <!--</paper-material>-->
+            </div>
           </template>
           
-          <div class="category-break">
-            <iron-icon icon="beer-icons:seperate"></iron-icon>
-          </div>
+          
         <div>
     </template>
     </div>
@@ -160,7 +240,7 @@
       </div>
       <template is="dom-if" if="[[owner]]">
       <paper-dialog-scrollable >
-       <beer-menu-edit org-id="[[orgId]]" category="{{category}}"></beer-menu-edit>
+       <!--<beer-menu-edit org-id="[[orgId]]" category="{{category}}"></beer-menu-edit>-->
        
       </paper-dialog-scrollable>
       </template>
@@ -168,73 +248,151 @@
       <div class="">
         <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
       </div>
-    </paper-dialog>-->
+    </paper-dialog>
 
   </template>
 
   <script>
 
-    // Polymer({
+    Polymer({
 
-    //   is: 'beer-menu',
-    //   properties: {
+      is: 'beer-menu',
+      properties: {
 
-    //     category:{
-    //       type: String
-    //     },
+        photoUrl: {
+          type: String,
+          computed: '_computePhotoUrl(category, place)'
+        },
 
-    //     owner:{
-    //       type: Boolean
-    //     }
-    //   },
+        category:{
+          type: Object
+        },
+
+        menuItemId:{
+          type: String
+        },
+
+        owner:{
+          type: Boolean
+        }
+      },
+
+      observers:['_watchMenuItemId(menuItemId, category.item)'],
+
+      ready: function (){
+        if(this.menuItemId){
+          console.log(this.menuItemId);
+          // this.$[this.menuItemId].scrollIntoView()
+          var menuItems = this.category.item;
+          if(typeof menuItems === 'object'){
+            var key = Object.keys(menuItems)
+            for(var i=0; i<key.length; i++){
+              var menuItemKey = key[i]
+              console.log(menuItemKey);
+            }
+          }
+
+        }
+      },
+
+      _watchMenuItemId: function(menuItemId){
+        // this.$[menuItemId].scrollIntoView()
+      },
+       _addMenuCategory: function (){
+
+         var database = firebase.database(this.$.auth.app).ref('organization/'+this.orgId+'/category/MENU/menu');
+         var key = database.push().key;
+
+        // var key = this.$.menu.ref.push(obj).key;
+        var obj = {};
+          obj.order = 99;
+          obj.id = key;
+
+          database.child(key).update(obj)
+          .then(function (){
+            console.log('NEW_CATEGORY_SAVED')
+          }).catch(function(error){
+            console.log('NEW_CATEGORY_SAVED_ERROR', error)
+          }) 
+      },
       
-    //  _edit: function(){
-    //     'use strict';
-    //     var body = document.querySelector('body');
-    //     Polymer.dom(body).appendChild(this.$.editDialog);
-    //     this.$.editDialog.open()
-    //   },
+     _edit: function(){
+        'use strict';
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.editDialog);
+        this.$.editDialog.open()
+      },
 
-    //   _toArray: function (obj) {
-    //     var returnArray = [];
-    //     if(obj){
-    //       var key = Object.keys(obj);
+      _toArray: function (obj) {
+        var returnArray = [];
+        if(obj){
+          var key = Object.keys(obj);
           
-    //       for (var i=0; i<key.length; i++){
-    //         obj[key[i]].$key = key[i];
-    //         returnArray.push(obj[key[i]]);
-    //       }
-    //     }
-    //     return returnArray;
-    //   },
+          for (var i=0; i<key.length; i++){
+            // obj[key[i]].$key = key[i];
+            returnArray.push(obj[key[i]]);
+          }
+        }
+        return returnArray;
+      },
 
-    //   _categoryOrder: function(a,b){  
-    //     'use strict';
-    //     if(!a.order)
-    //     return 0;
-    //     if (a.order < b.order)
-    //       return -1;
-    //     if (a.order > b.order)
-    //       return 1;
-    //     return 0;
-    //   },
+      _categoryOrder: function(a,b){  
+        'use strict';
+        if(!a.order)
+        return 0;
+        if (a.order < b.order)
+          return -1;
+        if (a.order > b.order)
+          return 1;
+        return 0;
+      },
 
-    //   _addBreaks: function(str){
-    //     'use strict';
-    //     if(str){
-    //       return str.split('\n');
-    //     }else{
-    //       return [];
-    //     }
-    //   },
+      _addBreaks: function(str){
+        'use strict';
+        if(str){
+          return str.split('\n');
+        }else{
+          return [];
+        }
+      },
 
-    //   _test: function (obj){
-    //     console.log(obj);
-    //   }
+      _computePhotoUrl: function (category, place) {
+         try{
+          if(category.image){
+            if(category.image.banner){
+              if(category.image.banner.url){
+                return category.image.banner.url;
+              }
+            }
+          }
+          var photoMeta = {};
+          var photos = place.photos
+          var categoryIndex = 2
+          if(photos.length < categoryIndex){
+            categoryIndex = photos.length
+          }
+          photoMeta.maxWidth = place.photos[categoryIndex].width;
+          photoMeta.maxHeight = place.photos[categoryIndex].height;
+          return place.photos[categoryIndex].getUrl(photoMeta);
+         
+       }catch (error){
+
+       }
+      },
+
+      _scrollTag: function (menuItem, menuItemId){
+          if(menuItem === menuItemId){
+            
+          }
+      },
+
+      _test: function (obj){
+        console.log(obj);
+      }
 
     
 
-    // });
+    });
 
   </script>
 

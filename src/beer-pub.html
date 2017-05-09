@@ -21,7 +21,7 @@
 <link rel="import" href="beer-pub-icons.html">
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-fab-search.html">
-<link rel="import" href="beer-menu-card.html">
+<link rel="import" href="beer-menu-card-mini.html">
 <link rel="import" href="beer-contact-card.html">
 <link rel="import" href="beer-hours-card.html">
 <link rel="import" href="beer-review-card-mini.html">
@@ -137,12 +137,6 @@
 
   <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
 
-  <!--<firebase-document 
-      id="newOrg"
-      app-name="beer" 
-      path="newOrg/[[place.place_id]]">
-  </firebase-document>-->
-
  
     <div hidden="[[!online]]">
       <iron-image 
@@ -244,11 +238,20 @@
                   </template>
 
                   <template is="dom-if" if="[[_isMenu(item.$key)]]"> 
-                    <div>
-                    <beer-menu-card 
+           
+                    <template is="dom-repeat" items="[[_getArray(item.menu)]]" sort="_sortOrder" as="menu">
+                      <!--<a href$="/[[nameUrl]]/[[item.name]]?orgid=[[orgId]]#[[menu.id]]">-->
+                      <beer-menu-card-mini 
+                         category-name="[[menu.name]]"
+                         menu-items="[[menu.item]]"
+                         anchor-href="/[[nameUrl]]/[[item.name]]?orgid=[[orgId]]">
+                      </beer-menu-card-mini>
+                      <!--</a>-->
+                    </template>
+                    <!--<beer-menu-card 
                         menu-category="[[item.menu]]">
                     </beer-menu-card>
-                    </div>
+                    </div>-->
                   </template>
 
                   <template is="dom-if" if="[[_isContact(item.$key)]]"> 
@@ -330,7 +333,6 @@
 
         organization:{
           type: Object,
-          // computed: '_computeOrganization(organization)',
           notify: true
         },
 
@@ -390,9 +392,6 @@
       },
 
       observers:['_addNewOrg(orgId, user)'],
-      ready: function (){
-        // this.user
-      },
 
       _addNewOrg: function (orgId, user){
         if(user){

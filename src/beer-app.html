@@ -509,8 +509,10 @@
   <beer-favorite-pub name="favorite-pub" offline="[[offline]]"></beer-favorite-pub>
 
   <beer-review name="review" organization="[[organization]]" place="[[place]]" category=[[organization.category.REVIEW]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-review>
+  
+  <beer-menu name="menu" category=[[organization.category.MENU]] menu-item-id="[[menuItemId]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-menu>
+  <beer-menu-edit name="menu-edit" org-id="[[orgId]]" menu-category-id="[[menuCategoryId]]" online="[[online]]" owner="[[owner]]"></beer-menu-edit>
 
-  <beer-menu name="menu" category=[[organization.category.MENU]] place="[[place]]" home-link="/[[nameUrl]]/main[[orgParam]]"org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-menu>
   <beer-contact name="contact" organization="[[organization]]" place="[[place]]" category=[[organization.category.CONTACT]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-contact>
   <beer-truck name="truck" category=[[organization.category.TRUCK]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-truck>
   <beer-event name="event" category=[[organization.category.EVENT]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-event>
@@ -671,6 +673,16 @@
         login: {
           type: Boolean,
           value: false
+        },
+
+        menuCategoryId: {
+          type: String,
+          computed: '_computeMenuId(queryParams)'
+        },
+
+         menuItemId: {
+          type: String,
+          computed: '_computeMenuItemId(queryParams)',
         },
          
         nameUrl: {
@@ -1115,6 +1127,9 @@
                page = 'tap';
             }else if(subRoute==='menu'){
                page = 'menu';
+            }else if(subRoute==='menu-edit'){
+               page = 'menu-edit';
+               returnPage='menu';
             }else if(subRoute==='contact'){
                page = 'contact';
              }else if(subRoute==='review'){
@@ -1388,6 +1403,24 @@
         if (queryParams) {
           if (queryParams.beerId) {
             return queryParams.beerId
+          }
+        }
+        return null;
+      },
+
+       _computeMenuId: function (queryParams) {
+        if (queryParams) {
+          if (queryParams.menuCategory) {
+            return queryParams.menuCategory
+          }
+        }
+        return null;
+      },
+
+      _computeMenuItemId: function (queryParams) {
+        if (queryParams) {
+          if (queryParams.menuItem) {
+            return queryParams.menuItem
           }
         }
         return null;

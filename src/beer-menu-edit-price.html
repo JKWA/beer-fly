@@ -1,0 +1,211 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-menu-edit-item-tag.html">
+
+
+<dom-module id="beer-menu-edit-price">
+
+  <template>
+
+    <style>
+
+
+      .price-wrapper{
+         @apply(--layout-horizontal);
+         @apply(--layout-justified);
+         @apply(--layout-wrap);
+      }
+
+      .price{
+        font-size: 1em;
+        font-weight: 300;
+        width:80px;
+      }
+      .price-size{
+        font-size: 1em;
+        font-weight: 300;
+      }
+
+      .clear{
+         color: var(--app-secondary-color);
+         font-size: .8em;
+         margin: 10px 0 0 0;
+         padding: 10px 0 0 0;
+         
+      }
+
+
+
+
+    </style>
+
+    <firebase-query
+          id="priceItem"
+          app-name="beer"
+          path="organization/[[orgId]]/category/MENU/menu/[[categoryId]]/item/[[menuId]]/price"
+          data="{{priceItems}}">
+    </firebase-query>
+
+    <!--organization/[[orgId]]/category/MENU/menu/[[categoryId]]/item/[[menuId]]/price-->
+<!--[[_test(priceItems)]]-->
+         <template is="dom-repeat" items="{{priceItems}}" as="priceItem">
+
+           <!--[[_test(priceItem)]]-->
+            <div class="price-wrapper">
+              <div>
+                <paper-input 
+                    class="price-size"
+                    label="Size (optional)" 
+                    value="{{priceItem.size}}"
+                    maxlength=100>
+                    
+                </paper-input>
+              </div>
+
+              <div>
+                <paper-input 
+                    class="price" 
+                    label="Price" 
+                    value="{{priceItem.cost}}"
+                    maxlength=6 
+                    auto-validate 
+                    allowed-pattern="[0-9.,]"
+                    error-message="Must be a number">
+                    <div prefix>$</div>
+                  </paper-input>
+              </div>
+              <div class="clear">
+                <paper-icon-button 
+                      id="[[priceItem.id]]"
+                       
+                      suffix 
+                      on-tap="clearPriceOption" 
+                      icon="beer-icons:clear" 
+                      alt="clear" 
+                      title="clear">
+                  </paper-icon-button>
+              </div>
+            </div>
+
+         </template>
+
+         <iron-label  class="add">
+            <paper-icon-button 
+                  icon="beer-icons:add" 
+                  on-tap="_addPriceItem">
+            </paper-icon-button>
+          Add price option
+         </iron-label>
+
+         <!--<iron-label  class="remove">
+            <paper-icon-button 
+                  icon="beer-icons:remove" 
+                  on-tap="_removePriceItem">
+            </paper-icon-button>
+          Remove
+         </iron-label>-->
+
+
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-menu-edit-price',
+
+       properties: {
+        category: {
+          type: Object
+        },
+        priceItems:{
+          type: Object
+        },
+        toggle:{
+          type: Boolean
+        }
+       },
+
+      _addPriceItem: function (){
+
+        var key = this.$.priceItem.ref.push().key;
+        // console.log(key)
+        var obj = {};
+        obj.id = key;
+
+        this.$.priceItem.ref.child(key).update(obj)
+          .then(function(){
+            console.log('NEW_PRICE_ADDED');
+            }
+          ).catch(function(error){
+            console.log('NEW_PRICE_ADDED_ERROR', error)
+          })
+          
+
+
+        // var category = this.category;
+        // console.log(category);
+        // var obj = {};
+
+        // if(category.category) {obj.category = category.category};
+        // if(category.title) {obj.categoryTitle = category.title};
+        // if(category.name) {obj.categoryName = category.name};
+        // if(category.order) {obj.categoryOrder = category.order};
+      
+        //   obj.type = 'menu-item';
+        //   this.$.menu.ref.push(obj);
+      },
+
+      // _deletepriceItem:function (e){
+      //   var target = e.currentTarget;
+      //   var key = target.priceItemKey;
+      //    this.$.menu.ref.child(key).remove();
+      // },
+
+      _sortOrder: function(a,b){  
+      'use strict';
+      if (a.order < b.order)
+        return -1;
+      if (a.order > b.order)
+        return 1;
+      return 0;
+    },
+
+    clearPriceOption: function (e){
+        var id = e.currentTarget.id;
+       console.log(id);
+        var obj = {};
+        obj.test = 'test';
+
+        var path = this.$.priceItem.ref.child(id).path;
+        console.log(path);
+
+        this.$.priceItem.ref.child(id).remove()
+          .then(function(){
+            console.log('PRICE_REMOVED');
+            }
+          ).catch(function(error){
+            console.log('PRICE_REMOVED_ERROR', error)
+          })
+
+    },
+
+      _test: function (obj) {
+        console.log('ITEMS', obj);
+      }
+
+      
+    });
+
+  </script>
+
+</dom-module>

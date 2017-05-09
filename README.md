@@ -1,4 +1,7 @@
-# Beer
+
+[![Build Status](https://travis-ci.org/JKWA/beer-fly.svg?branch=master)](https://travis-ci.org/JKWA/beer-fly)
+
+# Beer-Fly 
 
 ### Setup
 
@@ -7,21 +10,6 @@
 
 
 
-##### Setup
-   
 
-### Start the development server
-
-   
-
-### Run web-component-tester tests
-
-    
-
-### Build
-
-    
-
-### Test the build
 
 

@@ -4,18 +4,26 @@
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 
 
-<dom-module id="beer-menu-card">
+<dom-module id="beer-menu-card-mini">
 
   <template>
 
     <style>
+      a{
+        text-decoration: none;
+      }
 
-      /*.card{
-        width: 100%;
-        margin: 0 0 20px 0;
-      }*/
+      .card{
+        margin: 10px;
+        padding: 20px;
+      }
 
-       .menu{
+      .menu-card{
+        /*margin: 10px;*/
+       
+      }
+
+       /*.menu{
          @apply(--layout-vertical);         
       }
 
@@ -59,43 +67,90 @@
         font-weight: 300;
         color: var(--app-secondary-color);
         margin: 0 0 0 10px
+      }*/
+
+      .menu-wrapper{
+         @apply(--layout-vertical);
+         @apply(--layout-center-justified);
       }
-      
 
-
-      @media (max-width: 767px) {
-     
-
-        h3 {
-          margin: 24px 0;
-        }
-
+      .menu-wrapper > div{
+         text-align: center;
       }
+
+      .category-name {
+        font-size: 1.5em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .menu-item > div{
+        margin: 5px 0;
+        text-align: center;
+      }
+
+      .menu-title {
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .menu-description {
+        font-size: .8em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .price-wrapper{
+         @apply(--layout-horizontal);
+         @apply(--layout-around-justified);
+         @apply(--layout-wrap);
+         color: var(--app-primary-color);
+         font-size: 1em;
+         font-weight: 300;
+      }
+
+      .seperate {
+        font-size: 2em;
+        font-weight: 500;
+        color: var(--app-accent-color);
+       
+      }
+
 
     </style>
 <div>
-  <paper-material elevation="0" animated-shadow="false">
-    <div class="menu">
+  <paper-material class="card" elevation="0" animated-shadow="false">
+    <div class="menu-wrapper">
+      <div class="category-name">[[categoryName]]</div>
+      
+      <template is="dom-repeat" items="[[_toArray(menuItems)]]" as="menuItem">
+        <a href="[[anchorHref]]&menuItem=[[menuItem.id]]">
+        <paper-material class="menu-card" elevation="0" animated-shadow="false">
 
-      <template is="dom-repeat" items="[[_toArray(menuCategory)]]" as="menu" sort="_categoryOrder">
-         <paper-material class='card' elevation="0" animated-shadow="false">
-          <div class="category">
-            <div class=" category-title">[[menu.title]]</div>            
-            <div class="menu-items">
-            <template is="dom-repeat" items="[[_toArray(menu.items)]]" as="menuItem">
-              <div class="menu-item">
-              <div class="menu-title">[[menuItem.name]]</div>
-              <div hidden="[[!menuItem.price]]">
-                <div class="menu-price">$[[menuItem.price]]</div> 
-              </div>
-              </div>
-            </template>
+        <div class="menu-item">
+          <div class="menu-title">[[menuItem.name]]</div>
+          <!--<div class="menu-description">[[menuItem.description]]</div>
+          <div class="price-wrapper">
+          <template is="dom-repeat" items="[[_toArray(menuItem.price)]]" as="price">
+            <div class="price-wrapper">
+              <div hidden="[[!price.size]]" class="price-size">[[price.size]]:&nbsp</div> 
+              <div class="price-cost">$[[price.cost]]</div> 
             </div>
-          </div>
+            
+          </template>
+          </div>-->
+        </div>
          </paper-material>
+        </a>
       </template>
+     
+      <div class="seperate">
+        <iron-icon icon="beer-icons:seperate"></iron-icon>
+      </div>
     </div>
   </paper-material>
+  
 </div>
   
       
@@ -107,7 +162,7 @@
 
     Polymer({
 
-      is: 'beer-menu-card',
+      is: 'beer-menu-card-mini',
 
       properties:{
 

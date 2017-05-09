@@ -11,12 +11,10 @@
 <link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 
 
-<link rel="import" href="beer-menu-meta.html">
-
-<link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-button.html">
-<link rel="import" href="beer-menu-edit-item-tag.html">
+<link rel="import" href="beer-menu-edit-price.html">
+
 
 
 <dom-module id="beer-menu-edit-item">
@@ -32,6 +30,11 @@
         color:red;
         margin: 20px 0 0 20px;
         width:40px
+      }
+
+      .card{
+        padding: 10px;
+        margin: 10px;
       }
 
       .actual-delete{
@@ -77,22 +80,26 @@
 
     </style>
 
-    <firebase-query
+
+
+    <!--<firebase-query
           id="menu"
           app-name="beer"
           path="organization/[[orgId]]/category/MENU/menu/[[menuKey]]/items"
           data="{{menuItems}}">
-    </firebase-query>
+    </firebase-query>-->
 
     <firebase-document
-          id="category"
+          id="menuItem"
           app-name="beer"
-          path="organization/[[orgId]]/category/MENU/menu/[[menuKey]]"
-          data="{{category}}">
+          path="organization/[[orgId]]/category/MENU/menu/[[categoryId]]/item/[[menuId]]"
+          data="{{menuItem}}">
     </firebase-document>
 
-    <div class="menu-area">
-      <iron-label>
+    <!--organization/[[orgId]]/category/MENU/menu/[[categoryId]]/item/[[menuId]]-->
+
+    <!--<div class="menu-area">-->
+      <!--<iron-label>
         <toggle-icon 
               animation="flip-vertical"
               class="delete" 
@@ -102,15 +109,15 @@
               noink>
         </toggle-icon>
           REMOVE MENU ITEMS
-      </iron-label>
+      </iron-label>-->
 
-      <template is="dom-repeat" items="{{menuItems}}" as="menuItem" strip-whitespace>
+      <!--<template is="dom-repeat" items="{{menuItems}}" as="menuItem" strip-whitespace>-->
         <!--<beer-menu-meta menu-item="[[menuItem]]" org-id="[[orgId]]"></beer-menu-meta>-->
 
-         <paper-material elevation="2" class="menu-item">
-            <div class="menu-category">
+         <paper-material elevation="1" class="card">
+         
 
-              <iron-collapse opened={{toggle}}>
+              <!--<iron-collapse opened={{toggle}}>
 
               <div class="actual-delete">
                   <iron-label>
@@ -122,8 +129,8 @@
                     DELETE THIS MENU ITEM
                   </iron-label>
               </div>
-              </iron-collapse>
-              <div>
+              </iron-collapse>-->
+            
           
               <paper-input 
                   label="Item Name" 
@@ -136,7 +143,8 @@
                 value="{{menuItem.description}}"
                 maxlength=1000 >
               </paper-textarea>
-              <paper-input 
+
+              <!--<paper-input 
                   class="price" 
                   label="Price" 
                   value="{{menuItem.price}}"
@@ -145,21 +153,28 @@
                   allowed-pattern="[0-9.,]"
                  error-message="Must be a number">
                 <div prefix>$</div>
-              </paper-input>
+              </paper-input>-->
 
-              <beer-menu-edit-item-tag
+              <beer-menu-edit-price
+                  org-id="[[orgId]]"
+                  category-id="[[categoryId]]"
+                  menu-id="[[menuId]]">
+              </beer-menu-edit-price>
+                  
+
+              <!--<beer-menu-edit-item-tag
                   org-id="[[orgId]]"
                   menu-key="[[menuKey]]"
                   menu-item-key="[[menuItem.$key]]">
-              </beer-menu-edit-item-tag>
+              </beer-menu-edit-item-tag>-->
               </div>
            </paper-material>
              
            
         <!--</div>-->
-      </template>
+      <!--</template>-->
      
-      <div class="delete-swipe">
+      <!--<div class="delete-swipe">
         <iron-label >
           <paper-icon-button 
               class="add" 
@@ -167,7 +182,7 @@
               on-tap="_addMenuItem"></paper-icon-button>
           ADD A MENU ITEM
         </iron-label>
-      </div>
+      </div>-->
 </div>
 
 

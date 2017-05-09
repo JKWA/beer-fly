@@ -1,22 +1,19 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
-<link rel="import" href="../bower_components/paper-item/paper-item.html">
 
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-material/paper-material.html">
 
 <link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
-<link rel="import" href="../my_components/data/upload-image.html">
-<link rel="import" href="beer-icons.html">
-<link rel="import" href="beer-button.html">
-<link rel="import" href="beer-menu-edit-category.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+
 <link rel="import" href="beer-menu-edit-item.html">
+<link rel="import" href="beer-icons.html">
 
 
 <dom-module id="beer-menu-edit">
@@ -24,131 +21,117 @@
   <template>
 
     <style>
+
       .add{
         color: green;
       }
-      .delete{
-        color:red;
-        margin: 20px 0 0 0;
-        width: 40px;
-      }
 
-     .actual-delete{
-        background-color: red;
-        color: white;
-        width: 100%;
+      .card{
+        padding: 10px;
+        margin: 10px;
       }
-
-      .toggle{
-        font-size: 1.25em;
-        font-weight: 500;
-      }
-
       
-      .menu-category{
-         @apply(--layout-vertical);
-         @apply(--layout-start-justified);
-         /*@apply(--layout-wrap);*/
-         padding: 5px;
-         margin: 5px 5px 15px 5px;
+      .category-titleA{
+        font-size: 1.5em;
+        font-weight: 700;
       }
 
-      .motto {
-        font-size: 2.0em;
-        font-weight: 500;
-        margin: 40px 5px 0 20px;
-      }
-
-      .description {
-        font-size: 1.2em;
+      .category-item{
+        font-size: 1.25em;
         font-weight: 300;
-        margin: 10px 5px 0 20px;
+        margin-left: 30px;
+        border-bottom: 1px solid grey;
+        width: 100px;
       }
 
+      .order{
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+        width: 60px;
+      }
+      
     </style>
-     <firebase-query
+
+    
+
+      <firebase-document
           id="menu"
           app-name="beer"
-          path="organization/[[orgId]]/category/MENU/menu"
-          data="{{menu}}">
-      </firebase-query>
+          path="organization/[[orgId]]/category/MENU/menu/[[menuCategoryId]]"
+          data="{{category}}">
+      </firebase-document>
 
 
 
-      <div class="menu-edit">
+    <paper-material class="card"  elevation="0">
 
-      <upload-image org-id="[[orgId]]" type="banner" key="category/MENU/image"></upload-image>
-      <paper-input label="Motto" value="{{category.motto}}"maxlength=100 char-counter></paper-input>
-      <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter>
-      </paper-textarea>
+
+        <paper-input id="categorySortOrder" 
+                     class="order"
+                     label="Sort Order" 
+                     maxlength="2"
+                     error-message="1-99"
+                     value="{{categorySortOrder}}">
+                     <div prefix>#</div>
+        </paper-input>
+
+        <paper-input label="Category Name" 
+                    value="{{category.name}}">
+        </paper-input>
+
+        <paper-textarea label="Category Description" value="{{category.description}}"></paper-textarea>
+    </paper-material>
+         <template is="dom-repeat" items="[[_toArray(category.item)]]">
+           <!--<paper-material class="card"  elevation="1">-->
+
+           <beer-menu-edit-item
+            category-id="[[menuCategoryId]]"
+            org-id="[[orgId]]"
+            menu-id="[[item.id]]">
+           </beer-menu-edit-item>
+           <!--</paper-material>-->
+         </template>
+
+         <iron-label  class="add">
+            <paper-icon-button 
+                  icon="beer-icons:add" 
+                  on-tap="_addMenuItem">
+            </paper-icon-button>
+          Add Menu Item
+         </iron-label>
+
+    <!--</paper-material>-->
       
-       <iron-label>
-        <toggle-icon 
-              animation="flip-vertical"
-              class="delete" 
-              icon="beer-icons:remove"
+        <!--<iron-label class="category-titleA">
+          <toggle-icon 
+              animation="flip-vertical" 
+              icon="beer-icons:expand-more"
               class="menu-button"
-              checked="{{toggleDeleteCategory}}"
+              checked="{{toggle}}"
               noink>
-        </toggle-icon>
-          REMOVE CATEGORY
-      </iron-label>
+            </toggle-icon>
+              [[_ifValue(category.title)]]
 
-       <template is="dom-repeat" items="{{menu}}" as="categoryItem" sort="_sortOrder" remove-whitespace>
-        
-         <paper-material class="menu-category"  elevation="1">
-          <div >
-            <iron-collapse opened={{toggleDeleteCategory}}>
-              <div class="actual-delete">
-                <iron-label>
-                  <paper-icon-button 
-                    icon="beer-icons:delete-forever" 
-                    category-item-key="[[categoryItem.$key]]"
-                    on-tap="_deleteMenuCategory">
-                  </paper-icon-button>
-                  DELETE THIS CATEGORY AND MENU ITEMS
-                </iron-label>
-            </div>
-            </iron-collapse>
+        </iron-label>-->
 
-              <div>
-               
-                <beer-menu-edit-category 
-                  category="[[categoryItem]]"
-                  org-id="[[orgId]]">
-                </beer-menu-edit-category>
-              
-                <!--<paper-textarea 
-                    class="text-input" 
-                    label="Category Description" 
-                    value="{{categoryItem.description}}"
-                    maxlength=1000 >
-                </paper-textarea>
-              
-                <beer-menu-edit-item 
-                    org-id="[[orgId]]"
-                   
-                    menu-key="[[categoryItem.$key]]">
-                </beer-menu-edit-item>-->
+        <!--<iron-collapse opened={{toggle}}>
+          <paper-listbox
+              selected="{{menuCategory}}"
+              class="category-list"
+              attr-for-selected="menucat"
+              item-key="[[category.$key]]"
+              on-click="_saveCategory">
 
-              </div>
-          </div>
-         </paper-material>
-       </template>
-      
+            <template is="dom-repeat" items="{{menuCategories}}"  as="menuCategory" sort="_sortOrder">
+                  <paper-item class="category-item" menucat="{{menuCategory}}"> 
+                  [[menuCategory.title]] 
+                  </paper-item>
+            </template>
+          </paper-listbox>
+        </iron-collapse> -->
 
-       <div>
-       <iron-label>
-        <paper-icon-button 
-            class="add" 
-            icon="beer-icons:add" 
-            on-tap="_addMenuCategory">
-        </paper-icon-button>
-        ADD CATEGORY
-      </iron-label>
-      </div>
-
-      </div>
+             
   </template>
 
   <script>
@@ -156,74 +139,101 @@
     Polymer({
 
       is: 'beer-menu-edit',
-
-       properties: {
-        toggle: {
-          type: Boolean
-        },
-        menu:{
-          type: Object
-        },
-        menuCategory: {
-          type: Object,
-          // computed: 'computeMenuCategory()
-        },
-        toggleDeleteCategory:{
-          type: Boolean
+      properties:{
+        orgId:{
+          type: String
         },
         category:{
           type: Object
-        }
-      },
+        },
 
-      // observers:['_categoryChanged(category)'],
+        categoryId:{
+          type: String
+        },
 
-      // _categoryChanged: function (category, oldMenu){
+         categorySortOrder:{
+          type: Number
+        },
         
-      //   console.log("CHANGE", category);
-
-      //        var menu = category.menu;
-      //   if(menu){
-      //     var key = Object.keys(menu);
-      //     for(var i=0; i<key.length; i++){
-      //       menu[key[i]].categoryName = category.name;
-      //       menu[key[i]].categoryTitle = category.title;
-      //       menu[key[i]].category = category.category;
-      //       console.log(menu[key[i]]);
-      //       // this.menuMeta.ref.child(key[i]).update(menu[key[i]]);
-            
-      //     }
-      //   }
-
-      // },
-
-      _addMenuCategory: function (){
-        var obj = {};
-          obj.order = 10000
-          obj.type = 'category';
-        console.log(this.$.menu.ref.push(obj));
       },
 
-       _deleteMenuCategory:function (e){
-          var target = e.currentTarget;
-          var key = target.categoryItemKey;
-          this.toggleDeleteCategory = false;
-          this.$.menu.ref.child(key).remove(); 
+      observers:[
+                '_watchSortOrderEdit(categorySortOrder)',
+                '_initialSortOrderValue(category.order)'
+                ],
+
+      _initialSortOrderValue: function (order){
+        console.log(order);
+          if(order){
+            this.categorySortOrder = order;
+          }
       },
 
-     _ifValue: function(value){
-        'use strict';
-        if( typeof value === 'string'){
-          return value;
-
+      _watchSortOrderEdit: function (categorySortOrder){
+        if(categorySortOrder){
+          if(categorySortOrder >0 && categorySortOrder <100){
+            this.$.categorySortOrder.invalid = false;
+            var obj = {};
+            obj.order = categorySortOrder;
+            this.$.menu.ref.update(obj).then(function(){
+              console.log('SORT_SAVED')
+            }).catch(function (error){
+              console.log('SORT_SAVE_ERROR', error)
+            })
+          }else{
+            this.$.categorySortOrder.invalid = true;
+          }
         }else{
-          return 'Select a category';
+          this.$.categorySortOrder.invalid = true;
         }
-    }, 
-   
 
-   _sortOrder: function(a,b){
+      },
 
+      _addMenuItem: function (){
+          var key = this.$.menu.ref.child('item').push().key;
+          var obj = {};
+          obj.id = key;
+          obj.sort = 1;
+          this.$.menu.ref.child('item').child(key).update(obj)
+          .then(function (){
+            console.log('SAVED_NEW_MENU_ITEM');
+          }).catch(function (error){
+            console.log('SAVED_NEW_MENU_ITEM_ERROR', error);
+          })
+
+      },
+
+    //  _saveCategory: function(e){
+    //  	'use strict';
+    //    var target = e.currentTarget;
+    //   var menuCategory = this.menuCategory;
+    //   //clone category obj
+    //   var obj = {};
+    //   var menuKey = Object.keys(menuCategory);
+    //   for(var i=0; i<menuKey.length; i++){
+    //     if(menuKey[i] !== '$key'){
+    //       obj[menuKey[i]] = menuCategory[menuKey[i]];
+    //     }
+    //   }
+    //   //firebase does not accept $key 
+    //   obj.category = menuCategory.$key;
+
+    //   var key = target.itemKey
+    //    this.$.menuCategory.ref.child(key).update(obj);
+    //   this.toggle=false;
+    //  },
+
+    //  _ifValue: function(value){
+    //     'use strict';
+    //     if( typeof value === 'string'){
+    //       return value;
+
+    //     }else{
+    //       return 'Select a category';
+    //     }
+    //   }, 
+
+     _sortOrder: function(a,b){  
       'use strict';
     
       if (a.order < b.order)
@@ -232,6 +242,19 @@
         return 1;
       return 0;
     },
+
+    _toArray: function (obj){
+      var returnArray=[];
+      if(obj){
+        var key = Object.keys(obj);
+        for (var i=0; i<key.length; i++){
+         
+          returnArray.push(obj[key[i]]);
+          
+        }
+        return returnArray;
+      }
+  },
 
     });
 
