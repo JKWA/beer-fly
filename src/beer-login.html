@@ -32,6 +32,11 @@
         color: var(--app-accent-color);
     }
 
+    .login{
+        @apply(--layout-vertical);
+        
+    }
+
 
     .buttons{
         margin: 20px 0 0 0;
@@ -99,11 +104,13 @@
         key="loginEmail" 
         data="{{email}}">
     </app-localstorage-document>
-
-    <paper-tabs selected="{{tabSelected}}">
-        <paper-tab>Social</paper-tab>
-        <paper-tab>Email</paper-tab>
-    </paper-tabs>
+    <div>
+    <div>
+        <paper-tabs selected="{{tabSelected}}">
+            <paper-tab>Social</paper-tab>
+            <paper-tab>Email</paper-tab>
+        </paper-tabs>
+    </div>
 
     <div class="wrapper">
 
@@ -205,6 +212,7 @@
       </form>
     </iron-collapse>  
     
+    </div>
     </div>
     
 
