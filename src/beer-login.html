@@ -3,8 +3,13 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+
+
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
 
 
@@ -20,9 +25,23 @@
 
     <style>
 
+   
+
     a{ 
         text-decoration: none;
         color: var(--app-accent-color);
+    }
+
+
+    .buttons{
+        margin: 20px 0 0 0;
+       
+    }
+    
+    .buttons > div{
+        
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
     }
 
     .error{
@@ -32,8 +51,15 @@
     .wrapper{
         @apply(--layout-vertical);
         margin: 10px;
-        padding: 10px
+        /*padding: 10px;*/
+        /*width: 300px;*/
     }
+
+    paper-input{
+        width: 220px;
+    }
+
+    
 
     .signInButton img{
         padding: 0 8px 0 2px;
@@ -48,6 +74,7 @@
     }
     .signInButton.mini {
         width: 150px;
+        margin: 20px 0 20px 0;
     }
     #googSignIn{
         background-color: white;
@@ -78,70 +105,75 @@
         data="{{email}}">
     </app-localstorage-document>
 
+    <paper-tabs selected="{{tabSelected}}">
+        <paper-tab>Social</paper-tab>
+        <paper-tab>Email</paper-tab>
+    </paper-tabs>
+
     <div class="wrapper">
-    <iron-collapse id="collapse" no-animation opened="{{!emailToggle}}">
-    <div>
-        <paper-button id="googSignIn" class$="signInButton {{_getMiniClass()}}" on-tap="_signInWithGoogle" data-auth="#google" raised>
 
-            <div style="width:15px; height:15px; padding: 0 8px 0 2px;">
-                <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-                    viewBox="0 0 123.3 126.2" style="enable-background:new 0 0 123.3 126.2;" xml:space="preserve">
-                <style type="text/css">
-                    .st0{clip-path:url(#SVGID_2_);fill:#F9BC15;}
-                    .st1{clip-path:url(#SVGID_4_);fill:#EA4535;}
-                    .st2{clip-path:url(#SVGID_6_);fill:#36A852;}
-                    .st3{clip-path:url(#SVGID_8_);fill:#557EBF;}
-                </style><g><g><defs>
-                    <path id="SVGID_1_" d="M121.9,51.6h-7.2H91.2H63.1V76H97c-3.2,15.5-16.4,24.4-33.8,24.4c-20.7,0-37.3-16.6-37.3-37.3
-                        s16.6-37.3,37.3-37.3c8.9,0,16.9,3.2,23.2,8.3l18.4-18.4C93.5,6,79.2,0,63.1,0C28.1,0,0,28.1,0,63.1s28.1,63.1,63.1,63.1
-                        c31.6,0,60.2-22.9,60.2-63.1C123.3,59.4,122.8,55.4,121.9,51.6z"/>
-                    </defs><clipPath id="SVGID_2_"><use xlink:href="#SVGID_1_" style="overflow:visible;"/></clipPath><polygon class="st0" points="-5.7,100.4 -5.7,25.8 43,63.1 "/></g><g><defs>
-                    <path id="SVGID_3_" d="M121.9,51.6h-7.2H91.2H63.1V76H97c-3.2,15.5-16.4,24.4-33.8,24.4c-20.7,0-37.3-16.6-37.3-37.3
-                        s16.6-37.3,37.3-37.3c8.9,0,16.9,3.2,23.2,8.3l18.4-18.4C93.5,6,79.2,0,63.1,0C28.1,0,0,28.1,0,63.1s28.1,63.1,63.1,63.1
-                        c31.6,0,60.2-22.9,60.2-63.1C123.3,59.4,122.8,55.4,121.9,51.6z"/>
-                    </defs><clipPath id="SVGID_4_"><use xlink:href="#SVGID_3_" style="overflow:visible;"/></clipPath><polygon class="st1" points="-5.7,25.8 43,63.1 63.1,45.6 132,34.4 132,-5.7 -5.7,-5.7"/></g><g><defs>
-                    <path id="SVGID_5_" d="M121.9,51.6h-7.2H91.2H63.1V76H97c-3.2,15.5-16.4,24.4-33.8,24.4c-20.7,0-37.3-16.6-37.3-37.3
-                        s16.6-37.3,37.3-37.3c8.9,0,16.9,3.2,23.2,8.3l18.4-18.4C93.5,6,79.2,0,63.1,0C28.1,0,0,28.1,0,63.1s28.1,63.1,63.1,63.1
-                        c31.6,0,60.2-22.9,60.2-63.1C123.3,59.4,122.8,55.4,121.9,51.6z"/>
-                    </defs><clipPath id="SVGID_6_"><use xlink:href="#SVGID_5_"  style="overflow:visible;"/></clipPath><polygon class="st2" points="-5.7,100.4 80.3,34.4 103,37.3 132,-5.7 132,132 -5.7,132"/></g><g><defs>
-                        <path id="SVGID_7_" d="M121.9,51.6h-7.2H91.2H63.1V76H97c-3.2,15.5-16.4,24.4-33.8,24.4c-20.7,0-37.3-16.6-37.3-37.3
-                        s16.6-37.3,37.3-37.3c8.9,0,16.9,3.2,23.2,8.3l18.4-18.4C93.5,6,79.2,0,63.1,0C28.1,0,0,28.1,0,63.1s28.1,63.1,63.1,63.1
-                        c31.6,0,60.2-22.9,60.2-63.1C123.3,59.4,122.8,55.4,121.9,51.6z"/>
-                    </defs><clipPath id="SVGID_8_"><use xlink:href="#SVGID_7_"  style="overflow:visible;"/></clipPath><polygon class="st3" points="132,132 43,63.1 31.6,54.5 132,25.8"/></g></g>
-                </svg>
-            </div>
-            {{_getButtonText()}}Google</paper-button>
-         </div>
-         <div>
-            <paper-button id="fbSignIn" class$="signInButton {{_getMiniClass()}}" on-tap="_signIn" data-auth="#facebook" raised>
-            <div style="width:15px; height:15px">
-                <svg viewBox="0 0 7.94 16.74" style="height:15px;fill:white;">
-                    <path d="M5.39,16.79H2.29V8.52H0.22V5.67H2.29V4c0-2.32.63-3.74,3.37-3.74H7.94V3.1H6.51c-1.07,0-1.12.4-1.12,1.14V5.67H8L7.65,8.52H5.39v8.27Z" transform="translate(-0.12 -0.15)" style="stroke:#000;stroke-miterlimit:10;stroke-width:0.20000000298023224px"/>
-                </svg>
-            </div>
-            {{_getButtonText()}}Facebook</paper-button>
-        </div>
-    </iron-collapse>
+        <iron-collapse id="collapse" no-animation opened="{{!emailToggle}}">
+            <div class="buttons">
+            <div>
+            <paper-button id="googSignIn" class$="signInButton {{_getMiniClass()}}" on-tap="_signInWithGoogle" data-auth="#google" raised>
 
-        <div>
+                <div style="width:15px; height:15px; padding: 0 8px 0 2px;">
+                    <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                        viewBox="0 0 123.3 126.2" style="enable-background:new 0 0 123.3 126.2;" xml:space="preserve">
+                    <style type="text/css">
+                        .st0{clip-path:url(#SVGID_2_);fill:#F9BC15;}
+                        .st1{clip-path:url(#SVGID_4_);fill:#EA4535;}
+                        .st2{clip-path:url(#SVGID_6_);fill:#36A852;}
+                        .st3{clip-path:url(#SVGID_8_);fill:#557EBF;}
+                    </style><g><g><defs>
+                        <path id="SVGID_1_" d="M121.9,51.6h-7.2H91.2H63.1V76H97c-3.2,15.5-16.4,24.4-33.8,24.4c-20.7,0-37.3-16.6-37.3-37.3
+                            s16.6-37.3,37.3-37.3c8.9,0,16.9,3.2,23.2,8.3l18.4-18.4C93.5,6,79.2,0,63.1,0C28.1,0,0,28.1,0,63.1s28.1,63.1,63.1,63.1
+                            c31.6,0,60.2-22.9,60.2-63.1C123.3,59.4,122.8,55.4,121.9,51.6z"/>
+                        </defs><clipPath id="SVGID_2_"><use xlink:href="#SVGID_1_" style="overflow:visible;"/></clipPath><polygon class="st0" points="-5.7,100.4 -5.7,25.8 43,63.1 "/></g><g><defs>
+                        <path id="SVGID_3_" d="M121.9,51.6h-7.2H91.2H63.1V76H97c-3.2,15.5-16.4,24.4-33.8,24.4c-20.7,0-37.3-16.6-37.3-37.3
+                            s16.6-37.3,37.3-37.3c8.9,0,16.9,3.2,23.2,8.3l18.4-18.4C93.5,6,79.2,0,63.1,0C28.1,0,0,28.1,0,63.1s28.1,63.1,63.1,63.1
+                            c31.6,0,60.2-22.9,60.2-63.1C123.3,59.4,122.8,55.4,121.9,51.6z"/>
+                        </defs><clipPath id="SVGID_4_"><use xlink:href="#SVGID_3_" style="overflow:visible;"/></clipPath><polygon class="st1" points="-5.7,25.8 43,63.1 63.1,45.6 132,34.4 132,-5.7 -5.7,-5.7"/></g><g><defs>
+                        <path id="SVGID_5_" d="M121.9,51.6h-7.2H91.2H63.1V76H97c-3.2,15.5-16.4,24.4-33.8,24.4c-20.7,0-37.3-16.6-37.3-37.3
+                            s16.6-37.3,37.3-37.3c8.9,0,16.9,3.2,23.2,8.3l18.4-18.4C93.5,6,79.2,0,63.1,0C28.1,0,0,28.1,0,63.1s28.1,63.1,63.1,63.1
+                            c31.6,0,60.2-22.9,60.2-63.1C123.3,59.4,122.8,55.4,121.9,51.6z"/>
+                        </defs><clipPath id="SVGID_6_"><use xlink:href="#SVGID_5_"  style="overflow:visible;"/></clipPath><polygon class="st2" points="-5.7,100.4 80.3,34.4 103,37.3 132,-5.7 132,132 -5.7,132"/></g><g><defs>
+                            <path id="SVGID_7_" d="M121.9,51.6h-7.2H91.2H63.1V76H97c-3.2,15.5-16.4,24.4-33.8,24.4c-20.7,0-37.3-16.6-37.3-37.3
+                            s16.6-37.3,37.3-37.3c8.9,0,16.9,3.2,23.2,8.3l18.4-18.4C93.5,6,79.2,0,63.1,0C28.1,0,0,28.1,0,63.1s28.1,63.1,63.1,63.1
+                            c31.6,0,60.2-22.9,60.2-63.1C123.3,59.4,122.8,55.4,121.9,51.6z"/>
+                        </defs><clipPath id="SVGID_8_"><use xlink:href="#SVGID_7_"  style="overflow:visible;"/></clipPath><polygon class="st3" points="132,132 43,63.1 31.6,54.5 132,25.8"/></g></g>
+                    </svg>
+                </div>
+                {{_getButtonText()}}Google</paper-button>
+            </div>
+
+            <div>
+                <paper-button id="fbSignIn" class$="signInButton {{_getMiniClass()}}" on-tap="_signIn" data-auth="#facebook" raised>
+                <div style="width:15px; height:15px">
+                    <svg viewBox="0 0 7.94 16.74" style="height:15px;fill:white;">
+                        <path d="M5.39,16.79H2.29V8.52H0.22V5.67H2.29V4c0-2.32.63-3.74,3.37-3.74H7.94V3.1H6.51c-1.07,0-1.12.4-1.12,1.14V5.67H8L7.65,8.52H5.39v8.27Z" transform="translate(-0.12 -0.15)" style="stroke:#000;stroke-miterlimit:10;stroke-width:0.20000000298023224px"/>
+                    </svg>
+                </div>
+                {{_getButtonText()}}Facebook</paper-button>
+            </div>
+            </div>
+        </iron-collapse>
+
+        <!--<div>
             <paper-button id="emailSignIn" class$="signInButton {{_getMiniClass()}}" on-tap="_showEmailSignin" data-auth="#email" raised>
                 <div style="width:15px; height:15px; padding: 0 8px 0 2px;">
-                    <!--<svg  viewBox="0 0 16.73 16.32" style="height:15px;fill:black;">
-                        <path d="M11.46,16.53a1.53,1.53,0,0,1-.25.08,0.41,0.41,0,0,1-.53-0.44c0-.61,0-1.22,0-1.83a2.6,2.6,0,0,0-.54-2c0.32-.06.6-0.1,0.88-0.16a3.45,3.45,0,0,0,2.9-3.49,3.53,3.53,0,0,0-.76-2.64,0.32,0.32,0,0,1,0-.26,3.21,3.21,0,0,0-.08-1.88,0.24,0.24,0,0,0-.29-0.19,2.91,2.91,0,0,0-1.46.51,1.53,1.53,0,0,1-1.3.23,7.31,7.31,0,0,0-3.29.08,0.6,0.6,0,0,1-.4-0.08A5.23,5.23,0,0,0,4.7,3.79c-0.46-.09-0.5-0.07-0.62.38a3.09,3.09,0,0,0,0,1.68A0.34,0.34,0,0,1,4,6.11C2.8,7.46,3.24,10,4.06,11a3.92,3.92,0,0,0,2.41,1.28L7,12.36c-0.14.36-.27,0.71-0.41,1a0.35,0.35,0,0,1-.19.15,1.71,1.71,0,0,1-2.23-.74A1.74,1.74,0,0,0,3,11.94H2.9L2.47,12a1.17,1.17,0,0,0,.25.33,2.41,2.41,0,0,1,.95,1.18,1.82,1.82,0,0,0,1.68,1.17c0.38,0,.76,0,1.18,0,0,0.47,0,1,0,1.55,0,0.29-.3.4-0.65,0.29a7.56,7.56,0,0,1-2.52-1.4A8,8,0,0,1,.54,6.56,7.94,7.94,0,0,1,7.17.44,8.36,8.36,0,0,1,11.46,16.53ZM7,12.34v0H7ZM4.81,13.85A1.07,1.07,0,0,0,5,14a0.54,0.54,0,0,0,.18-0.13,1.63,1.63,0,0,0-.3-0.11A0.3,0.3,0,0,0,4.81,13.85ZM5.49,14a0.21,0.21,0,0,0,.17.11A0.42,0.42,0,0,0,5.83,14l-0.26-.23A0.6,0.6,0,0,0,5.49,14Zm0.83-.2a0.67,0.67,0,0,0-.19.13l0.14,0.17,0.2-.18A0.34,0.34,0,0,0,6.32,13.76Zm-2.06-.28a1.87,1.87,0,0,0,.18.24,0.7,0.7,0,0,0,.1-0.17,0.92,0.92,0,0,0-.19-0.17A0.29,0.29,0,0,0,4.26,13.48Z" transform="translate(-0.23 -0.3)"/>
-                    </svg>-->
+
                     <iron-icon class="buttonIcon" icon="beer-icons:[[toggleIcon]]"></iron-icon>
                 </div>
                 [[toggleMessage]]</paper-button>
-        </div>
-   
-
-    <div>
+        </div>-->
 
      <iron-collapse id="collapse" no-animation opened="{{emailToggle}}">
       
       <form>
     
         <div class="email">
+            <div>
             <paper-input 
                 type="email" 
                 label="Email"
@@ -151,22 +183,27 @@
                 auto-validate
                 value="{{email}}">
             </paper-input>
-
-            <paper-input 
-                type="password" 
-                label="Password"
-                required
-                on-keydown="_watchForSubmit"
-                value="{{password}}">
-            </paper-input>
-           
+            </div>
+            <div>
+                <paper-input 
+                    type="password" 
+                    label="Password"
+                    required
+                    on-keydown="_watchForSubmit"
+                    value="{{password}}">
+                </paper-input>
+            <div>
 
             <div class="buttons">
-                <paper-button class="signInButton" on-tap="_signInEmail" raised>Sign In</paper-button>
-                <paper-button class="signInButton" on-tap="_signUpEmail" raised>Create New Account</paper-button>
+                <div>
+                    <paper-button class="signInButton" on-tap="_signInEmail" raised>Sign In</paper-button>
+                </div>
+                <div>
+                    <paper-button class="signInButton" on-tap="_signUpEmail" raised>Create New Account</paper-button>
+                </div>
             </div>
 
-            <div>You will need to verify your email.</div>
+            <!--<div>You will need to verify your email.</div>-->
 
             <div class="error">[[message]]</div>
 
@@ -178,9 +215,8 @@
       </form>
     </iron-collapse>  
     
-
     </div>
-    </div>
+    
 
 </template>
   <script>
@@ -202,6 +238,12 @@
             type: Boolean,
             value: false
         },
+
+        tabSelected:{
+            type: Number,
+            value:0
+        },
+
         toggleMessage:{
             type: String
         },
@@ -224,17 +266,25 @@
        
       },
 
-      observers:['_watchEmailToggle(emailToggle)'],
+      observers:['_watchTabChange(tabSelected)'],
 
-      _watchEmailToggle: function (emailToggle){
-          if(emailToggle){
-            this.toggleMessage = "Sign In With Social"
-            this.toggleIcon = 'social'
-          }else{
-            this.toggleMessage = "Sign In With Email"
-            this.toggleIcon = 'email'
-          }
+      _watchTabChange: function (tabSelected){
+        if(tabSelected === 1){
+            this.emailToggle = true;
+        }else{
+            this.emailToggle = false;
+        }
       },
+
+    //   _watchEmailToggle: function (emailToggle){
+    //       if(emailToggle){
+    //         this.toggleMessage = "Sign In With Social"
+    //         this.toggleIcon = 'social'
+    //       }else{
+    //         this.toggleMessage = "Sign In With Email"
+    //         this.toggleIcon = 'email'
+    //       }
+    //   },
     _getMiniClass: function(){
       return this.mini ? "mini" : "";
     },

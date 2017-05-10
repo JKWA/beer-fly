@@ -161,28 +161,31 @@
 
 
     <div class="menu">
-
-      [[menuItemId]]
-
-       <paper-material class="card"  elevation="1">
-         <iron-label  class="add">
-            <paper-icon-button 
-                  icon="beer-icons:add" 
-                  on-tap="_addMenuCategory">
-                  
-            </paper-icon-button>
-          Add Category
-         </iron-label>
-      </paper-material>
+[[owner]]
+      <!--[[menuItemId]]-->
+      <template is="dom-if" if="[[owner]]">
+        <paper-material class="card"  elevation="1">
+          <iron-label  class="add">
+              <paper-icon-button 
+                    icon="beer-icons:add" 
+                    on-tap="_addMenuCategory">
+                    
+              </paper-icon-button>
+            Add Category
+          </iron-label>
+        </paper-material>
+      </template>
 
 
     <template is="dom-repeat" items="[[_toArray(category.menu)]]" as="menu" sort="_categoryOrder">
       <paper-material class="card" elevation="1">
-      <iron-label>
-        <a aria-label$="TEST" href$="/[[nameUrl]]/menu-edit?orgid=[[orgId]]&menuCategory=[[menu.id]]">
-          <paper-icon-button icon="beer-icons:edit"></paper-icon-button>
-          Edit</a>
-      </iron-label>
+      <template is="dom-if" if="[[owner]]">
+        <iron-label>
+          <a aria-label$="TEST" href$="/[[nameUrl]]/menu-edit?orgid=[[orgId]]&menuCategory=[[menu.id]]">
+            <paper-icon-button icon="beer-icons:edit"></paper-icon-button>
+            Edit</a>
+        </iron-label>
+      </template>
     
         <div class="category">
           <div class=" menu-category category-title">[[menu.name]]</div>
@@ -280,19 +283,19 @@
       observers:['_watchMenuItemId(menuItemId, category.item)'],
 
       ready: function (){
-        if(this.menuItemId){
-          console.log(this.menuItemId);
-          // this.$[this.menuItemId].scrollIntoView()
-          var menuItems = this.category.item;
-          if(typeof menuItems === 'object'){
-            var key = Object.keys(menuItems)
-            for(var i=0; i<key.length; i++){
-              var menuItemKey = key[i]
-              console.log(menuItemKey);
-            }
-          }
+        // if(this.menuItemId){
+        //   console.log(this.menuItemId);
+        //   // this.$[this.menuItemId].scrollIntoView()
+        //   var menuItems = this.category.item;
+        //   if(typeof menuItems === 'object'){
+        //     var key = Object.keys(menuItems)
+        //     for(var i=0; i<key.length; i++){
+        //       var menuItemKey = key[i]
+        //       console.log(menuItemKey);
+        //     }
+        //   }
 
-        }
+        // }
       },
 
       _watchMenuItemId: function(menuItemId){
