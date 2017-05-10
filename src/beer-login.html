@@ -115,7 +115,7 @@
         <iron-collapse id="collapse" no-animation opened="{{!emailToggle}}">
             <div class="buttons">
             <div>
-            <paper-button id="googSignIn" class$="signInButton {{_getMiniClass()}}" on-tap="_signInWithGoogle" data-auth="#google" raised>
+            <paper-button id="googSignIn" class$="signInButton" on-tap="_signInWithGoogle" raised>
 
                 <div style="width:15px; height:15px; padding: 0 8px 0 2px;">
                     <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -148,7 +148,7 @@
             </div>
 
             <div>
-                <paper-button id="fbSignIn" class$="signInButton {{_getMiniClass()}}" on-tap="_signIn" data-auth="#facebook" raised>
+                <paper-button id="fbSignIn" class$="signInButton" on-tap="_signinWithFacebook" raised>
                 <div style="width:15px; height:15px">
                     <svg viewBox="0 0 7.94 16.74" style="height:15px;fill:white;">
                         <path d="M5.39,16.79H2.29V8.52H0.22V5.67H2.29V4c0-2.32.63-3.74,3.37-3.74H7.94V3.1H6.51c-1.07,0-1.12.4-1.12,1.14V5.67H8L7.65,8.52H5.39v8.27Z" transform="translate(-0.12 -0.15)" style="stroke:#000;stroke-miterlimit:10;stroke-width:0.20000000298023224px"/>
@@ -159,14 +159,6 @@
             </div>
         </iron-collapse>
 
-        <!--<div>
-            <paper-button id="emailSignIn" class$="signInButton {{_getMiniClass()}}" on-tap="_showEmailSignin" data-auth="#email" raised>
-                <div style="width:15px; height:15px; padding: 0 8px 0 2px;">
-
-                    <iron-icon class="buttonIcon" icon="beer-icons:[[toggleIcon]]"></iron-icon>
-                </div>
-                [[toggleMessage]]</paper-button>
-        </div>-->
 
      <iron-collapse id="collapse" no-animation opened="{{emailToggle}}">
       
@@ -244,12 +236,6 @@
             value:0
         },
 
-        toggleMessage:{
-            type: String
-        },
-        toggleIcon:{
-            type:String
-        },
         message:{
             type:String
         },
@@ -276,15 +262,7 @@
         }
       },
 
-    //   _watchEmailToggle: function (emailToggle){
-    //       if(emailToggle){
-    //         this.toggleMessage = "Sign In With Social"
-    //         this.toggleIcon = 'social'
-    //       }else{
-    //         this.toggleMessage = "Sign In With Email"
-    //         this.toggleIcon = 'email'
-    //       }
-    //   },
+
     _getMiniClass: function(){
       return this.mini ? "mini" : "";
     },
@@ -296,8 +274,20 @@
           return a == "anon" ? "Sign in anonymously" : "Sign in with ";
       }
     },
+
     _signInWithGoogle: function(){
         this.$.auth.signInWithRedirect('google')
+        .then(function(response) {
+            console.log("signed in")
+        })
+        .catch(function(error) {
+          console.log('error', error)
+        });
+
+    },
+
+    _signinWithFacebook: function(){
+        this.$.auth.signInWithRedirect('facebook')
         .then(function(response) {
             console.log("signed in")
         })
