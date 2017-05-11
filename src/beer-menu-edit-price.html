@@ -8,7 +8,6 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 
 <link rel="import" href="beer-icons.html">
-<link rel="import" href="beer-menu-edit-item-tag.html">
 
 
 <dom-module id="beer-menu-edit-price">
@@ -127,9 +126,19 @@
         category: {
           type: Object
         },
+
+        menuId:{
+          type: String
+        },
+
+        orgId:{
+          type: String
+        },
+
         priceItems:{
           type: Object
         },
+
         toggle:{
           type: Boolean
         }

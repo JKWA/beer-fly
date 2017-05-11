@@ -50,9 +50,7 @@
         margin: 10px 5px 0 20px;
       }
 
-      .category{
-        /*margin: 20px 0 20px 0;*/
-      }
+     
 
       .menu{
          @apply(--layout-vertical);
@@ -72,14 +70,6 @@
         @apply(--layout-horizontal);
         @apply(--layout-center-justified);
       }
-
-      /*.category-break{
-         @apply(--layout-horizontal);
-         @apply(--layout-center-justified);
-         font-size: 2.25em;
-         color: var(--app-accent-color);
-         margin: 20px 0 10px 0;
-      }*/
 
 
       .menu-category{
@@ -122,15 +112,6 @@
          font-weight: 300;
       }
 
-      /*.price-cost{
-        font-size: 1em;
-        font-weight: 300;
-      }
-
-      .price-size{
-        font-size: 1em;
-        font-weight: 300;
-      }*/
 
     </style>
 
@@ -161,8 +142,7 @@
 
 
     <div class="menu">
-[[owner]]
-      <!--[[menuItemId]]-->
+
       <template is="dom-if" if="[[owner]]">
         <paper-material class="card"  elevation="1">
           <iron-label  class="add">
@@ -213,13 +193,6 @@
             </template>
             </div>
 
-          
-            
-            <!--<div hidden="[[!menuItem.price]]">
-                <div class="menu-price">$[[menuItem.price]]</div> 
-            </div>-->
-
-        <!--</paper-material>-->
             </div>
           </template>
           
@@ -275,28 +248,29 @@
           type: String
         },
 
+        placeholder:{
+          type: String
+        },
+
+        nameUrl:{
+          type: String
+        },
+
+        orgId:{
+          type:String
+        },
+
         owner:{
           type: Boolean
+        },
+
+        user:{
+          type: Object
         }
       },
 
       observers:['_watchMenuItemId(menuItemId, category.item)'],
 
-      ready: function (){
-        // if(this.menuItemId){
-        //   console.log(this.menuItemId);
-        //   // this.$[this.menuItemId].scrollIntoView()
-        //   var menuItems = this.category.item;
-        //   if(typeof menuItems === 'object'){
-        //     var key = Object.keys(menuItems)
-        //     for(var i=0; i<key.length; i++){
-        //       var menuItemKey = key[i]
-        //       console.log(menuItemKey);
-        //     }
-        //   }
-
-        // }
-      },
 
       _watchMenuItemId: function(menuItemId){
         // this.$[menuItemId].scrollIntoView()

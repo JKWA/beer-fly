@@ -126,18 +126,10 @@
 
         organization:{
           type: Object,
-          // computed: '_computeOrganization(organization)',
           notify: true
-        },
-
-        visible: {
-          type: Boolean,
-          observer: '_visibleChanged'
         }
         
       },
-
-    // observers: ['_watchForNewOrganizationData(organization, allCategories)'],
 
 
      _watchForNewOrganizationData: function (organization, category) {
@@ -155,11 +147,6 @@
       }
     },
 
-      // _visibleChanged: function(visible) {
-      //   if (visible) {
-      //     this.fire('change-section', { title: 'Pub' });
-      //   }
-      // },
 
       _computeCategories: function(organization) {
         var returnArray = [];
@@ -178,40 +165,6 @@
                               });
       },
 
-
-      // _edit: function(e){
-      //   'use strict';
-      //   var body = document.querySelector('body');
-      //   Polymer.dom(body).appendChild(this.$.editDialog);
-      //   this.$.editDialog.open()
-      // },
-
-      // _addBreaks: function(str){
-      //   'use strict';
-      //   if(str){
-      //     return str.split('\n');
-      //   }else{
-      //     return [];
-      //   }
-      // },
-      // _isMenu(type){
-      //   if(type === 'MENU'){
-      //     return true;
-      //   }else{
-      //     return false;
-      //   }
-      // },
-      // _isContact(type){
-      //   if(type === 'CONTACT'){
-      //     return true;
-      //   }else{
-      //     return false;
-      //   }
-      // },
-
-      // _isOwner(owner){
-      //   return true
-      // },
 
       _test: function(obj){
         console.log('TEST', obj);

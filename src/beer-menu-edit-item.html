@@ -5,6 +5,7 @@
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
@@ -198,9 +199,23 @@
         category: {
           type: Object
         },
+
+        categoryId:{
+          type: String
+        },
+
+        menuId:{
+          type: String
+        },
+
         menuItems:{
           type: Object
         },
+
+        orgId:{
+          type: String
+        },
+
         toggle:{
           type: Boolean
         }

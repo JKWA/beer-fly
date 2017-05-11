@@ -113,10 +113,40 @@
            value:false
        
         },
+
         abv: {
           type: String,
          
+        },
+
+        beerName:{
+          type: String
+        },
+
+        breweryName:{
+          type: String
+        },
+
+        breweryCity:{
+          type: String
+        },
+
+        breweryState:{
+          type: String
+        },
+
+        nameUrl:{
+          type:String
+        },
+
+        orgId:{
+          type: String
+        },
+
+        styleName:{
+          type: String
         }
+
        },
 
        observers:['_watchAbv(abv)'],

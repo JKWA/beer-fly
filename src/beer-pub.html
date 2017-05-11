@@ -376,10 +376,18 @@
        orgId:{
          type: String
        },
+
+       owner:{
+         type: Boolean
+       },
         
         photoUrl: {
           type: String,
           computed: '_computePhotoUrl(organization, place)'
+        },
+
+        place:{
+          type: Object
         },
 
         placeholder: {
