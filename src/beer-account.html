@@ -14,14 +14,8 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 
-<link rel="import" href="beer-pub-card.html">
-<link rel="import" href="beer-button.html">
 <link rel="import" href="beer-icons.html">
-<link rel="import" href="beer-pub-card.html">
 <link rel="import" href="beer-login.html">
-
-
-<!--<link rel="import" href="beer-home-search.html">-->
 
 
 
@@ -29,7 +23,7 @@
 
   <template>
 
-    <style include="beer-button">
+    <style>
 
     a{
       text-decoration: none;
@@ -40,20 +34,11 @@
         margin: 10px;
     }
 
-    .card-header {
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
-        font-size: .9rem;
-        font-weight: 400;
-     }
-
      paper-button{
-       
         text-align: left;
         text-transform: none;
         min-height: 40px;
         width: 220px;
-        
     }
 
      .button-wrapper{
@@ -69,18 +54,12 @@
         
     }
 
-
-      
-
       .item {
         margin: 30px;
         padding: 10px;
         @apply(--layout-horizontal);
         @apply(--layout-center-justified);
       }
-
-  
-
 
       .account-details {
         font-size: 1.5em;
@@ -101,12 +80,6 @@
         color: var(--app-secondary-color);
       }
 
-
-      .history {
-        font-size: 1.2em;
-        font-weight: 300;
-        margin: 10px 5px 0 20px;
-      }
 
       .name {
         font-size: 1.5em;
@@ -147,7 +120,6 @@
         data="{{organizations}}">
     </firebase-query>
 
-    
 
 <!--[[userStatus]]-->
       <div hidden$="[[!statusKnown]]">
@@ -173,6 +145,7 @@
               </iron-collapse>
               
               <div><b>Email:</b> [[user.email]]</div>
+              <div><b>Provider:</b> [[provider]]</div>
               <div><b>Verified:</b> [[user.emailVerified]]</div>
               <div><b>Domain:</b> [[userData.domain]]</div>
               <div hidden="[[!userData.ADMIN]]"><b>Admin:</b> [[userData.ADMIN]]</div>
@@ -181,16 +154,6 @@
 
             <template is="dom-repeat" items="[[organizations]]" as="pub">
 
-              <!--<beer-pub-card 
-                  place-id="[[pub.place_id]]"
-                  name="[[pub.name]]"
-                  motto="[[pub.motto]]"
-                  city="[[pub.city]]"
-                  state="[[pub.state]]"
-                  dog-friendly="[[pub.dogFriendly]]"
-                  patio="[[pub.patio]]"
-                  over21="[[pub.over21]]">
-              </beer-pub-card>-->
               <a aria-label$="[[pub.name]]" href$="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
                 <paper-material class="card" elevation="1">
                   <div class="name">[[pub.name]]</div>
