@@ -12,7 +12,7 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 
 <link rel="import" href="../my_components/data/upload-image.html">
-<link rel="import" href="beer-category-checkbox.html">
+<link rel="import" href="beer-pub-category.html">
 
 <dom-module id="beer-pub-edit">
 
@@ -40,24 +40,9 @@
 
     </style>
 
-
-    <firebase-document 
-      id="category"
-      app-name="beer"
-      path="category/PUB" 
-      data="{{allCategories}}">
-    </firebase-document>
-
-     <firebase-query 
-        id="orgCategory"
-        app-name="beer" 
-        path="organization/[[orgId]]/category">
-    </firebase-query>
-
     <firebase-document 
         id="organization"
         app-name="beer" 
-       
         path="organization/[[orgId]]"
         data="{{organization}}">
     </firebase-document>
@@ -67,39 +52,27 @@
           <paper-checkbox checked="{{organization.dogFriendly}}">Dogs allowed</paper-checkbox>&nbsp
           <paper-checkbox checked="{{organization.patio}}">Outdoor patio</paper-checkbox>&nbsp
           <paper-checkbox checked="{{organization.over21}}">Must be 21</paper-checkbox>&nbsp
-          <!--<paper-checkbox checked={{organization.crowdSource}}>Crowd sourced data allowed</paper-checkbox>&nbsp-->
         </div>
 
         <h3>Show Categories</h3>
-        <template is="dom-repeat" items="{{categories}}">
-          <beer-category-checkbox
-            org-id="[[orgId]]"
-            key="[[item.$key]]">
-          </beer-category-checkbox>
 
-        </template>
-        <h3>Upload Images</h3>
+          <beer-pub-category
+            org-id="[[orgId]]">
+          </beer-pub-category>
+
+        <h3>Upload Banner Image</h3>
         <upload-image org-id="[[orgId]]" type="banner" key="mainImage"></upload-image>
         
-        <!--<upload-image org-id="[[orgId]]" type="logo" key="mainImage"></upload-image>
-        
-        
-        <upload-image org-id="[[orgId]]" type="logoThumbnail" key="mainImage"></upload-image>-->
-        
-
-        <h3>Basic Information</h3>
-        <iron-label>
-          <paper-checkbox checked={{organization.crowdSource}}></paper-checkbox>
+        <!--<iron-label>
+          <paper-checkbox checked="{{organization.crowdSource}}"></paper-checkbox>
           <span>Allow crowd sourced data</span>
-        </iron-label>
+        </iron-label>-->
 
-        <!--<paper-input label="Name" value="{{organization.name}}"maxlength=50 char-counter></paper-input>-->
-        <paper-input label="Motto" value="{{organization.motto}}"maxlength=100 char-counter></paper-input>
+        <paper-input label="Motto" value="{{organization.motto}}" maxlength=100 char-counter></paper-input>
         <paper-textarea label="Description" value="{{organization.description}}" maxlength=2000 char-counter></paper-textarea>
         
        
-        <br>
-        <hr>
+       
         
       </template>
 
@@ -115,55 +88,59 @@
       is: 'beer-pub-edit',
       properties: {
 
-        categories: {
-          type: Array,
-          computed: '_computeCategories(organization)'
-        },
+        // categories: {
+        //   type: Array,
+        //   computed: '_computeCategories(organization)'
+        // },
 
-         allCategories:{
-          type: Object,
-        },
+        //  allCategories:{
+        //   type: Object,
+        // },
 
         organization:{
           type: Object,
-          notify: true
+          // notify: true
+        },
+
+        orgId:{
+          type: String
         }
         
       },
 
 
-     _watchForNewOrganizationData: function (organization, category) {
-      var category = this.allCategories;
-      if(!organization.googleData){
-        if(category.BEER){
-          var key = Object.keys(category);
-          for(var i=0; i<key.length;i++){
-            this.categoryKey = key[i];
-            if(key[i]){
-              this.$.orgCategory.ref.child(key[i]).update(category[key[i]]);
-            }
-          }
-        }
-      }
-    },
+    //  _watchForNewOrganizationData: function (organization, category) {
+    //   var category = this.allCategories;
+    //   if(!organization.googleData){
+    //     if(category.BEER){
+    //       var key = Object.keys(category);
+    //       for(var i=0; i<key.length;i++){
+    //         this.categoryKey = key[i];
+    //         if(key[i]){
+    //           this.$.orgCategory.ref.child(key[i]).update(category[key[i]]);
+    //         }
+    //       }
+    //     }
+    //   }
+    // },
 
 
-      _computeCategories: function(organization) {
-        var returnArray = [];
-        if(organization){
-          if(organization.category){
-            var category = organization.category;
-            var key = Object.keys(category);
-            for (var i=0; i<key.length; i++){
-                category[key[i]].$key = key[i];
-                returnArray.push(category[key[i]])
-            }
-          }
-        }
-        return returnArray.sort(function(a, b) {
-                                  return parseFloat(a.order) - parseFloat(b.order);
-                              });
-      },
+    //   _computeCategories: function(organization) {
+    //     var returnArray = [];
+    //     if(organization){
+    //       if(organization.category){
+    //         var category = organization.category;
+    //         var key = Object.keys(category);
+    //         for (var i=0; i<key.length; i++){
+    //             category[key[i]].$key = key[i];
+    //             returnArray.push(category[key[i]])
+    //         }
+    //       }
+    //     }
+    //     return returnArray.sort(function(a, b) {
+    //                               return parseFloat(a.order) - parseFloat(b.order);
+    //                           });
+    //   },
 
 
       _test: function(obj){

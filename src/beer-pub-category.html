@@ -1,0 +1,108 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+
+
+<dom-module id="beer-pub-category">
+
+  <template>
+
+    <style>
+
+      .name {
+        font-size: 1.5em;
+        font-weight: 300;
+        margin: 10px 5px 0 20px;
+      }
+
+
+    </style>
+
+    <firebase-document
+        app-name="beer"
+        id="categoryData"
+        path="organization/[[orgId]]/category"
+        data="{{categoryData}}">
+    </firebase-document>
+
+    <firebase-query
+        app-name="beer"
+        path="category/PUB"
+        order-by-child="order"
+        data="{{allCategory}}">
+    </firebase-query>
+
+    <template is="dom-repeat" items="[[allCategory]]" as="category" filter="_filter">
+      <iron-label>
+      <paper-checkbox 
+          checked="[[_isChecked(categoryData, category.$key)]]"
+          id="[[category.$key]]"
+          on-tap="_changeCategory">
+          [[category.title]]
+      </paper-checkbox>&nbsp
+      </iron-label>
+    </template>
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-pub-category',
+
+       properties: {
+
+          categoryData:{
+            type: Array
+          },
+
+          orgId:{
+            type: String
+          }
+       
+        },
+
+        _changeCategory: function (e){
+            var target = e.currentTarget;
+            var that = this;
+            var obj={};
+            obj.display = target.checked;
+            this.$.categoryData.ref.child(target.id).update(obj)
+            .then(function (){
+              console.log(target.id, target.checked);
+            })
+            .catch(function (error){
+              console.log('CATEGORY_SAVE_ERROR', error);
+            
+            })
+            
+        },
+
+        _filter(category){
+          if(category.$key === 'REVIEW'){
+            return false;
+          }else{
+            return true;
+          }
+
+        },
+
+        _isChecked: function (categoryData, key){
+          // console.log('category', categoryData[key])
+          return categoryData[key].display
+        },
+
+        _test: function (obj){
+          console.log(obj)
+        }
+       
+
+    });
+
+  </script>
+
+</dom-module>
