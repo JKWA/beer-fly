@@ -30,6 +30,7 @@
 
     <firebase-query
         app-name="beer"
+        id="allCategory"
         path="category/PUB"
         order-by-child="order"
         data="{{allCategory}}">
@@ -56,6 +57,10 @@
 
        properties: {
 
+         allCategory:{
+           type: Object
+         },
+
           categoryData:{
             type: Array
           },
@@ -71,14 +76,24 @@
             var that = this;
             var obj={};
             obj.display = target.checked;
-            this.$.categoryData.ref.child(target.id).update(obj)
-            .then(function (){
-              console.log(target.id, target.checked);
-            })
-            .catch(function (error){
-              console.log('CATEGORY_SAVE_ERROR', error);
+            console.log(target.id);
+            // obj = this.$.allCategory.child(target.id).data;
             
-            })
+            firebase.database(this.$.allCategory.app).ref('category/PUB').child(target.id).once('value')
+              .then(function(snapshot){
+                return snapshot.val();
+              })
+              .then(function(categoryItem){
+                categoryItem.display = target.checked;
+                that.$.categoryData.ref.child(target.id).update(categoryItem)
+                  .then(function (){
+                    console.log(target.id, target.checked);
+                  })
+                  .catch(function (error){
+                    console.log('CATEGORY_SAVE_ERROR', error);
+                  })
+                
+              })
             
         },
 
@@ -92,8 +107,14 @@
         },
 
         _isChecked: function (categoryData, key){
-          // console.log('category', categoryData[key])
-          return categoryData[key].display
+          if(typeof categoryData === 'object'){
+            if(key){
+              if(categoryData[key]){
+                return categoryData[key].display
+              }
+            }
+          }
+            return false
         },
 
         _test: function (obj){

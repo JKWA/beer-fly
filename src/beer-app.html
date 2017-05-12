@@ -465,7 +465,7 @@
     
       <a aria-label="To home page" href="/home/account">
         <div class="login-wrapper">
-          <div class="login-box" hidden$="[[!user]]">[[_returnFirstLetter(user.displayName)]]</div>
+          <div class="login-box" hidden$="[[!user]]">[[_returnFirstLetter(userData.displayName)]]</div>
           <div class="login-account">My Account</div>
         </div>  
       </a>
@@ -628,6 +628,10 @@
         categories: {
           type: Array,
           computed: '_computeCategories(organization)'
+        },
+
+        drawerOpened:{
+          type: Boolean
         },
 
         fireOrg:{
