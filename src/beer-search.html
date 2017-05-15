@@ -2,14 +2,23 @@
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+
+
 <link rel="import" href="../bower_components/google-apis/google-maps-api.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+
 
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
+
 <link rel="import" href="beer-icons.html">
 
 <link rel="import" href="beer-location.html">
@@ -91,12 +100,40 @@
       sorted-location-history="[[sortedLocationHistory]]">
     </beer-location>
 
-      <paper-material class="card" elevation="0">
-          <paper-input label="Search for brewery" value="{{queryString}}">
-            <iron-icon icon="beer-icons:search" prefix></iron-icon>
-              <paper-icon-button class="clear" suffix on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
-          </paper-input>
-      </paper-material>
+    <paper-material class="card" elevation="0">
+    
+      <paper-input label="Search for [[searchMessage]]" value="{{queryString}}">
+        <iron-icon icon="beer-icons:search" prefix></iron-icon>
+          <paper-icon-button class="clear" suffix on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
+      </paper-input>
+
+      <iron-label class="tap-status-wrapper">
+            <toggle-icon
+                  animation="flip-vertical" 
+                  icon="beer-icons:expand-more"
+                  checked="{{toggleSearchType}}"
+                  noink>
+            </toggle-icon>
+            <span class="tap-status-shown">[[searchMessage]]</span>
+        </iron-label>
+
+      <iron-collapse id="collapse" opened="[[toggleSearchType]]" no-animation>
+        
+          <paper-listbox
+              attr-for-selected="searchtype"
+              selected-class="search-list" 
+              class="search-list"
+              selected="{{searchType}}"
+              on-click="_close">
+          
+            <paper-item searchtype="BREWERY">Brewery</paper-item>
+            <paper-item searchtype="CIDERY">Cidery</paper-item>
+            <paper-item searchtype="FOOD_TRUCK">Food Truck</paper-item>
+            
+          </paper-listbox>
+      </iron-collapse>
+            
+    </paper-material>
 
 
        <template id="repeater" is="dom-repeat" 
@@ -139,14 +176,39 @@
 
        queryString:{
          type: String
+       },
+
+       searchString:{
+         type: String
+       },
+
+       searchMessage:{
+         type: String,
+         computed: '_computeSearchMessage(searchType)'
+       },
+
+       searchType:{
+         type: String,
+         value: "BREWERY"
+       },
+
+       sortedLocationHistory:{
+         type: String
+       },
+
+       toggle:{
+         type: Boolean
+       },
+       toggleSearchType:{
+         type: Boolean
        }
       },
 
 
-      observers:['_getGoogleSearchData(queryString)'],
+      observers:['_getGoogleSearchData(queryString, searchMessage)'],
 
 
-      _getGoogleSearchData: function(queryString){
+      _getGoogleSearchData: function(queryString, searchMessage){
    
         if(queryString.length >=4){
 
@@ -156,7 +218,7 @@
           var that = this;
           var request = {};
           
-          request.query = queryString+' Brewery or beer';
+          request.query = queryString+' '+searchMessage;
           // request.location = this.location.location.latitude.toString()+','+this.location.location.longitude.toString();
           request.location = {};
           request.location.lat = this.location.location.latitude;
@@ -179,7 +241,7 @@
                 }
                 var resultLocation = result[i].geometry.location;
                   result[i].distance = that._distance (that.location.location.latitude, that.location.location.longitude, resultLocation.lat(), resultLocation.lng())
-                // console.log(result[i]);
+                console.log(result[i]);
                 if(!that.allPub[result[i].place_id]){
                   that.push('data', result[i]);
                   that.allPub[result[i].place_id] = true;
@@ -231,6 +293,31 @@
 
       clearInput: function (){
         this.queryString = ''
+      },
+
+      _close: function (){
+        this.toggleSearchType = false;
+      },
+
+
+      _computeSearchMessage: function (searchString){
+        console.log(searchString);
+        var searchMessage
+        switch (searchString) {
+          case 'BREWERY':
+            searchMessage = 'Brewery'
+            break;
+          case 'CIDERY':
+            searchMessage = 'Cidery'
+            break;
+          case 'FOOD_TRUCK':
+            searchMessage = 'Food Truck'
+            break;
+          default:
+            searchMessage = 'Brewery'
+            break;
+        }
+        return searchMessage;
       },
 
 
