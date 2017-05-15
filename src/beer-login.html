@@ -2,10 +2,11 @@
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
-
 
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
@@ -25,27 +26,24 @@
 
     <style>
 
-   
 
     a{ 
         text-decoration: none;
         color: var(--app-accent-color);
     }
 
-    .login{
-        @apply(--layout-vertical);
-
-    }
-
-
     .buttons{
         margin: 20px 0 0 0;
-    }
-    
-    .buttons > div{
         @apply(--layout-vertical);
+        @apply(--layout-wrap);
+        
+    }
+
+    .buttons > div{
+        @apply(--layout-horizontal);
         @apply(--layout-center-justified);
     }
+
 
     .error{
         color:red;
@@ -54,13 +52,13 @@
     .wrapper{
         @apply(--layout-vertical);
         margin: 10px;
+       
     }
 
     paper-input{
         width: 220px;
     }
 
-    
 
     .signInButton img{
         padding: 0 8px 0 2px;
@@ -94,8 +92,6 @@
         padding: 0 8px 0 2px;
     }
 
-    
-    
 
     </style>
 
@@ -149,7 +145,7 @@
                         <span>Sign in with Google</span>
                     </paper-button>
                 </div>
-
+                
                 <div>
                     <paper-button id="fbSignIn" class="signInButton" on-tap="_signinWithFacebook" raised>
                         <div style="width:15px; height:15px">
@@ -164,56 +160,55 @@
         </iron-collapse>
 
 
-
-     <iron-collapse id="collapse" no-animation opened="{{emailToggle}}">
-      
-      <form>
-    
-        <div class="email">
-            <div>
-            <paper-input 
-                type="email" 
-                label="Email"
-                validator="email-validator" 
-                error-message="Invalid email address" 
-                required 
-                auto-validate
-                value="{{email}}">
-            </paper-input>
-            </div>
-            <div>
-                <paper-input 
-                    type="password" 
-                    label="Password"
-                    required
-                    on-keydown="_watchForSubmit"
-                    value="{{password}}">
-                </paper-input>
-            <div>
-
-            <div class="buttons">
+        <iron-collapse id="collapse" no-animation opened="{{emailToggle}}">
+        
+        <form>
+        
+            <div class="email">
                 <div>
-                    <paper-button class="signInButton" on-tap="_signInEmail" raised>Sign In</paper-button>
+                    <paper-input 
+                        type="email" 
+                        label="Email"
+                        validator="email-validator" 
+                        error-message="Invalid email address" 
+                        required 
+                        auto-validate
+                        value="{{email}}">
+                    </paper-input>
                 </div>
                 <div>
-                    <paper-button class="signInButton" on-tap="_signUpEmail" raised>Create New Account</paper-button>
+                    <paper-input 
+                        type="password" 
+                        label="Password"
+                        required
+                        on-keydown="_watchForSubmit"
+                        value="{{password}}">
+                    </paper-input>
+                </div>
+
+                <div>
+                    <div class="buttons">
+                        <div>
+                            <paper-button class="signInButton" on-tap="_signInEmail" raised>Sign In</paper-button>
+                        </div>
+                        <div>
+                            <paper-button class="signInButton" on-tap="_signUpEmail" raised>Create New Account</paper-button>
+                        </div>
+                    </div>
+                </div>
+
+                <!--<div>You will need to verify your email.</div>-->
+
+                <div class="error">[[message]]</div>
+
+                <div id="passwordResetMessage" hidden>
+                    <a href="#" id="reset" on-click="_resetPassword">Reset password for [[email]]</a>
                 </div>
             </div>
-
-            <!--<div>You will need to verify your email.</div>-->
-
-            <div class="error">[[message]]</div>
-
-            <div id="passwordResetMessage" hidden>
-                <a href="#" id="reset" on-click="_resetPassword">Reset password for [[email]]</a>
-            </div>
-            
-        </div>
-      </form>
-    </iron-collapse>  
-    
+        </form>
+        </iron-collapse>  
     </div>
-    </div>
+</div>
     
 
 </template>

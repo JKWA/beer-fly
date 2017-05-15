@@ -51,6 +51,9 @@
 <link rel="import" href="beer-tabs.html">
 <link rel="import" href="beer-tab.html">
 
+<!--lazyload-->
+<!--<link rel="import" href="beer-login.html">-->
+
 <dom-module id="beer-app">
 
   <template>
@@ -136,7 +139,6 @@
         overflow: hidden;
       }
 
-   
 
       [hidden] {
         display: none !important;
@@ -171,8 +173,6 @@
         color: var(--app-primary-color);
       }
 
-   
-
       .card {
         margin: 5px;
         padding: 5px;
@@ -205,8 +205,6 @@
         color: var(--app-secondary-color);
       }
 
-   
-
       .login-wrapper{
         @apply(--layout-horizontal);
         @apply(--layout-start-justified);
@@ -235,8 +233,6 @@
         margin: 0 10px;
       }
 
-      
-
       app-drawer {
         z-index: 3;
       }
@@ -257,14 +253,6 @@
         line-height: 24px;
       }
 
-      /*footer > a {
-        color: var(--app-secondary-color);
-        text-decoration: none;
-      }
-
-      footer > a:hover {
-        text-decoration: underline;
-      }*/
 
       .footer-item {
         box-sizing: border-box;
@@ -275,21 +263,11 @@
         text-transform: uppercase;*/
       }
 
-      section {
-        width: 100%;
+
+      .beer-login-dialog {
         height: 400px;
-        @apply(--layout-vertical);
       }
-      section paper-dialog-scrollable {
-        @apply(--layout-flex);
-      }
-      /*.header {
-        padding: 8px 24px;
-      }
-      .footer {
-        padding: 8px 24px;
-        text-align: right;
-      }*/
+
 
       /* small screen */
       @media (max-width: 767px) {
@@ -548,11 +526,12 @@
         exit-animation="fade-out-animation"
         with-backdrop 
         id="loginDialog"
+        
         opened="{{login}}">
     <paper-dialog-scrollable>
-      <section>
+      <section class="beer-login-dialog">
         <!--lazy loaded-->
-      <beer-login></beer-login>
+      <beer-login class="beer-login-dialog"></beer-login>
       </section>
     </paper-dialog-scrollable>
       <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
