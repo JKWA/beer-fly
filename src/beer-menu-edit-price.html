@@ -49,15 +49,12 @@
     <firebase-query
           id="priceItem"
           app-name="beer"
-          path="organization/[[orgId]]/category/MENU/menu/[[categoryId]]/item/[[menuId]]/price"
+          path="organization/[[orgId]]/menu/[[categoryId]]/item/[[menuId]]/price"
           data="{{priceItems}}">
     </firebase-query>
 
-    <!--organization/[[orgId]]/category/MENU/menu/[[categoryId]]/item/[[menuId]]/price-->
-<!--[[_test(priceItems)]]-->
          <template is="dom-repeat" items="{{priceItems}}" as="priceItem">
 
-           <!--[[_test(priceItem)]]-->
             <div class="price-wrapper">
               <div>
                 <paper-input 
@@ -81,6 +78,7 @@
                     <div prefix>$</div>
                   </paper-input>
               </div>
+              
               <div class="clear">
                 <paper-icon-button 
                       id="[[priceItem.id]]"
@@ -104,15 +102,6 @@
           Add price option
          </iron-label>
 
-         <!--<iron-label  class="remove">
-            <paper-icon-button 
-                  icon="beer-icons:remove" 
-                  on-tap="_removePriceItem">
-            </paper-icon-button>
-          Remove
-         </iron-label>-->
-
-
 
   </template>
 
@@ -123,8 +112,13 @@
       is: 'beer-menu-edit-price',
 
        properties: {
+
         category: {
           type: Object
+        },
+
+        categoryId: {
+          type: String
         },
 
         menuId:{

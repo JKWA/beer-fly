@@ -23,169 +23,45 @@
   <template>
 
     <style>
-      .add{
-        color: green;
-        margin: 20px 0 20px 20px;
-      }
-      .delete{
-        color:red;
-        margin: 20px 0 0 20px;
-        width:40px
-      }
-
-      .card{
+    .card{
+        margin: 10px;
         padding: 10px;
-        margin: 10px;
       }
-
-      .actual-delete{
-        background-color: red;
-        color: white
-      }
-
-      .menu-item{
-        padding: 12px;
-        margin: 10px;
-        width:92%;
-        background-color: white;
-      }
-
-      .menu-area{
-        background-color: #F8F8F8;
-      }
-    
-
-      .price{
-        width: 70px
-      }
-
-      .menu-category{
-         @apply(--layout-vertical);
-         @apply(--layout-start-justified);
-         
-      }
-
-      .motto {
-        font-size: 2.0em;
-        font-weight: 500;
-        margin: 40px 5px 0 20px;
-      }
-
-      .description {
-        font-size: 1.2em;
-        font-weight: 300;
-        margin: 10px 5px 0 20px;
-      }
-
-
-
     </style>
 
 
-
-    <!--<firebase-query
-          id="menu"
-          app-name="beer"
-          path="organization/[[orgId]]/category/MENU/menu/[[menuKey]]/items"
-          data="{{menuItems}}">
-    </firebase-query>-->
-
-    <firebase-document
-          id="menuItem"
-          app-name="beer"
-          path="organization/[[orgId]]/category/MENU/menu/[[categoryId]]/item/[[menuId]]"
-          data="{{menuItem}}">
-    </firebase-document>
-
-    <!--organization/[[orgId]]/category/MENU/menu/[[categoryId]]/item/[[menuId]]-->
-
-    <!--<div class="menu-area">-->
-      <!--<iron-label>
-        <toggle-icon 
-              animation="flip-vertical"
-              class="delete" 
-              icon="beer-icons:remove"
-              class="menu-button"
-              checked="{{toggle}}"
-              noink>
-        </toggle-icon>
-          REMOVE MENU ITEMS
-      </iron-label>-->
-
-      <!--<template is="dom-repeat" items="{{menuItems}}" as="menuItem" strip-whitespace>-->
-        <!--<beer-menu-meta menu-item="[[menuItem]]" org-id="[[orgId]]"></beer-menu-meta>-->
+      <firebase-document
+            id="menuItem"
+            app-name="beer"
+            path="organization/[[orgId]]/menu/[[categoryId]]/item/[[menuId]]"
+            data="{{menuItem}}">
+      </firebase-document>
 
          <paper-material elevation="1" class="card">
-         
-
-              <!--<iron-collapse opened={{toggle}}>
-
-              <div class="actual-delete">
-                  <iron-label>
-                    <paper-icon-button 
-                      icon="beer-icons:delete-forever" 
-                      menu-item-key="[[menuItem.$key]]"
-                      on-tap="_deleteMenuItem">
-                    </paper-icon-button>
-                    DELETE THIS MENU ITEM
-                  </iron-label>
-              </div>
-              </iron-collapse>-->
             
-          
-              <paper-input 
-                  label="Item Name" 
-                  value="{{menuItem.name}}"
-                  maxlength=100 >
-              </paper-input>
+            <paper-input 
+                label="Item Name" 
+                value="{{menuItem.name}}"
+                maxlength=100 >
+            </paper-input>
 
-              <paper-textarea 
-                label="Description" 
-                value="{{menuItem.description}}"
-                maxlength=1000 >
-              </paper-textarea>
+            <paper-textarea 
+              label="Description" 
+              value="{{menuItem.description}}"
+              maxlength=1000 >
+            </paper-textarea>
 
-              <!--<paper-input 
-                  class="price" 
-                  label="Price" 
-                  value="{{menuItem.price}}"
-                  maxlength=6 
-                  auto-validate 
-                  allowed-pattern="[0-9.,]"
-                 error-message="Must be a number">
-                <div prefix>$</div>
-              </paper-input>-->
 
-              <beer-menu-edit-price
-                  org-id="[[orgId]]"
-                  category-id="[[categoryId]]"
-                  menu-id="[[menuId]]">
-              </beer-menu-edit-price>
+            <beer-menu-edit-price
+                org-id="[[orgId]]"
+                category-id="[[categoryId]]"
+                menu-id="[[menuId]]">
+            </beer-menu-edit-price>
                   
-
-              <!--<beer-menu-edit-item-tag
-                  org-id="[[orgId]]"
-                  menu-key="[[menuKey]]"
-                  menu-item-key="[[menuItem.$key]]">
-              </beer-menu-edit-item-tag>-->
-              </div>
-           </paper-material>
-             
-           
-        <!--</div>-->
-      <!--</template>-->
-     
-      <!--<div class="delete-swipe">
-        <iron-label >
-          <paper-icon-button 
-              class="add" 
-              icon="beer-icons:add" 
-              on-tap="_addMenuItem"></paper-icon-button>
-          ADD A MENU ITEM
-        </iron-label>
-      </div>-->
-</div>
-
+          </div>
+        </paper-material>  
+      
+  </div>
 
   </template>
 
@@ -196,6 +72,7 @@
       is: 'beer-menu-edit-item',
 
        properties: {
+
         category: {
           type: Object
         },
@@ -243,13 +120,12 @@
       },
 
       _sortOrder: function(a,b){  
-      'use strict';
-      if (a.order < b.order)
-        return -1;
-      if (a.order > b.order)
-        return 1;
-      return 0;
-    },
+        if (a.order < b.order)
+          return -1;
+        if (a.order > b.order)
+          return 1;
+        return 0;
+      },
 
       _test: function (obj) {
         console.log('ITEMS', obj);

@@ -55,42 +55,45 @@
 
     
 
-      <firebase-document
-          id="menu"
-          app-name="beer"
-          path="organization/[[orgId]]/category/MENU/menu/[[menuCategoryId]]"
-          data="{{category}}">
-      </firebase-document>
-
+    <firebase-document
+        id="menu"
+        app-name="beer"
+        path="organization/[[orgId]]/menu/[[menuCategoryId]]"
+        data="{{category}}">
+    </firebase-document>
 
 
     <paper-material class="card"  elevation="0">
 
-
-        <paper-input id="categorySortOrder" 
-                     class="order"
-                     label="Sort Order" 
-                     maxlength="2"
-                     error-message="1-99"
-                     value="{{categorySortOrder}}">
-                     <div prefix>#</div>
+        <paper-input 
+            id="categorySortOrder" 
+            class="order"
+            label="Sort Order" 
+            maxlength="2"
+            error-message="1-99"
+            value="{{categorySortOrder}}">
+          <div prefix>#</div>
         </paper-input>
 
-        <paper-input label="Category Name" 
-                    value="{{category.name}}">
+        <paper-input 
+            label="Category Name" 
+            value="{{category.name}}">
         </paper-input>
 
-        <paper-textarea label="Category Description" value="{{category.description}}"></paper-textarea>
-    </paper-material>
+        <paper-textarea 
+            label="Category Description" 
+            value="{{category.description}}">
+        </paper-textarea>
+
+        </paper-material>
+
          <template is="dom-repeat" items="[[_toArray(category.item)]]">
-           <!--<paper-material class="card"  elevation="1">-->
 
            <beer-menu-edit-item
             category-id="[[menuCategoryId]]"
             org-id="[[orgId]]"
             menu-id="[[item.id]]">
            </beer-menu-edit-item>
-           <!--</paper-material>-->
          </template>
 
          <iron-label  class="add">
@@ -101,35 +104,6 @@
           Add Menu Item
          </iron-label>
 
-    <!--</paper-material>-->
-      
-        <!--<iron-label class="category-titleA">
-          <toggle-icon 
-              animation="flip-vertical" 
-              icon="beer-icons:expand-more"
-              class="menu-button"
-              checked="{{toggle}}"
-              noink>
-            </toggle-icon>
-              [[_ifValue(category.title)]]
-
-        </iron-label>-->
-
-        <!--<iron-collapse opened={{toggle}}>
-          <paper-listbox
-              selected="{{menuCategory}}"
-              class="category-list"
-              attr-for-selected="menucat"
-              item-key="[[category.$key]]"
-              on-click="_saveCategory">
-
-            <template is="dom-repeat" items="{{menuCategories}}"  as="menuCategory" sort="_sortOrder">
-                  <paper-item class="category-item" menucat="{{menuCategory}}"> 
-                  [[menuCategory.title]] 
-                  </paper-item>
-            </template>
-          </paper-listbox>
-        </iron-collapse> -->
 
              
   </template>
@@ -215,35 +189,7 @@
 
       },
 
-    //  _saveCategory: function(e){
-    //  	'use strict';
-    //    var target = e.currentTarget;
-    //   var menuCategory = this.menuCategory;
-    //   //clone category obj
-    //   var obj = {};
-    //   var menuKey = Object.keys(menuCategory);
-    //   for(var i=0; i<menuKey.length; i++){
-    //     if(menuKey[i] !== '$key'){
-    //       obj[menuKey[i]] = menuCategory[menuKey[i]];
-    //     }
-    //   }
-    //   //firebase does not accept $key 
-    //   obj.category = menuCategory.$key;
-
-    //   var key = target.itemKey
-    //    this.$.menuCategory.ref.child(key).update(obj);
-    //   this.toggle=false;
-    //  },
-
-    //  _ifValue: function(value){
-    //     'use strict';
-    //     if( typeof value === 'string'){
-    //       return value;
-
-    //     }else{
-    //       return 'Select a category';
-    //     }
-    //   }, 
+ 
 
      _sortOrder: function(a,b){  
       'use strict';

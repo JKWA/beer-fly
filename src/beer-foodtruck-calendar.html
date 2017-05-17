@@ -1,0 +1,494 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<!--<link rel="import" href="../bower_components/google-apis/google-maps-api.html">-->
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<!--<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">-->
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<!--<link rel="import" href="../bower_components/polymerfire/firebase-query.html">-->
+<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
+<link rel="import" href="../bower_components/paper-time-input/paper-time-input.html">
+
+
+<link rel="import" href="beer-icons.html">
+
+<!--<link rel="import" href="beer-location.html">-->
+
+
+<dom-module id="beer-foodtruck-calendar">
+
+  <template>
+
+    <style>
+    .add{
+      color: var(--app-accent-color);
+    }
+    .remove{
+      color: red;
+    }
+    .calendar-wrapper{
+         @apply(--layout-vertical);
+         @apply(--layout-justified);
+      }
+
+    .schedule-wrapper{
+      @apply(--layout-horizontal);
+      margin: 12px 0 0 0;
+    }
+
+    .schedule-title{
+      @apply(--layout-horizontal);
+      @apply(--layout-justified);
+      
+    }
+      .time-input{
+         @apply(--layout-horizontal);
+      }
+
+      .time-input >div{
+        @apply(--layout-horizontal);
+        @apply(--layout-justified);
+        padding: 10px;
+      }
+
+      .name{
+        font-size: 1.5em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+      .day {
+        font-size: 1.2em;
+        font-weight: 400;
+      }
+
+
+    </style>
+
+    <firebase-auth  
+        app-name="beer" 
+        id="auth"
+        user="{{user}}">
+    </firebase-auth>
+
+        <div class="calendar-wrapper">
+          <div class="name">[[truck.name]]</div>
+
+           <template is="dom-repeat" items="[[scheduleData]]" as="schedule" sort="_sortDay">
+              <div class="schedule-title">
+                <div class="schedule-wrapper">
+                  <div><b>[[schedule.label]]:</b>&nbsp</div>
+                  <div>[[_formatTimeStamp(schedule.OPEN)]]&nbsp-&nbsp[[_formatTimeStamp(schedule.CLOSE)]]</div>
+                </div>
+                
+                <div class="remove">
+                  <paper-icon-button day="[[schedule.$key]]" icon="beer-icons:delete" on-tap="_removeTime"></paper-icon-button>
+                </div>
+              </div>
+            </template>
+
+           <iron-label class="add">
+              <toggle-icon
+                    animation="flip-vertical" 
+                    icon="beer-icons:expand-more"
+                    checked="{{toggle}}"
+                    noink>
+              </toggle-icon>
+            <span class="day add">[[selectedDayLabel]]</span>
+           </iron-label>
+          
+          <div>
+            <iron-collapse no-animation opened="{{toggle}}"> 
+            <paper-material elevation="0" >
+              <paper-listbox 
+                  attr-for-selected="day" 
+                  selected="{{selectedDay}}"
+                  on-tap="_close">
+                <template is="dom-repeat" items="[[_computeDays()]]" as="day">
+                  <paper-item day="[[day]]">[[day.label]]</paper-item>
+                </template>
+              </paper-listbox>
+            </paper-material>
+            </iron-collapse>
+          </div>
+          <div>
+            <paper-material elevation="0">
+              <div id="scheduleInput" hidden>
+                <div class="time-input">
+                
+
+                  <div>
+                    <paper-time-input
+                        label="Opening"
+                        hour="{{openHour}}"
+                        min="{{openMinute}}"
+                        am-pm="{{openAmPm}}"
+                        hideLabel>
+                    </paper-time-input>
+                  </div>
+
+                  <div> 
+                    <paper-time-input
+                        label="Closing"
+                        hour="{{closeHour}}"
+                        min="{{closeMinute}}"
+                        am-pm="{{closeAmPm}}"
+                        hideLabel>
+                    </paper-time-input>
+                  </div>
+
+                 
+                </div>
+
+                 <div>
+                    <paper-button raised on-tap="_saveTime">Save Time</paper-button>
+                  </div>
+
+              </div>
+
+            </paper-material>
+          </div>
+        </div>
+
+    
+ 
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-foodtruck-calendar',
+
+      properties: {
+
+       orgId:{
+         type: String
+       },
+
+       selectedDay:{
+         type: Number,
+       },
+
+       selectedDayLabel:{
+        type: String,
+        computed: '_computedSelectedDayLabel(selectedDay)',
+        value:'Add schedule time'
+       },
+
+       openAmPm:{
+         type:String,
+         value:'PM'
+       },
+
+       openHour:{
+         type:Number
+       },
+
+       openMinute:{
+         type:Number
+       },
+
+      closeAmPm:{
+         type:String,
+         value:'PM'
+       },
+
+       closeHour:{
+         type:Number
+       },
+
+       closeMinute:{
+         type:Number
+       },
+
+       scheduleData:{
+         type:Array
+       },
+
+
+       truck:{
+         type: Object
+       },
+
+       toggle:{
+         type: Boolean
+       },
+
+       truckId:{
+         type:String
+       },
+       
+       user:{
+         type: Object
+       }
+      },
+
+      observers: ['_observeDayChange(selectedDay.key)',
+                  '_observeScheduleChange(truck.period)'],
+
+     
+
+      _observeScheduleChange: function (periods){
+        var data = [];
+        if(typeof periods === 'object'){
+          var key = Object.keys(periods);
+          for (var i=0; i<key.length; i++){
+            
+            var period = periods[key[i]];
+            period['$key'] = key[i];
+            data.push(period);
+          }
+        }
+        
+        this.scheduleData = data;
+       
+      },
+
+
+
+      _observeDayChange: function (selectedDay){
+        if(this.truck){
+          if(this.truck.period){
+            var periods = this.truck.period;
+            var period = periods[selectedDay]
+            if(period){
+              console.log('period', period);
+              this._formatOpenTimeStamp(period.OPEN);
+              this._formatCloseTimeStamp(period.CLOSE);
+
+            }else{
+              this.openMinute = null;
+              this.openHour = null;
+              this.openAmPm = 'PM';
+              this.closeMinute = null;
+              this.closeHour = null;
+              this.closeAmPm = 'PM';
+            }            
+          }
+        }
+          this.$.scheduleInput.hidden = false;
+     
+      },
+
+       _formatOpenTimeStamp: function (time){
+
+        if(time){
+          var hour = time.substring(0, 2);
+          var minute = time.substring(2, 4);
+          this.openMinute = minute
+
+          hour = parseInt(hour);
+
+          if(hour > 12){
+            this.openHour = hour-12;
+            this.openAmPm = 'PM';
+          }else{
+            this.openHour = hour;
+            this.openAmPm = 'AM';
+          }
+          
+        }else{
+          this.openMinute = null;
+          this.openHour = null;
+          this.openAmPm = null;
+
+        }
+  
+       },
+
+       _formatCloseTimeStamp: function (time){
+
+        if(time){
+          var hour = time.substring(0, 2);
+          var minute = time.substring(2, 4);
+          this.closeMinute = minute
+
+          hour = parseInt(hour);
+
+          if(hour > 12){
+            this.closeHour = hour-12;
+            this.closeAmPm = 'PM';
+          }else{
+            this.closeHour = hour;
+            this.closeAmPm = 'AM';
+          }
+          
+        }else{
+          this.closeMinute = null;
+          this.closeHour = null;
+          this.closeAmPm = null;
+
+        }
+  
+       },
+
+
+      _computeDays: function (){
+        console.log('test')
+        var days = [['SUNDAY',"Sunday",0],
+                    ['MONDAY',"Monday",1],
+                    ['TUESDAY',"Tuesday",2],
+                    ['WEDNESDAY',"Wednesday",3],
+                    ['THURSDAY',"Thursday",4],
+                    ['FRIDAY',"Friday",5],
+                    ['SATURDAY',"Sunday",6]];
+        var dayArray = [];
+        for (var i=0; i<days.length; i++){
+          var obj = {};
+          obj.day = days[i][2];
+          obj.label = days[i][1];
+          obj.key = days[i][0]
+          dayArray.push(obj);
+        }
+
+        return dayArray;
+      },
+
+      _saveTime: function (){
+        
+        var periods = {};
+
+        if(this.selectedDay){
+          var period = {};
+
+          period.day = this.selectedDay.day;
+          period.label = this.selectedDay.label;
+
+          var openTime = this._formatToTimeStamp(this.openHour,this.openMinute,this.openAmPm);
+          var closeTime = this._formatToTimeStamp(this.closeHour,this.closeMinute,this.closeAmPm);
+
+          period.OPEN = openTime;
+          period.CLOSE = closeTime;
+
+        // console.log(this.selectedDay.key, period)
+        
+        if(this.orgId){
+          if(this.truckId){
+            firebase.database(this.$.auth.app).ref('organization')
+              .child(this.orgId).child('foodTruck').child(this.truckId).child('period').child(this.selectedDay.key)
+              .update(period)
+              .then(function(){
+                console.log("SAVED_TRUCK_TIME")
+              })
+              .catch(function(error){
+                console.log("SAVED_TRUCK_TIME_ERROR", error)
+              })
+          }
+        }
+        
+        // console.log(periods);
+          
+        }
+
+      },
+
+      _removeTime:function (event){
+        var target = event.currentTarget;
+        var day = target.day;
+        console.log('DELETE',day);
+        if(this.orgId){
+          if(this.truckId){
+        firebase.database(this.$.auth.app).ref('organization')
+          .child(this.orgId).child('foodTruck').child(this.truckId).child('period').child(day)
+              .remove()
+              .then(function(){
+                console.log('REMOVED_TIME')
+              })
+              .catch(function (error){
+                console.log('REMOVED_TIME_ERROR', error)
+              })
+          }
+        }
+
+      },
+
+      _formatToTimeStamp: function (hour, minute, amPm){
+          if(!hour){
+            hour = 0;
+          }
+          if(!minute){
+            minute = 0;
+          }
+
+          hour = parseInt(hour);
+          minute = parseInt(minute);
+
+          if(amPm == "PM"){
+            hour = hour+12;
+          }
+
+          if(minute < 10){
+            minute = "0"+minute.toString();
+          }
+
+          if(hour < 10){
+            hour = "0"+hour.toString();
+          }
+
+          return hour.toString()+minute.toString();
+      },
+
+      _formatTimeStamp: function (time){
+        var timeString = ''
+        if(time){
+          var hour = time.substring(0, 2);
+          var minute = time.substring(2, 4);
+          var amPm = 'AM';
+
+          hour = parseInt(hour);
+
+          if(hour > 12){
+            hour = hour-12;
+            amPm = 'PM';
+          }
+
+          timeString += hour.toString()+':';
+          timeString += minute.toString()+' ';
+          timeString += amPm;
+
+          return timeString
+        }
+      },
+
+      _close: function (){
+        this.toggle = false;
+      },
+
+      _sortDay: function(a,b){
+        if (a.day < b.day)
+          return -1;
+        if (a.day > b.day)
+          return 1;
+        return 0;
+      },
+
+      _computedSelectedDayLabel(selectedDay){
+        console.log('selectedDay', selectedDay)
+        if(selectedDay){
+          if(selectedDay.label){
+          return selectedDay.label;
+          }
+        }
+          return 'Add schedule time';
+        
+      },
+
+      _test: function(obj){
+          console.log("TEST",obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

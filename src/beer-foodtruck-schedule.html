@@ -1,0 +1,252 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<!--<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">-->
+<!--<link rel="import" href="../bower_components/iron-label/iron-label.html">-->
+<!--<link rel="import" href="../bower_components/google-apis/google-maps-api.html">-->
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<!--<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">-->
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<!--<link rel="import" href="../bower_components/polymerfire/firebase-query.html">-->
+
+<link rel="import" href="../bower_components/paper-time-input/paper-time-input.html">
+
+
+<link rel="import" href="beer-icons.html">
+
+<!--<link rel="import" href="beer-location.html">-->
+
+
+<dom-module id="beer-foodtruck-schedule">
+
+  <template>
+
+    <style>
+
+     a{
+      color: var(--app-primary-color);
+      text-decoration: none;
+    }
+
+    .card{
+        margin: 10px;
+        padding: 10px;
+        text-align: center;
+      }
+
+      .day {
+        font-size: 1.5em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .name{
+        font-size: 1.2em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+        margin: 10px 0 0 0;
+      }
+
+
+      .date {
+        font-size: 1.0em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+       
+      }
+
+      /*.description {
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .truck-vicinity{
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+      .truck-distance{
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }*/
+
+    </style>
+
+     <template is="dom-repeat" items="[[_createArray(days)]]" as="day">
+        
+      <paper-material class='card' elevation="0" animated-shadow="false">
+          <div class="day">[[day.label]]</div>
+          
+          <template is="dom-repeat" items="[[day.trucks]]" as="truck" sort="_sortOpenTime">
+            
+            <a href="/[[_computeNameForUrl(truck.name)]]/main?orgid=[[truck.id]]">
+              <paper-material elevation="0">
+                <div class="name">[[truck.name]]</div>
+                <div class="date">[[_formatTimeStamp(truck.open)]]-[[_formatTimeStamp(truck.close)]]</div>
+              </paper-material>
+            </a>
+          </template>
+
+
+      </paper-material>
+
+      </template>
+        
+         
+      
+
+        
+      
+
+    
+ 
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-foodtruck-schedule',
+
+      properties: {
+
+
+       orgId:{
+         type: String
+       },
+
+       days:{
+         type: Object
+       },
+
+       organization:{
+         type: Object
+       },
+       
+
+      },
+
+      observers:['_getFoodTruckSchedule(organization.foodTruck)'],
+
+       _getFoodTruckSchedule: function (truckObj){
+         var data = [];
+         var obj = {};
+        if(typeof truckObj ==='object'){
+          var key = Object.keys(truckObj);
+          for (var i=0; i<key.length; i++){
+            var truck = truckObj[key[i]];
+           
+            var periods = truck.period;
+            if(typeof periods ==='object'){
+              var periodKey = Object.keys(periods);
+              for (var j=0; j<periodKey.length; j++){
+                var period = periods[periodKey[j]];
+                if(!obj[period.day]){
+                  obj[period.day] = this._createNewDay(period, truck.name, key[i])
+                }else{
+                  var truckObj = {}
+                
+                  truck.open = period.OPEN;
+                  truck.close = period.CLOSE;
+                  truckObj.name = truck.name;
+                  truckObj.id = key[i]
+                  obj[period.day].trucks.push(truckObj)
+                }
+                
+              }
+            }
+          }
+        }
+
+        this.days = obj;
+      },
+
+      _createNewDay: function (period, name, id){
+        var obj = {};
+        obj.day = period.day;
+        obj.label = period.label;
+
+        obj.trucks=[];
+        var truck = {};
+        truck.name = name;
+        truck.id = id;
+        truck.open = period.OPEN;
+        truck.close = period.CLOSE;
+        obj.trucks.push(truck);
+        return obj;
+      },
+
+       _createArray : function (obj){
+        console.log('obj', obj)
+        var returnArray = [];
+        if(typeof obj ==='object'){
+          var key = Object.keys(obj);
+          for (var i=0; i<key.length; i++){
+            returnArray.push(obj[key[i]]);
+          }
+        }
+        return returnArray
+      },
+
+      _formatTimeStamp: function (time){
+        var timeString = ''
+        if(time){
+          var hour = time.substring(0, 2);
+          var minute = time.substring(2, 4);
+          var amPm = 'AM';
+
+          hour = parseInt(hour);
+
+          if(hour > 12){
+            hour = hour-12;
+            amPm = 'PM';
+          }
+
+          timeString += hour.toString()+':';
+          timeString += minute.toString()+' ';
+          timeString += amPm;
+
+          return timeString
+        }
+      },
+
+      
+      _sortOpenTime: function(a,b){
+        if (a.open < b.open)
+          return -1;
+        if (a.open > b.open)
+          return 1;
+        return 0;
+      },
+
+      _computeNameForUrl: function (name) {
+        'use strict';
+        if (name) {
+          name = name.replace(/\s/g, '-')
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'home'
+        }
+      },
+
+
+     
+
+      _test: function(obj){
+          console.log("TEST",obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

@@ -490,18 +490,19 @@
 
   <beer-review name="review" organization="[[organization]]" place="[[place]]" category=[[organization.category.REVIEW]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-review>
   
-  <beer-menu name="menu" category=[[organization.category.MENU]] menu-item-id="[[menuItemId]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-menu>
+  <beer-menu name="menu" category=[[organization.category.MENU]] organization="[[organization]]" menu-item-id="[[menuItemId]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-menu>
   <beer-menu-edit name="menu-edit" org-id="[[orgId]]" menu-category-id="[[menuCategoryId]]" online="[[online]]" owner="[[owner]]"></beer-menu-edit>
+  <beer-foodtruck name="foodtruck" category=[[organization.category.FOOD_TRUCK]] organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-foodtruck>
+  <beer-foodtruck-edit name="foodtruck-edit" org-id="[[orgId]]" organization="[[organization]]" online="[[online]]" owner="[[owner]]"></beer-foodtruck-edit>
 
   <beer-contact name="contact" organization="[[organization]]" place="[[place]]" category=[[organization.category.CONTACT]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-contact>
-  <beer-truck name="truck" category=[[organization.category.TRUCK]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-truck>
   <beer-event name="event" category=[[organization.category.EVENT]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-event>
   <beer-store name="store" category=[[organization.category.STORE]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-store>
   <beer-list name="list" route="[[subroute]]" offline="[[offline]]" place="[[place]]"  owner="[[owner]]"></beer-list>
   <beer-search name="search" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" geo-error="[[geoError]]"></beer-search>
   <beer-beer-info name="beer-info" login="{{login}}" location="[[location]]" beer-id="[[beerId]]"></beer-beer-info>
 
-   <beer-home2 name="home" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" all-object="[[allObject]]" all-array="[[allArray]]"></beer-home2>
+  <beer-home2 name="home" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" all-object="[[allObject]]" all-array="[[allArray]]"></beer-home2>
 
   <!--<beer-home name="home" all-object="[[allObject]]" all-array="[[allArray]]"   organization="[[organization]]" login="{{login}}" geo-response="[[geoResponse]]" latitude="[[latitude]]" longitude="[[longitude]]" idle="{{idle}}" geo-error="[[geoError]]" page="[[page]]"></beer-home>-->
   <beer-favorite name="favorite"></beer-favorite>
@@ -648,12 +649,8 @@
 
         location:{
           type: Object,
-          // value: function (){return {};}
         },
         
-        // localOrganizationData: {
-        //   type: Object
-        // },
 
         login: {
           type: Boolean,
@@ -1114,6 +1111,11 @@
             }else if(subRoute==='menu-edit'){
                page = 'menu-edit';
                returnPage='menu';
+             }else if(subRoute==='foodtruck'){
+               page = 'foodtruck';
+            }else if(subRoute==='foodtruck-edit'){
+               page = 'foodtruck-edit';
+               returnPage='foodtruck';
             }else if(subRoute==='contact'){
                page = 'contact';
              }else if(subRoute==='review'){

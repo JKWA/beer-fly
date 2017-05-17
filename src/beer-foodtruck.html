@@ -1,0 +1,293 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+<link rel="import" href="../my_components/data/upload-image.html">
+<link rel="import" href="beer-fab.html">
+<link rel="import" href="beer-icons.html">
+
+<dom-module id="beer-foodtruck">
+
+  <template> 
+
+    <style>
+      a{
+        color: var(--app-accent-color);
+        text-decoration: none;
+        }
+
+      .add{
+        color: green;
+        margin: 20px 0 20px 20px;
+      }
+
+      .card{
+        margin: 10px;
+        padding: 20px;
+      }
+
+      .motto {
+        font-size: 2.0em;
+        font-weight: 500;
+        margin: 0 5px 0 20px;
+        color: var(--app-primary-color);
+      }
+
+      .description {
+        font-size: 1.2em;
+        font-weight: 300;
+        margin: 10px 5px 0 20px;
+      }
+
+     
+
+      .menu{
+         @apply(--layout-vertical);
+      }
+
+      .category-title{
+        font-size: 2em;
+        font-weight: 200;
+        line-height: 70px;
+        color: var(--app-accent-color);
+      }
+
+      .category-description{
+        font-size: 1em;
+        font-weight: 300;
+        text-align: center;
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+
+      .menu-category{
+         @apply(--layout-horizontal);
+         @apply(--layout-center-justified);
+      }
+
+      .menu-title{
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        color: var(--app-primary-color);
+        font-size: 1.2em;
+        font-weight: 400;
+        line-height: 40px;
+      }
+
+      .menu-description{
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        font-size: .9em;
+        font-weight: 300;
+        color: var(--app-secondary-color);
+        text-align: center;
+      }
+
+      .menu-item{
+        margin: 20px 0
+      }
+
+      .menu-item > div{
+        margin: 5px 0
+      }
+
+      .price-wrapper{
+         @apply(--layout-horizontal);
+         @apply(--layout-around-justified);
+         @apply(--layout-wrap);
+         color: var(--app-primary-color);
+         font-size: 1em;
+         font-weight: 300;
+      }
+
+
+    </style>
+
+    <firebase-auth  
+        app-name="beer" 
+        id="auth"
+        user="{{user}}">
+    </firebase-auth>
+
+    <iron-image 
+        style="width:100%; height:300px; background-color: #F8F8F8;"
+        sizing="cover" 
+        preload 
+        placeholder="[[placeholder]]"
+        fade
+        src="[[photoUrl]]">
+    </iron-image>
+
+    <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
+
+    <div class="motto">
+        [[category.motto]]
+    </div>
+
+    <div class="description">
+        [[category.description]]
+    </div>
+
+     <template is="dom-if" if="[[owner]]">
+        <paper-material class="card"  elevation="1">
+         <iron-label>
+            <a aria-label$="TEST" href$="/[[nameUrl]]/foodtruck-edit?orgid=[[orgId]]">
+              <paper-icon-button icon="beer-icons:add"></paper-icon-button>
+              Edit food trucks</a>
+          </iron-label>
+        </paper-material>
+      </template>
+
+      
+
+
+
+
+    <paper-dialog 
+        id="editDialog"
+        with-backdrop
+        style="width: 90vw;"
+        entry-animation="slide-from-right-animation"
+        exit-animation="slide-right-animation">
+            
+      <div class=""> 
+          <h3>[[category.title]]</h3>
+      </div>
+      <template is="dom-if" if="[[owner]]">
+      <paper-dialog-scrollable >
+       
+      </paper-dialog-scrollable>
+      </template>
+
+      <div class="">
+        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+      </div>
+    </paper-dialog>
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-foodtruck',
+      properties: {
+
+        photoUrl: {
+          type: String,
+          computed: '_computePhotoUrl(category, place)'
+        },
+
+        category:{
+          type: Object
+        },
+
+
+        nameUrl:{
+          type: String
+        },
+
+        placeholder:{
+          type: String
+        },
+
+        orgId:{
+          type:String
+        },
+
+        organization:{
+          type: Object
+        },
+
+        owner:{
+          type: Boolean
+        },
+
+        user:{
+          type: Object
+        }
+      },
+
+    
+      
+     _edit: function(){
+        'use strict';
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.editDialog);
+        this.$.editDialog.open()
+      },
+
+      _toArray: function (obj) {
+        var returnArray = [];
+        if(obj){
+          var key = Object.keys(obj);
+          
+          for (var i=0; i<key.length; i++){
+            // obj[key[i]].$key = key[i];
+            returnArray.push(obj[key[i]]);
+          }
+        }
+        return returnArray;
+      },
+
+     
+
+      _addBreaks: function(str){
+        'use strict';
+        if(str){
+          return str.split('\n');
+        }else{
+          return [];
+        }
+      },
+
+      _computePhotoUrl: function (category, place) {
+         try{
+          if(category.image){
+            if(category.image.banner){
+              if(category.image.banner.url){
+                return category.image.banner.url;
+              }
+            }
+          }
+          var photoMeta = {};
+          var photos = place.photos
+          console.log('photos', photos);
+          var categoryIndex = 2
+          if(photos.length < categoryIndex){
+            categoryIndex = photos.length
+          }
+          photoMeta.maxWidth = place.photos[categoryIndex].width;
+          photoMeta.maxHeight = place.photos[categoryIndex].height;
+
+          return place.photos[categoryIndex].getUrl(photoMeta);
+         
+       }catch (error){
+
+       }
+      },
+
+     
+
+      _test: function (obj){
+        console.log(obj);
+      }
+
+    
+
+    });
+
+  </script>
+
+</dom-module>

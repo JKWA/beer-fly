@@ -1,0 +1,405 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<!--<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">-->
+<!--<link rel="import" href="../bower_components/iron-label/iron-label.html">-->
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<!--<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">-->
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+<!--<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">-->
+
+<link rel="import" href="beer-icons.html">
+
+<!--<link rel="import" href="beer-location.html">-->
+<link rel="import" href="beer-foodtruck-calendar.html">
+
+
+<dom-module id="beer-foodtruck-edit">
+
+  <template>
+
+    <style>
+
+     a{
+      color: var(--app-primary-color);
+      text-decoration: none;
+    }
+
+    .card{
+      padding: 10px;
+      margin: 10px;
+    }
+
+   
+    .search{
+      max-width: 300px;
+    }
+
+    .search-wrapper{
+      max-width: 500px;
+    }
+
+     .search-name{
+      color: var(--app-primary-color);
+      font-size: 1.5em;
+      font-weight: 400;
+    }
+
+     .search-address{
+        color: var(--app-secondary-color);
+        font-size: 1em;
+        font-weight: 400;
+      }
+
+      .clear{
+        color:red;
+      }
+
+      .pub-wrapper{
+         @apply(--layout-vertical); 
+      }
+
+      .calendar-wrapper{
+         @apply(--layout-horizontal);
+         @apply(--layout-justified);
+        
+      }
+
+      .calendar-wrapper > div {
+        width: 50%;
+        /*height: 100%;*/
+      }
+
+      .pub-wrapper > div{
+        padding: 7px 0 0 0
+      }
+
+      .truck-name {
+        font-size: 1.2em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+      .truck-vicinity{
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+      .truck-distance{
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+    </style>
+
+    <firebase-auth  
+        app-name="beer" 
+        id="auth"
+        user="{{user}}">
+    </firebase-auth>
+
+    <firebase-query
+        app-name="beer"
+        id="truck"
+        path="organization/[[orgId]]/foodTruck"
+        data="{{foodTrucks}}">
+    </firebase-query>
+
+    <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
+
+    <paper-material class="card" elevation="0">
+    
+      <paper-input label="Search for Food Truck" value="{{queryString}}">
+        <iron-icon icon="beer-icons:search" prefix></iron-icon>
+          <paper-icon-button class="clear" suffix on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
+      </paper-input>
+
+      <!--<iron-label class="tap-status-wrapper">
+            <toggle-icon
+                  animation="flip-vertical" 
+                  icon="beer-icons:expand-more"
+                  checked="{{toggleSearchType}}"
+                  noink>
+            </toggle-icon>
+            <span class="tap-status-shown">[[searchMessage]]</span>
+        </iron-label>-->
+
+      <!--<iron-collapse id="collapse" opened="[[toggleSearchType]]" no-animation>
+        
+          <paper-listbox
+              attr-for-selected="searchtype"
+              selected-class="search-list" 
+              class="search-list"
+              selected="{{searchType}}"
+              on-click="_close">
+          
+            <paper-item searchtype="BREWERY">Brewery</paper-item>
+            <paper-item searchtype="CIDERY">Cidery</paper-item>
+            <paper-item searchtype="FOOD_TRUCK">Food Truck</paper-item>
+            
+          </paper-listbox>
+      </iron-collapse>-->
+            
+    </paper-material>
+
+
+       <template id="repeater" is="dom-repeat" 
+          items="[[data]]" as="truck" 
+          initial-count="20"  sort="_sort" 
+          filter="_filter"
+          observe="sort distance">    
+            <paper-material class="pub-wrapper card" elevation="1">
+              <div class="truck-name">[[truck.name]]</div>
+              <div class="truck-vicinity">[[truck.vicinity]]</div>
+              <div class="truck-distance">[[_computeDisplayDistance(truck.distance)]] miles from you.</div>
+              <div>
+                <iron-label>
+                <paper-icon-button truck="[[truck]]" icon="beer-icons:add" on-tap="_addTruck"></paper-icon-button>
+                <span>Add truck</span>
+                </iron-label>
+                
+              </div>
+            </paper-material>
+      </template>
+
+      <template is="dom-repeat" items="{{foodTrucks}}" as="foodTruck">
+         <paper-material class="card" elevation="1">
+          <beer-foodtruck-calendar
+            org-id="[[orgId]]"
+            truck="[[foodTruck]]"
+            truck-id="[[foodTruck.$key]]">
+          </beer-foodtruck-calendar>
+         </paper-material>
+
+      </template>
+
+    
+ 
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-foodtruck-edit',
+
+      properties: {
+
+        allTruck:{
+          type: Object
+        },
+
+       data:{
+         type: Array
+       },
+
+       foodTrucks: {
+         type: Array
+       },
+
+       latitude: {
+         computed: '_computeLatitude(organization)'
+       },
+
+       longitude: {
+         computed: '_computeLongitude(organization)'
+       },
+
+       organization:{
+         type: Object
+       },
+
+       orgId:{
+         type: String
+       },
+
+
+       queryString:{
+         type: String
+       },
+      
+       toggle:{
+         type: Boolean
+       },
+
+       toggleSearchType:{
+         type: Boolean
+       },
+
+       user:{
+         type: Object
+       }
+      },
+
+
+      observers:['_getGoogleSearchData(queryString)'],
+
+
+      _getGoogleSearchData: function(queryString){
+   
+        if(queryString.length >=4){
+
+          this.data = [];
+          this.allTruck = {};
+
+          var that = this;
+          var request = {};
+          
+          request.query = queryString+' Food Truck';
+
+          if(this.latitude){
+            if (this.longitude){
+              request.location = {};
+              request.location.lat = this.latitude;
+              request.location.lng = this.longitude;
+              request.radius = 50000;
+            }
+          }
+ 
+          console.log('request', request);
+          
+          var places = new google.maps.places.PlacesService(this.$.map);
+          places.textSearch(request, function (result){
+        
+            var returnDataArray = [];
+            var returnDataObject = {};
+            if(result){
+              that.toggle = true;
+          
+              for (var i=0; i<result.length; i++){
+       
+                if(result[i].formatted_address){
+                  result[i].vicinity = result[i].formatted_address;
+                }
+                var resultLocation = result[i].geometry.location;
+                if(that.latitude){
+                  if(that.longitude){
+                    result[i].distance = that._distance (that.latitude, that.longitude, resultLocation.lat(), resultLocation.lng())
+                  }
+                }
+                console.log(result[i]);
+                if(!that.allTruck[result[i].place_id]){
+                  that.push('data', result[i]);
+                  that.allTruck[result[i].place_id] = true;
+                }
+              }  
+                
+            }
+          })
+        }   
+      // }
+   },
+
+   _addTruck(event){
+ 
+     var target = event.currentTarget;
+     var truck = target.truck;
+     var elements = ['place_id', 'name']
+     var obj = {};
+
+     for (var i=0; i<elements.length; i++){
+       var element = elements[i];
+       if(truck[element]){
+         obj[element] = truck[element]
+       }
+     }
+    // console.log(obj);
+    if(this.orgId){
+      if(truck.place_id){
+        firebase.database(this.$.auth.app).ref('organization')
+          .child(this.orgId).child('foodTruck').child(truck.place_id)
+          .update(obj)
+          .then(function(){
+            console.log('FOOD_TRUCK_ADDED')
+          })
+          .catch(function(error){
+            console.log('FOOD_TRUCK_ADDED_ERROR', error)
+          })
+        }
+      }
+   },
+
+
+      _distance: function (myLat, myLng, pubLat, pubLng){
+          var R = 3959; 
+          var dLat = this.deg2rad(pubLat-myLat);  
+          var dLon = this.deg2rad(pubLng-myLng); 
+          var a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(myLat)) * Math.cos(this.deg2rad(pubLat)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+
+          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+          var d = R * c; 
+          return d
+       },
+
+       deg2rad: function (deg) {
+              return deg * (Math.PI/180)
+       },
+
+     _computeDisplayDistance: function (distance){
+          return Math.round(distance*10)/10
+        },
+
+      _computeNameForUrl: function (name) {
+        'use strict';
+        if (name) {
+          name = name.replace(/\s/g, '-')
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'truck-name-missing'
+        }
+      },
+
+      _filter: function (truck){
+        if(truck.distance > 100){
+          return false;
+        }else{
+          return true;
+        }
+      },
+
+      _sort: function (a,b){
+        return parseFloat(a.distance) - parseFloat(b.distance) ;
+      },
+
+      clearInput: function (){
+        this.queryString = ''
+        this.data = [];
+      },
+
+      _close: function (){
+        this.toggleSearchType = false;
+      },
+
+
+      _computeLatitude: function (organization){
+        return organization.latitude;
+      },
+
+      _computeLongitude: function (organization){
+        return organization.longitude;
+      },
+
+
+      _test: function(obj){
+          console.log("TEST",obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

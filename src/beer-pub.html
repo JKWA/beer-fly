@@ -28,6 +28,8 @@
 <link rel="import" href="beer-beer-card-mini.html">
 <link rel="import" href="beer-pub-favorite.html">
 <link rel="import" href="beer-pub-rating.html">
+<link rel="import" href="beer-foodtruck-schedule.html">
+
 
 <link rel="import" href="beer-button.html">
 
@@ -235,7 +237,7 @@
 
                   <template is="dom-if" if="[[_isMenu(item.$key)]]"> 
            
-                    <template is="dom-repeat" items="[[_getArray(item.menu)]]" sort="_sortOrder" as="menu">
+                    <template is="dom-repeat" items="[[_getArray(organization.menu)]]" sort="_sortOrder" as="menu">
                       <!--<a href$="/[[nameUrl]]/[[item.name]]?orgid=[[orgId]]#[[menu.id]]">-->
                       <beer-menu-card-mini 
                          category-name="[[menu.name]]"
@@ -244,10 +246,14 @@
                       </beer-menu-card-mini>
                       <!--</a>-->
                     </template>
-                    <!--<beer-menu-card 
-                        menu-category="[[item.menu]]">
-                    </beer-menu-card>
-                    </div>-->
+                 
+                  </template>
+
+                  <template is="dom-if" if="[[_isTruck(item.$key)]]"> 
+
+                    <beer-foodtruck-schedule
+                      organization=[[organization]]>
+                    </beer-foodtruck-schedule>
                   </template>
 
                   <template is="dom-if" if="[[_isContact(item.$key)]]"> 
@@ -479,6 +485,15 @@
           return false;
         }
       },
+
+      _isTruck: function (type){
+        if(type === 'FOOD_TRUCK'){
+          return true;
+        }else{
+          return false;
+        }
+      },
+
       _isContact: function (type){
         if(type === 'CONTACT'){
           return true;
