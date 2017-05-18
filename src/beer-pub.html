@@ -238,13 +238,11 @@
                   <template is="dom-if" if="[[_isMenu(item.$key)]]"> 
            
                     <template is="dom-repeat" items="[[_getArray(organization.menu)]]" sort="_sortOrder" as="menu">
-                      <!--<a href$="/[[nameUrl]]/[[item.name]]?orgid=[[orgId]]#[[menu.id]]">-->
                       <beer-menu-card-mini 
                          category-name="[[menu.name]]"
                          menu-items="[[menu.item]]"
                          anchor-href="/[[nameUrl]]/[[item.name]]?orgid=[[orgId]]">
                       </beer-menu-card-mini>
-                      <!--</a>-->
                     </template>
                  
                   </template>

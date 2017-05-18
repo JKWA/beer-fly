@@ -15,6 +15,7 @@
 <link rel="import" href="../my_components/data/upload-image.html">
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-foodtruck-card.html">
 
 <dom-module id="beer-foodtruck">
 
@@ -149,6 +150,23 @@
         </paper-material>
       </template>
 
+      <template is="dom-repeat" 
+                items="[[_toArray(organization.foodTruck)]]" 
+                as="truck"
+                sort="_sortByName">
+        
+        <beer-foodtruck-card
+            truck-name="[[truck.name]]"
+            place-id="[[truck.$key]]"
+            period="[[truck.period]]">
+        </beer-foodtruck-card>
+
+        
+
+      </template>
+
+
+
       
 
 
@@ -219,10 +237,16 @@
         }
       },
 
-    
+      // observer:['_watchFoodTrucks(organization.foodTruck)'],
+
+    _watchFoodTrucks: function (truck){
+
+        if(typeof truck === 'object'){
+
+        }
+    },
       
      _edit: function(){
-        'use strict';
         var body = document.querySelector('body');
         Polymer.dom(body).appendChild(this.$.editDialog);
         this.$.editDialog.open()
@@ -234,7 +258,7 @@
           var key = Object.keys(obj);
           
           for (var i=0; i<key.length; i++){
-            // obj[key[i]].$key = key[i];
+            obj[key[i]].$key = key[i];
             returnArray.push(obj[key[i]]);
           }
         }
@@ -276,6 +300,15 @@
        }catch (error){
 
        }
+      },
+
+      _sortByName: function(a,b){
+        'use strict';
+        if (a.name < b.name)
+          return -1;
+        if (a.name > b.name)
+          return 1;
+        return 0;
       },
 
      

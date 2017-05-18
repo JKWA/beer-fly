@@ -1,0 +1,307 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+<link rel="import" href="../my_components/data/upload-image.html">
+<link rel="import" href="beer-fab.html">
+<link rel="import" href="beer-icons.html">
+
+<dom-module id="beer-foodtruck-card">
+
+  <template> 
+
+    <style>
+      a{
+        color: var(--app-accent-color);
+        text-decoration: none;
+        }
+
+      .add{
+        color: green;
+        margin: 20px 0 20px 20px;
+      }
+
+      .card{
+        margin: 10px;
+        padding: 20px;
+      }
+
+      .motto {
+        font-size: 2.0em;
+        font-weight: 500;
+        margin: 0 5px 0 20px;
+        color: var(--app-primary-color);
+      }
+
+      .description {
+        font-size: 1.2em;
+        font-weight: 300;
+        margin: 10px 5px 0 20px;
+      }
+
+     
+
+      .menu{
+         @apply(--layout-vertical);
+      }
+
+      .truck-name{
+        font-size: 2em;
+        font-weight: 200;
+        line-height: 70px;
+        color: var(--app-accent-color);
+      }
+
+      .category-title{
+        font-size: 1.5em;
+        font-weight: 300;
+        text-align: center;
+        color: var(--app-primary-color);
+      }
+
+      .category-description{
+        font-size: 1em;
+        font-weight: 300;
+        text-align: center;
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+
+      .menu-category{
+         @apply(--layout-horizontal);
+         @apply(--layout-center-justified);
+      }
+
+      .menu-title{
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        color: var(--app-primary-color);
+        font-size: 1.2em;
+        font-weight: 400;
+      }
+
+      .menu-description{
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        font-size: .9em;
+        font-weight: 300;
+        color: var(--app-secondary-color);
+        text-align: center;
+      }
+
+      .menu-item{
+        margin: 10px 0
+      }
+
+      .menu-item > div{
+        margin: 5px 0
+      }
+
+      .price-wrapper{
+         @apply(--layout-horizontal);
+         @apply(--layout-around-justified);
+         @apply(--layout-wrap);
+         color: var(--app-primary-color);
+         font-size: 1em;
+         font-weight: 300;
+      }
+
+      .schedule-wrapper{
+        @apply(--layout-horizontal);
+        margin: 5px 0 5px 0;
+      }
+
+
+
+    </style>
+
+    <firebase-auth  
+        app-name="beer" 
+        id="auth"
+        user="{{user}}">
+    </firebase-auth>
+
+    <firebase-document
+        app-name="beer"
+        path="organization/[[placeId]]/menu"
+        data="{{menu}}">
+    </firebase-document>
+    
+    <paper-material class="card"  elevation="1">
+
+      <template is="dom-repeat" items="[[scheduleData]]" as="schedule" sort="_sortDay">
+        <div class="schedule-wrapper">
+          <div><b>[[schedule.label]]:</b>&nbsp</div>
+          <div>[[_formatTimeStamp(schedule.OPEN)]]&nbsp-&nbsp[[_formatTimeStamp(schedule.CLOSE)]]</div>
+        </div>
+      </template>
+
+      <div class="truck-name">[[truckName]]</div>
+
+
+      <template is="dom-repeat" items="[[_toArray(menu)]]" as="category">
+        <div class="menu">
+          <div class="category-title">[[category.name]]</div>
+          <div class="category-description">[[category.description]]</div>
+
+          <template is="dom-repeat" items="[[_toArray(category.item)]]" as="menuItem">
+            <div class="menu-item">
+             <div class="menu-title">[[menuItem.name]]</div>
+             <div class="menu-description">[[menuItem.description]]</div>
+
+             <div class="price-wrapper">
+                <template is="dom-repeat" items="[[_toArray(menuItem.price)]]" as="price">
+                  <div class="price-wrapper">
+                    <div hidden="[[!price.size]]" class="price-size">[[price.size]]:&nbsp</div> 
+                    <div class="price-cost">$[[price.cost]]</div> 
+                  </div>
+                </template>
+              </div>
+
+            </div>
+          </template>
+
+        </div>
+
+
+      </template>
+
+    </paper-material>
+
+
+    
+
+      
+
+
+
+      
+
+
+
+
+    
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-foodtruck-card',
+      properties: {
+
+       placeId:{
+         type: Object
+       },
+
+       menu:{
+         type:Object
+       },
+
+       period:{
+         type:Object
+       },
+
+       scheduleData:{
+         type:Object
+       },
+
+       truckName:{
+         type:String
+       },
+
+        user:{
+          type: Object
+        }
+      },
+
+      observers: ['_observeScheduleChange(period)'],
+
+      _observeScheduleChange: function (periods){
+        var data = [];
+        if(typeof periods === 'object'){
+          var key = Object.keys(periods);
+          for (var i=0; i<key.length; i++){
+            
+            var period = periods[key[i]];
+            period['$key'] = key[i];
+            data.push(period);
+          }
+        }
+        
+        this.scheduleData = data;
+       
+      },
+
+       _formatTimeStamp: function (time){
+        var timeString = ''
+        if(time){
+          var hour = time.substring(0, 2);
+          var minute = time.substring(2, 4);
+          var amPm = 'AM';
+
+          hour = parseInt(hour);
+          
+          if(hour === 0){     
+            hour = 12;
+            amPm = "AM"
+          }else if(hour > 12){
+            hour = hour-12;
+            amPm = 'PM';
+          }
+
+          timeString += hour.toString()+':';
+          timeString += minute.toString()+' ';
+          timeString += amPm;
+
+          return timeString
+        }
+      },
+
+      _sortDay: function(a,b){
+        if (a.day < b.day)
+          return -1;
+        if (a.day > b.day)
+          return 1;
+        return 0;
+      },
+
+      _toArray: function (obj) {
+        var returnArray = [];
+        if(obj){
+          var key = Object.keys(obj);
+          
+          for (var i=0; i<key.length; i++){
+            obj[key[i]].$key = key[i];
+            returnArray.push(obj[key[i]]);
+          }
+        }
+        return returnArray;
+      },
+
+      
+   
+     
+      _test: function (obj){
+        console.log(obj);
+      }
+
+    
+
+    });
+
+  </script>
+
+</dom-module>

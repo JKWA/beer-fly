@@ -2,28 +2,17 @@
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
-<!--<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">-->
-<!--<link rel="import" href="../bower_components/iron-label/iron-label.html">-->
-<!--<link rel="import" href="../bower_components/google-apis/google-maps-api.html">-->
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<!--<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">-->
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
-
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<!--<link rel="import" href="../bower_components/polymerfire/firebase-query.html">-->
-
 <link rel="import" href="../bower_components/paper-time-input/paper-time-input.html">
 
 
 <link rel="import" href="beer-icons.html">
-
-<!--<link rel="import" href="beer-location.html">-->
-
 
 <dom-module id="beer-foodtruck-schedule">
 
@@ -63,22 +52,6 @@
        
       }
 
-      /*.description {
-        font-size: 1em;
-        font-weight: 300;
-        color: var(--app-primary-color);
-      }
-
-      .truck-vicinity{
-        font-size: 1em;
-        font-weight: 300;
-        color: var(--app-primary-color);
-      }
-      .truck-distance{
-        font-size: 1em;
-        font-weight: 400;
-        color: var(--app-primary-color);
-      }*/
 
     </style>
 
@@ -89,7 +62,7 @@
           
           <template is="dom-repeat" items="[[day.trucks]]" as="truck" sort="_sortOpenTime">
             
-            <a href="/[[_computeNameForUrl(truck.name)]]/main?orgid=[[truck.id]]">
+            <a href="/[[_computeNameForUrl(truck.name)]]/menu?orgid=[[truck.id]]">
               <paper-material elevation="0">
                 <div class="name">[[truck.name]]</div>
                 <div class="date">[[_formatTimeStamp(truck.open)]]-[[_formatTimeStamp(truck.close)]]</div>
@@ -144,24 +117,27 @@
           var key = Object.keys(truckObj);
           for (var i=0; i<key.length; i++){
             var truck = truckObj[key[i]];
-           
-            var periods = truck.period;
-            if(typeof periods ==='object'){
-              var periodKey = Object.keys(periods);
-              for (var j=0; j<periodKey.length; j++){
-                var period = periods[periodKey[j]];
-                if(!obj[period.day]){
-                  obj[period.day] = this._createNewDay(period, truck.name, key[i])
-                }else{
-                  var truckObj = {}
-                
-                  truck.open = period.OPEN;
-                  truck.close = period.CLOSE;
-                  truckObj.name = truck.name;
-                  truckObj.id = key[i]
-                  obj[period.day].trucks.push(truckObj)
+           if(truck){
+            if(truck.period){
+                var periods = truck.period;
+                if(typeof periods ==='object'){
+                  var periodKey = Object.keys(periods);
+                  for (var j=0; j<periodKey.length; j++){
+                    var period = periods[periodKey[j]];
+                    if(!obj[period.day]){
+                      obj[period.day] = this._createNewDay(period, truck.name, key[i])
+                    }else{
+                      var truckObj = {}
+                    
+                      truckObj.open = period.OPEN;
+                      truckObj.close = period.CLOSE;
+                      truckObj.name = truck.name;
+                      truckObj.id = key[i]
+                      obj[period.day].trucks.push(truckObj)
+                    }
+                    
+                  }
                 }
-                
               }
             }
           }
@@ -181,6 +157,7 @@
         truck.id = id;
         truck.open = period.OPEN;
         truck.close = period.CLOSE;
+        console.log(truck)
         obj.trucks.push(truck);
         return obj;
       },
@@ -205,8 +182,11 @@
           var amPm = 'AM';
 
           hour = parseInt(hour);
-
-          if(hour > 12){
+          
+          if(hour === 0){     
+            hour = 12;
+            amPm = "AM"
+          }else if(hour > 12){
             hour = hour-12;
             amPm = 'PM';
           }

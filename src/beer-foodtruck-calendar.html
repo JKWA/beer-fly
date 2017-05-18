@@ -4,25 +4,18 @@
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
-<!--<link rel="import" href="../bower_components/google-apis/google-maps-api.html">-->
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<!--<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">-->
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
-
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<!--<link rel="import" href="../bower_components/polymerfire/firebase-query.html">-->
 <link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 <link rel="import" href="../bower_components/paper-time-input/paper-time-input.html">
 
 
 <link rel="import" href="beer-icons.html">
-
-<!--<link rel="import" href="beer-location.html">-->
 
 
 <dom-module id="beer-foodtruck-calendar">
@@ -289,7 +282,10 @@
 
           hour = parseInt(hour);
 
-          if(hour > 12){
+          if(hour === 0){
+            this.openHour = 12;
+            this.openAmPm = 'AM';
+          }else if(hour > 12){
             this.openHour = hour-12;
             this.openAmPm = 'PM';
           }else{
@@ -314,8 +310,10 @@
           this.closeMinute = minute
 
           hour = parseInt(hour);
-
-          if(hour > 12){
+          if(hour === 0){
+            this.closeHour = 12;
+            this.closeAmPm = 'AM';
+          }else if(hour > 12){
             this.closeHour = hour-12;
             this.closeAmPm = 'PM';
           }else{
@@ -341,7 +339,7 @@
                     ['WEDNESDAY',"Wednesday",3],
                     ['THURSDAY',"Thursday",4],
                     ['FRIDAY',"Friday",5],
-                    ['SATURDAY',"Sunday",6]];
+                    ['SATURDAY',"Saturday",6]];
         var dayArray = [];
         for (var i=0; i<days.length; i++){
           var obj = {};
@@ -424,7 +422,13 @@
           minute = parseInt(minute);
 
           if(amPm == "PM"){
-            hour = hour+12;
+            if(hour < 12){
+              hour = hour+12;
+            }
+          }else{
+            if(hour === 12){
+              hour = 0;
+            }
           }
 
           if(minute < 10){
@@ -446,8 +450,11 @@
           var amPm = 'AM';
 
           hour = parseInt(hour);
-
-          if(hour > 12){
+          
+          if(hour === 0){     
+            hour = 12;
+            amPm = "AM"
+          }else if(hour > 12){
             hour = hour-12;
             amPm = 'PM';
           }
