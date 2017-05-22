@@ -1,7 +1,7 @@
 
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
@@ -32,14 +32,14 @@
       }
 
       .day {
-        font-size: 1.5em;
-        font-weight: 300;
-        color: var(--app-primary-color);
+        font-size: 1em;
+        font-weight: 500;
+        color: var(--app-accent-color);
       }
 
       .name{
-        font-size: 1.2em;
-        font-weight: 400;
+        font-size: 1.5em;
+        font-weight: 300;
         color: var(--app-primary-color);
         margin: 10px 0 0 0;
       }
@@ -49,6 +49,13 @@
         font-size: 1.0em;
         font-weight: 300;
         color: var(--app-primary-color);
+       
+      }
+
+      .seperate {
+        font-size: 2em;
+        font-weight: 500;
+        color: var(--app-accent-color);
        
       }
 
@@ -62,13 +69,21 @@
           
           <template is="dom-repeat" items="[[day.trucks]]" as="truck" sort="_sortOpenTime">
             
-            <a href="/[[_computeNameForUrl(truck.name)]]/menu?orgid=[[truck.id]]">
+            <a href="/[[nameUrl]]/foodtruck?orgid=[[orgId]]&truckId=[[truck.id]]">
               <paper-material elevation="0">
                 <div class="name">[[truck.name]]</div>
                 <div class="date">[[_formatTimeStamp(truck.open)]]-[[_formatTimeStamp(truck.close)]]</div>
               </paper-material>
             </a>
+
+            
+  
+
           </template>
+
+          <div class="seperate">
+              <iron-icon icon="beer-icons:seperate"></iron-icon>
+          </div>
 
 
       </paper-material>
@@ -104,6 +119,14 @@
        organization:{
          type: Object
        },
+
+       orgId:{
+         type:String
+       },
+
+       nameUrl:{
+         type: String
+       }
        
 
       },

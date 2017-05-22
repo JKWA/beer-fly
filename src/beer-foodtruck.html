@@ -149,27 +149,29 @@
           </iron-label>
         </paper-material>
       </template>
-
-      <template is="dom-repeat" 
-                items="[[_toArray(organization.foodTruck)]]" 
-                as="truck"
-                sort="_sortByName">
-        
+      <template is="dom-if" if="[[truckId]]">
         <beer-foodtruck-card
-            truck-name="[[truck.name]]"
-            place-id="[[truck.$key]]"
-            period="[[truck.period]]">
+           truck-name="[[truckName]]"
+            place-id="[[truckId]]"
+            period="[[truckPeriod]]">
         </beer-foodtruck-card>
-
-        
-
       </template>
 
+      <template is="dom-if" if="[[!truckId]]">
+        <template is="dom-repeat" 
+                  items="[[_toArray(organization.foodTruck)]]" 
+                  as="truck"
+                  sort="_sortByName">
+          
+          <beer-foodtruck-card
+              truck-name="[[truck.name]]"
+              place-id="[[truck.$key]]"
+              period="[[truck.period]]">
+          </beer-foodtruck-card>
 
+        </template>
 
-      
-
-
+      </template>
 
 
     <paper-dialog 
@@ -232,6 +234,21 @@
           type: Boolean
         },
 
+        truckId:{
+          type:String
+          
+        },
+
+        truckName:{
+          type:String,
+          computed: '_computeTruckName(organization.foodTruck, truckId)'
+        },
+
+        truckPeriod:{
+          type:Object,
+          computed: '_computeTruckPeriod(organization.foodTruck, truckId)'
+        },
+
         user:{
           type: Object
         }
@@ -263,6 +280,22 @@
           }
         }
         return returnArray;
+      },
+
+      _computeTruckName(truck, truckId){
+        if(truck){
+          if(truckId){
+            return truck[truckId].name;
+          }
+        }
+      },
+
+      _computeTruckPeriod(truck, truckId){
+        if(truck){
+          if(truckId){
+            return truck[truckId].period;
+          }
+        }
       },
 
      

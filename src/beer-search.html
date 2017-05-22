@@ -127,6 +127,7 @@
               on-click="_close">
           
             <paper-item searchtype="BREWERY">Brewery</paper-item>
+            <paper-item searchtype="BEER">Beer</paper-item>
             <paper-item searchtype="CIDERY">Cidery</paper-item>
             <paper-item searchtype="FOOD_TRUCK">Food Truck</paper-item>
             
@@ -306,6 +307,9 @@
         switch (searchString) {
           case 'BREWERY':
             searchMessage = 'Brewery'
+            break;
+          case 'Beer':
+            searchMessage = 'Beer'
             break;
           case 'CIDERY':
             searchMessage = 'Cidery'

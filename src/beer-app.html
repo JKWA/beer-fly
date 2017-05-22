@@ -492,7 +492,7 @@
   
   <beer-menu name="menu" category=[[organization.category.MENU]] organization="[[organization]]" menu-item-id="[[menuItemId]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-menu>
   <beer-menu-edit name="menu-edit" org-id="[[orgId]]" menu-category-id="[[menuCategoryId]]" online="[[online]]" owner="[[owner]]"></beer-menu-edit>
-  <beer-foodtruck name="foodtruck" category=[[organization.category.FOOD_TRUCK]] organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-foodtruck>
+  <beer-foodtruck name="foodtruck" truck-id="[[truckId]]" category=[[organization.category.FOOD_TRUCK]] organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-foodtruck>
   <beer-foodtruck-edit name="foodtruck-edit" org-id="[[orgId]]" organization="[[organization]]" online="[[online]]" owner="[[owner]]"></beer-foodtruck-edit>
 
   <beer-contact name="contact" organization="[[organization]]" place="[[place]]" category=[[organization.category.CONTACT]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-contact>
@@ -744,6 +744,11 @@
           type: Object
         },
 
+        truckId:{
+          type: String,
+          computed: '_computeTruckId(queryParams)',
+        },
+
         verified: {
           type: Boolean,
           value: true
@@ -784,11 +789,11 @@
         // '_watchLoggedIn(statusKnown)',
         '_toastOffline(online)',
         '_setBackArrowInHeader(page)',
-        '_updateUserBaseData(user)',
+        '_updateUserEmailVerified(user)',
         '_updatePageTitle(place.name, page)',
         // '_replaceOfflineOrganizationData(organization, online)',
         // '_cacheOrgData(organization, online)',
-        '_scrollToTop(orgId)',
+        '_scrollToTop(page)',
         // '_setTimeoutForGeo(page)',
         // '_setOrganizationData(orgId, initialLoad, fireOrg)'
       ],
@@ -813,13 +818,13 @@
       //     return allPubs[this.orgId]
       // },
 
-      _watchLoggedIn: function (user){
-        console.log('statusKnown', statusKnown)
-        console.log(this.user);
-        if(!this.user){
+      // _watchLoggedIn: function (user){
+      //   console.log('statusKnown', statusKnown)
+      //   console.log(this.user);
+      //   if(!this.user){
 
-        }
-      },
+      //   }
+      // },
 
      _setOrganizationData: function (orgId, initialLoad, fireOrg){
        console.log('fireOrg2', fireOrg);
@@ -935,54 +940,20 @@
 
       },
  
-      _scrollToTop: function (orgId){
-        console.log('scroll top')
+      _scrollToTop: function (page){
+        console.log('scroll_top');
         Polymer.AppLayout.scroll({ top: 0, behavior: 'silent' });
       },
 
-      // _cacheOrgData: function (organization, online){
-       
-      //   if(online){
-      //     if(Object.keys(organization).length > 0){
-      //       console.log('cached', organization);
-      //       organization.beerfly = true;
-      //       organization.cacheTimestamp = Date.now()+604800000;
-      //       this.localOrganizationData = organization;
-      //     }
-      //   }
-
-      // },
-
-      //  _geoError: function (event){
-      //   console.log('GEO_ERROR', event);
-      
-      //   this.geoError = true;
-      //   this.geoRendered = false;
-        
-      // },
-
-      // _geoResponse: function (event){
-      //   if(event.returnValue){
-      //     clearTimeout(this.timeout);
-      //     this.geoRendered = true;
-      //     this.idle = true;
-      //     this.geoResponse = event;
-      //   }
-      //   console.log('GEO_RESONSE', JSON.stringify(event));
-      // },
-
-      _updateUserBaseData: function (user){
+      _updateUserEmailVerified: function (user){
         
           if(user){
-            
-            // console.log('user', user);
             if(user.emailVerified){
               this.verified = true;
             }else{
               this.verified = false;
             }
           }else{
-            // console.log('notLoggedIn')
             this.verified = true;
           }
       },
@@ -1211,6 +1182,9 @@
               case 'menu':
                 title = name+' Menu';
                 break;
+              case 'foodtruck':
+                title = name+' Trucks';
+                break;
               case 'contact':
                 title = name+' Contact';
                 break;
@@ -1295,19 +1269,7 @@
       _onChangeSection: function (event) {
         var detail = event.detail;
 
-        // Scroll to the top of the page when navigating to a non-list page. For list view,
-        // scroll to the last saved position only if the category has not changed.
         var scrollTop = 0;
-        // if (this.page === 'list' && this.categoryName === detail.category) {
-          // scrollTop = this._listScrollTop;
-        // }
-        // Use `Polymer.AppLayout.scroll` with `behavior: 'silent'` to disable header scroll
-        // effects during the scroll.
-                // Polymer.AppLayout.scroll({ top: 0, behavior: 'silent' });
-
-        // Polymer.AppLayout.scroll({ top: scrollTop, behavior: 'silent' });
-
-        // this.categoryName = detail.category || '';
 
         // Announce the page's title
         if (detail.title) {
@@ -1357,16 +1319,14 @@
         return smallScreen && loadComplete;
       },
 
-      _computePluralizedQuantity: function (quantity) {
-        return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
-      },
 
-      _computePage: function (page) {
 
-        var returnPage = 'home';
+      // _computePage: function (page) {
 
-        var subPage = this.subPageData;
-      },
+      //   var returnPage = 'home';
+
+      //   var subPage = this.subPageData;
+      // },
 
       _computeSubPage: function (subPage) {
         if (subPage) {
@@ -1389,6 +1349,15 @@
         if (queryParams) {
           if (queryParams.beerId) {
             return queryParams.beerId
+          }
+        }
+        return null;
+      },
+
+       _computeTruckId: function (queryParams) {
+        if (queryParams) {
+          if (queryParams.truckId) {
+            return queryParams.truckId
           }
         }
         return null;

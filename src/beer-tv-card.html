@@ -18,7 +18,6 @@
 <dom-module id="beer-tv-card">
   <template>
     <style>
-
     
 
       .card{
@@ -26,7 +25,7 @@
         margin: 5px;
         padding: 10px;
         height: 80px;
-        background-color: white;
+        /*background-color: white;*/
        
       }
 
@@ -36,7 +35,7 @@
         @apply(--layout-justified);
         
         font-weight: 400;
-        color: var(--app-primary-color);
+        /*color: var(--app-primary-color);*/
         height: 50px;
       }
 
@@ -60,22 +59,32 @@
         font-weight: 500;
         white-space:nowrap;
         overflow: hidden;
-        color: var(--app-primary-color);
+        /*color: var(--app-primary-color);*/
       }
 
       .style {
         font-size: 2vw;
         line-height: 1.5em;
         font-weight: 300;
-        color: var(--app-primary-color);
+        /*color: var(--app-primary-color);*/
        
+      }
+
+      .dark{
+        background-color: #263238;
+        color: white
+      }
+
+      .light{
+        background-color: white
+        color: var(--app-primary-color);
       }
 
       .brewery {
         font-size: 2vw;
         line-height: 1.5em;
         font-weight: 300;
-        color: var(--app-primary-color);
+        /*color: var(--app-primary-color);*/
       }
 
   
@@ -86,7 +95,7 @@
         font-size: 2vw;
         line-height: 1.5em;
        
-        color: var(--app-primary-color);
+        /*color: var(--app-primary-color);*/
       }
 
        .location > div{
@@ -99,7 +108,7 @@
         font-size: 2vw;
         line-height: 1.5em;
         font-weight: 400;
-        color: var(--app-primary-color);
+        /*color: var(--app-primary-color);*/
       }
 
 
@@ -113,12 +122,8 @@
       }
 
 
-      @media (min-width: 600px) {
-      
-
-      }
-
     </style>
+
     <firebase-document
         app-name="beer"
         path="beer/[[beerId]]"
@@ -128,7 +133,7 @@
 
 
 
-      <paper-material class='card' elevation="1" animated-shadow="false">
+      <paper-material class='card {{theme}}' elevation="0" animated-shadow="false">
        
         <div>
           <div class="title">
@@ -164,6 +169,16 @@
     Polymer({
 
       is: 'beer-tv-card',
+
+       properties: {
+        beerId:{
+          type:String
+        },
+
+        theme:{
+          type:String
+        }
+       }
       
  
     });

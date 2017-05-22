@@ -250,7 +250,9 @@
                   <template is="dom-if" if="[[_isTruck(item.$key)]]"> 
 
                     <beer-foodtruck-schedule
-                      organization=[[organization]]>
+                      organization=[[organization]]
+                      name-url="[[nameUrl]]"
+                      org-id="[[orgId]]">
                     </beer-foodtruck-schedule>
                   </template>
 
