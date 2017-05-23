@@ -1,13 +1,9 @@
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
-<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
-
 <link rel="import" href="../bower_components/app-layout/app-scroll-effects/effects/waterfall.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
-<link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
-
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 
@@ -68,7 +64,7 @@
       :host {
         display: block;
         position: relative;
-        /*padding-top: 64px;*/
+        padding-top: 130px;
         padding-bottom: 64px;
         min-height: 80vh;
         --app-primary-color: #303030;
@@ -82,10 +78,6 @@
         --paper-tabs-selection-bar-color: var(--app-accent-color);
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         color: var(--app-primary-color);
-      }
-
-      app-drawer-layout:not([narrow]) [drawer-toggle] {
-        display: none;
       }
 
       app-header {
@@ -251,18 +243,14 @@
         margin: 0 auto;
       }
 
-      .main-content{
-        /*margin: 10px 0 200px 0;*/
-      }
-
-      .footer {
-        /*position: absolute;
+      footer {
+        position: absolute;
         bottom: 0;
         left: 0;
-        right: 0;*/
+        right: 0;
         text-align: center;
         width: 100%;
-        margin: 20px 0 0 0;
+        margin-top: 200px;
         line-height: 24px;
       }
 
@@ -272,6 +260,8 @@
         padding: 15px;
         margin:  15px 0 8px 0;
         background-color: var(--app-accent-color);
+        /*color: white;
+        text-transform: uppercase;*/
       }
 
 
@@ -283,7 +273,7 @@
       /* small screen */
       @media (max-width: 767px) {
         :host {
-          /*padding-top: 64px;*/
+          padding-top: 64px;
         }
 
         .menu-btn {
@@ -388,9 +378,57 @@
 <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
 
 
-<app-drawer-layout>
-  <app-drawer opened="[[drawerOpened]]" slot="drawer">     
-    <section>
+<app-header role="navigation" id="header" effects="waterfall" fixed="[[smallScreen]]" condenses="[[!smallScreen]]" reveals="[[!smallScreen]]">
+  <app-toolbar>
+    <div class="left-bar-item">
+      <div id="homeButton">
+        <paper-icon-button class="menu-btn" icon="beer-icons:menu" on-click="_toggleDrawer" alt="Toggle drawer">
+        </paper-icon-button>
+      </div>
+      <div class="left-bar-item" >
+        <div id="backButton" hidden>
+            <a class="menu-btn"  href$="/[[nameUrl]]/[[returnPage]][[orgParam]]" tabindex="-1">
+              <paper-icon-button alt="Back to main page" icon="beer-icons:arrow-back" ></paper-icon-button>
+            </a>
+        </div>
+      </div>
+    </div>
+    <div class="logo" main-title><a aria-label="Go to main page" href$="/[[nameUrl]]/main[[orgParam]]" aria-label$="[[_showOrgName(place.name)]]">[[_showOrgName(place.name)]]</a></div>
+    
+    <!--<div class="home-btn-wrapper" hidden$="[[_hideExtraButtons(smallScreen, page)]]">
+      
+      <a href="/home/near" aria-label="Breweries near me">
+          <iron-icon class="home-btn" icon="beer-icons:gps-fixed"></iron-icon>
+      </a>
+      <a href="/home/account" aria-label="Account page">
+          <iron-icon class="home-btn" icon="beer-icons:account"></iron-icon>
+      </a>
+    </div>-->
+  </app-toolbar>
+
+  <!--<div id="tabContainer" sticky hidden$="[[_shouldRenderDrawer]]">
+    <template is="dom-if" if="[[!_shouldRenderDrawer]]">
+      <beer-tabs selected="[[subPage]]" attr-for-selected="name">
+        <beer-tab name="main">
+          <a aria-label="To main page" href$="/[[nameUrl]]/main[[orgParam]]">Main</a>
+        </beer-tab>
+        <template is="dom-repeat" items="[[categories]]" as="category" sort="_sortCategory">
+      
+          <template is="dom-if" if="[[category.display]]">
+            <beer-tab name="[[category.name]]">
+              <a aria-label="To [[category.name]]" href$="/[[nameUrl]]/[[category.name]][[orgParam]]">[[category.title]]</a>
+            </beer-tab>
+          </template>
+        </template>
+      </beer-tabs>
+    </template>
+  </div>-->
+</app-header>
+
+<!--<template is="dom-if" if="[[_shouldRenderDrawer]]">-->
+  <app-drawer opened="{{drawerOpened}}" tabindex="0">
+    
+    
       <a aria-label="To home page" href="/home/account">
         <div class="login-wrapper">
           <div class="login-box" hidden$="[[!user]]">[[_returnFirstLetter(userData.displayName)]]</div>
@@ -399,15 +437,10 @@
       </a>
     
       <paper-material class="card"  elevation="0">
-        
       <div class="card-title">[[_showOrgName(place.name)]]</div>
-
       <iron-selector role="navigation" selected-class="drawer-list" class="drawer-list" selected="[[categoryName]]" attr-for-selected="name">
-   
-        <template is="dom-if" if="[[!_isHome]]">
-          <div hidden="[[smallScreen]]">
-            <a name="main" aria-label="Breweries near me" href$="/[[nameUrl]]/main[[orgParam]]">Main</a>
-          </div>
+
+        <template is="dom-if" if="[[!_isHome(page)]]">
           <template is="dom-repeat" items="[[categories]]" as="category" sort="_sortCategory">
             <template is="dom-if" if="[[category.display]]">
               <a name="[[category.name]]" aria-label="To [[category.name]]" href$="/[[nameUrl]]/[[category.name]][[orgParam]]">[[category.title]]</a>
@@ -425,124 +458,99 @@
       <div class="extra-links" hidden$="[[user]]" on-tap="_login"><iron-icon class="drawer-icon" icon="beer-icons:account"></iron-icon>Sign in</div>
       <div class="extra-links">Terms of use</div>
     </paper-material>
-    </section>
   </app-drawer>
+<!--</template>-->
 
 
-  <app-header-layout>
-    <app-header fixed slot="header">
-      <app-toolbar>
-        <div class="left-bar-item">
-          <div id="homeButton">
-            <paper-icon-button class="menu-btn" icon="beer-icons:menu" drawer-toggle alt="Toggle drawer">
-            </paper-icon-button>
-          </div>
-          <div class="left-bar-item" >
-            <div id="backButton" hidden>
-                <a class="menu-btn"  href$="/[[nameUrl]]/[[returnPage]][[orgParam]]" tabindex="-1">
-                  <paper-icon-button alt="Back to main page" icon="beer-icons:arrow-back" ></paper-icon-button>
-                </a>
-            </div>
-          </div>
-        </div>
-        <div class="logo" main-title><a aria-label="Go to main page" href$="/[[nameUrl]]/main[[orgParam]]" aria-label$="[[_showOrgName(place.name)]]">[[_showOrgName(place.name)]]</a></div>
-      
-      </app-toolbar>
-      </app-header>
 
-      <div class="main-content">
-        <div>
-        <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
-          <beer-account name="account" organization="[[organization]]" owner="[[owner]]"></beer-account>
-          <beer-allbreweries name="allbreweries" owner="[[owner]]"></beer-allbreweries>
-          <beer-allbeers name="allbeers" owner="[[owner]]"></beer-allbeers>
-          <beer-pub name="pub" login="{{login}}" organization="{{organization}}" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" owner="[[owner]]" online="[[online]]"></beer-pub>
-          <beer-tap name="tap" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.TAP]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap>
-          <beer-beer name="beer" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-beer>
-          <beer-tv name="tv" organization="[[organization]]" place="[[place]]" org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-tv>
-          <beer-favorite-beer name="favorite-beer" location="[[location]]" offline="[[offline]]"></beer-favorite-beer>
-          <beer-favorite-brewery name="favorite-brewery" offline="[[offline]]"></beer-favorite-brewery>
-          <beer-favorite-pub name="favorite-pub" offline="[[offline]]"></beer-favorite-pub>
+<iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
+  <beer-account name="account" organization="[[organization]]" owner="[[owner]]"></beer-account>
+  <beer-allbreweries name="allbreweries" owner="[[owner]]"></beer-allbreweries>
+  <beer-allbeers name="allbeers" owner="[[owner]]"></beer-allbeers>
+  <beer-pub name="pub" login="{{login}}" organization="{{organization}}" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" owner="[[owner]]" online="[[online]]"></beer-pub>
+  <beer-tap name="tap" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.TAP]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap>
+  <beer-beer name="beer" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-beer>
+  <beer-tv name="tv" organization="[[organization]]" place="[[place]]" org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-tv>
+  <beer-favorite-beer name="favorite-beer" location="[[location]]" offline="[[offline]]"></beer-favorite-beer>
+  <beer-favorite-brewery name="favorite-brewery" offline="[[offline]]"></beer-favorite-brewery>
+  <beer-favorite-pub name="favorite-pub" offline="[[offline]]"></beer-favorite-pub>
 
-          <beer-review name="review" organization="[[organization]]" place="[[place]]" category=[[organization.category.REVIEW]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-review>
-          
-          <beer-menu name="menu" category=[[organization.category.MENU]] organization="[[organization]]" menu-item-id="[[menuItemId]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-menu>
-          <beer-menu-edit name="menu-edit" org-id="[[orgId]]" menu-category-id="[[menuCategoryId]]" online="[[online]]" owner="[[owner]]"></beer-menu-edit>
-          <beer-foodtruck name="foodtruck" truck-id="[[truckId]]" category=[[organization.category.FOOD_TRUCK]] organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-foodtruck>
-          <beer-foodtruck-edit name="foodtruck-edit" org-id="[[orgId]]" organization="[[organization]]" online="[[online]]" owner="[[owner]]"></beer-foodtruck-edit>
-
-          <beer-contact name="contact" organization="[[organization]]" place="[[place]]" category=[[organization.category.CONTACT]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-contact>
-          <beer-event name="event" category=[[organization.category.EVENT]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-event>
-          <beer-store name="store" category=[[organization.category.STORE]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-store>
-          <beer-list name="list" route="[[subroute]]" offline="[[offline]]" place="[[place]]"  owner="[[owner]]"></beer-list>
-          <beer-search name="search" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" geo-error="[[geoError]]"></beer-search>
-          <beer-beer-info name="beer-info" login="{{login}}" location="[[location]]" beer-id="[[beerId]]"></beer-beer-info>
-
-          <beer-home2 name="home" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" all-object="[[allObject]]" all-array="[[allArray]]"></beer-home2>
-          <beer-favorite name="favorite"></beer-favorite>
-          <beer-browse name="browse"></beer-browse>
-          <beer-tap-add name="tap-add" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap-add>
-          <beer-beer-edit name="beer-edit" offline="[[offline]]" place="[[place]]" organization="[[organization]]"org-id="[[orgId]]" beer-id="[[beerId]]" name-url="[[nameUrl]]" owner="[[owner]]" return-name="[[returnName]]" return-org-id="[[returnOrgId]]"></beer-beer-edit>
-          <beer-404-warning name="404"></beer-404-warning>
-        </iron-pages>
-        </div>
-
-        <div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
-
-
-      
-        <paper-dialog 
-              entry-animation="scale-up-animation"
-              exit-animation="fade-out-animation"
-              with-backdrop 
-              id="loginDialog"
-              
-              opened="{{login}}">
-          <paper-dialog-scrollable>
-            <section class="beer-login-dialog">
-
-            <!--lazy loaded-->
-            <beer-login class="beer-login-dialog"></beer-login>
-            </section>
-          </paper-dialog-scrollable>
-            <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
-          
-        </paper-dialog>
-
-
-        <paper-toast class="toast" id="offLineToast" duration="5000">
-          <div> 
-            Offline, read only access  
-            <br>
-          </div>
-        </paper-toast>
-
-        <paper-toast class="toast" id="updatingDataToast" duration="2000">
-          <div> 
-            Updating data 
-            <br>
-          </div>
-        </paper-toast>
-
-        <paper-toast 
-            id="verificationToast" 
-            duration="0" 
-            vertical-offset="100">
-            <div>Verification sent to [[user.email]]</div>
-            <div>Please refresh the app after verifying.</div>
-          </paper-toast>
-      </div>
-          <div class="footer">
-            <div class= "footer-item">
-              <iron-image src="/images/powered_by_google_on_non_white.png"></iron-image>
-            </div>
-          </div>
-      
-
-    </app-header-layout>
-
-  </app-drawer-layout>
+  <beer-review name="review" organization="[[organization]]" place="[[place]]" category=[[organization.category.REVIEW]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-review>
   
+  <beer-menu name="menu" category=[[organization.category.MENU]] organization="[[organization]]" menu-item-id="[[menuItemId]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-menu>
+  <beer-menu-edit name="menu-edit" org-id="[[orgId]]" menu-category-id="[[menuCategoryId]]" online="[[online]]" owner="[[owner]]"></beer-menu-edit>
+  <beer-foodtruck name="foodtruck" truck-id="[[truckId]]" category=[[organization.category.FOOD_TRUCK]] organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-foodtruck>
+  <beer-foodtruck-edit name="foodtruck-edit" org-id="[[orgId]]" organization="[[organization]]" online="[[online]]" owner="[[owner]]"></beer-foodtruck-edit>
+
+  <beer-contact name="contact" organization="[[organization]]" place="[[place]]" category=[[organization.category.CONTACT]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-contact>
+  <beer-event name="event" category=[[organization.category.EVENT]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-event>
+  <beer-store name="store" category=[[organization.category.STORE]] place="[[place]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-store>
+  <beer-list name="list" route="[[subroute]]" offline="[[offline]]" place="[[place]]"  owner="[[owner]]"></beer-list>
+  <beer-search name="search" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" geo-error="[[geoError]]"></beer-search>
+  <beer-beer-info name="beer-info" login="{{login}}" location="[[location]]" beer-id="[[beerId]]"></beer-beer-info>
+
+  <beer-home2 name="home" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" all-object="[[allObject]]" all-array="[[allArray]]"></beer-home2>
+  <beer-favorite name="favorite"></beer-favorite>
+  <beer-browse name="browse"></beer-browse>
+  <beer-tap-add name="tap-add" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap-add>
+  <beer-beer-edit name="beer-edit" offline="[[offline]]" place="[[place]]" organization="[[organization]]"org-id="[[orgId]]" beer-id="[[beerId]]" name-url="[[nameUrl]]" owner="[[owner]]" return-name="[[returnName]]" return-org-id="[[returnOrgId]]"></beer-beer-edit>
+  <beer-404-warning name="404"></beer-404-warning>
+</iron-pages>
+
+
+<div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
+
+
+   
+   <paper-dialog 
+        entry-animation="scale-up-animation"
+        exit-animation="fade-out-animation"
+        with-backdrop 
+        id="loginDialog"
+        
+        opened="{{login}}">
+    <paper-dialog-scrollable>
+      <section class="beer-login-dialog">
+
+      <!--lazy loaded-->
+      <beer-login class="beer-login-dialog"></beer-login>
+      </section>
+    </paper-dialog-scrollable>
+      <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+     
+   </paper-dialog>
+
+
+    <paper-toast class="toast" id="offLineToast" duration="5000">
+      <div> 
+        Offline, read only access  
+        <br>
+      </div>
+    </paper-toast>
+
+    <paper-toast class="toast" id="updatingDataToast" duration="2000">
+      <div> 
+        Updating data 
+        <br>
+      </div>
+    </paper-toast>
+
+     <paper-toast 
+        id="verificationToast" 
+        duration="0" 
+        vertical-offset="100">
+        <div>Verification sent to [[user.email]]</div>
+        <div>Please refresh the app after verifying.</div>
+      </paper-toast>
+
+
+    <footer>
+      <div class= "footer-item">
+       <iron-image src="/images/powered_by_google_on_non_white.png"></iron-image>
+      </div>
+    </footer>
+
+    <!--[[_test(organization)]]-->
 
 </template>
 
@@ -740,12 +748,18 @@
           type: String,
           value: 'main'
         },
+        
+        _shouldShowTabs: {
+          computed: '_computeShouldShowTabs(page, smallScreen)'
+        },
 
-        _isHome:{
-          type: Boolean,
-          value:false
+        _shouldRenderTabs: {
+          computed: '_computeShouldRenderTabs(_shouldShowTabs, loadComplete)'
+        },
+
+        _shouldRenderDrawer: {
+          computed: '_computeShouldRenderDrawer(smallScreen, loadComplete)'
         }
-
       },
        
 
@@ -756,7 +770,6 @@
         '_isOwner(userData.domain, userData.ADMIN, organization.domain)',
         '_toastOffline(online)',
         '_setBackArrowInHeader(page)',
-        '_toggleDrawerOnPageChange(page)',
         '_updateUserEmailVerified(user)',
         '_updatePageTitle(place.name, page)',
         '_scrollToTop(page)',
@@ -882,7 +895,6 @@
         var path = route.path;
         if(!path){
           page ='home';
-          this._isHome=true;
         }else{
           
           pathArray = path.split('/');
@@ -891,11 +903,9 @@
           var thirdRoute = pathArray[3];
           if(!route){
             route = 'home';
-            this._isHome=true;
           }
 
           if(route === 'home'){
-            this._isHome=true;
             if(subRoute === 'main'){
               page = 'home';
             }else if(subRoute==='allbreweries'){
@@ -932,7 +942,6 @@
             
 
           }else{
-            this._isHome=false;
             if(subRoute === 'main'){
               page = 'pub';
               
@@ -1110,12 +1119,8 @@
       },
 
      
-      _toggleDrawer: function () {
-        this.drawerOpened = !this.drawerOpened;
-      },
 
-      _toggleDrawerOnPageChange: function (page){
-        console.log('page_change', page)
+      _toggleDrawer: function () {
         this.drawerOpened = !this.drawerOpened;
       },
 
@@ -1127,7 +1132,19 @@
         }
       },
 
-      
+      // Elements in the app can notify section changes.
+      // Response by a11y announcing the section and syncronizing the category.
+      _onChangeSection: function (event) {
+        var detail = event.detail;
+
+        var scrollTop = 0;
+
+        // Announce the page's title
+        if (detail.title) {
+          document.title = detail.title + ' - BEER';
+          this._announce(detail.title + ', loaded');
+        }
+      },
 
 
       // Elements in the app can notify a change to be a11y announced.
@@ -1158,8 +1175,26 @@
         this.page = '404';
       },
 
+      _computeShouldShowTabs: function (page, smallScreen) {
+        return (page === 'home' || page === 'list' || page === 'detail') && !smallScreen;
+      },
+
+      _computeShouldRenderTabs: function (_shouldShowTabs, loadComplete) {
+        return _shouldShowTabs && loadComplete;
+      },
+
+      _computeShouldRenderDrawer: function (smallScreen, loadComplete) {
+        return smallScreen && loadComplete;
+      },
 
 
+
+      // _computePage: function (page) {
+
+      //   var returnPage = 'home';
+
+      //   var subPage = this.subPageData;
+      // },
 
       _computeSubPage: function (subPage) {
         if (subPage) {
@@ -1338,14 +1373,14 @@
         }
       },
 
-      // _isHome: function (){
+      _isHome: function (page){
         
-      //   if(page === 'home'){
-      //     return true;
-      //   }else{
-      //     return false;
-      //   }
-      // },
+        if(page === 'home'){
+          return true;
+        }else{
+          return false;
+        }
+      },
 
       _hideExtraButtons: function (smallScreen, page){
        

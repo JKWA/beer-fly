@@ -6,6 +6,8 @@
     "src/beer-beer-edit.html",
     "src/beer-home2.html",
     "src/beer-contact.html",
+    "src/beer-foodtrucks.html",
+    "src/beer-foodtrucks-edit.html",
     "src/beer-menu.html",
     "src/beer-pub.html",
     "src/beer-tap.html",
@@ -22,9 +24,16 @@
     "manifest.json",
     "bower_components/webcomponentsjs/webcomponents-lite.min.js"
   ],
+
+  "builds": [{
+    "name": "unbundled",
+    "js": {"minify": true},
+    "css": {"minify": true},
+    "html": {"minify": true},
+    "addServiceWorker": true
+  }],
   
   "lint": {
-    "rules": ["polymer-2"]
+    "rules": ["polymer-2-hybrid"]
   }
-
 }
