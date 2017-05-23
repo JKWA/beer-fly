@@ -1,7 +1,8 @@
 
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+
+<!--<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
@@ -10,10 +11,10 @@
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
-<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
-<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">-->
+<!--<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">-->
 
-<link rel="import" href="beer-icons.html">
+<!--<link rel="import" href="beer-icons.html">-->
 
 
 
@@ -24,7 +25,7 @@
 
     <style>
 
-     a{
+     /*a{
       color: var(--app-primary-color);
       text-decoration: none;
      }
@@ -40,11 +41,6 @@
     paper-material > div{
         margin: 10px
       }
-
-    /*.card{
-      padding: 10px;
-      margin: 10px;
-    }*/
 
     .title-wrapper{
        @apply(--layout-horizontal);
@@ -111,14 +107,14 @@
 
       paper-button{
         color: var(--app-accent-color);
-      }
+      }*/
 
      
 
       
     </style>
 
-        <paper-material class="card" elevation="0">
+        <!--<paper-material class="card" elevation="0">
         <div class="locationAddress">[[location.address]]</div>
         <paper-spinner-lite id="spinner"></paper-spinner-lite>
         <div hidden$="[[!geoError]]">
@@ -158,18 +154,10 @@
             <paper-button on-click="_getGeoFromAddress">SET LOCATION</paper-button>
           </iron-collapse>
               
-      </paper-material>
+      </paper-material>-->
 
 
-      </template>
-      </div>
-    </div>
-    
-        
-          
-    
-
-    </div>
+  
 </template>
   <script>
 
@@ -235,13 +223,10 @@
 
       _observeLocation: function (newLocation, oldLocation){
 
-        // console.log('newLocation', newLocation);
-        // console.log('oldLocation', oldLocation);
         this.$.spinner.active = false;
 
         if(oldLocation){
-          // this.allObject = {};
-          // this.allArray = [];
+       
         }
         
       },
@@ -249,12 +234,6 @@
 
       _resetToLocal: function (){
         this.$.spinner.active = true;
-        // this.$.pubCards.hidden = true;
-        // this.geoFireReady = false;
-        // this.allObject = {};
-        // this.allArray = [];
-        // this.latitude = null;
-        // this.longitude = null;
         this.gpsIcon = 'gps-searching'
         this.toggle = false;
         this.idle = false;
@@ -272,8 +251,6 @@
       },
 
       _getGeoFromAddress: function () {
-        // this.allObject = {};
-        // this.allArray = [];
         this.searchString = this.address;
         this.searchString = '';
         this.address = '';

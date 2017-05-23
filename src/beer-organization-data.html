@@ -13,7 +13,6 @@
         app-name="beer" 
         id="pub"
         path="organization/[[orgId]]"
-       zero-value="[[defaultObject]]"
         data="{{fireOrg}}">
     </firebase-document>
 
@@ -30,11 +29,6 @@
         organization: {
           type: Object,
           notify:true
-        },
-
-        defaultObject:{
-          type: Object,
-          computed: '_getDefaultObject()'
         },
 
         orgId:{
@@ -61,10 +55,10 @@
           this.firebaseLoadedObject = true;
           this.organization = fireOrg;
           if(fireOrg.place_id){
-            fireOrg.cacheTimestamp = Date.now()+604800000;
-            fireOrg.organization = true;
-            window.localStorage.setItem('organization_'+fireOrg.place_id, JSON.stringify(fireOrg))
-            console.log('cached', fireOrg);
+            // fireOrg.cacheTimestamp = Date.now()+604800000;
+            // fireOrg.organization = true;
+            // window.localStorage.setItem('organization_'+fireOrg.place_id, JSON.stringify(fireOrg))
+            // console.log('cached', fireOrg);
           }
         }else{
           console.log('default');

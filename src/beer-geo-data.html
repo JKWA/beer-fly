@@ -1,5 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/geo-query/geo-query.html">
+<!--<link rel="import" href="../bower_components/geo-query/geo-query.html">-->
+<link rel="import" href="../bower_components/geo-query/geofire-import.html">
+
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 
 
@@ -61,10 +63,13 @@
         },
 
         _getLocation: function (allObject, location, page, radius){
+
+
             // console.log('radius', radius)
             if(page === 'home'){
                 
               if(location){
+                  console.log('location', location)
 
                 if(Array.isArray(this.allArray)){
 

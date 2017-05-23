@@ -44,6 +44,7 @@
 
 
 <!--<link rel="import" href="beer-pub.html">-->
+<!--<link rel="import" href="beer-test.html">-->
 
 <link rel="import" href="beer-home2.html">
 <link rel="import" href="beer-icons.html">
@@ -317,18 +318,6 @@
       status-known="{{statusKnown}}">
   </firebase-auth>
 
-  <!--<firebase-document 
-      id="organization"
-      app-name="beer" 
-      path="organization/[[orgId]]" 
-      data="{{fireOrg}}">
-  </firebase-document>-->
-
-  <!--<firebase-document 
-      id="firebaseOrg"
-      app-name="beer"
-      path="organization">
-  </firebase-document>-->
 
   <firebase-document 
       id="userData"
@@ -385,6 +374,7 @@
   </beer-organization-data>
 
 
+
 <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
 
 
@@ -406,9 +396,7 @@
     <div class="logo" main-title><a aria-label="Go to main page" href$="/[[nameUrl]]/main[[orgParam]]" aria-label$="[[_showOrgName(place.name)]]">[[_showOrgName(place.name)]]</a></div>
     
     <div class="home-btn-wrapper" hidden$="[[_hideExtraButtons(smallScreen, page)]]">
-      <!--<a href="/home/search" aria-label="Search for breweries">
-          <iron-icon class="home-btn" icon="beer-icons:search"></iron-icon>
-      </a>-->
+      
       <a href="/home/near" aria-label="Breweries near me">
           <iron-icon class="home-btn" icon="beer-icons:gps-fixed"></iron-icon>
       </a>
@@ -463,9 +451,8 @@
         <a name="near" aria-label="Breweries near me" href="/home"><iron-icon class="drawer-icon" icon="beer-icons:gps-fixed"></iron-icon>Near me</a>
         <a name="search" aria-label="Search for breweries" href$="/[[nameUrl]]/search[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:search"></iron-icon>Search</a>
         <a name="favorite" aria-label="My favorites" href$="/[[nameUrl]]/favorite[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:favorite"></iron-icon>Favorites</a>
-        <!--<a name="browse" aria-label="Browse beers" href$="/[[nameUrl]]/browse[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:near-me"></iron-icon>Browse</a>-->
-
       </iron-selector>
+
       <div class="extra-links" hidden$="[[verified]]" on-tap="_verifyAccount"><iron-icon class="drawer-icon" icon="beer-icons:account"></iron-icon>Verify email</div>
       <div class="extra-links" hidden$="[[!user]]" on-tap="_logout"><iron-icon class="drawer-icon" icon="beer-icons:account"></iron-icon>Sign out</div>
       <div class="extra-links" hidden$="[[user]]" on-tap="_login"><iron-icon class="drawer-icon" icon="beer-icons:account"></iron-icon>Sign in</div>
@@ -503,17 +490,10 @@
   <beer-beer-info name="beer-info" login="{{login}}" location="[[location]]" beer-id="[[beerId]]"></beer-beer-info>
 
   <beer-home2 name="home" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" all-object="[[allObject]]" all-array="[[allArray]]"></beer-home2>
-
-  <!--<beer-home name="home" all-object="[[allObject]]" all-array="[[allArray]]"   organization="[[organization]]" login="{{login}}" geo-response="[[geoResponse]]" latitude="[[latitude]]" longitude="[[longitude]]" idle="{{idle}}" geo-error="[[geoError]]" page="[[page]]"></beer-home>-->
   <beer-favorite name="favorite"></beer-favorite>
   <beer-browse name="browse"></beer-browse>
-
   <beer-tap-add name="tap-add" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap-add>
-
-
   <beer-beer-edit name="beer-edit" offline="[[offline]]" place="[[place]]" organization="[[organization]]"org-id="[[orgId]]" beer-id="[[beerId]]" name-url="[[nameUrl]]" owner="[[owner]]" return-name="[[returnName]]" return-org-id="[[returnOrgId]]"></beer-beer-edit>
-  <!--<beer-tap-add name="tap-add" offline="[[offline]]" place="[[place]]" organization="[[organization]]" org-id="[[orgId]]" name-url="[[nameUrl]]" owner="[[owner]]"></beer-tap-add>-->
-
   <beer-404-warning name="404"></beer-404-warning>
 </iron-pages>
 
@@ -531,7 +511,8 @@
         opened="{{login}}">
     <paper-dialog-scrollable>
       <section class="beer-login-dialog">
-        <!--lazy loaded-->
+
+      <!--lazy loaded-->
       <beer-login class="beer-login-dialog"></beer-login>
       </section>
     </paper-dialog-scrollable>
@@ -561,6 +542,7 @@
         <div>Verification sent to [[user.email]]</div>
         <div>Please refresh the app after verifying.</div>
       </paper-toast>
+
 
     <footer>
       <div class= "footer-item">
@@ -786,16 +768,12 @@
         '_pageChanged(page)',
         '_routeOrgIdChanged(orgId)',
         '_isOwner(userData.domain, userData.ADMIN, organization.domain)',
-        // '_watchLoggedIn(statusKnown)',
         '_toastOffline(online)',
         '_setBackArrowInHeader(page)',
         '_updateUserEmailVerified(user)',
         '_updatePageTitle(place.name, page)',
-        // '_replaceOfflineOrganizationData(organization, online)',
-        // '_cacheOrgData(organization, online)',
         '_scrollToTop(page)',
-        // '_setTimeoutForGeo(page)',
-        // '_setOrganizationData(orgId, initialLoad, fireOrg)'
+        // '_setTimeoutForGeo(page)'
       ],
 
      
@@ -813,110 +791,6 @@
         // Custom elements polyfill safe way to indicate an element has been upgraded.
         this.removeAttribute('unresolved');
       },
-
-      // _computeOrganization: function (allPubs){
-      //     return allPubs[this.orgId]
-      // },
-
-      // _watchLoggedIn: function (user){
-      //   console.log('statusKnown', statusKnown)
-      //   console.log(this.user);
-      //   if(!this.user){
-
-      //   }
-      // },
-
-     _setOrganizationData: function (orgId, initialLoad, fireOrg){
-       console.log('fireOrg2', fireOrg);
-       console.log('orgId', orgId);
-      // if(Object.keys(fireOrg).length === 0){
-        
-        if(orgId){
-          console.log('initial load', initialLoad);
-          if(initialLoad){
-            if(orgId){
-            try{
-              var local = window.localStorage.getItem('organization_'+orgId);
-
-              if( local !== undefined){
-                var localData = JSON.parse(local);
-                console.log('got', localData);
-                if(localData){
-                  this.organization = localData;
-                  // this.initialLoad = false;
-
-                }else{
-                  this._defaultOrganizationData();
-                  this.initialLoad = false;
-            
-                 }
-              }else{
-                this._defaultOrganizationData();
-                this.initialLoad = false;
-
-              }
-
-            }catch(error){
-              console.log('ERROR_INITIAL', error);
-              this._defaultOrganizationData();
-              this.initialLoad = false;
-            }
-
-
-          }
-            }else{
-              if(Object.keys(fireOrg).length > 0) {
-                console.log('UPDATING');
-                this.$.updatingDataToast.open();
-                // this.organization = fireOrg;
-              }else{
-                this.organization = this._defaultOrganizationData();
-              }
-            }
-          
-          }else{
-           
-          }
-        
-     },
-
-     _defaultOrganizationData: function(){
-      var noCache = {};
-
-          noCache.category = {};
-          var beer = {};
-          beer.$key = 'TAP';
-          beer.category = 'TAP';
-          beer.name = 'tap';
-          beer.title = 'On-tap';
-          beer.display = true;
-          beer.order = 100;
-          
-          noCache.category['TAP'] = beer;
-
-          var contact = {};
-          contact.$key = 'CONTACT';
-          contact.category = 'CONTACT';
-          contact.name = 'contact';
-          contact.title = 'Contact';
-          contact.display = true;
-          contact.order = 300;
-          
-          noCache.category['CONTACT'] = contact;
-
-          var review = {};
-          review.$key = 'REVIEW';
-          review.category = 'REVIEW';
-          review.name = 'review';
-          review.title = 'Review';
-          review.display = true;
-          review.order = 400;
-          
-          noCache.category['REVIEW'] = review;
-          console.log('nocache', noCache);
-          this.organization = noCache;
-          this.initialLoad = false;
-     },
 
   
 
@@ -1131,26 +1005,11 @@
             }
           }
         }
-
-        
-   
-          // this._listScrollTop = window.pageYOffset;
       
         this.returnPage = returnPage
         this.page = page || 'home';
         if (this.page === 'home') {
           this.orgId = 'home';
-        }
-
-        if(this.page === 'home' || this.page === 'search'){
-          if(!this.geoRendered){
-          // this.idle = false;
-          }else{
-            // this.idle = true;
-          }
-
-        }else{
-          // this.idle = true;
         }
 
         this.drawerOpened = false;
@@ -1244,6 +1103,7 @@
       _ensureLazyLoaded: function () {
         // load lazy resources after render and set `loadComplete` when done.
         if (!this.loadComplete) {
+          console.log('LAZY_LOADED')
 
           Polymer.RenderStatus.afterNextRender(this, function () {
             this.importHref(this.resolveUrl('lazy-resources.html'), function () {
