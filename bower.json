@@ -46,7 +46,6 @@
     "iron-localstorage": "PolymerElements/iron-localstorage#^2.0.0",
     "geo-query": "jifalops/geo-query#^0.3.1",
     "toggle-icon": "^1.1.2",
-    "paper-time-input": "ryanburns23/paper-time-input#^1.0.4",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0",
     "iron-iconset": "PolymerElements/iron-iconset#^2.0.0"
   },
