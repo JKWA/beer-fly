@@ -16,7 +16,6 @@
 <link rel="import" href="../bower_components/google-apis/google-maps-api.html">
 
 <link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
-
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 
 <link rel="import" href="beer-icons.html">
@@ -26,7 +25,7 @@
 
 
 
-<dom-module id="beer-home2">
+<dom-module id="beer-home">
 
   <template>
 
@@ -126,22 +125,27 @@
       
     </style>
 
-        <paper-material class="card" elevation="1">
+      <paper-material class="card" elevation="1">
         <div class="locationAddress">[[location.address]]</div>
         <paper-spinner-lite id="spinner"></paper-spinner-lite>
         <div hidden$="[[!geoError]]">
           <div class="geo-error">Location not available from this device.</div>
         </div>
         <div class="">
-        <iron-label class="wrapper">
+
+          <iron-label class="wrapper">
               <paper-icon-button icon="beer-icons:[[gpsIcon]]" on-tap="_resetToLocal"></paper-icon-button>
               <span class="title">Near my location<span>
           </iron-label>
 
-
-        <iron-label class="wrapper">
-      
-            <span class="location-label">Change location</span>
+           <iron-label class="wrapper">
+              <toggle-icon
+                  animation="flip-vertical" 
+                  icon="beer-icons:expand-more"
+                  checked="{{toggle}}"
+                  noink>
+            </toggle-icon>
+              <span class="location-label">Change location</span>
           </iron-label>
         </div>
        
@@ -199,7 +203,7 @@
 
     Polymer({
 
-      is: 'beer-home2',
+      is: 'beer-home',
 
       properties: {
 

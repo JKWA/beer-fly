@@ -43,14 +43,14 @@
 <link rel="import" href="beer-geo-location.html">
 <link rel="import" href="beer-search-data.html">
 <link rel="import" href="beer-cache-data.html">
-
+<link rel="import" href="beer-analytics.html">
 
 
 
 <!--<link rel="import" href="beer-pub.html">-->
 <!--<link rel="import" href="beer-test.html">-->
 
-<link rel="import" href="beer-home2.html">
+<link rel="import" href="beer-home.html">
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-place-data.html">
 <link rel="import" href="beer-tabs.html">
@@ -82,6 +82,7 @@
         --paper-tabs-selection-bar-color: var(--app-accent-color);
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         color: var(--app-primary-color);
+        
       }
 
       app-drawer-layout:not([narrow]) [drawer-toggle] {
@@ -101,6 +102,10 @@
 
       paper-icon-button {
         color: var(--app-primary-color);
+      }
+
+      paper-toast {
+        z-index: 10000
       }
 
       a{ 
@@ -253,7 +258,8 @@
 
       .main-content{
         /*margin: 10px 0 200px 0;*/
-        min-height: 75vh
+        min-height: 75vh;
+        max-width: 640px;
       }
 
       .footer {
@@ -355,15 +361,12 @@
     data="{{place}}">
   </beer-place-data>
 
-
    <beer-cache-data
       location="[[location]]"
       online="[[online]]"
       all-object="{{allObject}}"
       all-array="{{allArray}}">
   </beer-cache-data>
-
-
 
   <beer-geo-data
     org-id="[[orgId]]"
@@ -388,11 +391,10 @@
 
 
 
-<iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
-
+<iron-media-query query="max-width: 640px" query-matches="{{smallScreen}}"></iron-media-query>
 
 <app-drawer-layout>
-  <app-drawer opened="[[drawerOpened]]" slot="drawer">     
+  <app-drawer opened="{{drawerOpened}}" slot="drawer">     
     <section>
       <a aria-label="To home page" href="/home/account">
         <div class="login-wrapper">
@@ -456,7 +458,7 @@
       <div class="main-content">
         <div>
         <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
-          <beer-account name="account" organization="[[organization]]" owner="[[owner]]"></beer-account>
+          <beer-account name="account" organization="[[organization]]" small-screen="[[smallScreen]]"owner="[[owner]]"></beer-account>
           <beer-allbreweries name="allbreweries" owner="[[owner]]"></beer-allbreweries>
           <beer-allbeers name="allbeers" owner="[[owner]]"></beer-allbeers>
           <beer-pub name="pub" login="{{login}}" organization="{{organization}}" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" owner="[[owner]]" online="[[online]]"></beer-pub>
@@ -481,9 +483,8 @@
           <beer-search name="search" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" geo-error="[[geoError]]"></beer-search>
           <beer-beer-info name="beer-info" login="{{login}}" location="[[location]]" beer-id="[[beerId]]"></beer-beer-info>
 
-          <beer-home2 name="home" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" all-object="[[allObject]]" all-array="[[allArray]]"></beer-home2>
+          <beer-home name="home" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" all-object="[[allObject]]" all-array="[[allArray]]"></beer-home>
           <beer-favorite name="favorite"></beer-favorite>
-          <beer-browse name="browse"></beer-browse>
           <beer-tap-add name="tap-add" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap-add>
           <beer-beer-edit name="beer-edit" offline="[[offline]]" place="[[place]]" organization="[[organization]]"org-id="[[orgId]]" beer-id="[[beerId]]" name-url="[[nameUrl]]" owner="[[owner]]" return-name="[[returnName]]" return-org-id="[[returnOrgId]]"></beer-beer-edit>
           <beer-404-warning name="404"></beer-404-warning>
@@ -493,43 +494,25 @@
         <div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
 
 
-      
-        <paper-dialog 
-              entry-animation="scale-up-animation"
-              exit-animation="fade-out-animation"
-              with-backdrop 
-              id="loginDialog"
-              
-              opened="{{login}}">
-          <paper-dialog-scrollable>
-            <section class="beer-login-dialog">
-
-            <!--lazy loaded-->
-            <beer-login class="beer-login-dialog"></beer-login>
-            </section>
-          </paper-dialog-scrollable>
-            <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
-          
-        </paper-dialog>
-
-
-        <paper-toast class="toast" id="offLineToast" duration="5000">
+        <paper-toast 
+          class="toast" 
+          id="offLineToast" 
+          horizontal-align="right"
+          horizontal-offset="50"
+          vertical-offset="100"
+          duration="5000">
           <div> 
             Offline, read only access  
             <br>
           </div>
         </paper-toast>
 
-        <paper-toast class="toast" id="updatingDataToast" duration="2000">
-          <div> 
-            Updating data 
-            <br>
-          </div>
-        </paper-toast>
 
         <paper-toast 
             id="verificationToast" 
             duration="0" 
+            horizontal-align="right"
+            horizontal-offset="50"
             vertical-offset="100">
             <div>Verification sent to [[user.email]]</div>
             <div>Please refresh the app after verifying.</div>
@@ -545,6 +528,22 @@
     </app-header-layout>
 
   </app-drawer-layout>
+
+      <paper-dialog 
+            entry-animation="scale-up-animation"
+            exit-animation="fade-out-animation"
+            with-backdrop
+            id="loginDialog"
+            opened="{{login}}">
+        <paper-dialog-scrollable>
+          <section class="beer-login-dialog">
+
+          <!--lazy loaded-->
+          <beer-login class="beer-login-dialog"></beer-login>
+          </section>
+        </paper-dialog-scrollable>
+        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+      </paper-dialog>
   
 
 </template>
@@ -765,8 +764,10 @@
         '_setBackArrowInHeader(page)',
         '_toggleDrawerOnPageChange(page)',
         '_updateUserEmailVerified(user)',
+        '_isSignedIn(user)',
         '_updatePageTitle(place.name, page)',
         '_scrollToTop(page)',
+
         // '_setTimeoutForGeo(page)'
       ],
 
@@ -824,6 +825,12 @@
           }else{
             this.verified = true;
           }
+      },
+
+      _isSignedIn: function (user){
+        if(user){
+          this.login = false;
+        }
       },
 
 
@@ -913,8 +920,6 @@
                page = 'search';
             }else if(subRoute==='account'){
                page = 'account';
-            }else if(subRoute==='browse'){
-               page = 'browse';
             }else if(subRoute==='favorite'){
                
                if(!thirdRoute){
@@ -1123,14 +1128,14 @@
 
       _toggleDrawerOnPageChange: function (page){
         console.log('page_change', page)
-        this.drawerOpened = !this.drawerOpened;
+        this._closeDrawer();
+        // this.drawerOpened = !this.drawerOpened;
       },
 
       _closeDrawer: function (){
+        console.log('close');
         if(this.smallScreen){
           this.drawerOpened = false;
-        }else{
-          this.drawerOpened = true;
         }
       },
 

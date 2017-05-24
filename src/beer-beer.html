@@ -6,6 +6,8 @@
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
@@ -149,9 +151,22 @@
        nameUrl:{
          type: String
        },
+       
+       orgId:{
+         type:String
+       },
+
        owner:{
          type: Boolean
        },
+       organization:{
+         type: Object
+       },
+
+       place:{
+         type:Object
+       },
+
        crowdSource:{
          type: Boolean
        },

@@ -103,8 +103,9 @@
     <paper-material class="card" elevation="0">
     
       <paper-input label="Search for [[searchMessage]]" value="{{queryString}}">
-        <iron-icon icon="beer-icons:search" prefix></iron-icon>
-          <paper-icon-button class="clear" suffix on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
+
+        <iron-icon icon="beer-icons:search" slot="prefix"></iron-icon>
+          <paper-icon-button class="clear" slot="suffix" on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
       </paper-input>
 
       <iron-label class="tap-status-wrapper">

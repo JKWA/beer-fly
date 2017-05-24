@@ -6,6 +6,7 @@
 <link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
 
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 
@@ -87,14 +88,7 @@
       .tap-status-wrapper > div{
         padding: 0 10px 0 0
       }
-/*
-      .wrapper{
-         @apply(--layout-vertical);        
-      }
 
-      .wrapper > div{
-        padding: 10px 0 5px 0
-      }*/
 
       .tapped{
         color: green;
@@ -263,6 +257,10 @@
         },
 
         tapSelected:{
+          type: String
+        },
+
+        tappedData:{
           type: String
         },
 

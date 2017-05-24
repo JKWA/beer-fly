@@ -173,16 +173,17 @@
                 </paper-button>
               </div>
               </template>
-
-              <div hidden$="[[!user]]">
-                <paper-button on-tap="_logout" raised>
-                    <iron-icon icon="beer-icons:account"></iron-icon>
-                    <div>Sign out</div>
+             
+              <template is="dom-if" if="[[smallScreen]]">
+                <div hidden$="[[!user]]">
+                  <paper-button on-tap="_logout" raised>
+                      <iron-icon icon="beer-icons:account"></iron-icon>
+                      <div>Sign out</div>
                   </paper-button>
                 </div>
+              </template>
             </div>
                  
-            
           </div>
           
       </div>
@@ -190,6 +191,8 @@
         <paper-toast 
             id="verificationToast" 
             duration="0" 
+            horizontal-align="right"
+            horizontal-offset="50"
             vertical-offset="100">
             <div>Verification sent to [[user.email]]</div>
             <div>Please refresh the app after verifying.</div>
@@ -216,6 +219,10 @@
 
         organizations:{
           type: Array
+        },
+
+        smallScreen:{
+          type: Boolean
         },
 
         statusKnown:{

@@ -306,6 +306,12 @@ exports.beerDataChanged = functions.database.ref('organization/{placeId}/brewBee
                 }
               }
 
+              if(place.name){
+                if(isBrewery(name)){
+                  newPub[preOrg+'BREWERY'] = true;
+                }
+              }
+
               if(place.geometry){
                 if(place.geometry.location){
                   if(place.geometry.location.lat){
@@ -386,7 +392,22 @@ function isPub(types){
     }
   }
   return false;
-}     
+}
+
+function isBrewery(name){
+
+    if(name){
+      if(name.toLowerCase().indexOf('brewery')>-1){
+        return true;
+      }
+      if(name.toLowerCase().indexOf('brewing')>-1){
+        return true;
+      }
+    }
+
+      return false;
+
+} 
 
 function getDomain(website){
   if(website){
@@ -524,13 +545,15 @@ function savePub(pub, place, domain, preOrg){
             }).then(function (addedPub){
 
                if(!place.permanently_closed){
+                 if(addedPub.BREWERY || addedPub.PUB){
                     if(place.geometry){
                       geoFire.set(place.place_id, [place.geometry.location.lat, place.geometry.location.lng]).then(function() {
                         console.log("Set GeoFire", place);
                         }, function(error) {
                             console.log("Error: " + error);
                         });
-                    }    
+                      }  
+                    }  
                   }
                   // console.log('save', addedPub);
                   return admin.database().ref().update(addedPub, function(error){

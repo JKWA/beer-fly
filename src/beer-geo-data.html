@@ -3,15 +3,20 @@
 <link rel="import" href="../bower_components/geo-query/geofire-import.html">
 
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
 
 
 <dom-module id="beer-geo-data">
 <template>
 
-    <firebase-document 
+    <!--<firebase-document 
         app-name="beer" 
         id="organization">
-    </firebase-document>
+    </firebase-document>-->
+
+  <firebase-auth  id="auth" app-name="beer"></firebase-auth>
+
 
 
   </template>
@@ -98,7 +103,7 @@
 
                 
                 var that = this;
-                var app = this.$.organization.app;
+                var app = this.$.auth.app;
                 var firebaseRef = app.database().ref('GeoFire');
                 var geoFire = new GeoFire(firebaseRef);
                 // var ref = geoFire.ref();

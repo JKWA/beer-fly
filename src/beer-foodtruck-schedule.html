@@ -136,12 +136,18 @@
        _getFoodTruckSchedule: function (truckObj){
          var data = [];
          var obj = {};
+         
         if(typeof truckObj ==='object'){
           var key = Object.keys(truckObj);
+
           for (var i=0; i<key.length; i++){
             var truck = truckObj[key[i]];
+            console.log(key[i])
+console.log('truck', truck);
+            
            if(truck){
             if(truck.period){
+              
                 var periods = truck.period;
                 if(typeof periods ==='object'){
                   var periodKey = Object.keys(periods);

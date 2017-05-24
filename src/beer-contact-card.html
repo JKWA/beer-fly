@@ -119,10 +119,13 @@
     Polymer({
 
       is: 'beer-contact-card',
+      properties:{
 
+        place:{
+          type: Object
+        }
+      },
     
-     
-     
       _test: function (obj){
         console.log(obj);
       }
