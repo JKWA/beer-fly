@@ -143,7 +143,7 @@
           for (var i=0; i<key.length; i++){
             var truck = truckObj[key[i]];
             console.log(key[i])
-console.log('truck', truck);
+console.log('truckObj', truckObj);
             
            if(truck){
             if(truck.period){
@@ -156,13 +156,13 @@ console.log('truck', truck);
                     if(!obj[period.day]){
                       obj[period.day] = this._createNewDay(period, truck.name, key[i])
                     }else{
-                      var truckObj = {}
+                      var truckObjAdd = {}
                     
-                      truckObj.open = period.OPEN;
-                      truckObj.close = period.CLOSE;
-                      truckObj.name = truck.name;
-                      truckObj.id = key[i]
-                      obj[period.day].trucks.push(truckObj)
+                      truckObjAdd.open = period.OPEN;
+                      truckObjAdd.close = period.CLOSE;
+                      truckObjAdd.name = truck.name;
+                      truckObjAdd.id = key[i]
+                      obj[period.day].trucks.push(truckObjAdd)
                     }
                     
                   }
