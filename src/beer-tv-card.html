@@ -18,55 +18,30 @@
 <dom-module id="beer-tv-card">
   <template>
     <style>
-    
 
       .card{
-        
-        margin: 5px;
-        padding: 10px;
-        height: 80px;
-        /*background-color: white;*/
-       
+        margin: 10px;
+        padding:10px;
       }
+      
 
-       
-      .title{
+      .wrapper{
         @apply(--layout-horizontal);
         @apply(--layout-justified);
-        
-        font-weight: 400;
-        /*color: var(--app-primary-color);*/
-        height: 50px;
       }
-
-       .title > div{
-        padding: 0 5px 0 0;
-      }
-     
-
 
       
 
-      .tapped{
-        color: green;
-        font-size: 2em;
-      }
-
-
       .name {
-        font-size: 3vw;
-        line-height: 1.2em;
-        font-weight: 500;
+        font-size: 2.8vw;
+        font-weight: 300;
         white-space:nowrap;
         overflow: hidden;
-        /*color: var(--app-primary-color);*/
       }
 
       .style {
-        font-size: 2vw;
-        line-height: 1.5em;
+        font-size: 1.8vw;
         font-weight: 300;
-        /*color: var(--app-primary-color);*/
        
       }
 
@@ -81,10 +56,8 @@
       }
 
       .brewery {
-        font-size: 2vw;
-        line-height: 1.5em;
+        font-size: 1.8vw;
         font-weight: 300;
-        /*color: var(--app-primary-color);*/
       }
 
   
@@ -92,75 +65,43 @@
         @apply(--layout-horizontal);
         @apply(--layout-start-justified);
         @apply(--layout-wrap);
-        font-size: 2vw;
-        line-height: 1.5em;
-       
-        /*color: var(--app-primary-color);*/
+        font-size: 1.5vw;
+        font-weight: 300;
       }
 
        .location > div{
         padding: 0 5px 0 0;
       }
-
-      .footer{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
-        font-size: 2vw;
-        line-height: 1.5em;
-        font-weight: 400;
-        /*color: var(--app-primary-color);*/
-      }
-
-
       
       .abv{
         text-align: right;
         font-size: 2vw;
-        line-height: 1.5em;
-        margin: 0 20px 0 0;
         font-weight: 500;
       }
 
 
     </style>
 
-    <firebase-document
-        app-name="beer"
-        path="beer/[[beerId]]"
-        data="{{beer}}">
-    </firebase-document>
+  
 
-
-
-
-      <paper-material class='card {{theme}}' elevation="0" animated-shadow="false">
+      <paper-material class="card" elevation="0" animated-shadow="false">
        
-        <div>
-          <div class="title">
+        <div class$="{{theme}}">
+          <div class="name">[[beer.name]]</div>
+          <div class="wrapper">
             <div>
-             <div class="name">[[beer.name]]</div>
+              
+              <div class="style">[[beer.styleName]] </div>
+              
+              <div class="location">
+                <div>[[beer.breweryName]] - [[beer.city]], [[beer.state]]</div> 
+              </div>
             </div>
-          </div>
-          <div class="title">
-       
-             <div class="title">
-                <div class="style">[[beer.styleName]] from [[beer.breweryName]]</div>
-                
-             </div>
-                <div class="title">
-                  <div class="location">
-                    <div>[[beer.city]], [[beer.state]]</div>
-                    
-                  </div>
-                  <div class="abv" hidden="[[!beer.abv]]">ABV: [[beer.abv]]</div>
-                </div>
-          </div>
-
-          </div>
-
-
             
-        
+            <div class="abv" hidden="[[!beer.abv]]">ABV: [[beer.abv]]</div>
+          </div>
+        </div>
+
       </paper-material>
   </template>
 
@@ -171,13 +112,11 @@
       is: 'beer-tv-card',
 
        properties: {
-        beerId:{
-          type:String
-        },
 
-        theme:{
-          type:String
+        beer:{
+          type:Object
         }
+
        }
       
  

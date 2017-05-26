@@ -5,60 +5,95 @@
 <link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="../bower_components/paper-slider/paper-slider.html">
+
 
 <link rel="import" href="../bower_components/paper-material/paper-material.html">
-
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
 
-
-
-
-
-
+<link rel="import" href="beer-tv-dialog.html">
 <link rel="import" href="beer-tv-card.html">
-
-
 
 
 <dom-module id="beer-tv">
 
   <template>
 
-    <style>
+  <style is="custom-style">
+    
+      
 
       a{
         color: var(--app-accent-color);
         text-decoration: none;
         }
 
-      /*paper-dialog {
-        background-color: rgba(255, 255, 255, 0.95)
-      }*/
+      paper-dropdown-menu{
+        width: 100px;
+      }
 
-      /*.card{
-        padding: 10px;
-        margin: 10px;
-      }*/
+      paper-dropdown-menu.light{
+        --paper-input-container-color: var(--app-primary-color);
+      }
+
+      paper-dropdown-menu.dark{
+        --paper-input-container-color: white;
+        --paper-input-container-input-color: white;
+      }
+
+      paper-slider.light{
+        --paper-slider-active-color: var(--app-accent-color);
+        --paper-slider-knob-color: var(--app-accent-color);
+      }
+
+      paper-slider.dark{
+        --paper-slider-active-color: white;
+        --paper-slider-knob-color: white;
+      }
+      
       .dialog{
          @apply(--layout-vertical);
       }
 
+      .wrapper{
+        @apply(--layout-vertical);
+      }
+
+      .wrapper > div{
+        margin: 20px 0 0 0
+      }
+
       .beer{
-       width: 100%;
+        width: 100%;
         height: 120px;
       }
 
+      .title{
+        font-size: 1.5em;
+        font-weight: 400;
+        /*color: var(--app-primary-color);*/
+      }
+
+      .label{
+        font-size: 1em;
+        font-weight: 300;
+        /*color: var(--app-primary-color);*/
+      }
+
       .dark{
-        background-color:#263238;
+        background-color: #263238;
         color: white
       }
 
       .light{
-        background-color: rgba(255, 255, 255, 0.95);
+        background-color: white
         color: var(--app-primary-color);
       }
       
@@ -73,65 +108,83 @@
 
     </style>
 
-    <paper-material class="card" elevation="0">
-      
-      <div>Time between slides</div>
-      <div>
-        <paper-input class="speed-display" label="seconds" value="{{speedDisplay}}"></paper-input>
+    <app-localstorage-document 
+        key="tvSpeed" 
+        data="{{sliderSpeedPercent}}">
+    </app-localstorage-document>
+
+    <app-localstorage-document 
+        key="tvTheme" 
+        data="{{theme}}">
+    </app-localstorage-document>
+
+    <app-localstorage-document 
+        key="tvCards" 
+        data="{{numberOfBeers}}">
+    </app-localstorage-document>
+
+    <paper-material class$="[[theme]] card" elevation="1">
+      <div class="title">On Tap Slide Show Settings</div>
+      <div class="wrapper">
+
+        <div>
+          <paper-dropdown-menu class$="[[theme]]" label="Theme">
+            <paper-listbox 
+                attr-for-selected="theme"
+                slot="dropdown-content" 
+                class$="dropdown-content [[theme]]"
+                selected="{{theme}}">
+              <paper-item theme="light">Light</paper-item>
+              <paper-item theme="dark">Dark</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+        </div>
+        
+        <div>
+            <paper-slider class$="[[theme]]" value="{{sliderNumberBeers}}"></paper-slider>
+            <div class="label">[[numberOfBeers]] beers per slide</div>
+        </div>
+
+        <div>
+          <paper-slider class$="[[theme]]" value="{{sliderSpeedPercent}}"></paper-slider>
+          <div class="label">[[speedDisplay]] seconds between slides</div>
+        </div>
+
+        <div>
+          <paper-button on-tap="_openTvView" raised>Start</paper-button>
+        </div>
       </div>
-   
-      <div>
-        <iron-label>
-          <paper-checkbox checked="{{darkTheme}}"></paper-checkbox>
-          <span>Dark theme</span>
-        </iron-label>
-      </div>
-      <div>
-        <paper-button on-tap="_openTvView" raised>Start</paper-button>
-      </div>
+
     </paper-material>
 
+        
 
-
-   <div class$="{{themeCss}}">
     <div id="parent">
-    
      
-     <template id="dialogs" is="dom-repeat" items="[[_getArrays(organization.onTap)]]" as="card">
-       <paper-dialog 
-          class$="{{themeCss}}"
-          style="width: 100vw; height: 100vh;"
-          with-backdrop
-          horizontal-offset="-30"
-          vertical-offset="-30"
+     <template id="dialogs" 
+        is="dom-repeat" 
+        items="[[data]]" 
+        as="card"
+        strip-whitespace>
+
+       <beer-tv-dialog 
           entry-animation="fade-in-animation"
-          exit-animation="fade-out-animation">
+          exit-animation="fade-out-animation"
+          with-backdrop
+          theme="[[theme]]">
 
-        <div class="dialog"> 
-          
-          <template is="dom-repeat" items="[[card]]">
-            <div class="beer">
-              <beer-tv-card 
-                  beer-id="[[item.id]]"
-                  tapped="[[item.tapped]]"
-                  theme="[[darkTheme]]">
-              </beer-tv-card>
-            </div>
+          <template is="dom-repeat" items="[[card]]" as="beer" strip-whitespace>
+            <beer-tv-card 
+                beer="[[beer]]">
+            </beer-tv-card>
           </template>
-         
-        </div>
-        <div>Powered by Beer-Fly</div>
-         <!--<paper-button dialog-dismiss autofocus>CLOSE</paper-button>-->
 
-       </paper-dialog>
+       </beer-tv-dialog>
      
     </template>
     
-    
     </div>
-
-
-</div>
+  </div>
 
 
   </template>
@@ -148,13 +201,9 @@
           type: Object
         }, 
 
-        darkTheme:{
-          type:Boolean,
-          value:false
-        },
-
-        themeCss:{
-          type:String
+        backgroundColor:{
+          type: String,
+          computed: '_computeBackgroundColor(theme)'
         },
 
         theme:{
@@ -162,29 +211,18 @@
           string:"light"
         },
 
+        data:{
+          type:Array
+        },
+
         display:{
           type: Boolean,
           value: false
         },
 
-        width:{
+        numberOfBeers:{
           type: Number,
-          value: function(){
-            return 1
-            // return Math.floor(Math.max(document.documentElement.clientWidth, window.innerWidth || 0)/800);
-          }
-        },
-        height:{
-          type: Number,
-          value: function(){
-            return Math.floor(Math.max(document.documentElement.clientHeight, window.innerHeight || 0)/120);
-          }
-        },
-
-        numberOfCards:{
-          type: Number,
-          computed:'_calculateNumberOfCardsPerPage(width, height)'
-
+          value: 5
         },
 
         interval:{
@@ -194,12 +232,17 @@
 
         numberOfDialogs:{
           type: Number,
-          computed:'_calculateNumberOfDialogs'
+          computed:'_calculateNumberOfDialogs(numberOfBeers, organization.onTap)'
         },
 
-        numberOfDialogs:{
-          type: Number,
-          computed:'_calculateNumberOfDialogs(numberOfCards, organization.onTap)'
+        sliderNumberBeers:{
+          type:Number,
+          value:50
+        },
+
+        sliderSpeedPercent:{
+          type:Number,
+          value: 50
         },
 
         speed:{
@@ -211,26 +254,68 @@
           type:Number,
           value: 10
         }
-
       
       },
-      observers:['_watchForNewData(organization.onTap)',
-                  '_watchSpeedFromDisplay(speedDisplay)',
-                  '_watchForTheme(darkTheme)'],
+
+      observers:['_watchForNewData(organization.onTap, numberOfBeers)',
+                  '_watchForTheme(theme)',
+                  '_watchSpeedDisplayChange(sliderSpeedPercent)',
+                  '_watchNumberBeerDisplayChange(sliderNumberBeers)'
+                  ],
 
       ready: function (){
         // this._openTvView();
       },
 
+      // _watchForNewData: function (tapped){
+      //   if(tapped){
+      //     if(this.display){
+      //       this.$.dialogs.render();
+      //       this._openTvView();
+      //     }
+      //   }
 
+      // },
 
-      _watchForNewData: function (tapped){
-        if(tapped){
-          if(this.display){
-            this.$.dialogs.render();
-            this._openTvView();
+       _watchForNewData: function (obj, numberOfBeers){
+         var returnArray = [];
+       
+
+          if(obj){
+          var fullArray = [];
+          var key = Object.keys(obj);
+          for (var i=0; i<key.length; i++){
+            if(obj[key[i]].tapped === 'TAPPED'){
+              obj[key[i]].$key = key[i]
+              fullArray.push(obj[key[i]])
+            }
           }
+           fullArray = fullArray.sort(this._sortOrder);
+
+           var returnArray = [];
+           var blockArray = [];
+           var counter = 0;
+           for(var i=0; i<fullArray.length; i++){
+             blockArray.push(fullArray[i]);
+             counter++
+
+             if(counter == numberOfBeers){
+               returnArray.push(blockArray);
+               blockArray = [];
+               counter=0;
+             }
+
+           }
+           if(blockArray.length >0){
+             returnArray.push(blockArray);
+           }
+          //  console.log(returnArray);
+           
+
+        
+         
         }
+        this.data =  returnArray;
 
       },
 
@@ -248,12 +333,6 @@
           return 0;
       },
 
-
-      _calculateNumberOfCardsPerPage: function (width, height){
-        return width*height;
-      },
-
-
       _openTvView: function(){
         'use strict';
         var speed = this.speed;
@@ -263,76 +342,47 @@
         console.log('rendoredCount', rendoredCount)
 
 
-        if(this.interval){
+        if(this.interval){ 
             window.clearInterval(this.interval);
         }
-        var body = document.querySelector('parent');
-        var dialog =  Polymer.dom(this.$.parent).querySelectorAll('paper-dialog');
-          if(rendoredCount <=1){
-          dialog[0].open();
-
-        }else{
-          var counter = 0
-  
-          dialog[counter].open();
-          
+        var body = document.querySelector('body');
+       
+      
          
-         var interval = window.setInterval(function () {
-            dialog[counter].close();
-            counter = (counter + 1) % rendoredCount;
-            dialog[counter].open();
 
-            }, speed); 
-            // console.log('interval', interval);
-            this.interval = interval;
-        }
+        var dialog =  Polymer.dom(this.$.parent).querySelectorAll('beer-tv-dialog');
+
+          if(rendoredCount <=1){
+            Polymer.dom(body).appendChild(dialog[0]);
+            dialog[0].open();
+             
+
+          }else{
+            var counter = 0
+
+            Polymer.dom(body).appendChild(dialog[counter]);
+            dialog[counter].open();
+          
+          var interval = window.setInterval(function () {
+              dialog[counter].close();
+              counter = (counter + 1) % rendoredCount;
+              Polymer.dom(body).appendChild(dialog[counter]);
+              dialog[counter].open();
+
+              }, speed); 
+              // console.log('interval', interval);
+              this.interval = interval;
+          }
       },
 
       _closeTvView: function (){
-
+        var dialog =  Polymer.dom(this.$.parent).querySelectorAll('beer-tv-dialog');
+        console.log(dialog);
       },
 
 
-      _getArrays: function(obj){
-
-        'use strict';
-        if(obj){
-          var fullArray = [];
-          var key = Object.keys(obj);
-          for (var i=0; i<key.length; i++){
-            if(obj[key[i]].tapped === 'TAPPED'){
-              obj[key[i]].$key = key[i]
-              fullArray.push(obj[key[i]])
-            }
-          }
-           fullArray = fullArray.sort(this._sortOrder);
-
-           var returnArray = [];
-           var blockArray = [];
-           var counter = 0;
-           for(var i=0; i<fullArray.length; i++){
-             blockArray.push(fullArray[i]);
-             counter++
-             if(counter === this.numberOfCards){
-               returnArray.push(blockArray);
-               blockArray = [];
-               counter=0;
-             }
-
-           }
-           if(blockArray.length >0){
-             returnArray.push(blockArray);
-           }
-          //  console.log(returnArray);
-           return returnArray;
-
-        }
-
-
-      },
-
-      _watchSpeedFromDisplay: function (speedDisplay){
-        console.log(speedDisplay)
+      _computeSpeed: function (speedDisplay){
+        console.log('speedDisplay',speedDisplay)
         if(speedDisplay){
           
           var speedDisplay = Number.parseInt(speedDisplay);
@@ -345,13 +395,45 @@
         }
       },
 
-      _watchForTheme: function (){
-        console.log(this.darkTheme)
-        var theme = this.darkTheme ? "dark" : "light"
-        this.themeCss = theme;
-      },
-      
+      _watchForTheme: function (theme){
 
+        Polymer.updateStyles({
+              '--iron-overlay-backdrop-background-color': this.backgroundColor,
+              '--iron-overlay-backdrop-opacity': '1',
+              '--paper-dialog-background-color': this.backgroundColor
+            });
+      },
+
+
+      _watchSpeedDisplayChange: function (display){
+        var seconds = Math.ceil(display/5)
+        if(seconds === 0){
+          this.speedDisplay = 1
+          this.speed = 1000
+
+        }else{
+          this.speedDisplay = seconds;
+          this.speed = seconds*1000
+        }
+      },
+
+      _watchNumberBeerDisplayChange: function (display){
+        var numBeers = Math.ceil(display/10);
+        if(numBeers === 0){
+          this.numberOfBeers = 1
+        }else{
+          this.numberOfBeers = numBeers;
+        }
+      },
+
+
+      _computeBackgroundColor: function (theme){
+        if(theme === 'dark'){
+          return '#263238'
+        }else{
+          return 'rgba(255, 255, 255, 0.95)'
+        }
+      },
     
       _sortOrder: function(a,b){
       

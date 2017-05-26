@@ -5,7 +5,7 @@
 <link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
-
+<link rel="import" href="../bower_components/neon-animation/web-animations.html">
 
 
 <dom-module id="beer-foodtruck-calendar-input">
@@ -119,7 +119,7 @@
 
       <!-- Dropdown Menu -->
       <paper-dropdown-menu hidden$="[[_equal(format, '24')]]" no-label-float disabled="[[disabled]]">
-        <paper-listbox attr-for-selected="name" selected="{{amPm}}" class="dropdown-content">
+        <paper-listbox attr-for-selected="name" selected="{{amPm}}" slot="dropdown-content" class="dropdown-content">
           <paper-item name="AM">AM</paper-item>
           <paper-item name="PM">PM</paper-item>
         </paper-listbox>

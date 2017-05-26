@@ -4,7 +4,7 @@
   "fragments": [
     "src/beer-beer.html",
     "src/beer-beer-edit.html",
-    "src/beer-home2.html",
+    "src/beer-home.html",
     "src/beer-contact.html",
     "src/beer-foodtruck.html",
     "src/beer-foodtruck-edit.html",
@@ -27,11 +27,14 @@
   ],
 
   "builds": [{
-    "name": "unbundled",
+    "name": "bundled",
+    "bundled": true,
     "js": {"minify": true},
     "css": {"minify": true},
     "html": {"minify": true},
-    "addServiceWorker": true
+    "addServiceWorker": true,
+    "addPushManifest": true,
+    "insertPrefetchLinks": true
   }],
   
   "lint": {

@@ -1,0 +1,118 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/neon-animation/neon-animation-runner-behavior.html">
+<link rel="import" href="../bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
+<link rel="import" href="../bower_components/paper-dialog-behavior/paper-dialog-shared-styles.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+
+
+<dom-module id="beer-tv-dialog">
+  <template>
+    <style>
+      :host {
+          width: 100vw; 
+          height: 100vh;
+        }
+
+     .dialog {
+       width: 100vw; 
+       height: 100vh;
+       position:fixed;
+       padding:0;
+       margin:0;
+       top:0;
+       left:0;
+     }
+
+     .logo{
+        position: fixed;
+        bottom: 5vh;
+        left:40vw;
+        z-index: 100;
+        -webkit-transform: translateZ(0);
+
+       @apply(--layout-horizontal);
+       @apply(--layout-center-justified);
+     }
+
+     .logo>div{
+       margin: 0 5px;
+     }
+
+      .dark{
+        background-color:#263238;
+        color: white
+      }
+
+      .light{
+        background-color: rgba(255, 255, 255, 0.95);
+        color: var(--app-primary-color);
+      }
+
+
+        
+    </style>
+
+
+    <div class$="[[theme]] dialog">
+      <slot></slot>
+    
+      <div class="logo">
+          <div>powered by Beer-Fly</div>
+          <div> 
+            <iron-image src="/images/beer-icon-22.png"></iron-image>
+          </div>
+        </div>
+    </div>
+  </template>
+</dom-module>
+
+<script>
+
+(function() {
+'use strict';
+
+  Polymer({
+
+    is: 'beer-tv-dialog',
+
+    properties:{
+
+        theme:{
+          type: String
+        }
+    }, 
+
+    behaviors: [
+      Polymer.PaperDialogBehavior,
+      Polymer.NeonAnimationRunnerBehavior
+    ],
+
+    listeners: {
+      'neon-animation-finish': '_onNeonAnimationFinish'
+    },
+
+    _renderOpened: function() {
+      this.cancelAnimation();
+      this.playAnimation('entry');
+    },
+
+    _renderClosed: function() {
+      this.cancelAnimation();
+      this.playAnimation('exit');
+    },
+
+    _onNeonAnimationFinish: function() {
+      if (this.opened) {
+        this._finishRenderOpened();
+      } else {
+        this._finishRenderClosed();
+      }
+    }
+
+  });
+
+})();
+
+</script>
