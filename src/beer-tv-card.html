@@ -23,14 +23,11 @@
         margin: 10px;
         padding:10px;
       }
-      
 
       .wrapper{
         @apply(--layout-horizontal);
         @apply(--layout-justified);
       }
-
-      
 
       .name {
         font-size: 2.8vw;
@@ -45,22 +42,11 @@
        
       }
 
-      .dark{
-        background-color: #263238;
-        color: white
-      }
-
-      .light{
-        background-color: white
-        color: var(--app-primary-color);
-      }
-
       .brewery {
         font-size: 1.8vw;
         font-weight: 300;
       }
 
-  
       .location{
         @apply(--layout-horizontal);
         @apply(--layout-start-justified);
@@ -82,12 +68,18 @@
 
     </style>
 
-  
+   
 
       <paper-material class="card" elevation="0" animated-shadow="false">
        
-        <div class$="{{theme}}">
-          <div class="name">[[beer.name]]</div>
+        <div>
+          <div class="name">[[beer.name]]
+             <i>
+                <span hidden$="[[!beer.nitro]]"> - Nitro</span>
+                <span hidden$="[[!beer.cask]]"> - Cask-Conditioned</span>
+                <span hidden$="[[!beer.barrel]]"> - Barrel-Aged</span>
+              </i>
+          </div>
           <div class="wrapper">
             <div>
               

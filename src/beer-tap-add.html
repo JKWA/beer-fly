@@ -137,6 +137,7 @@
     <template is="dom-repeat" items="[[beers]]" as="beer" sort="_sortOrder">
       
       <paper-material class="card" elevation="1">
+       
         <div>
             <beer-beer-tap
               org-id="[[orgId]]"
@@ -144,31 +145,13 @@
               owner="[[owner]]">
             </beer-beer-tap>
         </div>
+
         <div class="name">[[beer.name]]</div>
         <div class="style">[[beer.styleName]]</div>
         <div class="address">[[brewery.formatted_address]]</div>
         
       </paper-material>
       
-      
-
-
-      <!--<beer-beer-card 
-          beer-id="[[beer.id]]"
-          beer-name="[[beer.name]]"
-          beer-description="[[beer.description]]"
-          brewery-name="[[beer.breweryName]]"
-          brewery-city="[[beer.city]]"
-          brewery-state="[[beer.stateAbbreviation]]"
-          style-name="[[beer.styleName]]"
-          abv="[[beer.abv]]"
-          place-id="[[place.place_id]]"
-          crowd-source="[[organization.crowdSource]]"
-          owner="[[owner]]"
-          uid="[[user.uid]]"
-          name-url="[[nameUrl]]"
-          login="{{login}}">
-      </beer-beer-card>-->
     </template>
     </div>
 

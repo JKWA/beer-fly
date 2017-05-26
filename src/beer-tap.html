@@ -6,6 +6,8 @@
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
@@ -37,6 +39,15 @@
     .card{
         margin: 10px;
         padding: 20px;
+      }
+
+      .checkbox-wrapper{
+        @apply(--layout-horizontal); 
+        @apply(--layout-start-justified);
+      }
+
+      .checkbox-wrapper > div{
+        margin: 0 20px 0 0 ;
       }
 
       .wrapper{
@@ -99,6 +110,9 @@
 
     </style>
 
+  <firebase-auth  app-name="beer" id="auth"></firebase-auth>
+
+
     <iron-image 
         style="width:100%; height:300px; background-color: #F8F8F8;"
         sizing="cover" 
@@ -145,7 +159,7 @@
     <template is="dom-repeat" items="[[_getArray(organization.onTap)]]" sort="_sortOrder" as="beer">
       <paper-material class="card" elevation="1">
 
-        <template is="dom-if"  if="[[!owner]]">
+        <template is="dom-if" if="[[!owner]]">
             <div>
               <beer-beer-rating 
                   beer-id="[[beer.id]]"
@@ -153,6 +167,7 @@
               </beer-beer-rating>
             </div>
         </template>
+       
 
         <div>
             <beer-beer-tap
@@ -164,7 +179,13 @@
            
 
           <div class="wrapper">
-            <div class="name">[[beer.name]]</div>
+            <div class="name">[[beer.name]]
+              <i>
+                <span hidden$="[[!beer.nitro]]"> - Nitro</span>
+                <span hidden$="[[!beer.cask]]"> - Cask-Conditioned</span>
+                <span hidden$="[[!beer.barrel]]"> - Barrel-Aged</span>
+              </i>
+            </div>
             <div class="style">[[beer.styleName]]</div>
             <div class="beer-description">[[beer.description]]</div>       
             <div class="location">
@@ -175,23 +196,28 @@
             <div class="footer-abv" hidden$="[[!beer.abv]]">ABV: [[beer.abv]]</div>
               
           </div>
-     <!--<beer-beer-card 
-          beer-id="[[beer.id]]"
-          beer-name="[[beer.name]]"
-          beer-description="[[beer.description]]"
-          brewery-name="[[beer.breweryName]]"
-          brewery-city="[[beer.city]]"
-          brewery-state="[[beer.stateAbbreviation]]"
-          style-name="[[beer.styleName]]"
-          abv="[[beer.abv]]"
-          place-id="[[place.place_id]]"
-          crowd-source="[[organization.crowdSource]]"
-          owner="[[owner]]"
-          uid="[[user.uid]]"
-          edit="[[canEdit]]"
-          edit-beer-id="{{editBeerId}}"
-          login="{{login}}">
-      </beer-beer-card>-->
+           <template is="dom-if" if="[[owner]]">
+            <div class="checkbox-wrapper">
+              <div>
+                <iron-label>
+                    <paper-checkbox beer-id="[[beer.$key]]" checked={{beer.nitro}} on-change="_updateNitro"></paper-checkbox>
+                    <span>Nitro</span>
+                </iron-label>
+              </div>
+              <div>
+                <iron-label>
+                    <paper-checkbox beer-id="[[beer.$key]]" checked={{beer.cask}} on-change="_updateCask"></paper-checkbox>
+                    <span>Cask-Conditioned</span>
+                </iron-label>
+              </div>
+              <div>
+                <iron-label>
+                    <paper-checkbox beer-id="[[beer.$key]]" checked={{beer.barrel}} on-change="_updateBarrel"></paper-checkbox>
+                    <span>Barrel-Aged</span>
+                </iron-label>
+              </div>
+            </div>
+          </template>
       </paper-material>
     </template>
 
@@ -345,6 +371,75 @@
         }catch (error){
 
        }
+      },
+
+      _updateCask: function (event){
+        var target =  event.currentTarget
+        var beerId = target.beerId;
+        var checked = target.checked;
+        var obj = {};
+        obj.cask = checked;
+
+        if(this.orgId){
+          if(beerId){
+        
+            firebase.database(this.$.auth.app).ref('organization')
+              .child(this.orgId).child('onTap').child(beerId)
+              .update(obj)
+              .then(function(){
+                console.log('SAVED_CASK');
+              })
+              .catch(function(error){
+                console.log('SAVED_CASK_ERROR', error);
+              })
+          }
+        }
+      },
+
+      _updateNitro: function (event){
+        var target =  event.currentTarget
+        var beerId = target.beerId;
+        var checked = target.checked;
+        var obj = {};
+        obj.nitro = checked;
+
+        if(this.orgId){
+          if(beerId){
+        
+            firebase.database(this.$.auth.app).ref('organization')
+              .child(this.orgId).child('onTap').child(beerId)
+              .update(obj)
+              .then(function(){
+                console.log('SAVED_NITRO');
+              })
+              .catch(function(error){
+                console.log('SAVED_NITRO_ERROR', error);
+              })
+          }
+        }
+      },
+
+       _updateBarrel: function (event){
+        var target =  event.currentTarget
+        var beerId = target.beerId;
+        var checked = target.checked;
+        var obj = {};
+        obj.barrel = checked;
+
+        if(this.orgId){
+          if(beerId){
+        
+            firebase.database(this.$.auth.app).ref('organization')
+              .child(this.orgId).child('onTap').child(beerId)
+              .update(obj)
+              .then(function(){
+                console.log('SAVED_NITRO');
+              })
+              .catch(function(error){
+                console.log('SAVED_NITRO_ERROR', error);
+              })
+          }
+        }
       },
 
       _test: function (obj) {
