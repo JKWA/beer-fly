@@ -25,10 +25,22 @@
 
     <style>
 
+     
+      
+      :host {
+        display: block;
+        max-width: 640px;
+      }
+      
+
       a{
         color: var(--app-accent-color);
         text-decoration: none;
         }
+
+        /*paper-material {
+           
+        }*/
 
       .card{
         margin: 10px;
@@ -278,10 +290,7 @@
               }
             }
           }
-          // var photoMeta = {};
-          // photoMeta.maxWidth = place.photos[0].width;
-          // photoMeta.maxHeight = place.photos[0].height;
-          // return place.photos[0].getUrl(photoMeta);
+
         }catch (error){
 
        }

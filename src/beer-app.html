@@ -69,8 +69,8 @@
         display: block;
         position: relative;
         /*padding-top: 64px;*/
-        padding-bottom: 64px;
-        min-height: 80vh;
+        /*padding-bottom: 64px;*/
+        min-height: 90vh;
         --app-primary-color: #303030;
         --app-secondary-color: #757575;
         --app-accent-color: #172C50;
@@ -158,18 +158,25 @@
         display: none !important;
       }
 
-      #tabContainer {
-        position: relative;
-        height: 66px;
-      }
-
-      beer-tabs, beer-tab {
-        --beer-tab-overlay: {
-          border-bottom: 2px solid var(--app-accent-color);
+      app-drawer{
+        --app-drawer-content-container: {
+          border: 1px solid var(--app-secondary-color);
+          background-color: #F8F8F8;
         };
       }
 
-      beer-tabs {
+      /*#tabContainer {
+        position: relative;
+        height: 66px;
+      }*/
+
+      /*beer-tabs, beer-tab {
+        --beer-tab-overlay: {
+          border-bottom: 2px solid var(--app-accent-color);
+        };
+      }*/
+
+      /*beer-tabs {
         height: 100%;
       }
 
@@ -185,7 +192,7 @@
         font-weight: 500;
         text-decoration: none;
         color: var(--app-primary-color);
-      }
+      }*/
 
       .card {
         margin: 5px;
@@ -252,15 +259,20 @@
       }
 
       iron-pages {
-        max-width: 1440px;
+        
+        /*@apply(--layout-horizontal);
+        @apply(--layout-center-justified);*/
+        max-width: 640px;
         margin: 0 auto;
       }
 
       .main-content{
-        /*margin: 10px 0 200px 0;*/
+        /*@apply(--layout-horizontal);
+        @apply(--layout-center-justified);*/
         min-height: 75vh;
-        max-width: 640px;
       }
+
+
 
       .footer {
         /*position: absolute;
@@ -288,14 +300,18 @@
 
 
       /* small screen */
-      @media (max-width: 767px) {
-        :host {
-          /*padding-top: 64px;*/
-        }
+      @media (max-width: 640px) {
 
         .menu-btn {
           display: block;
         }
+
+        app-drawer{
+        --app-drawer-content-container: {
+          border: none;
+          background-color: white;
+        };
+      }
 
         :host([page=detail]) .menu-btn {
           display: none;
@@ -456,7 +472,7 @@
       </app-header>
 
       <div class="main-content">
-        <div>
+        <div class="main">
         <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
           <beer-account name="account" organization="[[organization]]" small-screen="[[smallScreen]]"owner="[[owner]]"></beer-account>
           <beer-allbeers name="allbeers" owner="[[owner]]"></beer-allbeers>
