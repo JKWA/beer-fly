@@ -105,21 +105,11 @@
                 <div class="footer-abv" hidden="[[!beer.abv]]">ABV: [[beer.abv]]</div>
                 
             </div>
-          <!--<div class="brewery">[[beer.breweryName]]</div>
-            <div class="beer">[[beer.name]]</div>
-            <div class="style">[[beer.style.name]]</div>   
-              <div class="location">[[beer.breweryCity]],  [[beer.breweryState]]</div>        
-            <div class="footer">
-              <div>[[beer.available.description]]</div>
-              <div class="footer-abv" hidden="[[!item.abv]]">ABV: [[beer.abv]]</div>
-            </div>-->
+   
           </a>
         </div>
         
       </paper-material>
-     
-
-     <!--</template>-->
      
       
     
@@ -132,14 +122,16 @@
 
       is: 'beer-allbeers-card',
        properties: {
-        // user:{
-        //   type: Object
-        // },
+ 
         beer:{
           type: Object
         },
         beerId:{
           type: String
+        },
+
+        owner:{
+          type: Boolean
         }
 
        },

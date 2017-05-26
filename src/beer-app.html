@@ -459,7 +459,6 @@
         <div>
         <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
           <beer-account name="account" organization="[[organization]]" small-screen="[[smallScreen]]"owner="[[owner]]"></beer-account>
-          <beer-allbreweries name="allbreweries" owner="[[owner]]"></beer-allbreweries>
           <beer-allbeers name="allbeers" owner="[[owner]]"></beer-allbeers>
           <beer-pub name="pub" login="{{login}}" organization="{{organization}}" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" owner="[[owner]]" online="[[online]]"></beer-pub>
           <beer-tap name="tap" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.TAP]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap>
@@ -912,8 +911,6 @@
             this._isHome=true;
             if(subRoute === 'main'){
               page = 'home';
-            }else if(subRoute==='allbreweries'){
-               page = 'allbreweries';
             }else if(subRoute==='allbeers'){
                page = 'allbeers';
             }else if(subRoute==='search'){

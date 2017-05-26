@@ -2,12 +2,9 @@
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
-<!--<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">-->
-<!--<link rel="import" href="../bower_components/iron-label/iron-label.html">-->
 <link rel="import" href="../bower_components/google-apis/google-maps-api.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<!--<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">-->
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
@@ -16,12 +13,8 @@
 <link rel="import" href="../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
-
-<!--<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">-->
-
 <link rel="import" href="beer-icons.html">
 
-<!--<link rel="import" href="beer-location.html">-->
 <link rel="import" href="beer-foodtruck-calendar.html">
 
 
@@ -122,35 +115,9 @@
     <paper-material class="card" elevation="0">
     
       <paper-input label="Search for Food Truck" value="{{queryString}}">
-        <iron-icon icon="beer-icons:search" prefix></iron-icon>
-          <paper-icon-button class="clear" suffix on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
+        <iron-icon icon="beer-icons:search" slot="prefix"></iron-icon>
+        <paper-icon-button class="clear" slot="suffix" on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
       </paper-input>
-
-      <!--<iron-label class="tap-status-wrapper">
-            <toggle-icon
-                  animation="flip-vertical" 
-                  icon="beer-icons:expand-more"
-                  checked="{{toggleSearchType}}"
-                  noink>
-            </toggle-icon>
-            <span class="tap-status-shown">[[searchMessage]]</span>
-        </iron-label>-->
-
-      <!--<iron-collapse id="collapse" opened="[[toggleSearchType]]" no-animation>
-        
-          <paper-listbox
-              attr-for-selected="searchtype"
-              selected-class="search-list" 
-              class="search-list"
-              selected="{{searchType}}"
-              on-click="_close">
-          
-            <paper-item searchtype="BREWERY">Brewery</paper-item>
-            <paper-item searchtype="CIDERY">Cidery</paper-item>
-            <paper-item searchtype="FOOD_TRUCK">Food Truck</paper-item>
-            
-          </paper-listbox>
-      </iron-collapse>-->
             
     </paper-material>
 
