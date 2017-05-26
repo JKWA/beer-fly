@@ -5,13 +5,14 @@ before_script:
   # - npm install -g gulp
   # - npm install gulp
   - npm install polymer-cli
-  # - npm install -g bower
+  - npm install -g bower
   # - npm install css-slam
   # - npm install html-minifier
   # - npm install uglify-js
   - npm install -g firebase-tools
-  # - bower update
-  # - bower install --save webcomponents/webcomponentsjs
+  - bower update
+  - bower install --save webcomponents/webcomponentsjs
+  
  
 script: polymer build
 after_success:
