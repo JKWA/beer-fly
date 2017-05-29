@@ -1,7 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 
 <link rel="import" href="beer-pub-icons.html">
@@ -10,9 +10,9 @@
 
 <dom-module id="beer-pub-card">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       a{
       color: var(--app-primary-color);
@@ -20,8 +20,14 @@
     }
 
       .card{
+        @apply --paper-material-elevation-1;
+        margin: 10px;
+      }
+
+      .card-information{
         padding: 10px;
         margin: 10px;
+
       }
 
       .items > div{
@@ -55,24 +61,18 @@
       }
 
       .icons-wrapper{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        @apply --layout-wrap;
       }
 
       .sponsor-wrapper{
         font-size: .8em;
         font-weight: 300;
         color: var(--app-secondary-color);
-        /*visibility: hidden;*/
-        /*@apply(--layout-horizontal);
-        @apply(--layout-center-justified);*/
       }
 
-     
-      /*beer-pub-rating {
-        height: 30px;
-      }*/
+
 
 
 
@@ -80,8 +80,8 @@
 
     
 
-      <paper-material class='card' elevation="1" animated-shadow="false">
-        <!--TEST[[photoUrl]]-->
+      <div class="card">
+     
         <template is="dom-if" if="[[sponsor]]">
           <div hidden$="[[!photoUrl]]">
           <a aria-label$="[[name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
@@ -97,6 +97,8 @@
           </a>
           </div>
         </template>
+      <div class="card-information">
+
      
         <div  class="sponsor-wrapper" >
             <div id="sponsor" hidden$="[[sponsorHide]]">Sponsoring Organization</div>
@@ -134,7 +136,8 @@
               </beer-pub-icons>
             </div>
            
-      </paper-material>
+      </div>
+      </div>
  
     
   </template>

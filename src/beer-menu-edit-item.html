@@ -5,7 +5,7 @@
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
@@ -20,12 +20,13 @@
 
 <dom-module id="beer-menu-edit-item">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
     .card{
         margin: 10px;
         padding: 10px;
+        @apply --paper-material-elevation-1;
       }
     </style>
 
@@ -37,7 +38,7 @@
             data="{{menuItem}}">
       </firebase-document>
 
-         <paper-material elevation="1" class="card">
+         <div elevation="1" class="card">
             
             <paper-input 
                 label="Item Name" 
@@ -59,7 +60,7 @@
             </beer-menu-edit-price>
                   
           </div>
-        </paper-material>  
+        </div>  
       
   </div>
 

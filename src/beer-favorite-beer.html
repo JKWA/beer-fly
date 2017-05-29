@@ -2,7 +2,7 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 
 <link rel="import" href="beer-icons.html">
 <!--<link rel="import" href="beer-allbeers-card.html">-->
@@ -14,18 +14,25 @@
   
   
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
     :host {
         display: block;
         max-width: 640px;
       }
       
+    .location-card{
+          padding: 10px;
+          margin: 10px;
+          @apply --paper-material-elevation-0;
+        }
+
     .card{
           padding: 10px;
           margin: 10px;
+          @apply --paper-material-elevation-1;
         }
 
     </style>
@@ -43,9 +50,9 @@
         data="{{ratings}}">
     </firebase-query>
 
-    <paper-material class='card' elevation="0" animated-shadow="false">
+    <div class="location-card">
       <div class="your-location">Your location: [[location.address]]</div>
-    </paper-material>
+    </div>
     
      <template 
         is="dom-repeat" 
@@ -53,13 +60,12 @@
         sort="_sortByRating" 
         filter="_filterAboveThree"
         observe="rating">
-        <paper-material class='card' elevation="1" animated-shadow="false">
+        <div class="card">
           <beer-favorite-beer-card 
             beer-id="[[item.$key]]" 
             location="[[location]]">
           </beer-favorite-beer-card>
-        </paper-material>
-       <!--<beer-allbeers-card beer-id="[[item.$key]]"></beer-allbeers-card>-->
+        </div>
 
     </template>
 

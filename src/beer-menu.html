@@ -7,7 +7,7 @@
 <link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
@@ -22,9 +22,9 @@
 
 <dom-module id="beer-menu">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       :host {
         display: block;
@@ -50,6 +50,7 @@
       .card{
         margin: 10px;
         padding: 20px;
+        @apply --paper-material-elevation-1;
       }
 
       .motto {
@@ -72,12 +73,12 @@
       }
 
       .edit-button-wrapper{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
+        @apply --layout-horizontal;
+        @apply --layout-justified;
       }
 
       .menu{
-         @apply(--layout-vertical);
+         @apply --layout-vertical;
       }
 
       .category-title{
@@ -91,19 +92,19 @@
         font-size: 1em;
         font-weight: 300;
         text-align: center;
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
       }
 
 
       .menu-category{
-         @apply(--layout-horizontal);
-         @apply(--layout-center-justified);
+         @apply --layout-horizontal;
+         @apply --layout-center-justified;
       }
 
       .menu-title{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
         color: var(--app-primary-color);
         font-size: 1.2em;
         font-weight: 400;
@@ -111,8 +112,8 @@
       }
 
       .menu-description{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
         font-size: .9em;
         font-weight: 300;
         color: var(--app-secondary-color);
@@ -128,9 +129,9 @@
       }
 
       .price-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-around-justified);
-         @apply(--layout-wrap);
+         @apply --layout-horizontal;
+         @apply --layout-around-justified;
+         @apply --layout-wrap;
          color: var(--app-primary-color);
          font-size: 1em;
          font-weight: 300;
@@ -168,7 +169,7 @@
     <div class="menu">
 
       <template is="dom-if" if="[[owner]]">
-        <paper-material class="card"  elevation="1">
+        <div class="card"  elevation="1">
           <iron-label  class="add">
               <paper-icon-button 
                     icon="beer-icons:add" 
@@ -176,12 +177,12 @@
               </paper-icon-button>
             Add Category
           </iron-label>
-        </paper-material>
+        </div>
       </template>
 
 
     <template is="dom-repeat" items="[[_toArray(organization.menu)]]" as="menu" sort="_categoryOrder">
-      <paper-material class="card" elevation="1">
+      <div class="card" elevation="1">
       <template is="dom-if" if="[[owner]]">
         <div class="edit-button-wrapper">
           <div>

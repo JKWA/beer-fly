@@ -9,11 +9,12 @@
 
 
 <dom-module id="beer-foodtruck-calendar-input">
-  <template>
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
       :host {
         display: block;
-        @apply(--paper-font-common-base);
+        @apply --paper-font-common-base;
       }
 
       paper-input{
@@ -49,7 +50,7 @@
         };
         --paper-input-container-input: {
           text-align: center;
-          @apply(--paper-font-button);
+          @apply --paper-font-button;
           padding-left: 5px;
         };
         --paper-input-container-underline: {
@@ -69,11 +70,11 @@
       }
 
       label{
-        @apply(--paper-font-caption);
+        @apply --paper-font-caption;
       }
       .time-input-wrap{
-        @apply(--layout-horizontal);
-        @apply(--layout-no-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-no-wrap;
       }
 
       [hidden]{

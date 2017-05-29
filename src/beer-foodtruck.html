@@ -5,7 +5,7 @@
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
@@ -19,9 +19,9 @@
 
 <dom-module id="beer-foodtruck">
 
-  <template> 
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       :host {
         display: block;
@@ -41,6 +41,7 @@
       .card{
         margin: 10px;
         padding: 20px;
+        @apply --paper-material-elevation-1;
       }
 
       .motto {
@@ -59,7 +60,7 @@
      
 
       .menu{
-         @apply(--layout-vertical);
+         @apply --layout-vertical;
       }
 
       .category-title{
@@ -73,19 +74,19 @@
         font-size: 1em;
         font-weight: 300;
         text-align: center;
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
       }
 
 
       .menu-category{
-         @apply(--layout-horizontal);
-         @apply(--layout-center-justified);
+         @apply --layout-horizontal;
+         @apply --layout-center-justified;
       }
 
       .menu-title{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
         color: var(--app-primary-color);
         font-size: 1.2em;
         font-weight: 400;
@@ -93,8 +94,8 @@
       }
 
       .menu-description{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
         font-size: .9em;
         font-weight: 300;
         color: var(--app-secondary-color);
@@ -110,9 +111,9 @@
       }
 
       .price-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-around-justified);
-         @apply(--layout-wrap);
+         @apply --layout-horizontal;
+         @apply --layout-around-justified;
+         @apply --layout-wrap;
          color: var(--app-primary-color);
          font-size: 1em;
          font-weight: 300;
@@ -147,13 +148,13 @@
     </div>
 
      <template is="dom-if" if="[[owner]]">
-        <paper-material class="card"  elevation="1">
+        <div class="card"  elevation="1">
          <iron-label>
             <a aria-label$="TEST" href$="/[[nameUrl]]/foodtruck-edit?orgid=[[orgId]]">
               <paper-icon-button icon="beer-icons:add"></paper-icon-button>
               Edit food trucks</a>
           </iron-label>
-        </paper-material>
+        </div>
       </template>
       <template is="dom-if" if="[[truckId]]">
         <beer-foodtruck-card

@@ -7,7 +7,7 @@
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
 
@@ -15,9 +15,9 @@
 
 <dom-module id="beer-foodtruck-schedule">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
      a{
       color: var(--app-primary-color);
@@ -28,6 +28,7 @@
         margin: 10px;
         padding: 10px;
         text-align: center;
+        @apply --paper-material-elevation-0;
       }
 
       .day {
@@ -63,16 +64,16 @@
 
      <template is="dom-repeat" items="[[_createArray(days)]]" as="day">
         
-      <paper-material class='card' elevation="0" animated-shadow="false">
+      <div class='card' animated-shadow="false">
           <div class="day">[[day.label]]</div>
           
           <template is="dom-repeat" items="[[day.trucks]]" as="truck" sort="_sortOpenTime">
             
             <a href="/[[nameUrl]]/foodtruck?orgid=[[orgId]]&truckId=[[truck.id]]">
-              <paper-material elevation="0">
+              <div>
                 <div class="name">[[truck.name]]</div>
                 <div class="date">[[_formatTimeStamp(truck.open)]]-[[_formatTimeStamp(truck.close)]]</div>
-              </paper-material>
+              </div>
             </a>
 
             
@@ -85,7 +86,7 @@
           </div>
 
 
-      </paper-material>
+      </div>
 
       </template>
         

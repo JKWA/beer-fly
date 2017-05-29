@@ -15,9 +15,9 @@
 <dom-module id="beer-beer-add">
 
 
-  <template>
+ <template strip-whitespace>
+  <style include="paper-material-styles">
 
-    <style>
 
       a{
         font-size: 16px;
@@ -36,10 +36,7 @@
         left: 50%;
       }
 
-      .card{
-        margin: 10px;
-        padding: 20px;
-      }
+   
 
       .abv {
         width: 100px;
@@ -108,13 +105,13 @@
       }
 
       .action-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-justified);
+         @apply --layout-horizontal;
+         @apply --layout-justified;
       }
 
       .message-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-end-justified);
+         @apply --layout-horizontal;
+         @apply --layout-end-justified;
       }
 
     </style>
@@ -177,8 +174,8 @@
           [[returnName]]</a>
       </iron-label>
       </div>
-  TEST
-    <paper-material  class="card"  elevation="0">
+
+    <div  class="card" >
 
       <div>
         <div class="brewery-name">[[organization.name]]</div>
@@ -246,7 +243,7 @@
    
           </div>
     
-    </paper-material>
+    </div>
     </div>
 
     <paper-toast 

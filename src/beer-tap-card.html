@@ -7,7 +7,7 @@
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
@@ -16,9 +16,9 @@
 
 <dom-module id="beer-tap-card">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
 
       a{
@@ -30,13 +30,12 @@
         width: 95%;
         margin: 10px;
         padding: 20px;
-        
-       
+        @apply --paper-material-elevation-1;
       }
 
       .tap-wrapper{
-        @apply(--layout-horizontal);
-        @apply(--layout-around-justified);
+        @apply --layout-horizontal;
+        @apply --layout-around-justified;
       }
 
       .tap-wrapper > div{
@@ -44,13 +43,13 @@
       }
 
       .tap-status-wrapper{
-        @apply(--layout-horizontal);
-         @apply(--layout-start-justified);
+        @apply --layout-horizontal;
+         @apply --layout-start-justified;
       }
 
       .tap-toggle{
-        @apply(--layout-horizontal);
-         @apply(--layout-end-justified);
+        @apply --layout-horizontal;
+         @apply --layout-end-justified;
          padding: 0 40px 0 0;
       }
 
@@ -70,14 +69,14 @@
       }
 
       .wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-start-justified);
+         @apply --layout-horizontal;
+         @apply --layout-start-justified;
          margin: 10px;
       }
 
       .footer{
-         @apply(--layout-horizontal);
-         @apply(--layout-justified));
+         @apply --layout-horizontal;
+         @apply --layout-justified);
          margin: 10px 0 0 0;
          font-size: 1em;
          color: var(--app-primary-color);
@@ -162,7 +161,7 @@
     </firebase-document>
 
 
-      <paper-material class='card' elevation="1" animated-shadow="false">
+      <div class='card' elevation="1" animated-shadow="false">
        
         <div>
           <div id="tapStatusMesage" >
@@ -242,7 +241,7 @@
                 </div>
             </div>
          <!--</div>-->
-      </paper-material>
+      </div>
   </template>
 
   <script>

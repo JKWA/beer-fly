@@ -22,9 +22,9 @@
 
 <dom-module id="beer-login">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
 
     a{ 
@@ -34,14 +34,14 @@
 
     .buttons{
         margin: 20px 0 0 0;
-        @apply(--layout-vertical);
-        @apply(--layout-wrap);
+        @apply --layout-vertical;
+        @apply --layout-wrap;
         
     }
 
     .buttons > div{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
     }
 
 
@@ -50,7 +50,7 @@
     }
 
     .wrapper{
-        @apply(--layout-vertical);
+        @apply --layout-vertical;
         margin: 10px;
        
     }

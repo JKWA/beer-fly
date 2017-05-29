@@ -7,7 +7,7 @@
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 
@@ -21,9 +21,9 @@
 <dom-module id="beer-beer-edit">
 
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
      :host {
         display: block;
@@ -50,6 +50,7 @@
       .card{
         margin: 10px;
         padding: 20px;
+        @apply --paper-material-elevation-0;
       }
 
       .abv {
@@ -101,13 +102,13 @@
       }
 
       .action-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-justified);
+         @apply --layout-horizontal;
+         @apply --layout-justified;
       }
 
       .message-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-end-justified);
+         @apply --layout-horizontal;
+         @apply --layout-end-justified;
       }
 
     </style>
@@ -133,7 +134,7 @@
         data="{{beer}}">
     </firebase-document>
 
-    <paper-material class="card" elevation="0">
+    <div class="card">
 
     <div class="beer-name" hidden$="[[!beerId]]">[[beerName]]</div>
         <paper-input 
@@ -169,15 +170,15 @@
         </beer-style-select>
 
 
-    </paper-material>
+    </div>
 
-    <paper-material class="card" elevation="0">
+    <div class="card">
         <paper-button 
             id="submitButton" 
             on-tap="_addNewBeer" 
             raised
             class="button">[[buttonName]]</paper-button>
-    </paper-material>
+    </div>
 
 
    <paper-toast 

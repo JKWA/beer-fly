@@ -1,14 +1,14 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 
 
 <dom-module id="beer-contact-card">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
     a{
       color: var(--app-primary-color);
@@ -24,7 +24,7 @@
 
     </style>
 
-  <paper-material elevation="0" animated-shadow="false">
+  <div animated-shadow="false">
     <div class="contact">
       <div>[[place.name]]</div>
       <div>
@@ -45,7 +45,7 @@
       </div>
 
     </div>
-  </paper-material>
+  </div>
   </template>
 
 

@@ -5,7 +5,7 @@
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
@@ -18,9 +18,9 @@
 
 <dom-module id="beer-foodtruck-card">
 
-  <template> 
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
       a{
         color: var(--app-accent-color);
         text-decoration: none;
@@ -34,6 +34,7 @@
       .card{
         margin: 10px;
         padding: 20px;
+        @apply --paper-material-elevation-1;
       }
 
       .motto {
@@ -52,7 +53,7 @@
      
 
       .menu{
-         @apply(--layout-vertical);
+         @apply --layout-vertical;
       }
 
       .truck-name{
@@ -76,27 +77,27 @@
         font-size: 1em;
         font-weight: 300;
         text-align: center;
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
       }
 
 
       .menu-category{
-         @apply(--layout-horizontal);
-         @apply(--layout-center-justified);
+         @apply --layout-horizontal;
+         @apply --layout-center-justified;
       }
 
       .menu-title{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
         color: var(--app-primary-color);
         font-size: 1.2em;
         font-weight: 400;
       }
 
       .menu-description{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
         font-size: .9em;
         font-weight: 300;
         color: var(--app-secondary-color);
@@ -112,16 +113,16 @@
       }
 
       .price-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-around-justified);
-         @apply(--layout-wrap);
+         @apply --layout-horizontal;
+         @apply --layout-around-justified;
+         @apply --layout-wrap;
          color: var(--app-primary-color);
          font-size: 1em;
          font-weight: 300;
       }
 
       .schedule-wrapper{
-        @apply(--layout-horizontal);
+        @apply --layout-horizontal;
         margin: 5px 0 5px 0;
       }
 
@@ -129,8 +130,8 @@
         font-size: 2em;
         font-weight: 500;
         color: var(--app-accent-color);
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
         margin: 0 0 30px 0;
       }
 
@@ -150,7 +151,7 @@
         data="{{menu}}">
     </firebase-document>
     
-    <paper-material class="card"  elevation="1">
+    <div class="card"  elevation="1">
 
       <template is="dom-repeat" items="[[scheduleData]]" as="schedule" sort="_sortDay">
         <div class="schedule-wrapper">
@@ -194,7 +195,7 @@
       </template>
       
 
-    </paper-material>
+    </div>
 
 
     

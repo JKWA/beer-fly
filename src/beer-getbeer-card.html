@@ -11,9 +11,9 @@
 
 <dom-module id="beer-getbeer-card">
 
-  <template>
-
-    <style>
+ <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
 
      a{
@@ -24,10 +24,11 @@
       .card{
         margin: 10px;
         padding: 20px;
+        @apply --paper-material-elevation-1;
       }
 
       .wrapper{
-         @apply(--layout-vertical);        
+         @apply --layout-vertical;        
       }
 
       .wrapper > div{
@@ -54,9 +55,9 @@
       }
 
       .location{
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
+        @apply --layout-wrap;
         font-size: 1em;
         font-weight: 400;
         color: var(--app-primary-color);
@@ -86,7 +87,7 @@
 
   DELETED
 
-     <!--<paper-material class='card' elevation="1" animated-shadow="false">
+     <!--<div class='card' elevation="1" animated-shadow="false">
 
         <div>
           <beer-rating beer-id="[[beer.id]]"></beer-rating>
@@ -109,7 +110,7 @@
           </a>
         </div>
         
-      </paper-material>-->
+      </div>-->
       
       
     

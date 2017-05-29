@@ -9,7 +9,7 @@
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 
@@ -21,9 +21,9 @@
 
 <dom-module id="beer-foodtruck-calendar">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
     .add{
       color: var(--app-accent-color);
     }
@@ -31,27 +31,27 @@
       color: red;
     }
     .calendar-wrapper{
-         @apply(--layout-vertical);
-         @apply(--layout-justified);
+         @apply --layout-vertical;
+         @apply --layout-justified;
       }
 
     .schedule-wrapper{
-      @apply(--layout-horizontal);
+      @apply --layout-horizontal;
       margin: 12px 0 0 0;
     }
 
     .schedule-title{
-      @apply(--layout-horizontal);
-      @apply(--layout-justified);
+      @apply --layout-horizontal;
+      @apply --layout-justified;
       
     }
       .time-input{
-         @apply(--layout-horizontal);
+         @apply --layout-horizontal;
       }
 
       .time-input >div{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
+        @apply --layout-horizontal;
+        @apply --layout-justified;
         padding: 10px;
       }
 
@@ -103,7 +103,7 @@
           
           <div>
             <iron-collapse no-animation opened="{{toggle}}"> 
-            <paper-material elevation="0" >
+            <div>
               <paper-listbox 
                   attr-for-selected="day" 
                   selected="{{selectedDay}}"
@@ -112,11 +112,11 @@
                   <paper-item day="[[day]]">[[day.label]]</paper-item>
                 </template>
               </paper-listbox>
-            </paper-material>
+            </div>
             </iron-collapse>
           </div>
           <div>
-            <paper-material elevation="0">
+            <div>
               <div id="scheduleInput" hidden>
                 <div class="time-input">
                 
@@ -150,7 +150,7 @@
 
               </div>
 
-            </paper-material>
+            </div>
           </div>
         </div>
 

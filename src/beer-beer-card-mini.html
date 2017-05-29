@@ -1,13 +1,13 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 
 
 <dom-module id="beer-beer-card-mini">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
 
       a{
@@ -19,6 +19,7 @@
         margin: 10px;
         padding: 10px;
         text-align: center;
+        @apply --paper-material-elevation-0;
       }
 
       .name {
@@ -47,9 +48,9 @@
       }
 
       .location{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+        @apply --layout-wrap;
         font-size: 1em;
         font-weight: 400;
         color: var(--app-primary-color);
@@ -74,7 +75,7 @@
 
 
     <a href="/[[nameUrl]]/description?orgid=[[orgId]]&beerId=[[beerId]]">
-      <paper-material class='card' elevation="0" animated-shadow="false">
+      <div class='card' animated-shadow="false">
         <div>
             <div>
                 <div class="name">[[beerName]]</div>
@@ -88,7 +89,7 @@
                 
             </div>
          </div>
-      </paper-material>
+      </div>
     </a>
   </template>
 

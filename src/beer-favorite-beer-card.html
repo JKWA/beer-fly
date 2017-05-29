@@ -1,16 +1,12 @@
 
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
-
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-
-
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<!--<link rel="import" href="../bower_components/geo-query/geo-query.html">-->
 <link rel="import" href="../bower_components/geo-query/geofire-import.html">
-
 
 
 <link rel="import" href="beer-icons.html">
@@ -18,9 +14,9 @@
 
 <dom-module id="beer-favorite-beer-card">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
 
      a{
@@ -37,15 +33,16 @@
     }
 
 
-    /*.card{
+    .card{
       padding: 10px;
       margin: 10px;
-    }*/
+      @apply --paper-material-elevation-1;
+    }
 
     .title{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        @apply --layout-wrap;
         font-size: 1em;
         font-weight: 400;
         color: var(--app-primary-color);
@@ -56,7 +53,7 @@
       }
      
       .wrapper{
-         @apply(--layout-vertical);        
+         @apply --layout-vertical;        
       }
 
       .wrapper > div{
@@ -64,7 +61,7 @@
       }
 
       .pub-wrapper{
-         @apply(--layout-vertical); 
+         @apply --layout-vertical; 
          margin: 10px 0 10px 0;
       }
 
@@ -109,9 +106,9 @@
       }
 
       .location{
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
+        @apply --layout-wrap;
         font-size: 1em;
         font-weight: 400;
         color: var(--app-primary-color);
@@ -154,7 +151,7 @@
 
     
     
-     <paper-material class='card' elevation="0" animated-shadow="false">
+     <div>
           
           <div class="title">
             <div>
@@ -178,7 +175,7 @@
               
           </div>
 
-      </paper-material>
+      </div>
     
     <!--<paper-input label="beerId" value></paper-input>-->
     
@@ -190,11 +187,11 @@
           observe="sort distance">
           <a aria-label$="[[pub.name]]" href$="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
           <!--[[pub.place_id]]-->
-            <paper-material class="pub-wrapper" elevation="0">
+            <div class="pub-wrapper">
               <div class="pub-name">[[pub.name]]</div>
               <div class="pub-vicinity">[[pub.vicinity]]</div>
               <div class="pub-distance">[[_computeDisplayDistance(pub.distance)]] miles from you.</div>
-            </paper-material>
+            </div>
           </a>
 
         

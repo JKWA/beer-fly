@@ -1,15 +1,14 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="beer-beer-rating.html">
 <link rel="import" href="beer-icons.html">
 
 <dom-module id="beer-allbeers-card">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    <style include="paper-material-styles">
 
 
      a{
@@ -23,7 +22,7 @@
       }
 
       .wrapper{
-         @apply(--layout-vertical);        
+         @apply --layout-vertical;        
       }
 
       .wrapper > div{
@@ -50,9 +49,9 @@
       }
 
       .location{
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
+        @apply --layout-wrap;
         font-size: 1em;
         font-weight: 400;
         color: var(--app-primary-color);
@@ -87,7 +86,7 @@
         path="beer/[[beerId]]">  
     </firebase-document>
 
-     <paper-material class='card' elevation="1" animated-shadow="false">
+     <div class='card' elevation="1" animated-shadow="false">
         <div>
           <beer-beer-rating beer-id="[[beer.id]]"></beer-beer-rating>
 
@@ -109,7 +108,7 @@
           </a>
         </div>
         
-      </paper-material>
+      </div>
      
       
     

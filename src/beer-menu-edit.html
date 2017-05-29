@@ -6,7 +6,7 @@
 
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 
 <link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
@@ -18,9 +18,9 @@
 
 <dom-module id="beer-menu-edit">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       :host {
         display: block;
@@ -34,6 +34,7 @@
       .card{
         padding: 10px;
         margin: 10px;
+        @apply --paper-material-elevation-0;
       }
       
       .category-titleA{
@@ -68,7 +69,7 @@
     </firebase-document>
 
 
-    <paper-material class="card"  elevation="0">
+    <div class="card">
 
         <paper-input 
             id="categorySortOrder" 
@@ -90,7 +91,7 @@
             value="{{category.description}}">
         </paper-textarea>
 
-        </paper-material>
+        </div>
 
          <template is="dom-repeat" items="[[_toArray(category.item)]]">
 

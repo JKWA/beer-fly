@@ -6,7 +6,7 @@
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
@@ -16,17 +16,19 @@
 
 
 <dom-module id="beer-tv-card">
-  <template>
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       .card{
         margin: 10px;
         padding:10px;
+        @apply --paper-material-elevation-0;
       }
 
       .wrapper{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
+        @apply --layout-horizontal;
+        @apply --layout-justified;
       }
 
       .name {
@@ -48,9 +50,9 @@
       }
 
       .location{
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
+        @apply --layout-wrap;
         font-size: 1.5vw;
         font-weight: 300;
       }
@@ -70,7 +72,7 @@
 
    
 
-      <paper-material class="card" elevation="0" animated-shadow="false">
+      <div class="card" animated-shadow="false">
        
         <div>
           <div class="name">[[beer.name]]
@@ -94,7 +96,7 @@
           </div>
         </div>
 
-      </paper-material>
+      </div>
   </template>
 
   <script>

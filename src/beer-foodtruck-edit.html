@@ -10,7 +10,7 @@
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="beer-icons.html">
@@ -20,9 +20,9 @@
 
 <dom-module id="beer-foodtruck-edit">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       :host {
         display: block;
@@ -37,6 +37,7 @@
     .card{
       padding: 10px;
       margin: 10px;
+      @apply --paper-material-elevation-0;
     }
 
    
@@ -65,12 +66,12 @@
       }
 
       .pub-wrapper{
-         @apply(--layout-vertical); 
+         @apply --layout-vertical; 
       }
 
       .calendar-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-justified);
+         @apply --layout-horizontal;
+         @apply --layout-justified;
         
       }
 
@@ -117,14 +118,14 @@
 
     <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
 
-    <paper-material class="card" elevation="0">
+    <div class="card">
     
       <paper-input label="Search for Food Truck" value="{{queryString}}">
         <iron-icon icon="beer-icons:search" slot="prefix"></iron-icon>
         <paper-icon-button class="clear" slot="suffix" on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
       </paper-input>
             
-    </paper-material>
+    </div>
 
 
        <template id="repeater" is="dom-repeat" 
@@ -132,7 +133,7 @@
           initial-count="20"  sort="_sort" 
           filter="_filter"
           observe="sort distance">    
-            <paper-material class="pub-wrapper card" elevation="1">
+            <div class="pub-wrapper card" elevation="1">
               <div class="truck-name">[[truck.name]]</div>
               <div class="truck-vicinity">[[truck.vicinity]]</div>
               <div class="truck-distance">[[_computeDisplayDistance(truck.distance)]] miles from you.</div>
@@ -143,17 +144,17 @@
                 </iron-label>
                 
               </div>
-            </paper-material>
+            </div>
       </template>
 
       <template is="dom-repeat" items="{{foodTrucks}}" as="foodTruck">
-         <paper-material class="card" elevation="1">
+         <div class="card" elevation="1">
           <beer-foodtruck-calendar
             org-id="[[orgId]]"
             truck="[[foodTruck]]"
             truck-id="[[foodTruck.$key]]">
           </beer-foodtruck-calendar>
-         </paper-material>
+         </div>
 
       </template>
 

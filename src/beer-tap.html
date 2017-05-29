@@ -25,9 +25,9 @@
 
 <dom-module id="beer-tap">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       :host {
         display: block;
@@ -44,11 +44,12 @@
     .card{
         margin: 10px;
         padding: 20px;
+        @apply --paper-material-elevation-1;
       }
 
       .checkbox-wrapper{
-        @apply(--layout-horizontal); 
-        @apply(--layout-start-justified);
+        @apply --layout-horizontal; 
+        @apply --layout-start-justified;
       }
 
       .checkbox-wrapper > div{
@@ -56,7 +57,7 @@
       }
 
       .wrapper{
-         @apply(--layout-vertical);        
+         @apply --layout-vertical;        
       }
 
       .wrapper > div{
@@ -95,9 +96,9 @@
       }
 
       .location{
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
+        @apply --layout-wrap;
         font-size: 1em;
         font-weight: 400;
         color: var(--app-primary-color);
@@ -143,26 +144,26 @@
 
    <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
    <div hidden="[[smallScreen]]">
-   <paper-material class="card" elevation="1">
+   <div class="card" elevation="1">
     <a aria-label$="Cast to Television" href$="/[[nameUrl]]/tv?orgid=[[orgId]]" target="_blank">
      <iron-icon icon="beer-icons:cast"></iron-icon>
      Cast to Television
     </a>
-   </paper-material>
+   </div>
    </div>
    <template is="dom-if" if="[[owner]]">
-      <paper-material class="card" elevation="1">
+      <div class="card" elevation="1">
         <iron-label>
             <a aria-label$="TEST" href$="/[[nameUrl]]/tap-add?orgid=[[orgId]]">
               <paper-icon-button icon="beer-icons:add"></paper-icon-button>
               Add a beer on tap</a>
           </iron-label>
-      </paper-material>
+      </div>
    </template>
    
 
     <template is="dom-repeat" items="[[_getArray(organization.onTap)]]" sort="_sortOrder" as="beer">
-      <paper-material class="card" elevation="1">
+      <div class="card" elevation="1">
 
         <template is="dom-if" if="[[!owner]]">
             <div>
@@ -223,7 +224,7 @@
               </div>
             </div>
           </template>
-      </paper-material>
+      </div>
     </template>
 
 

@@ -3,13 +3,10 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
-
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
-
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
@@ -18,12 +15,10 @@
 <link rel="import" href="beer-login.html">
 
 
-
 <dom-module id="beer-account">
 
-  <template>
-
-    <style>
+<template strip-whitespace>
+  <style include="paper-material-styles">
 
     a{
       text-decoration: none;
@@ -32,6 +27,7 @@
      .card {
         padding: 12px;
         margin: 10px;
+        @apply --paper-material-elevation-1;
     }
 
      paper-button{
@@ -42,14 +38,13 @@
     }
 
      .button-wrapper{
-         @apply(--layout-vertical);
-         /*@apply(--layout-wrap);*/
+         @apply --layout-vertical;
       }
 
 
      .button-wrapper > div{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
         margin: 20px 0 20px 0;
         
     }
@@ -57,8 +52,8 @@
       .item {
         margin: 30px;
         padding: 10px;
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
       }
 
       .account-details {
@@ -128,7 +123,7 @@
           </div>
  
           <div hidden$="[[!user]]">
-            <paper-material class="card" elevation="1">
+            <div class="card" elevation="1">
            
               <div class="account-details">Account Details</div>
               <div><b>Name:</b>
@@ -150,16 +145,16 @@
               <div><b>Domain:</b> [[userData.domain]]</div>
               <div hidden="[[!userData.ADMIN]]"><b>Admin:</b> [[userData.ADMIN]]</div>
               <div class="message">[[message]]</div>
-            </paper-material>
+            </div>
 
             <template is="dom-repeat" items="[[organizations]]" as="pub">
 
               <a aria-label$="[[pub.name]]" href$="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
-                <paper-material class="card" elevation="1">
+                <div class="card" elevation="1">
                   <div class="name">[[pub.name]]</div>
                   <div class="address"><b>Domain:</b> [[pub.domain]]</div>
                   <div class="address">[[pub.formatted_address]]</div>
-                </paper-material>
+                </div>
               </a>
                 
             </template>

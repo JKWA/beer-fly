@@ -27,9 +27,9 @@
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/polymerfire.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
@@ -61,9 +61,8 @@
 
 <dom-module id="beer-app">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+  <style include="paper-material-styles">
 
       :host {
         display: block;
@@ -90,7 +89,7 @@
       }
 
       app-header {
-        @apply(--layout-fixed-top);
+        @apply --layout-fixed-top;
         z-index: 1;
         background-color: rgba(255, 255, 255, 0.95);
         --app-header-shadow: {
@@ -165,39 +164,12 @@
         };
       }
 
-      /*#tabContainer {
-        position: relative;
-        height: 66px;
-      }*/
-
-      /*beer-tabs, beer-tab {
-        --beer-tab-overlay: {
-          border-bottom: 2px solid var(--app-accent-color);
-        };
-      }*/
-
-      /*beer-tabs {
-        height: 100%;
-      }
-
-      beer-tab {
-        margin: 0 10px;
-      }
-
-      beer-tab a {
-        display: inline-block;
-        outline: none;
-        padding: 9px 5px;
-        font-size: 13px;
-        font-weight: 500;
-        text-decoration: none;
-        color: var(--app-primary-color);
-      }*/
-
       .card {
         margin: 5px;
         padding: 5px;
+        @apply --paper-material-elevation-1;
       }
+
       .card-title{
         width: 100%;
         font-size: 1.12em;
@@ -227,8 +199,8 @@
       }
 
       .login-wrapper{
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
         padding: 7px;
         background-color: #F8F8F8;
       }
@@ -259,26 +231,17 @@
       }
 
       iron-pages {
-        
-        /*@apply(--layout-horizontal);
-        @apply(--layout-center-justified);*/
         max-width: 640px;
         margin: 0 auto;
       }
 
       .main-content{
-        /*@apply(--layout-horizontal);
-        @apply(--layout-center-justified);*/
         min-height: 75vh;
       }
 
 
 
       .footer {
-        /*position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;*/
         text-align: center;
         width: 100%;
         margin: 20px 0 0 0;
@@ -419,7 +382,7 @@
         </div>  
       </a>
     
-      <paper-material class="card"  elevation="0">
+      <div class="card">
         
       <div class="card-title">[[_showOrgName(place.name)]]</div>
 
@@ -445,7 +408,7 @@
       <div class="extra-links" hidden$="[[!user]]" on-tap="_logout"><iron-icon class="drawer-icon" icon="beer-icons:account"></iron-icon>Sign out</div>
       <div class="extra-links" hidden$="[[user]]" on-tap="_login"><iron-icon class="drawer-icon" icon="beer-icons:account"></iron-icon>Sign in</div>
       <div class="extra-links">Terms of use</div>
-    </paper-material>
+    </div>
     </section>
   </app-drawer>
 

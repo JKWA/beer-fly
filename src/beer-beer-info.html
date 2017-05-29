@@ -2,7 +2,7 @@
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
@@ -16,9 +16,9 @@
 
 <dom-module id="beer-beer-info">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
     :host {
         display: block;
@@ -42,12 +42,13 @@
     .card{
       padding: 10px;
       margin: 10px;
+      @apply --paper-material-elevation-0;
     }
 
     .title{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        @apply --layout-wrap;
         font-size: 1em;
         font-weight: 400;
         color: var(--app-primary-color);
@@ -58,7 +59,7 @@
       }
      
       .wrapper{
-         @apply(--layout-vertical);        
+         @apply --layout-vertical;        
       }
 
       .wrapper > div{
@@ -85,9 +86,9 @@
       }
 
       .location{
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
+        @apply --layout-wrap;
         font-size: 1em;
         font-weight: 400;
         color: var(--app-primary-color);
@@ -126,11 +127,11 @@
       data="{{beer}}">
     </firebase-document>
 
-    <paper-material class='card' elevation="0" animated-shadow="false">
+    <div class='card' animated-shadow="false">
       <div class="your-location">Your location: [[location.address]]</div>
-    </paper-material>
+    </div>
     
-     <paper-material class='card' elevation="0" animated-shadow="false">
+     <div class='card' animated-shadow="false">
           
           <div class="title">
             <div>
@@ -154,7 +155,7 @@
               
           </div>
 
-      </paper-material>
+      </div>
     
     <!--<paper-input label="beerId" value></paper-input>-->
     

@@ -18,11 +18,9 @@ TODO default no rating back to average rating when user removes rating-->
 
 
 <dom-module id="beer-beer-rating">
-<template>
-
-
-
-<style is="custom-style">
+<template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
 
 
@@ -36,13 +34,13 @@ TODO default no rating back to average rating when user removes rating-->
     }
 
     .rating-wrapper{
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
     }
 
     .rating-stars{
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
     }
 
     .rating-number{

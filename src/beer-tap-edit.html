@@ -8,7 +8,7 @@
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../my_components/data/upload-image.html">
@@ -21,9 +21,9 @@
 
 <dom-module id="beer-tap-edit">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       :host {
         display: block;
@@ -52,9 +52,9 @@
 
       
       .menu-category{
-         @apply(--layout-vertical);
-         @apply(--layout-start-justified);
-         /*@apply(--layout-wrap);*/
+         @apply --layout-vertical;
+         @apply --layout-start-justified;
+         /*@apply --layout-wrap;*/
          padding: 5px;
          margin: 5px 5px 15px 5px;
       }

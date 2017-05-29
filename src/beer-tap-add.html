@@ -7,7 +7,7 @@
 
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
@@ -22,9 +22,9 @@
 
 <dom-module id="beer-tap-add">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       a{
         color: var(--app-accent-color);
@@ -34,6 +34,7 @@
       .card{
         margin: 10px;
         padding: 20px;
+        @apply --paper-material-elevation-0;
       }
 
       .brewery-info{
@@ -76,16 +77,6 @@
     <firebase-auth  app-name="beer" user="{{user}}"></firebase-auth>
     <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
 
-    <!--<firebase-query 
-      id="beers"
-      order-by-child="place_id"
-      equal-to="[[placeId]]"
-      limit-to-first="100"
-      disabled
-      app-name="beer" 
-      path="beer" 
-      data="{{beers}}">
-  </firebase-query>-->
 
   <firebase-query 
       id="beers"
@@ -98,7 +89,7 @@
    
 
    <template is="dom-if" if="[[owner]]">
-      <paper-material class="card" elevation="0">
+      <div class="card">
       <paper-input label="Search for brewery" value="{{queryString}}">
         <iron-icon icon="beer-icons:search" prefix></iron-icon>
           <paper-icon-button class="clear" suffix onclick="clearInput()" icon="beer-icons:clear" alt="clear" title="clear">
@@ -129,14 +120,14 @@
               Add a missing beer</a>
           </iron-label>
         </div>
-        </paper-material>
+        </div>
 
     </template>
     
     <div id="beerCards">
     <template is="dom-repeat" items="[[beers]]" as="beer" sort="_sortOrder">
       
-      <paper-material class="card" elevation="1">
+      <div class="card" elevation="1">
        
         <div>
             <beer-beer-tap
@@ -150,7 +141,7 @@
         <div class="style">[[beer.styleName]]</div>
         <div class="address">[[brewery.formatted_address]]</div>
         
-      </paper-material>
+      </div>
       
     </template>
     </div>

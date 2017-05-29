@@ -8,7 +8,7 @@
 <link rel="import" href="../bower_components/iron-location/iron-location.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 
@@ -27,9 +27,9 @@
 
 <dom-module id="beer-home">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       :host {
         display: block;
@@ -56,12 +56,13 @@
     .card{
       padding: 10px;
       margin: 10px;
+      @apply --paper-material-elevation-1;
     }
 
     .title-wrapper{
-       @apply(--layout-horizontal);
-       @apply(--layout-justified);
-       @apply(--layout-wrap);
+       @apply --layout-horizontal;
+       @apply --layout-justified;
+       @apply --layout-wrap;
     }
 
     .locationAddress{
@@ -106,7 +107,7 @@
     }
 
     .wrapper{
-        @apply(--layout-horizontal);
+        @apply --layout-horizontal;
         font-size: 1em;
         font-weight: 300;
         color: var(--app-accent-color);
@@ -129,7 +130,7 @@
       
     </style>
 
-      <paper-material class="card" elevation="1">
+      <div class="card" elevation="1">
         <div class="locationAddress">[[location.address]]</div>
         <paper-spinner-lite id="spinner"></paper-spinner-lite>
         <div hidden$="[[!geoError]]">
@@ -169,7 +170,7 @@
             <paper-button on-click="_getGeoFromAddress">SET LOCATION</paper-button>
           </iron-collapse>
               
-      </paper-material>
+      </div>
 
    
       <div id="pubCards">

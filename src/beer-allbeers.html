@@ -15,9 +15,9 @@
 
 <dom-module id="beer-allbeers">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       paper-spinner-lite{
         position: absolute;
@@ -26,7 +26,7 @@
       }
 
       .category-wrapper{
-        @apply(--layout-horizontal);
+        @apply --layout-horizontal;
         color: var(--app-accent-color);
       }
 

@@ -7,7 +7,7 @@
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 
@@ -19,9 +19,9 @@
 <dom-module id="beer-beer-edit">
 
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       a{
         font-size: 16px;
@@ -43,6 +43,7 @@
       .card{
         margin: 10px;
         padding: 20px;
+        @apply --paper-material-elevation-0;
       }
 
       .abv {
@@ -112,13 +113,13 @@
       }
 
       .action-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-justified);
+         @apply --layout-horizontal;
+         @apply --layout-justified;
       }
 
       .message-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-end-justified);
+         @apply --layout-horizontal;
+         @apply --layout-end-justified;
       }
 
     </style>
@@ -211,7 +212,7 @@
       <!--OWNER [[owner]] -->
       
   
-    <paper-material  class="card"  elevation="0">
+    <div  class="card">
 
       <div>
         <div class="brewery-name">[[organization.name]]</div>
@@ -282,7 +283,7 @@
    
           </div>
     
-    </paper-material>
+    </div>
     </div>
 
     <paper-toast 

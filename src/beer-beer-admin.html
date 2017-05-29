@@ -10,7 +10,7 @@
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
@@ -21,13 +21,14 @@
 
 
 <dom-module id="beer-beer-admin">
-  <template>
-    <style>
+ <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
 
       .tap-wrapper{
-        @apply(--layout-horizontal);
-        @apply(--layout-around-justified);
+        @apply --layout-horizontal;
+        @apply --layout-around-justified;
       }
 
       .tap-wrapper > div{
@@ -35,13 +36,13 @@
       }
 
       .status-wrapper{
-        @apply(--layout-horizontal);
-         @apply(--layout-start-justified);
+        @apply --layout-horizontal;
+         @apply --layout-start-justified;
       }
 
       .tap-toggle{
-        @apply(--layout-horizontal);
-         @apply(--layout-end-justified);
+        @apply --layout-horizontal;
+         @apply --layout-end-justified;
          padding: 0 40px 0 0;
       }
 

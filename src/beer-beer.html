@@ -21,9 +21,9 @@
 
 <dom-module id="beer-beer">
 
-  <template>
-
-    <style>
+ <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
      
       
@@ -45,6 +45,7 @@
       .card{
         margin: 10px;
         padding: 20px;
+        @apply --paper-material-elevation-1;
       }
 
 
@@ -87,13 +88,13 @@
    </template>
 
    
-    <paper-material class="card" elevation="1">
+    <div class="card" elevation="1">
       <iron-label>
         <a aria-label$="TEST" href$="/[[nameUrl]]/beer-edit?orgid=[[orgId]]">
           <paper-icon-button icon="beer-icons:add"></paper-icon-button>
           Add a beer</a>
       </iron-label>
-    </paper-material>
+    </div>
   
 
     
