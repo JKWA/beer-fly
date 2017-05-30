@@ -11,7 +11,7 @@ before_script:
   # - npm install uglify-js
   - npm install -g firebase-tools
   - bower update
-  - bower install --save webcomponents/webcomponentsjs
+  # - bower install --save webcomponents/webcomponentsjs
   
  
 script: polymer build
