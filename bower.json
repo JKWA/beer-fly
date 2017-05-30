@@ -37,7 +37,6 @@
     "iron-collapse": "PolymerElements/iron-collapse#^2.0.0",
     "paper-item": "PolymerElements/paper-item#^2.0.0",
     "iron-list": "PolymerElements/iron-list#^2.0.0",
-    "google-map": "GoogleWebComponents/google-map#^1.2.0",
     "paper-toast": "PolymerElements/paper-toast#^2.0.0",
     "paper-toggle-button": "PolymerElements/paper-toggle-button#^2.0.0",
     "geo-location": "ebidel/geo-location#^1.0.6",
@@ -47,7 +46,9 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0",
     "iron-iconset": "PolymerElements/iron-iconset#^2.0.0",
     "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^2.0.0",
-    "paper-slider": "PolymerElements/paper-slider#^2.0.0"
+    "paper-slider": "PolymerElements/paper-slider#^2.0.0",
+    "neon-animation": "PolymerElements/neon-animation#^2.0.0",
+    "iron-dropdown": "PolymerElements/iron-dropdown#^2.0.0"
   },
   "devDependencies": {
     "web-component-tester": "^6.0.0"
