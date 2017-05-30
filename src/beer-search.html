@@ -105,15 +105,14 @@
 
     <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
 
+    <div class="card">
+
     <beer-location
       location={{location}} 
       search-string="{{searchString}}" 
       sorted-location-history="[[sortedLocationHistory]]">
     </beer-location>
 
-    <div class="card">
-
-    
       <paper-input label="Search for [[searchMessage]]" value="{{queryString}}">
 
         <iron-icon icon="beer-icons:search" slot="prefix"></iron-icon>
@@ -144,7 +143,7 @@
           </paper-listbox>
       </iron-collapse>
             
-    </div>
+   
 
 
        <template id="repeater" is="dom-repeat" 
@@ -160,6 +159,7 @@
             </div>
           </a>
       </template>
+     </div>
 
     
  
