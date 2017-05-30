@@ -4,20 +4,15 @@
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
-
-
 <link rel="import" href="../bower_components/google-apis/google-maps-api.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-
-
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 
 <link rel="import" href="beer-icons.html">
 
@@ -71,6 +66,11 @@
         color:red;
       }
 
+      .flip{
+      -webkit-transform: scale(1, -1);
+      transform: scale(1, -1);
+      }
+
       .pub-wrapper{
          @apply --layout-vertical; 
          @apply --paper-material-elevation-1;
@@ -112,6 +112,7 @@
     </beer-location>
 
     <div class="card">
+
     
       <paper-input label="Search for [[searchMessage]]" value="{{queryString}}">
 
@@ -120,12 +121,9 @@
       </paper-input>
 
       <iron-label class="tap-status-wrapper">
-            <toggle-icon
-                  animation="flip-vertical" 
-                  icon="beer-icons:expand-more"
-                  checked="{{toggleSearchType}}"
-                  noink>
-            </toggle-icon>
+          
+           <paper-icon-button class$="[[toggleClass]]" noink icon="beer-icons:expand-more" on-tap="_toggle"></paper-icon-button>
+
             <span class="tap-status-shown">[[searchMessage]]</span>
         </iron-label>
 
@@ -212,6 +210,11 @@
        toggle:{
          type: Boolean
        },
+
+       toggleClass:{
+          type: String
+        },
+
        toggleSearchType:{
          type: Boolean
        }
@@ -334,6 +337,15 @@
             break;
         }
         return searchMessage;
+      },
+
+      _toggle: function (){
+        this.toggleSearchType = !this.toggleSearchType
+        if(this.toggleSearchType){
+          this.toggleClass = 'flip'
+        }else{
+          this.toggleClass = '';
+        }
       },
 
 

@@ -14,15 +14,11 @@
 
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../bower_components/google-apis/google-maps-api.html">
-
-<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-rating-card.html">
-<!--<link rel="import" href="beer-near-breweries.html">-->
 <link rel="import" href="beer-pub-card.html">
-
 
 
 <dom-module id="beer-home">
@@ -88,6 +84,11 @@
       color: var(--app-secondary-color);
     }
 
+    .flip{
+      -webkit-transform: scale(1, -1);
+      transform: scale(1, -1);
+    }
+
     .distance {
       color: var(--app-secondary-color);
       font-size: 1.2em;
@@ -139,17 +140,14 @@
         <div class="">
 
           <iron-label class="wrapper">
-              <paper-icon-button icon="beer-icons:[[gpsIcon]]" on-tap="_resetToLocal"></paper-icon-button>
+              <paper-icon-button noink icon="beer-icons:[[gpsIcon]]" on-tap="_resetToLocal"></paper-icon-button>
               <span class="title">Near my location<span>
           </iron-label>
 
            <iron-label class="wrapper">
-              <toggle-icon
-                  animation="flip-vertical" 
-                  icon="beer-icons:expand-more"
-                  checked="{{toggle}}"
-                  noink>
-            </toggle-icon>
+
+            <paper-icon-button class$="[[toggleClass]]" icon="beer-icons:expand-more" on-tap="_toggle"></paper-icon-button>
+
               <span class="location-label">Change location</span>
           </iron-label>
         </div>
@@ -197,10 +195,6 @@
       </template>
       </div>
     </div>
-    
-        
-          
-    
 
     </div>
 </template>
@@ -284,6 +278,10 @@
           type: Boolean,
           value: false
         },
+
+        toggleClass:{
+          type: String
+        }
 
       },
 
@@ -385,6 +383,15 @@
             return false
           }
         };
+      },
+
+      _toggle: function (){
+        this.toggle = !this.toggle
+        if(this.toggle){
+          this.toggleClass = 'flip'
+        }else{
+          this.toggleClass = '';
+        }
       },
 
 

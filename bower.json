@@ -44,7 +44,6 @@
     "google-apis": "GoogleWebComponents/google-apis#^1.1.7",
     "iron-localstorage": "PolymerElements/iron-localstorage#^2.0.0",
     "geo-query": "jifalops/geo-query#^0.3.1",
-    "toggle-icon": "^1.1.2",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0",
     "iron-iconset": "PolymerElements/iron-iconset#^2.0.0",
     "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^2.0.0",

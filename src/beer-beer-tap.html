@@ -3,7 +3,6 @@
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 
-<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
@@ -117,15 +116,13 @@
         path="organization/[[orgId]]">
     </firebase-document>
 
-   <!--Beer Id: [[beerId]]-->
 
       <div id="tapStatusMessage" >
         <iron-label class="tap-status-wrapper">
-          <toggle-icon
-                icon="beer-icons:[[icon]]"
-                checked="{{toggle}}"
-                noink>
-          </toggle-icon>
+       
+          <paper-icon-button icon="beer-icons:[[icon]]" noink on-tap="_toggle"></paper-icon-button>
+
+          
           <span class="tap-status-shown">[[tapStatus]]</span>
         </iron-label>
       </div>
@@ -165,11 +162,7 @@
               </div>
             </paper-item>
 
-            <!--<paper-item id="NOT_AVAILABLE"  tapstatus="NOT_AVAILABLE">
-              
-                <div>NOT_AVAILABLE</div>
 
-            </paper-item>-->
 
           </paper-listbox>
 
@@ -466,6 +459,10 @@
         }
        
       },
+      _toggle: function (){
+        this.toggle = !this.toggle;
+      },
+
       _test: function (obj){
         console.log(obj)
       }
