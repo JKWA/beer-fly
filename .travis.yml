@@ -1,13 +1,33 @@
 language: node_js
+sudo: required
+dist: trusty
 node_js:
-  - "6.0"
+- '6.0'
+
+addons:
+  firefox: 46.0
+  sauce_connect: true
+  apt:
+    sources:
+    - google-chrome
+    packages:
+    - google-chrome-stable
 before_script:
-  - npm install polymer-cli
-  - npm install -g firebase-tools
-  - npm install -g bower
-  - bower update
-  # - bower install --save webcomponents/webcomponentsjs
+# - npm install polymer-cli
+# - npm install -g firebase-tools
+- npm install web-component-tester
+- npm install -g bower
+- bower install
+
+script:
+- xvfb-run wct --skip-plugin sauce
+- if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then wct --skip-plugin local; fi
+# polymer build
+# after_success:
+#   - firebase --project staging deploy --only hosting --token $FIREBASE_TOKEN
+env:
+  global:
+  - secure: WIEHNcjX2IkZjpYWgJV7cEW1AhIl4TRArJH7K2ePcEXnMdkwpyPpqMvH1NmWKqVQ1G7ss38XYGHhQz1HSFE255H6FSI0iTlkCGSJnJQIx2g/or/wXPtVbevega2EHrHCY5n5kqjMu4kis615JWEMw5p9ZD9MjPFDnSHyARG3bEQenhHi61Jr9MJMzWpzAr8NyLgLrm9/b+ZG+zajs0UmxuH1ch3pWCQXqcFAO12bfxerVWUtG91RaMCRe0ZNsCdaLTM8/ZbammJMH3xFto0JHow1dGMs1DGEOwMCG/D7Tsc52OoljN94Y3DbnrGPRzqeMsTybr2PwOavf/sTrcC09Ao5S+44JsihFnNLfDX0SAIFi5zHSiY79sJ9ybSEQU5LNrABmtSVorI6JJsmEJcjLFUck2D3HU9z017mOZl2aUfgWilZIOfpqmG7wGV0S42q9i7/c92Ks7LK54ACZOvmpnjGTfonjX3h//+5FJIWRNE5d5F+LtYGq91GbEgyDQyWYpCPDKE3nmTiswdFogWEPcAqNdQ05ddCqKSEyU2fmD+DbYr3+fAuqQI92mLXXOrOwWCz+VwYgVpa129knFtvOYCjH6wtq4Xls0Wpl3sesVMe6jAbocZUjqtYxigXGg1pEEhbGcN7PKfFSAoN4AwombjoDOV12KNyBgPFSIqL6QU=
+  - secure: IMFmpvWxDeL4ikyAHttz9TIhWnlv+gsMmGHTRg21rA7ZfQo/9BCLuAO+zbmBkToHxcsJRgW82fE45jq1UoufwLvaGmExZHuz/vh9vPb2zQUroDHSqAU8X66u3Nh+iqajdCylGVIN6k0Ww+vY8xXeRN9h3tWoXPG1/8Ra9uloMC1O0Kp/Jydka/xWRxrs2t6uq8ZOhleKTdNykgaVAZ+AkNHdezdh3inQLdBFRvjrkJWw4zH6L2H9Ufv8PmvWT4VccKOOTpmb/4NXZNs6lBPHPZEMLMUYKjK4TvG6+wapsYIgkcaqvZTQ2TmH/dW+iV4N0V9WCG4S+psFD5HawuQj4TpdP569eFyClBiwfWsS7eNSLovOTXngFxWiAihrA4+lYiMIwh35nOrjAPNsYNH1lbwBpwnoRSYMbshWR+oazsPHaRvxH/ZhpOVZLtc4Fu+15dRUkdaA5UYBo+eVaz2J2RD18izcJwLhFoaINj95bNGwF/yB+Vx2Zx4W9RCXwXNtWRmxiLQO7CBPXVB0xedmxZ5ePcw84LkEgHWWms08IB68vSQaHzsZBARevH2PtAwKTPGSJaOfNilJsdhVbFWl6llHU423BECr01yM6eXGsGgIrRXivvj25gj3YCbHbdGewnNoaFE1jreedijEu3Lq9HcaymrLJtnrcWWgrdo7vp8=
  
-script: polymer build
-after_success:
-  - firebase --project staging deploy --only hosting --token $FIREBASE_TOKEN
+
