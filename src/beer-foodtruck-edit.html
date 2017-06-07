@@ -40,6 +40,12 @@
       @apply --paper-material-elevation-0;
     }
 
+    .schedule-card{
+      padding: 10px;
+      margin: 10px;
+      @apply --paper-material-elevation-1;
+    }
+
    
     .search{
       max-width: 300px;
@@ -148,7 +154,7 @@
       </template>
 
       <template is="dom-repeat" items="{{foodTrucks}}" as="foodTruck">
-         <div class="card" elevation="1">
+         <div class="schedule-card">
           <beer-foodtruck-calendar
             org-id="[[orgId]]"
             truck="[[foodTruck]]"

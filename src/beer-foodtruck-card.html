@@ -159,9 +159,9 @@
           <div>[[_formatTimeStamp(schedule.OPEN)]]&nbsp-&nbsp[[_formatTimeStamp(schedule.CLOSE)]]</div>
         </div>
       </template>
-
-      <div class="truck-name">[[truckName]]</div>
-
+      <a href="/[[_computeNameForUrl(truckName)]]/main?orgid=[[placeId]]">
+        <div class="truck-name">[[truckName]]</div>
+      </a>
 
       <template is="dom-repeat" items="[[_toArray(menu)]]" as="category">
         <div class="menu">
@@ -198,18 +198,6 @@
     </div>
 
 
-    
-
-      
-
-
-
-      
-
-
-
-
-    
 
   </template>
 
@@ -275,6 +263,11 @@
           if(hour === 0){     
             hour = 12;
             amPm = "AM"
+          
+          }else if(hour === 12){
+            hour = 12;
+            amPm = 'PM';
+          
           }else if(hour > 12){
             hour = hour-12;
             amPm = 'PM';
@@ -309,6 +302,15 @@
         return returnArray;
       },
 
+      _computeNameForUrl: function (name) {
+        'use strict';
+        if (name) {
+          name = name.replace(/\s/g, '-')
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'home'
+        }
+      },
       
    
      

@@ -143,7 +143,7 @@
           for (var i=0; i<key.length; i++){
             var truck = truckObj[key[i]];
             console.log(key[i])
-console.log('truckObj', truckObj);
+            // console.log('truckObj', truckObj);
             
            if(truck){
             if(truck.period){
@@ -215,6 +215,11 @@ console.log('truckObj', truckObj);
           if(hour === 0){     
             hour = 12;
             amPm = "AM"
+          
+          }else if(hour === 12){
+            hour = 12;
+            amPm = 'PM';
+
           }else if(hour > 12){
             hour = hour-12;
             amPm = 'PM';
