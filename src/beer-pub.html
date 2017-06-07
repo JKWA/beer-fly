@@ -126,6 +126,10 @@
         @apply --layout-wrap;
       }
 
+      .rating{
+        margin: 15px 0 0 0;
+      }
+
 
       @media (max-width: 767px) {
       
@@ -155,12 +159,12 @@
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
   
     <div class="rating-wrapper">
-        <div>
+        <div class="rating">
           <beer-pub-rating 
             google-rating="[[place.rating]]" 
             place-id="[[place.place_id]]"
             name="[[place.name]]"
-            address="[[place.vicinity]]"
+            vicinity="[[place.vicinity]]"
             login="{{login}}">
         </beer-pub-rating>
         </div>

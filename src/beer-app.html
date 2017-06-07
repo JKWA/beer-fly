@@ -167,7 +167,7 @@
       .card {
         margin: 5px;
         padding: 5px;
-        @apply --paper-material-elevation-1;
+        @apply --paper-material-elevation-0;
       }
 
       .card-title{
@@ -494,7 +494,8 @@
             vertical-offset="100">
             <div>Verification sent to [[user.email]]</div>
             <div>Please refresh the app after verifying.</div>
-          </paper-toast>
+        </paper-toast>
+
       </div>
           <div class="footer">
             <div class= "footer-item">
@@ -515,9 +516,8 @@
             opened="{{login}}">
         <paper-dialog-scrollable>
           <section class="beer-login-dialog">
-
-          <!--lazy loaded-->
-          <beer-login class="beer-login-dialog"></beer-login>
+            <!--lazy loaded-->
+            <beer-login class="beer-login-dialog"></beer-login>
           </section>
         </paper-dialog-scrollable>
         <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
