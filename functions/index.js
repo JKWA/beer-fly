@@ -151,6 +151,81 @@ exports.beerDataChanged = functions.database.ref('organization/{placeId}/brewBee
     }
 
   });
+
+
+exports.updateFoodTruckScheduleFromPub = functions.database.ref('/organization/{placeId}/foodTruck/{truckId}/period/{day}')
+    .onWrite(event => {
+      const snapshot = event.data;
+      const placeId = event.params.placeId;
+      const truckId = event.params.truckId;
+      const day = event.params.day;
+      const data = snapshot.val();
+     
+      // Exit when the data is deleted.
+      if (!event.data.exists()) {
+        console.log('item deleted')
+        admin.database().ref('organization')
+          .child(truckId).child('schedule').child(day).child('organization').child(placeId)
+          .remove()
+          .then(function(){
+            console.log('deleted', data)
+          })
+          .catch(function(error){
+            console.log('delete error', error);
+          })
+
+        return;
+      }
+      
+      console.log('new or edited truck calendar data', data);
+      admin.database().ref('organization').child(placeId).once('value')
+        .then(function (pubSnap){
+          var pub = pubSnap.val();
+          
+          
+          var pubObj = {};
+
+          var metaItems = ['label', 'day']
+          for(var i=0; i<metaItems.length; i++){
+            pubObj[day+'/'+metaItems[i]] = data[metaItems[i]]
+          }
+
+          var scheduleItems = ['CLOSE', 'OPEN', 'timestamp'];
+          for(var i=0; i<scheduleItems.length; i++){
+            if(data[scheduleItems[i]]){
+              pubObj[day+'/organization/'+pub.place_id+'/'+scheduleItems[i]] = data[scheduleItems[i]];
+            }
+          }
+
+          var pubItems = ['name', 'place_id', 'vicinity', 'latitude', 'longitude'];
+           for(var i=0; i<pubItems.length; i++){
+            if(pub[pubItems[i]]){
+              pubObj[day+'/organization/'+pub.place_id+'/'+pubItems[i]] = pub[pubItems[i]];
+            }
+          }
+         
+          admin.database().ref('organization').child(truckId)
+            .child('schedule')
+            .update(pubObj)
+            .then(function(){
+              console.log('schedule data updated')
+            })
+            .catch(function (error){
+              console.log('schedule data error', error);
+            })
+          
+        })
+        .catch(function (error){
+          console.log('error looking up pub meta data')
+        })
+      
+
+      return;
+ 
+  
+});
+
+
   
   function updateBeer (beerId, beerData, pubData) {
   let saveObj = {};
@@ -295,6 +370,8 @@ exports.beerDataChanged = functions.database.ref('organization/{placeId}/brewBee
 
               var place = response.json.result;
               var preOrg = 'organization/'+place.place_id+'/';
+
+              var category = getTruckBaseCategories()
             
               if(place.permanently_closed){
                 newPub[preOrg+'permanently_closed'] = true; 
@@ -303,12 +380,14 @@ exports.beerDataChanged = functions.database.ref('organization/{placeId}/brewBee
               if(place.types){
                 if(isPub(place.types)){
                     newPub[preOrg+'PUB'] = true;
+                    category = getPubBaseCategories()
                 }
               }
 
               if(place.name){
                 if(isBrewery(name)){
                   newPub[preOrg+'BREWERY'] = true;
+                  category = getBreweryBaseCategories()
                 }
               }
 
@@ -362,7 +441,7 @@ exports.beerDataChanged = functions.database.ref('organization/{placeId}/brewBee
             }
             newPub[preOrg+'crowdSource'] = true;
 
-            var category = getBaseCategories()
+            
               var categoryKey = Object.keys(category);
               for (var i=0; i<categoryKey.length; i++){
                 var categoryObj = category[categoryKey[i]];
@@ -464,7 +543,43 @@ function getAddressObject(address){
     return obj;
 }
 
-function getBaseCategories(){
+function getBreweryBaseCategories(){
+    var category = {};
+    category['BEER'] = {};
+    category['BEER'].display = true;
+    category['BEER'].name = 'beer';
+    category['BEER'].order = 200;
+    category['BEER'].title = 'Our beers';
+
+    category['MENU'] = {};
+    category['MENU'].display = false;
+    category['MENU'].name = 'menu';
+    category['MENU'].order = 300;
+    category['MENU'].title = 'Menu';
+
+    category['CONTACT'] = {};
+    category['CONTACT'].display = true;
+    category['CONTACT'].name = 'contact';
+    category['CONTACT'].order = 500;
+    category['CONTACT'].title = 'Contact';
+
+    category['REVIEW'] = {};
+    category['REVIEW'].display = true;
+    category['REVIEW'].name = 'review';
+    category['REVIEW'].order = 900;
+    category['REVIEW'].title = 'Reviews';
+
+    category['TAP'] = {};
+    category['TAP'].display = true;
+    category['TAP'].name = 'tap';
+    category['TAP'].order = 100;
+    category['TAP'].title = 'On tap';
+
+    return category;
+
+}
+
+function getPubBaseCategories(){
     var category = {};
     category['BEER'] = {};
     category['BEER'].display = false;
@@ -495,6 +610,31 @@ function getBaseCategories(){
     category['TAP'].name = 'tap';
     category['TAP'].order = 100;
     category['TAP'].title = 'On tap';
+
+    return category;
+
+}
+
+function getTruckBaseCategories(){
+    var category = {};
+
+    category['MENU'] = {};
+    category['MENU'].display = false;
+    category['MENU'].name = 'menu';
+    category['MENU'].order = 300;
+    category['MENU'].title = 'Menu';
+
+    category['CONTACT'] = {};
+    category['CONTACT'].display = true;
+    category['CONTACT'].name = 'contact';
+    category['CONTACT'].order = 500;
+    category['CONTACT'].title = 'Contact';
+
+    category['REVIEW'] = {};
+    category['REVIEW'].display = true;
+    category['REVIEW'].name = 'review';
+    category['REVIEW'].order = 900;
+    category['REVIEW'].title = 'Reviews';
 
     return category;
 
