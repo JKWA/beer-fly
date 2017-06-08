@@ -47,6 +47,22 @@
         data="{{organization}}">
     </firebase-document>
 
+    <h3>Type</h3>
+
+    <div>
+      <div>This is a ...</div>
+          <paper-checkbox checked="{{organization.PUB}}">Pub</paper-checkbox>&nbsp
+          <paper-checkbox checked="{{organization.BREWERY}}">Brewery</paper-checkbox>&nbsp
+          <paper-checkbox checked="{{organization.TRUCK}}">Food Truck</paper-checkbox>&nbsp
+     </div>
+
+    <h3>Show Categories</h3>
+
+          <beer-pub-category
+            org-id="[[orgId]]"
+            organization="[[organization]]">
+          </beer-pub-category>
+
      <h3>Tags</h3>
         <div>
           <paper-checkbox checked="{{organization.dogFriendly}}">Dogs allowed</paper-checkbox>&nbsp
@@ -54,11 +70,7 @@
           <paper-checkbox checked="{{organization.over21}}">Must be 21</paper-checkbox>&nbsp
         </div>
 
-        <h3>Show Categories</h3>
-
-          <beer-pub-category
-            org-id="[[orgId]]">
-          </beer-pub-category>
+        
 
         <h3>Upload Banner Image</h3>
         <upload-image org-id="[[orgId]]" type="banner" key="mainImage"></upload-image>

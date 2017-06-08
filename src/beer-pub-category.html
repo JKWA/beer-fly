@@ -1,8 +1,8 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
 
 
@@ -21,30 +21,34 @@
 
     </style>
 
-    <firebase-document
-        app-name="beer"
-        id="categoryData"
-        path="organization/[[orgId]]/category"
-        data="{{categoryData}}">
-    </firebase-document>
+    <firebase-auth id="auth" app-name="beer"></firebase-auth>
+
 
     <firebase-query
         app-name="beer"
         id="allCategory"
-        path="category/PUB"
         order-by-child="order"
-        data="{{allCategory}}">
+        path="category/PUB"
+        data = "{{allCategory}}">
     </firebase-query>
 
-    <template is="dom-repeat" items="[[allCategory]]" as="category" filter="_filter">
+    <template 
+      is="dom-repeat" 
+      items="[[allCategory]]" 
+      as="category" 
+      >
+      
+      <template is="dom-if" if="[[_showCategory(_isTruck, _isPub, _isBrewery, category.$key)]]">
       <iron-label>
       <paper-checkbox 
-          checked="[[_isChecked(categoryData, category.$key)]]"
+          checked="[[_isChecked(organization.category, category.$key)]]"
           id="[[category.$key]]"
           on-tap="_changeCategory">
-          [[category.title]]
-      </paper-checkbox>&nbsp
+          
+      </paper-checkbox>
+      <span>[[category.title]]&nbsp</span>
       </iron-label>
+      </template>
     </template>
 
   </template>
@@ -58,7 +62,7 @@
        properties: {
 
          allCategory:{
-           type: Object
+           type: Object,
          },
 
           categoryData:{
@@ -67,27 +71,49 @@
 
           orgId:{
             type: String
+          },
+
+          organization: {
+            type: Object
+          },
+
+          _isTruck:{
+            type: Boolean,
+            computed: '_computeIsTrue(organization.TRUCK)'
+          },
+
+          _isPub:{
+            type: Boolean,
+            computed: '_computeIsTrue(organization.PUB)'
+          },
+
+          _isBrewery:{
+            type: Boolean,
+            computed: '_computeIsTrue(organization.BREWERY)'
           }
        
         },
+
+        
 
         _changeCategory: function (e){
             var target = e.currentTarget;
             var that = this;
             var obj={};
             obj.display = target.checked;
-            console.log(target.id);
-            // obj = this.$.allCategory.child(target.id).data;
             
             firebase.database(this.$.allCategory.app).ref('category/PUB').child(target.id).once('value')
               .then(function(snapshot){
                 return snapshot.val();
               })
               .then(function(categoryItem){
+
                 categoryItem.display = target.checked;
-                that.$.categoryData.ref.child(target.id).update(categoryItem)
+
+                firebase.database(that.$.auth.app).ref('organization')
+                  .child(that.orgId).child('category').child(target.id).update(categoryItem)
                   .then(function (){
-                    console.log(target.id, target.checked);
+                    console.log('SAVED '+target.id, target.checked);
                   })
                   .catch(function (error){
                     console.log('CATEGORY_SAVE_ERROR', error);
@@ -97,14 +123,6 @@
             
         },
 
-        _filter(category){
-          if(category.$key === 'REVIEW'){
-            return false;
-          }else{
-            return true;
-          }
-
-        },
 
         _isChecked: function (categoryData, key){
           if(typeof categoryData === 'object'){
@@ -117,11 +135,49 @@
             return false
         },
 
+        _computeIsTrue: function (item){
+          if(item){
+            return true;
+          }else{
+            return false;
+          }
+        },
+
+
+        _showCategory(truck, pub, brewery, category){
+          if(truck && (category==='BEER' || category==='TAP' || category==='FOOD_TRUCK')){
+            if(!pub && !brewery){
+              return false;
+            }
+          }
+
+          if((pub || brewery) && category==='SCHEDULE'){
+            if(!truck){
+              return false;
+            }
+          }
+
+          if(pub && category==='BEER'){
+            if(!brewery){
+              return false;
+            }
+          }
+
+          if(category==='REVIEW' || category==='CONTACT'){
+            return false;
+          }
+
+          if(!truck && !pub && !brewery){
+            return false;
+          }
+
+          return true;
+        },
+
         _test: function (obj){
           console.log(obj)
         }
        
-
     });
 
   </script>
