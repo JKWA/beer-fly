@@ -21,6 +21,7 @@
 <link rel="import" href="beer-pub-icons.html">
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-menu-card-mini.html">
+<link rel="import" href="beer-schedule-card-mini.html">
 <link rel="import" href="beer-contact-card.html">
 <link rel="import" href="beer-hours-card.html">
 <link rel="import" href="beer-review-card-mini.html">
@@ -253,6 +254,15 @@
                          anchor-href="/[[nameUrl]]/[[item.name]]?orgid=[[orgId]]">
                       </beer-menu-card-mini>
                     </template>
+                 
+                  </template>
+
+                  <template is="dom-if" if="[[_isSchedule(item.$key)]]"> 
+                    
+                      <beer-schedule-card-mini 
+                         organization="[[organization]]">
+                      </beer-schedule-card-mini>
+                    
                  
                   </template>
 
@@ -499,6 +509,14 @@
 
       _isTruck: function (type){
         if(type === 'FOOD_TRUCK'){
+          return true;
+        }else{
+          return false;
+        }
+      },
+
+      _isSchedule: function (type){
+        if(type === 'SCHEDULE'){
           return true;
         }else{
           return false;

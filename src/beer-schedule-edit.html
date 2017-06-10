@@ -1,0 +1,928 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-location.html">
+<link rel="import" href="beer-foodtruck-calendar-input.html">
+
+
+<dom-module id="beer-schedule-edit">
+
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
+
+      :host {
+        display: block;
+        max-width: 640px;
+      }
+
+     a{
+      color: var(--app-primary-color);
+      text-decoration: none;
+    }
+
+    .card{
+      padding: 10px;
+      margin: 10px;
+      @apply --paper-material-elevation-0;
+    }
+
+    .schedule-card{
+      padding: 10px;
+      margin: 10px;
+      @apply --paper-material-elevation-0;
+
+    }
+
+    .schedule-card > div{
+        margin: 15px 0 0 0;
+    }
+
+    .schedule-wrapper{
+         @apply --layout-horizontal; 
+         @apply --paper-material-elevation-1;
+         @apply --layout-justified;
+        
+         /*padding: 20px;*/
+      }
+
+    .schedule-wrapper > div{
+        margin: 7px
+    }
+
+    .schedule-day{
+      color: var(--app-primary-color);
+      @apply --layout-horizontal; 
+      font-size: 1em;
+      font-weight: 300;
+    }
+
+    .schedule-day > div{
+        margin: 7px
+    }
+
+    .schedule-time{
+      color: var(--app-primary-color);
+      font-size: 1em;
+      font-weight: 300;
+    }
+
+    .schedule-remove{
+      color: red;
+    }
+
+    .add-title{
+      color: var(--app-primary-color);
+      font-size: 1.5em;
+      font-weight: 400;
+    }
+
+    .search{
+      max-width: 300px;
+    }
+
+    .search-wrapper{
+      max-width: 500px;
+    }
+
+    .search-name{
+      color: var(--app-primary-color);
+      font-size: 1.5em;
+      font-weight: 400;
+    }
+
+     .search-address{
+        color: var(--app-secondary-color);
+        font-size: 1em;
+        font-weight: 400;
+      }
+
+      .clear{
+        color:red;
+      }
+
+      .flip{
+      -webkit-transform: scale(1, -1);
+      transform: scale(1, -1);
+      }
+
+      .pub-wrapper{
+         @apply --layout-vertical; 
+         @apply --paper-material-elevation-1;
+         margin: 10px 0;
+         padding: 10px;
+      }
+
+      .pub-wrapper > div{
+        padding: 7px 0 0 0;
+      }
+
+      .pub-name {
+        font-size: 1.2em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+      .pub-vicinity{
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+      .pub-distance{
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+      .time-input{
+         @apply --layout-horizontal;
+      }
+
+      .time-input >div{
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        padding: 10px;
+      }
+
+    </style>
+
+    <firebase-auth app-name="beer" id="auth"></firebase-auth>
+
+    <firebase-query
+        id="days"
+        app-name="beer"
+        path="category/DAY"
+        data="{{allDays}}">
+    </firebase-query>
+    
+    <div hidden$="[[locationId]]">
+    <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
+
+    <div class="card">
+
+      <beer-location
+        location={{location}} 
+        search-string="{{searchString}}" 
+        sorted-location-history="[[sortedLocationHistory]]">
+      </beer-location>
+
+      <paper-input label="Search for [[searchMessage]]" value="{{queryString}}">
+
+          <iron-icon icon="beer-icons:search" slot="prefix"></iron-icon>
+          <paper-icon-button class="clear" slot="suffix" on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
+          </paper-input>
+
+          <iron-label class="tap-status-wrapper">
+            <paper-icon-button class$="[[toggleClass]]" noink icon="beer-icons:expand-more" on-tap="_toggle"></paper-icon-button>
+            <span class="tap-status-shown">[[searchMessage]]</span>
+          </iron-label>
+
+          <iron-collapse id="collapse" opened="[[toggleSearchType]]" no-animation>
+        
+              <paper-listbox
+                  attr-for-selected="searchtype"
+                  selected-class="search-list" 
+                  class="search-list"
+                  selected="{{searchType}}"
+                  on-click="_close">
+              
+                <paper-item searchtype="BREWERY">Brewery</paper-item>
+                <paper-item searchtype="CIDERY">Cidery</paper-item>
+
+              </paper-listbox>
+          </iron-collapse>
+
+          <template id="repeater" is="dom-repeat" 
+              items="[[data]]" as="pub" 
+              initial-count="20"  sort="_sort" 
+              observe="sort distance">
+              <a aria-label$="[[pub.name]]" href$="/[[nameUrl]]/schedule-edit?orgid=[[orgId]]&locationId=[[pub.place_id]]">
+            
+                <div class="pub-wrapper">
+                  <div class="pub-name">[[pub.name]]</div>
+                  <div class="pub-vicinity">[[pub.vicinity]]</div>
+                  <div class="pub-distance">[[_computeDisplayDistance(pub.distance)]] miles from you.</div>
+                </div>
+              </a>
+          </template>
+      </div>
+    </div>
+    
+
+
+    <div hidden$="[[!locationId]]">
+ 
+      <div class="schedule-card">
+        <div class="pub-name">[[pubObj.name]]</div>
+        <div class="pub-vicinity">[[pubObj.vicinity]]</div>
+        <div>
+          <template is="dom-repeat" items="[[scheduledDays]]" as="day" sort="_dayOrder">
+            <div class="schedule-wrapper">
+              <div class="schedule-day">
+                <div>[[day.label]]</div>
+                <div>[[_formatTimeStamp(day.OPEN)]]-[[_formatTimeStamp(day.CLOSE)]]</div>
+              </div>
+              <div class="schedule-remove">
+                <iron-label>
+                  <paper-icon-button data="[[day]]" on-tap="_removeDate" icon="beer-icons:remove"></paper-icon-button>
+                  <span>Remove</span>
+                </iron-label>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!--<div>
+          <iron-label>
+            <paper-icon-button data="[[day]]" on-tap="_removeDate" icon="beer-icons:remove"></paper-icon-button>
+            <span>Remove</span>
+          </iron-label>
+
+        </div>-->
+        </div>
+        <div class="schedule-card">
+        <div class="add-title">
+          Add Day
+        </div>
+
+        <!--<template is="dom-repeat" items="[[allDays]]" as="weekday">
+          [[weekday.label]]
+        </template>-->
+
+
+        <iron-label class="add">
+              <paper-icon-button class$="[[toggleClass]]" icon="beer-icons:expand-more" on-tap="_toggleDay"></paper-icon-button>
+              <span class="day add">[[selectedDayLabel]]</span>
+           </iron-label>
+          
+          <div>
+            <iron-collapse no-animation opened="{{toggleDay}}"> 
+            <div>
+              <paper-listbox 
+                  attr-for-selected="day" 
+                  selected="{{selectedDay}}"
+                  on-tap="_closeDay">
+                <template is="dom-repeat" items="[[allDays]]" as="weekday" sort="_dayOrder">
+                  <paper-item day="[[weekday]]">[[weekday.label]]</paper-item>
+                </template>
+              </paper-listbox>
+            </div>
+            </iron-collapse>
+          </div>
+          <div>
+            <div>
+              <div id="scheduleInput" hidden>
+                <div class="time-input">
+                
+
+                  <div>
+                    <beer-foodtruck-calendar-input
+                        label="Opening"
+                        hour="{{openHour}}"
+                        min="{{openMinute}}"
+                        am-pm="{{openAmPm}}"
+                        hideLabel>
+                    </beer-foodtruck-calendar-input>
+                  </div>
+
+                  <div> 
+                    <beer-foodtruck-calendar-input
+                        label="Closing"
+                        hour="{{closeHour}}"
+                        min="{{closeMinute}}"
+                        am-pm="{{closeAmPm}}"
+                        hideLabel>
+                    </beer-foodtruck-calendar-input>
+                  </div>
+
+                 
+                </div>
+
+                 <div>
+                    <paper-button raised on-tap="_saveTime">Save Time</paper-button>
+                  </div>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+    
+
+    
+ 
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-schedule-edit',
+
+      properties: {
+
+        allPub:{
+          type: Object
+        },
+
+        allDays: {
+          type: Array
+        },
+
+       location:{
+         type: Object,
+         notify: true
+       },
+
+       locationId: {
+         type: String
+       },
+
+       data:{
+         type: Array
+       },
+
+       openAmPm:{
+         type:String,
+         value:'PM'
+       },
+
+       openHour:{
+         type:Number
+       },
+
+       openMinute:{
+         type:Number
+       },
+
+      closeAmPm:{
+         type:String,
+         value:'PM'
+       },
+
+       closeHour:{
+         type:Number
+       },
+
+       closeMinute:{
+         type:Number
+       },
+
+
+       nameUrl: {
+         type: String
+       },
+
+       organization:{
+         type: Object
+       },
+
+       orgId:{
+         type: String
+       },
+
+       owner:{
+         type:Boolean
+       },
+
+       pubObj:{
+         type: Object
+       },
+
+       queryString:{
+         type: String
+       },
+
+       scheduledDays:{
+         type: Array
+       },
+
+       searchString:{
+         type: String
+       },
+
+       searchMessage:{
+         type: String,
+         computed: '_computeSearchMessage(searchType)'
+       },
+
+       searchType:{
+         type: String,
+         value: "BREWERY"
+       },
+
+       selectedDay:{
+         type: String
+       },
+
+       selectedDayLabel:{
+         type: String,
+         value: 'Add a day'
+       },
+
+       sortedLocationHistory:{
+         type: String
+       },
+
+       toggle:{
+         type: Boolean
+       },
+
+       toggleClass:{
+          type: String
+        },
+
+        toggleDay:{
+          type: Boolean
+        },
+
+       toggleSearchType:{
+         type: Boolean
+       }
+      },
+
+
+      observers:['_getGoogleSearchData(queryString, searchMessage)',
+                  '_watchLocationId(locationId)',
+                  '_watchOrganizationScheduleData(organization.schedule, locationId)',
+                  '_observeDayChange(selectedDay)',
+                  '_flipAddDayIcon(toggleDay)'],
+
+      _watchLocationId: function (locationId){
+        if(locationId){
+          var that = this;
+
+          firebase.database(this.$.auth.app).ref('organization').child(locationId)
+            .once('value')
+            .then(function (snapshot){
+              that.pubObj = snapshot.val();
+            }).catch(function(error){
+              console.log("ERROR_ORG_DATA", error);
+            })
+        }
+      },
+
+
+      _watchOrganizationScheduleData(schedule, locationId){
+       
+        var returnArray = [];
+  
+        if(locationId){
+          if(typeof schedule === 'object'){
+            var key = Object.keys(schedule);
+            for (var i=0; i<key.length; i++){
+              var day = schedule[key[i]];
+               console.log('schedule', day)
+               
+              if(typeof day.organization==='object'){
+                if(day.organization[locationId]){
+                
+                  var obj = {};
+                  obj.$key = key[i];
+                  obj.day = day.day;
+                  obj.label = day.label;
+                  obj.OPEN = day.organization[locationId].OPEN;
+                  obj.CLOSE = day.organization[locationId].CLOSE;
+
+                returnArray.push(obj);
+                }
+              }
+            }
+
+          }
+        }
+        this.scheduledDays = returnArray;
+
+      },
+
+
+
+      _getGoogleSearchData: function(queryString, searchMessage){
+   
+        if(queryString.length >=4){
+
+          this.data = [];
+          this.allPub = {};
+
+          var that = this;
+          var request = {};
+          
+          request.query = queryString+' '+searchMessage;
+          // request.location = this.location.location.latitude.toString()+','+this.location.location.longitude.toString();
+          request.location = {};
+          request.location.lat = this.location.location.latitude;
+          request.location.lng = this.location.location.longitude;
+          request.radius = 50000;
+          // console.log('request', request);
+          
+          var places = new google.maps.places.PlacesService(this.$.map);
+          places.textSearch(request, function (result){
+        
+            var returnDataArray = [];
+            var returnDataObject = {};
+            if(result){
+              that.toggle = true;
+          
+              for (var i=0; i<result.length; i++){
+       
+                if(result[i].formatted_address){
+                  result[i].vicinity = result[i].formatted_address;
+                }
+                var resultLocation = result[i].geometry.location;
+                  result[i].distance = that._distance (that.location.location.latitude, that.location.location.longitude, resultLocation.lat(), resultLocation.lng())
+                console.log(result[i]);
+                if(!that.allPub[result[i].place_id]){
+                  that.push('data', result[i]);
+                  that.allPub[result[i].place_id] = true;
+                }
+              }  
+                
+            }
+          })
+        }   
+      
+   },
+
+
+      _distance: function (myLat, myLng, pubLat, pubLng){
+          var R = 3959; 
+          var dLat = this.deg2rad(pubLat-myLat);  
+          var dLon = this.deg2rad(pubLng-myLng); 
+          var a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(myLat)) * Math.cos(this.deg2rad(pubLat)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+
+          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+          var d = R * c; 
+          return d
+       },
+
+       deg2rad: function (deg) {
+              return deg * (Math.PI/180)
+       },
+
+     _computeDisplayDistance: function (distance){
+          return Math.round(distance*10)/10
+        },
+
+      _computeNameForUrl: function (name) {
+        'use strict';
+        if (name) {
+          name = name.replace(/\s/g, '-')
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'pub-name-missing'
+        }
+      },
+
+      _sort: function (a,b){
+        return parseFloat(a.distance) - parseFloat(b.distance) ;
+      },
+
+      clearInput: function (){
+        this.queryString = ''
+      },
+
+      _close: function (){
+        this.toggleSearchType = false;
+      },
+
+
+      _computeSearchMessage: function (searchString){
+        console.log(searchString);
+        var searchMessage
+        switch (searchString) {
+          case 'BREWERY':
+            searchMessage = 'Brewery'
+            break;
+
+          case 'CIDERY':
+            searchMessage = 'Cidery'
+            break;
+
+          default:
+            searchMessage = 'Brewery'
+            break;
+        }
+        return searchMessage;
+      },
+
+      _toggle: function (){
+        this.toggleSearchType = !this.toggleSearchType
+        if(this.toggleSearchType){
+          this.toggleClass = 'flip'
+        }else{
+          this.toggleClass = '';
+        }
+      },
+
+      _toggleDay: function (){
+        this.toggleDay = !this.toggleDay
+        // if(this.toggleSearchType){
+        //   this.toggleClass = 'flip'
+        // }else{
+        //   this.toggleClass = '';
+        // }
+      },
+
+      _flipAddDayIcon: function (toggleDay){
+        if(toggleDay){
+          this.toggleClass = 'flip'
+        }else{
+          this.toggleClass = '';
+        }
+      },
+
+      _closeDay: function (){
+        this.toggleDay = false;
+      },
+
+      _createArray : function (obj){
+        console.log('obj', obj)
+        var returnArray = [];
+        if(typeof obj ==='object'){
+          var key = Object.keys(obj);
+          for (var i=0; i<key.length; i++){
+            obj[key[i]]['$key'] = key[i];
+            returnArray.push(obj[key[i]]);
+          }
+        }
+        return returnArray
+      },
+
+      _dayOrder: function(a,b){  
+        if (a.day < b.day)
+          return -1;
+        if (a.day > b.day)
+          return 1;
+        return 0;
+      },
+
+      _sortOpenTime: function(a,b){
+        if (a.open < b.open)
+          return -1;
+        if (a.open > b.open)
+          return 1;
+        return 0;
+      },
+
+      _formatTimeStamp: function (time){
+        var timeString = ''
+        if(time){
+          var hour = time.substring(0, 2);
+          var minute = time.substring(2, 4);
+          var amPm = 'AM';
+
+          hour = parseInt(hour);
+          
+          if(hour === 0){     
+            hour = 12;
+            amPm = "AM"
+          
+          }else if(hour === 12){
+            hour = 12;
+            amPm = 'PM';
+
+          }else if(hour > 12){
+            hour = hour-12;
+            amPm = 'PM';
+          }
+
+          timeString += hour.toString()+':';
+          timeString += minute.toString()+' ';
+          timeString += amPm;
+
+          return timeString
+        }
+      },
+
+      _observeDayChange: function (selectedDay){
+
+        // console.log(selectedDay.$key);
+        this.selectedDayLabel = selectedDay.label;
+        this.toggleDay = false;
+        this.$.scheduleInput.hidden=false;
+        var setDefault = true;
+        try{
+
+          if(this.organization.schedule){
+            
+            var day = this.organization.schedule[selectedDay.$key]
+            if(day){
+              console.log(day);
+              if(day.organization){
+                if(day.organization[this.locationId]){
+                  
+                  var orgData = day.organization[this.locationId];
+
+                  this._formatOpenTimeStamp(orgData.OPEN);
+                  this._formatCloseTimeStamp(orgData.CLOSE);
+                  setDefault = false;
+
+                }
+              }
+            }
+          }
+        }catch (error){
+        
+        }
+        
+        if(setDefault){
+          this._setDefault();
+        }
+
+
+     
+      },
+
+      _setDefault: function (){
+
+        this.openAmPm = 'PM';
+        this.openHour = null;
+        this.openMinute = null;
+        this.closeAmPm = 'PM';
+        this.closeHour = null;
+        this.closeMinute = null;
+
+      },
+
+      _saveTime: function (event){
+        var day = this.selectedDay;
+        var locationId = this.locationId;
+        console.log(day);
+        var period = {};
+         var openTime = this._formatToTimeStamp(this.openHour,this.openMinute,this.openAmPm);
+          var closeTime = this._formatToTimeStamp(this.closeHour,this.closeMinute,this.closeAmPm);
+          
+          period['label'] = day.label;
+          period['day'] = day.day;
+          period['organization/'+locationId+'/OPEN'] = openTime;
+          period['organization/'+locationId+'/CLOSE'] = closeTime;
+          period['organization/'+locationId+'/timestamp'] = Date.now();
+
+          var pubItems = ['latitude', 'longitude', 'vicinity', 'name', 'place_id']
+          var pubObj = this.pubObj;
+          for(var i=0; i<pubItems.length; i++){
+            if(pubObj[pubItems[i]]){
+              period['organization/'+locationId+'/'+pubItems[i]] = pubObj[pubItems[i]];
+            }
+          }
+
+          if(this.locationId){
+            if(this.orgId){
+            firebase.database(this.$.auth.app).ref('organization')
+              .child(this.orgId).child('schedule').child(day.$key)
+              .update(period)
+              .then(function(){
+                console.log('schedule time saved');
+              })
+              .catch(function (error){
+                console.log('ERROR_ADD_TIME', error);
+              })
+            }
+          }
+
+      },
+
+
+      _removeDate: function (event){
+        var target = event.currentTarget;
+        console.log(target);
+        console.log(target.data);
+        var data = target.data;
+        if(this.locationId){
+          if(this.orgId){
+
+            
+          firebase.database(this.$.auth.app).ref('organization')
+            .child(this.orgId).child('schedule').child(data.$key).child('organization').child(this.locationId)
+            .remove()
+            .then(function (){
+              console.log('Location Removed');
+            })
+            .catch(function (error){
+              conosle.log('ERROR_LOCATION_REMOVED', error)
+            })
+        }
+      }
+      
+    },
+    
+    _formatToTimeStamp: function (hour, minute, amPm){
+          if(!hour){
+            hour = 0;
+          }
+          if(!minute){
+            minute = 0;
+          }
+
+          hour = parseInt(hour);
+          minute = parseInt(minute);
+
+          if(amPm == "PM"){
+            if(hour < 12){
+              hour = hour+12;
+            }
+          }else{
+            if(hour === 12){
+              hour = 0;
+            }
+          }
+
+          if(minute < 10){
+            minute = "0"+minute.toString();
+          }
+
+          if(hour < 10){
+            hour = "0"+hour.toString();
+          }
+
+          return hour.toString()+minute.toString();
+      },
+
+       _formatOpenTimeStamp: function (time){
+
+        if(time){
+          var hour = time.substring(0, 2);
+          var minute = time.substring(2, 4);
+          this.openMinute = minute
+
+          hour = parseInt(hour);
+
+          if(hour === 0){
+            this.openHour = 12;
+            this.openAmPm = 'AM';
+          }else if(hour > 12){
+            this.openHour = hour-12;
+            this.openAmPm = 'PM';
+          }else{
+            this.openHour = hour;
+            this.openAmPm = 'AM';
+          }
+          
+        }else{
+          this.openMinute = null;
+          this.openHour = null;
+          this.openAmPm = null;
+
+        }
+  
+       },
+
+       _formatCloseTimeStamp: function (time){
+
+        if(time){
+          var hour = time.substring(0, 2);
+          var minute = time.substring(2, 4);
+          this.closeMinute = minute
+
+          hour = parseInt(hour);
+          if(hour === 0){
+            this.closeHour = 12;
+            this.closeAmPm = 'AM';
+          }else if(hour > 12){
+            this.closeHour = hour-12;
+            this.closeAmPm = 'PM';
+          }else{
+            this.closeHour = hour;
+            this.closeAmPm = 'AM';
+          }
+          
+        }else{
+          this.closeMinute = null;
+          this.closeHour = null;
+          this.closeAmPm = null;
+
+        }
+  
+       },
+
+
+      _test: function(obj){
+          console.log("TEST",obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>
