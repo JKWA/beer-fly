@@ -282,8 +282,10 @@
           var key = Object.keys(obj);
           
           for (var i=0; i<key.length; i++){
-            obj[key[i]].$key = key[i];
-            returnArray.push(obj[key[i]]);
+            if(obj[key[i]].period){
+              obj[key[i]].$key = key[i];
+              returnArray.push(obj[key[i]]);
+            }
           }
         }
         return returnArray;

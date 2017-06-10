@@ -57,8 +57,6 @@
          @apply --layout-horizontal; 
          @apply --paper-material-elevation-1;
          @apply --layout-justified;
-        
-         /*padding: 20px;*/
       }
 
     .schedule-wrapper > div{
@@ -717,7 +715,6 @@
 
       _observeDayChange: function (selectedDay){
 
-        // console.log(selectedDay.$key);
         this.selectedDayLabel = selectedDay.label;
         this.toggleDay = false;
         this.$.scheduleInput.hidden=false;
@@ -777,7 +774,6 @@
           period['day'] = day.day;
           period['organization/'+locationId+'/OPEN'] = openTime;
           period['organization/'+locationId+'/CLOSE'] = closeTime;
-          period['organization/'+locationId+'/timestamp'] = Date.now();
 
           var pubItems = ['latitude', 'longitude', 'vicinity', 'name', 'place_id']
           var pubObj = this.pubObj;

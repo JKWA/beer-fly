@@ -190,7 +190,7 @@ exports.updateFoodTruckScheduleFromPub = functions.database.ref('/organization/{
             pubObj[day+'/'+metaItems[i]] = data[metaItems[i]]
           }
 
-          var scheduleItems = ['CLOSE', 'OPEN', 'timestamp'];
+          var scheduleItems = ['CLOSE', 'OPEN'];
           for(var i=0; i<scheduleItems.length; i++){
             if(data[scheduleItems[i]]){
               pubObj[day+'/organization/'+pub.place_id+'/'+scheduleItems[i]] = data[scheduleItems[i]];
@@ -217,6 +217,95 @@ exports.updateFoodTruckScheduleFromPub = functions.database.ref('/organization/{
         })
         .catch(function (error){
           console.log('error looking up pub meta data')
+        })
+      
+
+      return;
+ 
+});
+
+exports.updateFoodTruckScheduleToPub = functions.database.ref('/organization/{truckId}/schedule/{day}/organization/{placeId}')
+    .onWrite(event => {
+      const snapshot = event.data;
+      const placeId = event.params.placeId;
+      const truckId = event.params.truckId;
+      const day = event.params.day;
+      const data = snapshot.val();
+     
+      // Exit when the data is deleted.
+      if (!event.data.exists()) {
+        console.log('item deleted')
+        admin.database().ref('organization')
+          .child(placeId).child('foodTruck').child(truckId).child('period').child(day)
+          .remove()
+          .then(function(){
+            console.log('deleted')
+          })
+          .catch(function(error){
+            console.log('delete error', error);
+          })
+
+        return;
+      }
+      
+      console.log('new or edited truck calendar data', data);
+     
+      admin.database().ref('organization').child(truckId).once('value')
+        .then(function (truckSnap){
+          var truck = truckSnap.val();
+          
+          var truckObj = {};
+
+          var truckItems = ['name', 'place_id'];
+          for(var i=0; i<truckItems.length; i++){
+            truckObj[truckItems[i]] = truck[truckItems[i]]
+          }
+
+         
+
+          
+          var scheduleItems = ['CLOSE', 'OPEN'];
+          for(var i=0; i<scheduleItems.length; i++){
+            if(data[scheduleItems[i]]){
+              truckObj['period/'+day+'/'+scheduleItems[i]] = data[scheduleItems[i]];
+            }
+          }
+          
+          return truckObj;
+          
+        })
+        .catch(function (error){
+          console.log('error looking up pub meta data')
+        })
+        .then(function (truckObj){
+            admin.database().ref('category').child('DAY').child(day).once('value')
+              .then(function(snapshot){
+                var dayData = snapshot.val();
+
+                 var metaItems = ['day', 'label']; 
+
+                  for(var i=0; i<metaItems.length; i++){
+                    if(dayData[metaItems[i]]){
+                      truckObj['period/'+day+'/'+metaItems[i]] = dayData[metaItems[i]];
+                    }
+                  }
+                  console.log('final', truckObj);
+                  return truckObj;
+              })
+              .catch(function (error){
+                console.log('ERROR_GET_DAY', error)
+              })
+              .then(function(truckObj){
+                admin.database().ref('organization').child(placeId).child('foodTruck').child(truckId)
+                  .update(truckObj)
+                  .then(function(){
+                    console.log('save schedule data')
+                  })
+                  .catch(function (error){
+                    console.log('ERROR_SAVING_SCHEDULE', error)
+                  })
+              })
+
         })
       
 
@@ -834,3 +923,5 @@ function base64(filePath, bucket, metadata) {
       console.log('Base 64 image has been saved');
     })
 }
+
+
