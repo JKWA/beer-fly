@@ -422,28 +422,56 @@
         }
       },
 
-      observers:['_addNewOrg(orgId, user)'],
+      observers:['_addNewOrg(place, user)'],
 
-      _addNewOrg: function (orgId, user){
+      _addNewOrg: function (place, user){
         if(user){
           if(user.emailVerified){
-            if(orgId){
-                var obj = {};
-                obj['user/'+user.uid] = {};
-                obj['user/'+user.uid].uid = this.user.uid;
-                obj['user/'+user.uid].timestamp = Date.now();
-                firebase.database(this.$.auth.app).ref('newOrg/'+orgId).update(obj)
-                  .then(function (){
-                    console.log('SAVED_NEW_PUB')
-                  })
-                  .catch(function (error){
-                    console.log('SAVED_NEW_PUB_ERROR', error);
-                  })
+            if(place){
+              if(place.place_id){
+                var domain = this._getDomain(place.website);
+                if(domain){
+                  var obj = {};
+                  obj.domain = domain
+                  // console.log(place.place_id, obj);
+
+                  // obj['user/'+user.uid] = {};
+                  // obj['user/'+user.uid].uid = this.user.uid;
+                  // obj['user/'+user.uid].timestamp = Date.now();
+                  firebase.database(this.$.auth.app).ref('newOrg/'+place.place_id).update(obj)
+                    .then(function (){
+                      console.log('SAVED_NEW_PUB')
+                    })
+                    .catch(function (error){
+                      console.log('SAVED_NEW_PUB_ERROR', error);
+                    })
+                  }
                 }
+              }
             }
           }
         
       },
+
+      _getDomain: function (website){
+        if(website){
+          var ignore = ['wordpress', 'facebook']
+          var domainSide = website.split('//')[1];
+          var domainArray = domainSide.split('/')[0];
+          var domain = domainArray.replace('www.','');
+          for(var i=0; i<ignore.length; i++){
+            
+            if(domain.indexOf(ignore[i]) !== -1){
+              return null;
+            } 
+          }
+          return domain;
+        }else{
+          return null;
+        }
+      },
+
+
 
       _computeCategories: function(organization) {
         var returnArray = [];

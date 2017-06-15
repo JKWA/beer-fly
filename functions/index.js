@@ -4,6 +4,8 @@ const GeoFire = require('geofire');
 const gcs = require('@google-cloud/storage')();
 const vision = require('@google-cloud/vision')();
 const exec = require('child-process-promise').exec;
+const spawn = require('child-process-promise').spawn;
+
 const  fs = require('fs');
 
 admin.initializeApp(functions.config().firebase);
@@ -57,23 +59,182 @@ exports.createNewUser = functions.auth.user().onCreate(function(event) {
 
 
 
-exports.saveNewPub = functions.database.ref('/newOrg/{place_id}')
+exports.saveNewPub = functions.database.ref('/newOrg/{placeId}/{domain}')
     .onWrite(event => {
-      // Only edit data when it is first created.
-      if (event.data.previous.exists()) {
-        console.log('data exists')
-        return;
-      }
-      // Exit when the data is deleted.
+
+      const data = event.data;
+      const placeId = event.params.placeId;
+      const domain = event.params.domain;
+  
       if (!event.data.exists()) {
         console.log('item deleted')
         return;
       }
-      const snapshot = event.data;
-     
 
-      return getGoogleData(snapshot.key);
- 
+      return googleMapsClient.place({placeid: placeId}, 
+        function(error, response) {
+            if (!error) {
+       
+              let newPub = {}; 
+              let place = response.json.result;
+              let preOrg = 'organization/'+place.place_id+'/';
+              let brewery = false;
+              let pub = false;
+              let truck = false;
+              let domain;
+
+              console.log('received place data', place);
+            
+              if(place.permanently_closed){
+                newPub[preOrg+'permanently_closed'] = true; 
+              }
+
+              if(place.types){
+                if (!event.data.previous.exists()) {
+                  if(isPub(place.types)){
+                      newPub[preOrg+'PUB'] = true;
+                      pub = true;
+                  }
+                }
+              }
+
+              if(place.name){
+
+                newPub[preOrg+'/name'] = place.name;
+
+                if (!event.data.previous.exists()) {
+
+
+                  if(place.name.toLowerCase().indexOf('brewing')>-1){
+                    newPub[preOrg+'BREWERY'] = true;
+                    brewery = true;
+                  }
+
+                  if(place.name.toLowerCase().indexOf('brewery')>-1){
+                    newPub[preOrg+'BREWERY'] = true;
+                    brewery = true;
+                  }
+
+                  if(place.name.toLowerCase().indexOf('truck')>-1){
+                    newPub[preOrg+'TRUCK'] = true;
+                    truck = true;
+                  }
+                }
+
+              }
+              
+
+              if(place.geometry){
+                if(place.geometry.location){
+                  if(place.geometry.location.lat){
+                      newPub[preOrg+'latitude'] = place.geometry.location.lat
+                  }
+                  if(place.geometry.location.lng){
+                      newPub[preOrg+'longitude'] = place.geometry.location.lng
+                  }
+                }
+              }
+
+            let metaItems = ['place_id', 'formatted_address', 'vicinity', 'formatted_phone_number']
+
+            for (let value of metaItems) {
+              if(place[value]){
+                newPub[preOrg+value] = place[value];
+              }
+            }
+            
+
+            if(place.website){
+                domain = getDomain(place.website);
+                newPub[preOrg+'website'] = place.website;
+                newPub[preOrg+'domain'] = domain;
+                newPub['newOrg/'+place.place_id+'/domain'] = domain;
+            }
+
+
+            if(place.address_components){
+                var placeAddress = getAddressObject(place.address_components);
+                if(placeAddress){
+                    var placeAddressKey = Object.keys(placeAddress);
+                    for (let value of placeAddressKey){
+                        newPub[preOrg+value] = placeAddress[value];
+                    }
+                }
+            }
+
+            if (!event.data.previous.exists()) {
+              newPub[preOrg+'/category'] = _getBaseCategories();
+            }
+
+            console.log('created pub data', newPub);
+            console.log('domain', domain);
+
+            //look for other locations
+            if(domain){
+              admin.database().ref('organization')
+                .orderByChild('domain').equalTo(domain).limitToFirst(1)  
+                  .once("value")
+                    .then(snapshot => {
+
+                      console.log('other location', snapshot.val());
+
+                      if (snapshot.exists()){
+                        
+                        if (!event.data.previous.exists()){
+                        
+                          var snapshot = snapshot.val();
+
+                          
+                          var key = Object.keys(snapshot);
+                          var data = snapshot[key[0]];
+
+                          var locationItems = ['breweryName', 'description', 'motto', 'mainImage', 'beerLastUpdated']
+                          for(let locationKey of locationItems)
+
+                          if(data[locationKey]){
+                            newPub[preOrg+locationKey] = data[locationKey];
+                          }
+    
+                          if(data.brewBeer){
+                            newPub[preOrg+'brewBeer'] = data.brewBeer;
+                            newPub[preOrg+'category/BEER/display'] = true;
+                          }
+                        }
+                      }
+                          
+                      return newPub;
+                    
+                    })
+                    .then(newPub =>{
+                     
+                      if(!place.permanently_closed){
+                        if(brewery|| pub){
+                          if(place.geometry){
+                              geoFire.set(place.place_id, [place.geometry.location.lat, place.geometry.location.lng])
+                                .then(data => {
+                                  console.log("Set GeoFire", data);
+                                })
+                                .catch(error=>{
+                                  console.log("Error: " + error);
+                                }) 
+                              }  
+                          }  
+                        }
+                         console.log('save new pub', newPub);
+
+                      admin.database().ref().update(newPub)
+                        .then(saved =>{
+                          console.log('saved data')
+                        })
+                        .catch( error =>{
+                          console.log('ERROR_SAVING_DATA', error)
+                        })
+                    })
+              
+              }
+            }
+        })   
+
   
 });
 
@@ -448,134 +609,7 @@ exports.updateFoodTruckScheduleToPub = functions.database.ref('/organization/{tr
 
 
 
- function getGoogleData(place_id){  
-    try{
 
-        let newPub = {};  
-        googleMapsClient.place({
-            placeid: place_id
-        }, function(err, response) {
-            if (!err) {
-
-              var place = response.json.result;
-              var preOrg = 'organization/'+place.place_id+'/';
-
-              var category = getTruckBaseCategories()
-            
-              if(place.permanently_closed){
-                newPub[preOrg+'permanently_closed'] = true; 
-              }
-
-              if(place.types){
-                if(isPub(place.types)){
-                    newPub[preOrg+'PUB'] = true;
-                    category = getPubBaseCategories()
-                }
-              }
-
-              if(place.name){
-                if(isBrewery(name)){
-                  newPub[preOrg+'BREWERY'] = true;
-                  category = getBreweryBaseCategories()
-                }
-              }
-
-              if(place.geometry){
-                if(place.geometry.location){
-                  if(place.geometry.location.lat){
-                      newPub[preOrg+'latitude'] = place.geometry.location.lat
-                  }
-                  if(place.geometry.location.lng){
-                      newPub[preOrg+'longitude'] = place.geometry.location.lng
-                  }
-              }
-            }
-
-            if(place.name){
-                newPub[preOrg+'name'] = place.name;
-            }
-
-            if(place.place_id){
-                newPub[preOrg+'place_id'] = place.place_id;
-            }
-
-            if(place.formatted_address){
-                newPub[preOrg+'formatted_address'] = place.formatted_address;
-            }
-
-            if(place.formatted_phone_number){
-                newPub[preOrg+'formatted_phone_number'] = place.formatted_phone_number;
-            }
-
-            if(place.vicinity){
-                newPub[preOrg+'vicinity'] = place.vicinity;
-            }
-
-            var domain = '';
-
-            if(place.website){
-                domain = getDomain(place.website)
-                newPub[preOrg+'website'] = place.website;
-                newPub[preOrg+'domain'] = domain;
-            }
-
-            if(place.address_components){
-                var placeAddress = getAddressObject(place.address_components);
-                if(placeAddress){
-                    var placeAddressKey = Object.keys(placeAddress);
-                    for (var i=0; i<placeAddressKey.length; i++){
-                        newPub[preOrg+placeAddressKey[i]] = placeAddress[placeAddressKey[i]];
-                    }
-                }
-            }
-            newPub[preOrg+'crowdSource'] = true;
-
-            
-              var categoryKey = Object.keys(category);
-              for (var i=0; i<categoryKey.length; i++){
-                var categoryObj = category[categoryKey[i]];
-                var subCatKey = Object.keys(categoryObj);
-                for (var j=0; j<subCatKey.length; j++){
-                  newPub[preOrg+'category/'+categoryKey[i]+'/'+subCatKey[j]] = category[categoryKey[i]][subCatKey[j]];
-                }
-              }
-
-            savePub(newPub, place, domain, preOrg);
-
-            }else{
-            console.log(err);
-            }
-        });
-    }catch (error){
-      console.log('PLACE_ERROR', error);
-    }
-  }
-
-function isPub(types){ 
-  if(types){
-    for (var i=0; i<types.length; i++){
-      if(types[i] === 'bar'){
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-function isBrewery(name){
-
-    if(name){
-      if(name.toLowerCase().indexOf('brewery')>-1){
-        return true;
-      }
-      if(name.toLowerCase().indexOf('brewing')>-1){
-        return true;
-      }
-    }
-
-      return false;
-
-} 
 
 function getDomain(website){
   if(website){
@@ -632,173 +666,81 @@ function getAddressObject(address){
     return obj;
 }
 
-function getBreweryBaseCategories(){
-    var category = {};
-    category['BEER'] = {};
-    category['BEER'].display = true;
-    category['BEER'].name = 'beer';
-    category['BEER'].order = 200;
-    category['BEER'].title = 'Our beers';
 
-    category['MENU'] = {};
-    category['MENU'].display = false;
-    category['MENU'].name = 'menu';
-    category['MENU'].order = 300;
-    category['MENU'].title = 'Menu';
+// exports.generateThumbnail = functions.storage.object()
+// .onChange(event => {
+//   const object = event.data;
+//   const filePath = object.name;
+//   const fileArray = filePath.split('/');
+//   const fileName = fileArray.pop();
+//   const fileBucket = object.bucket;
+//   const dataPath = fileArray.join('/');
+//   const bucket = gcs.bucket(fileBucket);
+//   const tempFilePath = `/temp/${fileName}`;
+//   const file = bucket.file(object.name);
 
-    category['CONTACT'] = {};
-    category['CONTACT'].display = true;
-    category['CONTACT'].name = 'contact';
-    category['CONTACT'].order = 500;
-    category['CONTACT'].title = 'Contact';
+//   if(!object.contentType.startsWith('image/')){
+//     console.log('This is not an image');
+//     return;
+//   }
 
-    category['REVIEW'] = {};
-    category['REVIEW'].display = true;
-    category['REVIEW'].name = 'review';
-    category['REVIEW'].order = 900;
-    category['REVIEW'].title = 'Reviews';
+//   if(object.resourceState === 'not_exists'){
+//     console.log('Image deleted');
+//     return 
+//   }
 
-    category['TAP'] = {};
-    category['TAP'].display = true;
-    category['TAP'].name = 'tap';
-    category['TAP'].order = 100;
-    category['TAP'].title = 'On tap';
+//   vision.detectSafeSearch(file)
+//     .then(safeSearchResult => {
+//       //check if safe
+//       if (safeSearchResult[0].adult || safeSearchResult[0].violence) {
+//         console.log('The image', object.name, 'has been detected as inappropriate.');
+//         bucket.file(filePath).delete();
+//         return;
+//       }
+//         console.log('downloading file', fileName);
+//         console.log('filePath', filePath);
+//         console.log('tempFilePath', tempFilePath);
+//         return bucket.file(filePath).download({
+//           destination: tempFilePath
+//       }).then(() => {console.log('test')})
 
-    return category;
+    //   .then(() => {
+    //     console.log('downloaded')
+    //     if(object.size <= 120000){
+    //       console.log('shrinking file');
+    //       return spawn('convert', [tempFilePath, '-define', 'jpeg:extent=100kb', tempFilePath ])
+    //         .then(()=> {
+    //           //upload shrunk file
+    //           console.log('Uploading shrunk file');
+    //           return bucket.upload(tempFilePath, {
+    //             destination: filePath
+    //         });
+    //       });
+    //     }
+    //     return
+    //   })
 
-}
 
-function getPubBaseCategories(){
-    var category = {};
-    category['BEER'] = {};
-    category['BEER'].display = false;
-    category['BEER'].name = 'beer';
-    category['BEER'].order = 200;
-    category['BEER'].title = 'Our beers';
+    //   .then(() =>{
+    //     console.log('converting image to thumbnail')
+    //     return spawn ('convert',[tempFilePath, '-thumbnail', '100x100>', tempFilePath])
+      
+    //   })
 
-    category['MENU'] = {};
-    category['MENU'].display = false;
-    category['MENU'].name = 'menu';
-    category['MENU'].order = 300;
-    category['MENU'].title = 'Menu';
+    //   .then(() =>{
+    //     fs.readFile(tempFilePath, 'base64', function (error, data) {
+    //       if (error) {
+    //         return console.log('BASE_64_ERROR', error);
+    //       }else{
+    //         console.log('base64', data);
+    //         return admin.database().ref(dataPath).update({thumbnail: data});
+    //       }
+    //     });
+    // })
+  
+//   })
 
-    category['CONTACT'] = {};
-    category['CONTACT'].display = true;
-    category['CONTACT'].name = 'contact';
-    category['CONTACT'].order = 500;
-    category['CONTACT'].title = 'Contact';
-
-    category['REVIEW'] = {};
-    category['REVIEW'].display = true;
-    category['REVIEW'].name = 'review';
-    category['REVIEW'].order = 900;
-    category['REVIEW'].title = 'Reviews';
-
-    category['TAP'] = {};
-    category['TAP'].display = true;
-    category['TAP'].name = 'tap';
-    category['TAP'].order = 100;
-    category['TAP'].title = 'On tap';
-
-    return category;
-
-}
-
-function getTruckBaseCategories(){
-    var category = {};
-
-    category['MENU'] = {};
-    category['MENU'].display = false;
-    category['MENU'].name = 'menu';
-    category['MENU'].order = 300;
-    category['MENU'].title = 'Menu';
-
-    category['CONTACT'] = {};
-    category['CONTACT'].display = true;
-    category['CONTACT'].name = 'contact';
-    category['CONTACT'].order = 500;
-    category['CONTACT'].title = 'Contact';
-
-    category['REVIEW'] = {};
-    category['REVIEW'].display = true;
-    category['REVIEW'].name = 'review';
-    category['REVIEW'].order = 900;
-    category['REVIEW'].title = 'Reviews';
-
-    return category;
-
-}
-
-function savePub(pub, place, domain, preOrg){
-  if(place.place_id){
-
-    pub['newOrg/'+place.place_id+'/timestamp'] = Date.now();
-
-     console.log('Getting other brewery data')
-
-        admin.database().ref('organization')
-        .orderByChild('domain').equalTo(domain).limitToFirst(1)  
-          .once("value")
-            .then(function(snapshot) {
-
-              if (snapshot.exists()){
-                var snapshot = snapshot.val();
-
-                console.log('other location', snapshot);
-                var key = Object.keys(snapshot);
-                var data = snapshot[key[0]];
-                if(data.breweryName){
-                  pub[preOrg+'breweryName'] = data.breweryName;
-                }
-                if(data.description){
-                  pub[preOrg+'description'] = data.description;
-                }
-                if(data.motto){
-                  pub[preOrg+'motto'] = data.motto;
-                }
-                if(data.mainImage){
-                  pub[preOrg+'mainImage'] = data.mainImage;
-                }
-                if(data.beerLastUpdated){
-                  pub[preOrg+'beerLastUpdated'] = data.beerLastUpdated;
-                }
-                if(data.brewBeer){
-                  pub[preOrg+'brewBeer'] = data.brewBeer;
-                  pub[preOrg+'category/BEER/display'] = true;
-                }
-                
-                return pub;
-              }else{
-                return pub;
-              }
-            }).then(function (addedPub){
-
-               if(!place.permanently_closed){
-                 if(addedPub.BREWERY || addedPub.PUB){
-                    if(place.geometry){
-                      geoFire.set(place.place_id, [place.geometry.location.lat, place.geometry.location.lng]).then(function() {
-                        console.log("Set GeoFire", place);
-                        }, function(error) {
-                            console.log("Error: " + error);
-                        });
-                      }  
-                    }  
-                  }
-                  // console.log('save', addedPub);
-                  return admin.database().ref().update(addedPub, function(error){
-                    if(error){
-                      console.log('ERROR_SAVING_NEW_PUB', error);
-                    }else{
-                      console.log('SAVED_NEW_PUB', addedPub)
-                    }
-                  });
-
-            })
-             
-  }
-
-   
-}
+// })
 
 
 exports.processImage = functions.storage.object().onChange(event => {
@@ -836,10 +778,7 @@ exports.processImage = functions.storage.object().onChange(event => {
 
 function deleteImage(filePath, bucket, metadata){
   const fileArray = filePath.split('/');
-  // const encodedPath = 'https://firebasestorage.googleapis.com/v0/b/beer-fly.appspot.com/o/'+fileArray.join('%2F')+'?alt=media';
   const fileName = fileArray.pop();
-  // fileArray.pop();
-  // const messageId = filePath.split('/')[1];
   const dataPath = fileArray.join('/');
   
   return bucket.file(filePath).delete()
@@ -855,11 +794,10 @@ function deleteImage(filePath, bucket, metadata){
 
 
 function shrinkImage(filePath, bucket, metadata) {
-  let fileArray = filePath.split('/');
+  const fileArray = filePath.split('/');
   const encodedPath = 'https://firebasestorage.googleapis.com/v0/b/beer-fly.appspot.com/o/'+fileArray.join('%2F')+'?alt=media';
   const fileName = fileArray.pop();
   const tempLocalFile = `/tmp/${fileName}`;
-
   const dataPath = fileArray.join('/');
 
 
@@ -868,21 +806,27 @@ function shrinkImage(filePath, bucket, metadata) {
      
       console.log('Image has been downloaded to', tempLocalFile);
 
-      return exec(`convert ${tempLocalFile} -define jpeg:extent=100kb ${tempLocalFile}`);
+      return spawn('convert', [tempLocalFile, '-define', 'jpeg:extent=100kb', tempLocalFile]);
     }).then(() => {
       console.log('Image has been shrunk');
       
       return bucket.upload(tempLocalFile, {destination: filePath});
     }).then(() => {
+      const file = bucket.file(filePath);
+      const config = {
+        action: 'read',
+        expires: '01-01-2400'
+      }
       console.log('Image has been saved');
+      return file.getSignedUrl(config);
+    })
+    .then(signedUrl =>{
+        const fileUrl = signedUrl;
+        console.log('fileUrl - ', fileUrl)
+        admin.database().ref(dataPath).update({url: fileUrl,
+                                               name: fileName});
 
-      // return exec(`convert ${tempLocalFile} -quality   1% ${tempLocalFile}`);
-      return true
-  
-    }).then(() => {
-     
-      
-    });
+    })
 }
 
 
@@ -901,15 +845,14 @@ function base64(filePath, bucket, metadata) {
      
       console.log('Image has been downloaded to', tempLocalFile);
 
-      // return exec(`convert ${tempLocalFile} -strip -channel RGBA -blur 0x24 -quality 3 -resample 150 ${tempLocalFile}`);
-      return exec(`convert ${tempLocalFile} -strip -thumbnail 100x100 ${tempLocalFile}`);
+      return spawn('convert',[tempLocalFile, '-thumbnail', '100x100', tempLocalFile]);
 
     }).then(() => {
 
       console.log('Image has been shrunk alot ');
 
      
-      fs.readFile(tempLocalFile, 'base64', function (err,data) {
+      fs.readFile(tempLocalFile, 'base64', function (err, data) {
         if (err) {
           return console.log(err);
         }else{

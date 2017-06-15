@@ -133,7 +133,7 @@
 
     fileName: {
       type: String,
-      value: ''
+      value: 'test_file_name.jpeg'
     },
     fileProgress:{
       type: Number
@@ -200,7 +200,7 @@
       obj.url = url;
       obj.timestamp = Date.now();
 
-        this.$.image.ref.child(this.type).update(obj);
+        // this.$.image.ref.child(this.type).update(obj);
 
    }
 
@@ -226,7 +226,7 @@
     this.updateStyles();
     // console.log(this.uploader);
     // console.log(uploadValue);
-    this.fileName = this.$.uploader.files[0].name;
+    this.fileName = 'test_file_name.jpeg'
 
     this.initiateUpload();
     
@@ -261,7 +261,7 @@
     'use strict';
   
     var app = this.$.image.app;
-    var storageRef = app.storage().ref('organization/'+this.orgId+'/'+this.key+'/'+this.type+'/'+file.name);
+    var storageRef = app.storage().ref('organization/'+this.orgId+'/'+this.key+'/'+this.type+'/'+this.fileName);
     var task = storageRef.put(file);
     var that = this;
     task.on('state_changed', 
