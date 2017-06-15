@@ -45,34 +45,34 @@
 
       <beer-rating-card rating="[[place.rating]]"></beer-rating-card>
       <div class="review">Reviews</div>
+
        <beer-review-card 
-                organization="[[place]]">
+            place="[[place]]">
        </beer-review-card>
 
 
-    <paper-dialog 
-        id="editDialog"
-        with-backdrop
-        style="width: 90vw;"
-        entry-animation="slide-from-right-animation"
-        exit-animation="slide-right-animation">
-            <style>
-            
-            </style>
-      <div class=""> 
-          <h3>[[category.title]]</h3>
-      </div>
-      <paper-dialog-scrollable>
-        <template is="dom-if" if="[[owner]]">
-          <upload-image org-id="[[orgId]]" type="banner" key="category/REVIEW/image"></upload-image>   
-          
-        </template>
-      </paper-dialog-scrollable>  
+      <paper-dialog 
+          id="editDialog"
+          with-backdrop
+          style="width: 90vw;"
+          entry-animation="slide-from-right-animation"
+          exit-animation="slide-right-animation">
+              <style>
+              
+              </style>
+        <div class=""> 
+            <h3>[[category.title]]</h3>
+        </div>
+        <paper-dialog-scrollable>
+          <template is="dom-if" if="[[owner]]">
+            <upload-image org-id="[[orgId]]" type="banner" key="category/REVIEW/image"></upload-image>   
+          </template>
+        </paper-dialog-scrollable>  
 
-      <div class="">
-        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
-      </div>
-    </paper-dialog>
+        <div class="">
+          <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+        </div>
+      </paper-dialog>
 
   </template>
 
@@ -83,9 +83,38 @@
       is: 'beer-review',
 
       properties:{
+
+        category:{
+          type:Object
+        },
+
+        nameUrl:{
+          type:String,
+        },
+
+        orgId:{
+          type:String
+        },
+
+        organization:{
+          type:Object
+        },
+
+        owner:{
+          type: Boolean
+        },
+
+        place:{
+          type:Object
+        },
+
         photoUrl: {
           type: String,
           computed: '_computePhotoUrl(category, place)'
+        },
+
+        user:{
+          type: Object
         }
       },
 

@@ -7,6 +7,7 @@
 <link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 
@@ -51,13 +52,6 @@
         margin: 10px;
         padding: 20px;
         @apply --paper-material-elevation-1;
-      }
-
-      .motto {
-        font-size: 2.0em;
-        font-weight: 500;
-        margin: 0 5px 0 20px;
-        color: var(--app-primary-color);
       }
 
       .description {
@@ -158,12 +152,12 @@
 
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab> 
 
-    <div class="motto">
-        [[category.motto]]
-    </div>
-    <div class="description">
-        [[category.description]]
-    </div>
+
+    <template is="dom-repeat" items="[[_addBreaks(category.description)]]" as="description">
+      <div class="description">
+          [[description]]
+      </div>
+   </template>
 
 
     <div class="menu">
@@ -248,11 +242,11 @@
       <div class=""> 
           <h3>[[category.title]]</h3>
       </div>
-      <template is="dom-if" if="[[owner]]">
-      <paper-dialog-scrollable >
-       
-      </paper-dialog-scrollable>
-      </template>
+
+        <paper-dialog-scrollable>
+            <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_BEER_banner" key="category/BEER/image"></upload-image>   
+            <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
+          </paper-dialog-scrollable>
 
       <div class="">
         <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
@@ -378,7 +372,6 @@
       },
       
      _edit: function(){
-        'use strict';
         var body = document.querySelector('body');
         Polymer.dom(body).appendChild(this.$.editDialog);
         this.$.editDialog.open();
@@ -434,7 +427,7 @@
       },
 
       _categoryOrder: function(a,b){  
-        'use strict';
+
         if(!a.order)
         return 0;
         if (a.order < b.order)
@@ -445,7 +438,7 @@
       },
 
       _addBreaks: function(str){
-        'use strict';
+
         if(str){
           return str.split('\n');
         }else{
@@ -485,6 +478,15 @@
 
       _closeToast: function (obj){
         this.$.toast.close();
+      },
+
+      _addBreaks: function(str){
+        'use strict';
+        if(str){
+          return str.split('\n');
+        }else{
+          return [];
+        }
       },
 
       _test: function (obj){

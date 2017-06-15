@@ -111,8 +111,8 @@
     </style>
     <div>
         <div animated-shadow="false">
-            <!--<div class="review-title">Reviews</div>     -->
-            <template is="dom-repeat" items="[[_toArray(organization.reviews)]]" as="review">
+
+            <template is="dom-repeat" items="[[_toArray(place.reviews)]]" as="review">
                 <div class="review" animated-shadow="false">
                   <div>
                     <beer-rating-card rating="[[review.rating]]">
@@ -124,6 +124,7 @@
                   </a>
                 </div>
             </template>
+            
         </div>
     </div>
   </template>
@@ -134,6 +135,14 @@
     Polymer({
 
       is: 'beer-review-card',
+
+      properties:{
+
+        place: {
+          type:Object
+        }
+
+      },
 
     
        _toArray: function (obj) {

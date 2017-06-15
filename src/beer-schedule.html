@@ -4,13 +4,19 @@
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../my_components/data/upload-image.html">
 
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-icons.html">
@@ -43,6 +49,12 @@
 
       .add-button{
         color: var(--app-accent-color);
+      }
+
+      .description {
+        font-size: 1.2em;
+        font-weight: 300;
+        margin: 10px 5px 0 20px;
       }
 
       .pub-card{
@@ -80,7 +92,6 @@
 
     </style>
 
-     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
 
 
      <iron-image 
@@ -91,6 +102,15 @@
         fade
         src="[[photoUrl]]">
     </iron-image>
+
+    <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
+
+
+    <template is="dom-repeat" items="[[_addBreaks(category.description)]]" as="description">
+      <div class="description">
+          [[description]]
+      </div>
+   </template>
 
     <template is="dom-if" if="[[owner]]">
       <div class="add-card" >
@@ -142,11 +162,29 @@
             
           </template>
         </div>
-        
-    
-          
 
       </template>
+
+       <paper-dialog 
+          id="editDialog"
+          with-backdrop
+          style="width: 90vw;"
+          entry-animation="slide-from-right-animation"
+          exit-animation="slide-right-animation">
+              
+        <div> 
+            <h3>[[category.title]]</h3>
+        </div>
+
+          <paper-dialog-scrollable>
+              <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_BEER_banner" key="category/BEER/image"></upload-image>   
+              <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
+          </paper-dialog-scrollable>
+
+        <div>
+          <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+        </div>
+      </paper-dialog>
         
 
 </template>
@@ -245,7 +283,6 @@
       },
 
       _computeNameForUrl: function (name) {
-        'use strict';
         if (name) {
           name = name.replace(/\s/g, '-')
           return name.replace(/[^a-zA-Z\d\s:]/g, '');
@@ -317,13 +354,26 @@
       },
 
        _computeNameForUrl: function (name) {
-        'use strict';
         if (name) {
           name = name.replace(/\s/g, '-')
           return name.replace(/[^a-zA-Z\d\s:]/g, '');
         } else {
           return 'home'
         }
+      },
+
+      _addBreaks: function(str){
+        if(str){
+          return str.split('\n');
+        }else{
+          return [];
+        }
+      },
+
+      _edit: function(){
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.editDialog);
+        this.$.editDialog.open();
       },
      
 

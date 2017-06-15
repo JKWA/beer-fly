@@ -133,8 +133,9 @@
 
     fileName: {
       type: String,
-      value: 'test_file_name.jpeg'
+      value: 'default_file_name'
     },
+
     fileProgress:{
       type: Number
     },
@@ -158,10 +159,12 @@
     uploadProgress:{
       type: Number,
     },
+
     fileComplete: {
       type:Boolean,
       value: true,
     },
+
     fileError: {
       type: Boolean,
       value: false
@@ -226,7 +229,7 @@
     this.updateStyles();
     // console.log(this.uploader);
     // console.log(uploadValue);
-    this.fileName = 'test_file_name.jpeg'
+    // this.fileName = 'test_file_name.jpeg'
 
     this.initiateUpload();
     

@@ -1,7 +1,8 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const GeoFire = require('geofire');
-const gcs = require('@google-cloud/storage')();
+
+const gcs = require('@google-cloud/storage')({keyFilename:'serviceAccountKey.json'});
 const vision = require('@google-cloud/vision')();
 const exec = require('child-process-promise').exec;
 const spawn = require('child-process-promise').spawn;
@@ -821,7 +822,7 @@ function shrinkImage(filePath, bucket, metadata) {
       return file.getSignedUrl(config);
     })
     .then(signedUrl =>{
-        const fileUrl = signedUrl;
+        const fileUrl = signedUrl[0];
         console.log('fileUrl - ', fileUrl)
         admin.database().ref(dataPath).update({url: fileUrl,
                                                name: fileName});

@@ -100,20 +100,9 @@
           <h3>[[category.title]]</h3>
       </div>
       <paper-dialog-scrollable>
-        <template is="dom-if" if="[[owner]]">
-          <upload-image org-id="[[orgId]]" type="banner" key="category/CONTACT/image"></upload-image>   
-          <paper-input label="Site Name" value="{{organization.siteName}}"maxlength=100></paper-input>
-          <paper-input label="Street" value="{{organization.street}}"maxlength=100></paper-input>
-          <div class="address2">
-              <paper-input style="width:200px; margin-right:20px;" label="City" value="{{organization.city}}"maxlength=100></paper-input>
-              <paper-input style="width:50px; margin-right: 20px;" label="State" value="{{organization.state}}"maxlength=100></paper-input>
-              <paper-input style="width:100px;" label="Zipcode" value="{{organization.zip}}"></paper-input>
-          </div>
-          <paper-input style="width:170px;" label="Phone" value="{{organization.phone}}"></paper-input>
-          <paper-input label="Email" value="{{organization.emial}}"></paper-input>
-          <paper-textarea label="Directions" value="{{category.directions}}" maxlength=2000 char-counter></paper-textarea>
-        </template>
-      </paper-dialog-scrollable>  
+          <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_CONTACT_banner" key="category/TAP/image"></upload-image>   
+          <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
+        </paper-dialog-scrollable>
 
       <div class="">
         <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
@@ -132,6 +121,10 @@
 
         category:{
           type: Object
+        },
+
+        nameUrl:{
+          type: String
         },
 
         orgId:{

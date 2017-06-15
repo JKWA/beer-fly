@@ -240,8 +240,7 @@
       </div>
     
         <paper-dialog-scrollable>
-          <upload-image org-id="[[orgId]]" type="banner" key="category/TAP/image"></upload-image>   
-          <paper-input label="Motto" value="{{category.motto}}"maxlength=100 char-counter></paper-input>
+          <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_TAP_banner" key="category/TAP/image"></upload-image>   
           <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
         </paper-dialog-scrollable>
       </template>
