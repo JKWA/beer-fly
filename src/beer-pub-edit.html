@@ -73,7 +73,7 @@
         
 
         <h3>Upload Banner Image</h3>
-        <upload-image org-id="[[orgId]]" type="banner" key="mainImage"></upload-image>
+        <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_MAIN_banner" key="mainImage"></upload-image>
         
         <!--<iron-label>
           <paper-checkbox checked="{{organization.crowdSource}}"></paper-checkbox>
@@ -108,6 +108,10 @@
         //  allCategories:{
         //   type: Object,
         // },
+
+        nameUrl:{
+          type:String
+        },
 
         organization:{
           type: Object,

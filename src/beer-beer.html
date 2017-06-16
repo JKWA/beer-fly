@@ -3,6 +3,7 @@
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
@@ -117,7 +118,7 @@
         entry-animation="slide-from-right-animation"
         exit-animation="slide-right-animation">
             
-      <div > 
+      <div> 
           <h3>[[category.title]]</h3>
       </div>
     
@@ -125,7 +126,7 @@
           <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_BEER_banner" key="category/BEER/image"></upload-image>   
           <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
         </paper-dialog-scrollable>
-      </template>
+    
       <div>
         <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
       </div>

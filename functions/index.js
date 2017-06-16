@@ -668,84 +668,32 @@ function getAddressObject(address){
 }
 
 
-// exports.generateThumbnail = functions.storage.object()
-// .onChange(event => {
-//   const object = event.data;
-//   const filePath = object.name;
-//   const fileArray = filePath.split('/');
-//   const fileName = fileArray.pop();
-//   const fileBucket = object.bucket;
-//   const dataPath = fileArray.join('/');
-//   const bucket = gcs.bucket(fileBucket);
-//   const tempFilePath = `/temp/${fileName}`;
-//   const file = bucket.file(object.name);
-
-//   if(!object.contentType.startsWith('image/')){
-//     console.log('This is not an image');
-//     return;
-//   }
-
-//   if(object.resourceState === 'not_exists'){
-//     console.log('Image deleted');
-//     return 
-//   }
-
-//   vision.detectSafeSearch(file)
-//     .then(safeSearchResult => {
-//       //check if safe
-//       if (safeSearchResult[0].adult || safeSearchResult[0].violence) {
-//         console.log('The image', object.name, 'has been detected as inappropriate.');
-//         bucket.file(filePath).delete();
-//         return;
-//       }
-//         console.log('downloading file', fileName);
-//         console.log('filePath', filePath);
-//         console.log('tempFilePath', tempFilePath);
-//         return bucket.file(filePath).download({
-//           destination: tempFilePath
-//       }).then(() => {console.log('test')})
-
-    //   .then(() => {
-    //     console.log('downloaded')
-    //     if(object.size <= 120000){
-    //       console.log('shrinking file');
-    //       return spawn('convert', [tempFilePath, '-define', 'jpeg:extent=100kb', tempFilePath ])
-    //         .then(()=> {
-    //           //upload shrunk file
-    //           console.log('Uploading shrunk file');
-    //           return bucket.upload(tempFilePath, {
-    //             destination: filePath
-    //         });
-    //       });
-    //     }
-    //     return
-    //   })
-
-
-    //   .then(() =>{
-    //     console.log('converting image to thumbnail')
-    //     return spawn ('convert',[tempFilePath, '-thumbnail', '100x100>', tempFilePath])
-      
-    //   })
-
-    //   .then(() =>{
-    //     fs.readFile(tempFilePath, 'base64', function (error, data) {
-    //       if (error) {
-    //         return console.log('BASE_64_ERROR', error);
-    //       }else{
-    //         console.log('base64', data);
-    //         return admin.database().ref(dataPath).update({thumbnail: data});
-    //       }
-    //     });
-    // })
-  
-//   })
-
-// })
-
-
 exports.processImage = functions.storage.object().onChange(event => {
   const object = event.data;
+  const bucket = gcs.bucket(object.bucket);
+  const file = bucket.file(object.name);
+  const fileArray = object.name.split('/');
+  const fileName = fileArray.pop();
+  const tempLocalFile = `/tmp/${fileName}`;
+  const dataPath = fileArray.join('/');
+  const fileNameArray = fileName.split('.');
+  const fileNamePrefix = fileNameArray[0];
+  const fileNameExtention = fileNameArray[1];
+  
+
+  console.log(event.data);
+  let destination = object.name;
+  let destinationName = fileName;
+ 
+
+  if(object.size > 120000){
+    if(fileNameExtention !== 'jpeg'){
+      destination = dataPath+fileNamePrefix+'.jpeg'
+      destinationName = fileNamePrefix+'.jpeg'
+    }
+  }
+
+
   // Exit if this is a deletion or a deploy event.
   if (object.resourceState === 'not_exists') {
     return console.log('This is a deletion event.');
@@ -753,119 +701,103 @@ exports.processImage = functions.storage.object().onChange(event => {
     return console.log('This is a deploy event.');
   }
 
-  const bucket = gcs.bucket(object.bucket);
-  const file = bucket.file(object.name);
-  console.log(event.data);
+  if(!object.contentType.startsWith('image/')){
+    //delete if not an image
+    console.log('This is not an image');
+    return bucket.file(object.name).delete();
+  }
 
   // Check the image content using the Cloud Vision API.
   return vision.detectSafeSearch(file).then(safeSearchResult => {
     if (safeSearchResult[0].adult || safeSearchResult[0].violence) {
       console.log('The image', object.name, 'has been detected as inappropriate.');
-      
-      return deleteImage(object.name, bucket, object);
-    } else {
+      return bucket.file(object.name).delete();
+    } 
+
       console.log('The image', object.name,'has been detected as OK.');
-      console.log('size', object.size);
+
+     
+       return bucket.getFiles({prefix: dataPath+'/'})
+    
+      .then(data => {
+
+        for (let file of data[0]) {
+          if(object.name != file.name){
+            bucket.file(file.name).delete()
+          }
+        }
+      })
+
+      .then(() => {
+        console.log('deleted other files');
+
       if(object.size <= 120000){
         console.log('Size okay');
-        return base64(object.name, bucket, object);
+
+        return bucket.file(object.name).download({destination: tempLocalFile})
+          .then(() => {
+            return spawn('convert',[tempLocalFile, '-thumbnail', '100x100', tempLocalFile]);
+
+          }).then(() => {
+
+            console.log('Thumbnail created.');
+
+          
+            fs.readFile(tempLocalFile, 'base64', function (err, data) {
+              if (err) {
+                console.log(err);
+                return 
+              }else{
+                return admin.database().ref(dataPath).update({thumbnail: data});
+              }
+            });
+          
+            
+          }).then((file) => {
+            console.log('Base 64 image has been saved');
+            return;
+          })
+   
+
       }else{
         console.log('Size too large');
-        return shrinkImage(object.name, bucket, object);
+        return bucket.file(object.name).download({destination: tempLocalFile})
+
+          .then(() => {
+            return spawn('convert', [tempLocalFile, '-define', 'jpeg:extent=100kb', tempLocalFile]);
+          })
+
+          .then(() =>{
+            console.log('Image has been shrunk');
+
+            if(fileNameExtention !== 'jpeg'){
+              console.log('update file extention')
+              bucket.file(object.name).delete();
+              
+ 
+            }
+            return bucket.upload(tempLocalFile, {destination: destination})
+          })
+
+          .then(() => {     
+            const config = {
+              action: 'read',
+              expires: '01-01-2400'
+            }
+
+            return bucket.file(destination).getSignedUrl(config);
+          })
+
+          .then(signedUrl =>{
+              console.log('Image has been uploaded');
+              const fileUrl = signedUrl[0];
+              admin.database().ref(dataPath).update({url: fileUrl, name: destinationName, thumbnail: null});
+              return
+          })
       }
-    }
+    
+    });
   });
 });
-
-function deleteImage(filePath, bucket, metadata){
-  const fileArray = filePath.split('/');
-  const fileName = fileArray.pop();
-  const dataPath = fileArray.join('/');
-  
-  return bucket.file(filePath).delete()
-    .then(() => {
-      console.log('Image has been deleted');
-      console.log(dataPath);
-      admin.database().ref(dataPath).remove();
-    })
-}
-
-
-
-
-
-function shrinkImage(filePath, bucket, metadata) {
-  const fileArray = filePath.split('/');
-  const encodedPath = 'https://firebasestorage.googleapis.com/v0/b/beer-fly.appspot.com/o/'+fileArray.join('%2F')+'?alt=media';
-  const fileName = fileArray.pop();
-  const tempLocalFile = `/tmp/${fileName}`;
-  const dataPath = fileArray.join('/');
-
-
-  return bucket.file(filePath).download({destination: tempLocalFile})
-    .then(() => {
-     
-      console.log('Image has been downloaded to', tempLocalFile);
-
-      return spawn('convert', [tempLocalFile, '-define', 'jpeg:extent=100kb', tempLocalFile]);
-    }).then(() => {
-      console.log('Image has been shrunk');
-      
-      return bucket.upload(tempLocalFile, {destination: filePath});
-    }).then(() => {
-      const file = bucket.file(filePath);
-      const config = {
-        action: 'read',
-        expires: '01-01-2400'
-      }
-      console.log('Image has been saved');
-      return file.getSignedUrl(config);
-    })
-    .then(signedUrl =>{
-        const fileUrl = signedUrl[0];
-        console.log('fileUrl - ', fileUrl)
-        admin.database().ref(dataPath).update({url: fileUrl,
-                                               name: fileName});
-
-    })
-}
-
-
-
-function base64(filePath, bucket, metadata) {
-  let fileArray = filePath.split('/');
-  const encodedPath = 'https://firebasestorage.googleapis.com/v0/b/beer-fly.appspot.com/o/'+fileArray.join('%2F')+'?alt=media';
-  const fileName = fileArray.pop();
-  const tempLocalFile = `/tmp/${fileName}`;
-
-  const dataPath = fileArray.join('/');
-
-
-  return bucket.file(filePath).download({destination: tempLocalFile})
-    .then(() => {
-     
-      console.log('Image has been downloaded to', tempLocalFile);
-
-      return spawn('convert',[tempLocalFile, '-thumbnail', '100x100', tempLocalFile]);
-
-    }).then(() => {
-
-      console.log('Image has been shrunk alot ');
-
-     
-      fs.readFile(tempLocalFile, 'base64', function (err, data) {
-        if (err) {
-          return console.log(err);
-        }else{
-          console.log(data);
-          return admin.database().ref(dataPath).update({thumbnail: data});
-        }
-      });
-     
-      
-    }).then((file) => {
-      console.log('Base 64 image has been saved');
-    })
-}
 
 
