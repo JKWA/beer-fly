@@ -62,7 +62,7 @@
       }
       
       .dialog{
-         @apply --layout-vertical;
+         @apply --layout-horizontal;
       }
 
       .wrapper{
@@ -91,12 +91,12 @@
       }
 
       .dark{
-        background-color: #263238;
+        background-color: black;
         color: white
       }
 
       .light{
-        background-color: white
+        background-color: white;
         color: var(--app-primary-color);
       }
       
@@ -123,7 +123,17 @@
 
     <app-localstorage-document 
         key="tvCards" 
-        data="{{numberOfBeers}}">
+        data="{{sliderNumberBeers}}">
+    </app-localstorage-document>
+
+    <app-localstorage-document 
+        key="tvColumns" 
+        data="{{sliderNumberColumns}}">
+    </app-localstorage-document>
+
+    <app-localstorage-document 
+        key="tvText" 
+        data="{{sliderSizeText}}">
     </app-localstorage-document>
 
     <div class$="[[theme]] card" elevation="1">
@@ -146,6 +156,16 @@
         <div>
             <paper-slider class$="[[theme]]" value="{{sliderNumberBeers}}"></paper-slider>
             <div class="label">[[numberOfBeers]] beers per slide</div>
+        </div>
+
+        <div>
+            <paper-slider class$="[[theme]]" value="{{sliderNumberColumns}}"></paper-slider>
+            <div class="label">[[numberOfColumns]] columns per slide</div>
+        </div>
+
+        <div>
+            <paper-slider class$="[[theme]]" value="{{sliderSizeText}}"></paper-slider>
+            <div class="label">[[sizeOfText]] text size</div>
         </div>
 
         <div>
@@ -176,11 +196,13 @@
           with-backdrop
           theme="[[theme]]">
 
-          <template is="dom-repeat" items="[[card]]" as="beer" strip-whitespace>
-            <beer-tv-card 
-                beer="[[beer]]">
-            </beer-tv-card>
-          </template>
+            <template is="dom-repeat" items="[[card]]" as="beer" strip-whitespace>
+                <beer-tv-card 
+                    beer="[[beer]]"
+                    number-columns="[[numberOfColumns]]"
+                    text-size="[[sliderSizeText]]">
+                </beer-tv-card>
+            </template>
 
        </beer-tv-dialog>
      
@@ -211,7 +233,7 @@
 
         theme:{
           type:String,
-          string:"light"
+          value:"light"
         },
 
         data:{
@@ -233,14 +255,34 @@
 
         },
 
+        numberOfColumns:{
+          type: Number,
+          value: 1
+        },
+
         numberOfDialogs:{
           type: Number,
           computed:'_calculateNumberOfDialogs(numberOfBeers, organization.onTap)'
         },
 
+        sizeOfText:{
+          type: Number,
+          computed: '_computeSizeTextDisplayChange(sliderSizeText)'
+        },
+
         sliderNumberBeers:{
           type:Number,
           value:50
+        },
+
+        sliderNumberColumns:{
+          type: Number,
+          value: 25
+        },
+
+        sliderSizeText:{
+          type: Number,
+          value: 75
         },
 
         sliderSpeedPercent:{
@@ -263,7 +305,9 @@
       observers:['_watchForNewData(organization.onTap, numberOfBeers)',
                   '_watchForTheme(theme)',
                   '_watchSpeedDisplayChange(sliderSpeedPercent)',
-                  '_watchNumberBeerDisplayChange(sliderNumberBeers)'
+                  '_watchNumberBeerDisplayChange(sliderNumberBeers)',
+                  '_watchNumberColumnsDisplayChange(sliderNumberColumns)'
+                  // '_watchSizeTextDisplayChange(sliderSizeText)'
                   ],
 
       ready: function (){
@@ -421,7 +465,7 @@
       },
 
       _watchNumberBeerDisplayChange: function (display){
-        var numBeers = Math.ceil(display/10);
+        var numBeers = Math.ceil(display/5);
         if(numBeers === 0){
           this.numberOfBeers = 1
         }else{
@@ -429,10 +473,25 @@
         }
       },
 
+      _watchNumberColumnsDisplayChange: function (display) {
+         var numCols = Math.ceil(display/20);
+        if(numCols === 0){
+          this.numberOfColumns = 1
+        }else{
+          this.numberOfColumns = numCols+1;
+        }
+      },
+
+       _computeSizeTextDisplayChange: function (display) {
+         return display -75;
+       
+      },
+
+
 
       _computeBackgroundColor: function (theme){
         if(theme === 'dark'){
-          return '#263238'
+          return 'rgba(0, 0, 0, 1)'
         }else{
           return 'rgba(255, 255, 255, 0.95)'
         }

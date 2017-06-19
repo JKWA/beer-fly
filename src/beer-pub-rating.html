@@ -186,12 +186,13 @@
       ready: function () {
             this.value = this.googleRating;
       },
+
+      attached: function() {
+        this.async(function() {
+          this.reset();
+        }.bind(this));
+      },
       
-    //   attached: function() {
-    //     this.async(function() {
-    //       this.reset();
-    //     }.bind(this));
-    //   },
 
     _userSignedIn: function (user){
         if(user){

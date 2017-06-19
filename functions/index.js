@@ -210,15 +210,15 @@ exports.saveNewPub = functions.database.ref('/newOrg/{placeId}/{domain}')
                      
                       if(!place.permanently_closed){
                         if(brewery|| pub){
-                          if(place.geometry){
-                              geoFire.set(place.place_id, [place.geometry.location.lat, place.geometry.location.lng])
-                                .then(data => {
-                                  console.log("Set GeoFire", data);
-                                })
-                                .catch(error=>{
-                                  console.log("Error: " + error);
-                                }) 
-                              }  
+                          // if(place.geometry){
+                          //     geoFire.set(place.place_id, [place.geometry.location.lat, place.geometry.location.lng])
+                          //       .then(data => {
+                          //         console.log("Set GeoFire", data);
+                          //       })
+                          //       .catch(error=>{
+                          //         console.log("Error: " + error);
+                          //       }) 
+                          //     }  
                           }  
                         }
                          console.log('save new pub', newPub);
@@ -601,8 +601,9 @@ exports.updateFoodTruckScheduleToPub = functions.database.ref('/organization/{tr
   
     const geoTapRef = admin.database().ref('GeoTap/'+beerId);
     const geoTapFire = new GeoFire(geoTapRef);
-    geoTapFire.remove(placeId).then(function() {
-      console.log("Remove GeoTapFire");
+    geoTapFire.remove(placeId)
+      .then(function() {
+        console.log("Remove GeoTapFire");
       }, function(error) {
           console.error("GeoTapFireError: " + error);
       });
@@ -799,5 +800,68 @@ exports.processImage = functions.storage.object().onChange(event => {
     });
   });
 });
+
+
+exports.watchBreweryFlag = functions.database.ref('/organization/{placeId}/BREWERY')
+    .onWrite(event => {
+       const snapshot = event.data;
+       const placeId = event.params.placeId;
+       return _updateGeoFire(placeId);
+    })
+
+exports.watchPubFlag = functions.database.ref('/organization/{placeId}/PUB')
+    .onWrite(event => {
+       const snapshot = event.data;
+       const placeId = event.params.placeId;
+       return _updateGeoFire(placeId);
+  })
+
+function _updateGeoFire(placeId){
+
+   admin.database().ref(`/organization/${placeId}`)
+        .once('value')
+        .then(snapshot =>{
+          const pub = snapshot.val();
+          
+          if(pub.permanently_closed){
+             return geoFire.remove(pub.place_id)
+              .then(() =>{
+                console.log('removed from geo');
+                return
+              })
+              .catch(error =>{
+                console.log('GEO_REMOVE_ERROR', error);
+                return
+              })
+          }
+
+          if(pub.BREWERY || pub.PUB){
+
+            console.log('add to geo');
+            return geoFire.set(pub.place_id, [pub.latitude, pub.longitude])
+              .then(data => {
+                console.log("Set GeoFire", pub);
+                return
+              })
+              .catch(error=>{
+                console.log("GEO_FIRE_SET_ERROR: " + error);
+                return
+              }) 
+
+          }else{
+
+            return geoFire.remove(pub.place_id)
+            .then(() =>{
+              console.log('removed from geo');
+              return
+            })
+            .catch(error =>{
+              console.log('GEO_REMOVE_ERROR', error);
+              return
+            })
+          }
+      })
+}
+
 
 

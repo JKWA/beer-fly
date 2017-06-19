@@ -47,10 +47,9 @@
         data="{{organization}}">
     </firebase-document>
 
-    <h3>Type</h3>
+    <h3>This is a ...</h3>
 
     <div>
-      <div>This is a ...</div>
           <paper-checkbox checked="{{organization.PUB}}">Pub</paper-checkbox>&nbsp
           <paper-checkbox checked="{{organization.BREWERY}}">Brewery</paper-checkbox>&nbsp
           <paper-checkbox checked="{{organization.TRUCK}}">Food Truck</paper-checkbox>&nbsp
@@ -100,14 +99,7 @@
       is: 'beer-pub-edit',
       properties: {
 
-        // categories: {
-        //   type: Array,
-        //   computed: '_computeCategories(organization)'
-        // },
 
-        //  allCategories:{
-        //   type: Object,
-        // },
 
         nameUrl:{
           type:String
@@ -123,40 +115,6 @@
         }
         
       },
-
-
-    //  _watchForNewOrganizationData: function (organization, category) {
-    //   var category = this.allCategories;
-    //   if(!organization.googleData){
-    //     if(category.BEER){
-    //       var key = Object.keys(category);
-    //       for(var i=0; i<key.length;i++){
-    //         this.categoryKey = key[i];
-    //         if(key[i]){
-    //           this.$.orgCategory.ref.child(key[i]).update(category[key[i]]);
-    //         }
-    //       }
-    //     }
-    //   }
-    // },
-
-
-    //   _computeCategories: function(organization) {
-    //     var returnArray = [];
-    //     if(organization){
-    //       if(organization.category){
-    //         var category = organization.category;
-    //         var key = Object.keys(category);
-    //         for (var i=0; i<key.length; i++){
-    //             category[key[i]].$key = key[i];
-    //             returnArray.push(category[key[i]])
-    //         }
-    //       }
-    //     }
-    //     return returnArray.sort(function(a, b) {
-    //                               return parseFloat(a.order) - parseFloat(b.order);
-    //                           });
-    //   },
 
 
       _test: function(obj){

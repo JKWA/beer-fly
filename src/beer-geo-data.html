@@ -69,8 +69,6 @@
 
         _getLocation: function (allObject, location, page, radius){
 
-
-            // console.log('radius', radius)
             if(page === 'home'){
                 
               if(location){
@@ -78,17 +76,17 @@
 
                 if(Array.isArray(this.allArray)){
 
-                    // for (var i=0; i<this.allArray.length; i++){
+                    for (var i=0; i<this.allArray.length; i++){
 
-                     for(i=this.allArray.length-1; i>=0; i--){
                         var pub = this.allArray[i];
                         
                         var distance = this._distance (location.location.latitude, location.location.longitude, pub.latitude, pub.longitude);
-                        // console.log('ARRAY', distance);
+
                         var sort = distance;
+                        
                         if(pub.PREMIUM){
-                            if(distance <= 10){
-                                sort = sort-10;
+                            if(distance <= 5){
+                                sort = sort-5;
                             }
                         }
                         this.set('allArray.'+[i]+'.distance', distance)

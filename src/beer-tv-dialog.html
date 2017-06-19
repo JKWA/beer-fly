@@ -10,11 +10,12 @@
 <dom-module id="beer-tv-dialog">
   <template strip-whitespace>
     
-    <style include="paper-material-styles">>
+    <style include="paper-material-styles">
       :host {
           width: 100vw; 
           height: 100vh;
         }
+
 
      .dialog {
        width: 100vw; 
@@ -24,6 +25,13 @@
        margin:0;
        top:0;
        left:0;
+       
+     }
+
+     .cards{
+       @apply --layout-horizontal;
+      
+       @apply --layout-wrap;
      }
 
      .logo{
@@ -32,7 +40,6 @@
         left:40vw;
         z-index: 100;
         -webkit-transform: translateZ(0);
-
        @apply --layout-horizontal;
        @apply --layout-center-justified;
      }
@@ -42,8 +49,8 @@
      }
 
       .dark{
-        background-color:#263238;
-        color: white
+        background-color: black;
+        color: white;
       }
 
       .light{
@@ -52,12 +59,18 @@
       }
 
 
+    
+
+
         
     </style>
 
 
-    <div class$="[[theme]] dialog">
+    <div class$="[[theme]] columns dialog">
+      <div class="cards">
       <slot></slot>
+
+      </div>
     
       <div class="logo">
           <div>powered by Beer-Fly</div>

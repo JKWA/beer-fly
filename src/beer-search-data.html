@@ -60,10 +60,6 @@
       if(mapLoaded){
         console.log('search', location)
        if(location){
-         
-
-          //  location.first = false;
-        
         
           var searchLocation = {};
           searchLocation.lat = location.location.latitude;
@@ -130,19 +126,14 @@
                         // console.log('push', result[i]);
                       }else{
                         // console.log('already there', that.allObject[result[i].place_id]);
-                        // var pubDataSetString = 'allArray.'+(that.allObject[result[i].place_id].arrayPosition-1);
-                        // that.set(pubDataSetString, result[i]);
-                      }
 
-                      
-                      // that._pushPubData(result[i]);
+                      }
 
                     }
                   }
                 }
               }
-          })
-        // }   
+          }) 
       
     }
        }
