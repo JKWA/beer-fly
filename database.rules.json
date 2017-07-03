@@ -156,11 +156,27 @@
     "user": {
         "$uid":{
           ".read": "$uid==auth.uid",
+          "displayName" :{
+              ".write": "$uid==auth.uid"
+          },
           "favorite":{
      		  	".write": "$uid==auth.uid"
           },
           "stripe":{
-     		  	".write": "$uid==auth.uid"
+            "organization":{
+              "$stripOrgId":{
+                "charges":{
+                  "$chargeId":{
+                    ".write": "$uid==auth.uid",
+                   
+                     "plan": { ".validate": "newData.val() === 'STANDARD_MONTHLY'" },
+                     "token": { ".validate": "newData.isString()" },
+                     "delete":{".validate": "newData.isBoolean()"},
+                     "$other": { ".validate": false }
+                  }
+                }
+              }
+            }
           },
             
           "rating":{

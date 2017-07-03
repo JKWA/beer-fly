@@ -28,7 +28,7 @@
 
 
     a{ 
-        text-decoration: none;
+        text-decoration: underline;
         color: var(--app-accent-color);
     }
 
@@ -298,7 +298,11 @@
         var that = this;
         this.message = '';
         that.$.passwordResetMessage.hidden = true;
-
+        if(!this.password){
+            this.message = 'Missing password';
+            this.$.passwordResetMessage.hidden = false;
+            return;
+        }
         this.$.auth.signInWithEmailAndPassword(this.email, this.password)
          .then(function(response) {
             console.log("signed in")
@@ -311,10 +315,16 @@
           }else if(error.code === 'auth/wrong-password'){
               that.message = 'Incorrect password';
               that.$.passwordResetMessage.hidden = false;
+          }else if(error.code === 'auth/argument-error'){
+              that.message = error.message;
+              that.$.passwordResetMessage.hidden = false;
+              
           }else{
               that.message = error.message;
           }
         });
+           
+        
       },
 
       _signUpEmail: function(){

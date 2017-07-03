@@ -66,13 +66,14 @@
 
     td {
       color: var(--app-primary-color);
-      text-transform: capitalize;
+      
       font-size: 1em;
       font-weight: 300;
     }
 
-
-
+    .capitalize{
+      text-transform: capitalize;
+    }
 
      .card {
         padding: 12px;
@@ -115,8 +116,6 @@
         width: 220px;
     }
 
-    
-
     .standard{
         background-color: var(--app-selected-color);
         color: white;
@@ -153,6 +152,14 @@
        
       }
 
+      .verify-email{
+        cursor: pointer;
+        font-size: 1.0em;
+        font-weight: 500;
+        text-decoration: underline;
+        color: var(--app-accent-color);
+      }
+
       .message {
         font-size: 1.0em;
         font-weight: 300;
@@ -180,6 +187,17 @@
         color: var(--app-primary-color);
       }
 
+      .toast-wrapper{
+         @apply --layout-horizontal;
+         @apply --layout-justified;
+      }
+
+      .toast-item{
+        @apply --layout-vertical;
+        font-size: 1.2em;
+      }
+
+
 
 
     </style>
@@ -205,29 +223,63 @@
           <div class="card" elevation="1">
           
             <div class="card-header">Account Details</div>
-            <div><b>Name:</b>
-              <span> [[userData.displayName]]</span>
-              <paper-icon-button 
-                class="edit-icon" 
-                icon="beer-icons:edit"
-                on-tap="_toggleDisplayNameEdit">
-              </paper-icon-button>
-            </div>
+            <table>
+              <tr>
+                <th>Name:</th>
+                <td>[[userData.displayName]]</td>
+                <td>
+                  <paper-icon-button 
+                    class="edit-icon" 
+                    icon="beer-icons:edit"
+                    on-tap="_toggleDisplayNameEdit">
+                  </paper-icon-button>
+                  
+                </td>
+              </tr>
+              <tr>
+                <th></th>
+                <td>
+                  <iron-collapse no-animation opened="{{displayNameEditToggle}}"> 
+                    <paper-input label="Edit Name" value="{{userData.displayName}}"></paper-input>
+                  </iron-collapse>
+                </td>
+              </tr>
+              <tr>
+                <th>Email:</th>
+                <td>[[user.email]]</td>
+              </tr>
+              <tr>
+                <th>Provider:</th>
+                <td class="capitalize">[[provider]]</td>
+              </tr>
+              <tr>
+                <th>Verified:</th>
+                <td>
+                  <div hidden$="[[user.emailVerified]]" class="verify-email" on-tap="_verifyAccount">Verify Email</div>
+                  <div hidden$="[[!user.emailVerified]]">Email Verified</div>
+                </td>
+                
+              </tr>
+              <tr>
+                <th>Domain:</th>
+                <td>[[userData.domain]]</td>
+              </tr>
+              <template is="dom-if" if="[[userData.ADMIN]]">
+                <tr>
+                  <th>Admin:</th>
+                  <td>[[userData.ADMIN]]</td>
+                </tr>
+              </template>
+            </table>
             
-            <iron-collapse no-animation opened="{{displayNameEditToggle}}"> 
-              <paper-input label="Display Name" value="{{userData.displayName}}"></paper-input>
-            </iron-collapse>
-            
-            <div><b>Email:</b> [[user.email]]</div>
-            <div><b>Provider:</b> [[provider]]</div>
-            <div><b>Verified:</b> [[user.emailVerified]]</div>
-            <div><b>Domain:</b> [[userData.domain]]</div>
-            <div hidden="[[!userData.ADMIN]]"><b>Admin:</b> [[userData.ADMIN]]</div>
-            <div class="message">[[message]]</div>
-          </div>
+          <div class="message">[[message]]</div>
+          <div hidden$="[[!user]]" class="verify-email" on-tap="_logout">Sign Out</div></td>
+          
+    </div>
 
         </div>
     </div>
+
 
 
     <template is="dom-if" if="[[_showOrganizations]]">
@@ -247,16 +299,16 @@
               <table>
                 <tr>
                   <th>Plan:</th>
-                  <td>[[_computePlanLabel(pub.plan)]]<td>
+                  <td class="capitalize">[[_computePlanLabel(pub.plan)]]<td>
 
                 </tr>
                 <tr>
                   <th>Plan Owner:</th>
-                  <td>[[_computeOwnerName(pub.plan.user_id)]]</td>
+                  <td>[[pub.accountEmail]]</td>
                 </tr>
                 <tr>
                   <th>Status:</th>
-                  <td>[[pub.plan.status]]</td>
+                  <td class="capitalize">[[pub.plan.status]]</td>
                 </tr>
                 <tr>
                   <th>[[_planPaymentMessage(pub.plan.status)]]:</th>
@@ -278,8 +330,18 @@
           </div>
 
           <div>
-            <template is="dom-if" if="[[pub.plan.id]]">
-               <paper-button class="plan-button basic" location="[[pub]]" location-id="[[pub.place_id]]" charge-id="[[pub.plan.charge_id]]" on-tap="_downgrade" raised>Downgrade to Basic</paper-button>
+            <template is="dom-if" if="[[pub.isOwner]]">
+               <paper-button 
+                  class="plan-button basic" 
+                  location="[[pub]]" 
+                  location-id="[[pub.place_id]]" 
+                  charge-id="[[pub.plan.charge_id]]" 
+                  user-id="[[pub.plan.user_id]]"
+                  on-tap="_downgrade" 
+                  raised
+                  >
+                Downgrade to Basic
+              </paper-button>
             </template>
           </div>
         </div>
@@ -324,7 +386,7 @@
               </tr>
               <tr>
                 <th>Type:</th>
-                <td>[[charge.plan.name]]</td>
+                <td class="capitalize">[[charge.plan.name]]</td>
               </tr>
               <tr>
                 <th>Cost:</th>
@@ -332,7 +394,7 @@
               </tr>
               <tr>
                 <th>Status:</th>
-                <td>[[charge.status]]</td>
+                <td class="capitalize">[[charge.status]]</td>
               </tr>
               <tr>
                 <th>[[_planPaymentMessage(charge.status)]]:</th>
@@ -346,7 +408,14 @@
               </table>
             
             <template is="dom-if" if="[[!_isCanceled(charge.status)]]">
-              <paper-button class="plan-button basic" location="[[location]]" location-id="[[location.$key]]" charge-id="[[charge.$key]]"on-tap="_downgrade" raised>Downgrade to Basic</paper-button>
+              <paper-button 
+                  class="plan-button basic" 
+                  location="[[location]]" 
+                  location-id="[[location.$key]]" 
+                  charge-id="[[charge.$key]]" 
+                  user-id="[[user.uid]]" 
+                  on-tap="_downgrade" 
+                  raised>Downgrade to Basic</paper-button>
             </template>
               
           
@@ -360,25 +429,7 @@
           
     
           
-    <div class="button-wrapper">
-      <template is="dom-if" if="[[_showEmailVerifyButton()]]">
-      <div>
-        <paper-button class="account-button" on-tap="_verifyAccount" raised>
-          <iron-icon icon="beer-icons:email"></iron-icon>
-          <div>Verify Email</div>
-        </paper-button>
-      </div>
-      </template>
-      
-      <template is="dom-if" if="[[smallScreen]]">
-        <div hidden$="[[!user]]">
-          <paper-button class="account-button" on-tap="_logout" raised>
-              <iron-icon icon="beer-icons:account"></iron-icon>
-              <div>Sign out</div>
-          </paper-button>
-        </div>
-      </template>
-    </div>
+    
                  
    
 
@@ -390,6 +441,7 @@
         exit-animation="slide-right-animation">
       <h2>[[deleteLocation.name]]</h2>
       <paper-dialog-scrollable>
+        user-id:[[deleteUserId]]
         <div>[[deleteLocation.formatted_address]]</div>
         <div>Downgrade to Basic Plan</div>
       </paper-dialog-scrollable>
@@ -434,8 +486,16 @@
       horizontal-align="right"
       horizontal-offset="50"
       vertical-offset="100">
-      <div>Verification sent to [[user.email]]</div>
-      <div>Please refresh the app after verifying.</div>
+      <div class="toast-wrapper">
+        <div class="toast-section">
+          <div>Verification sent to [[user.email]]</div>
+          <div>Refresh the app after verifying email.</div>
+        </div>
+      
+        <div>   
+          <paper-icon-button icon="beer-icons:refresh" on-tap="_reloadPage"></paper-icon-button>
+        </div>
+      </div>
   </paper-toast>
         
       
@@ -473,6 +533,10 @@
         },
 
         deleteLocationId:{
+          type:String
+        },
+
+        deleteUserId:{
           type:String
         },
 
@@ -527,8 +591,11 @@
 
  
 
-      observers:['_watchUserStatus(user, userData)'
-                 ],
+      observers:['_watchUserStatus(user, userData)'],
+      
+      // ready : function (){
+      //   this.$.verificationToast.open();
+      // },
       
       _watchUserStatus: function (user, userData){
          var userStatus = "NONE";
@@ -538,7 +605,7 @@
 
           this.$.userData.disabled = false;
             userStatus = 'SIGNED_IN';
-            userMessage = 'Save star ratings for beers and breweries';
+            userMessage = 'This account can save star ratings for beers and breweries';
 
           if(user.emailVerified){
               userStatus = 'VERIFIED';
@@ -546,10 +613,10 @@
             if(userData){
               var domainEmail = this._isDomainEmail(userData.domain);
 
-                if(userData.domain){
+                if(userData.domain){  
                   if(domainEmail){   
                     userStatus = 'VERIFIED_DOMAIN_EMAIL';
-                    userMessage = 'Save star ratings and edit information for organizations with matching domains.';
+                    userMessage = 'This account can save star ratings and edit information for organizations with matching domains.';
                     this._getOrganizationData();
 
                   }else{
@@ -561,7 +628,7 @@
 
                 if(userData.ADMIN){
                   userStatus = "ADMIN";
-                  userMessage = 'Edit information for any organization';
+                  userMessage = 'This account can edit information for any organization';
                 }
             }
           }
@@ -591,7 +658,29 @@
               snapshot.forEach(pub => {
                 var pubData = pub.val();
                 console.log(pubData);
-                that.push('organizations', pubData);
+                if(pubData.plan){
+                  if(pubData.plan.user_id){
+                    if(pubData.plan.user_id !== that.user.uid){
+                      firebase.database(that.$.auth.app).ref(`user/${pubData.plan.user_id}/email`)
+                        .once('value')
+                        .then(accountEmail => {
+                          console.log(accountEmail.val())
+                          pubData.accountEmail = accountEmail.val();
+                          that.push('organizations', pubData);
+                        })
+                    }else{
+                      pubData.accountEmail = that.user.email;
+                      pubData.isOwner = true;
+                      that.push('organizations', pubData);
+                    }
+                  }else{
+                    pubData.accountEmail = 'N/A';
+                    that.push('organizations', pubData);
+                  }
+                }else{
+                  that.push('organizations', pubData);
+                }
+                
               })
             })
         }       
@@ -707,6 +796,9 @@
         this.deleteChargeId = target.chargeId;
         this.deleteLocation = target.location;
         this.deleteLocationId = target.locationId;
+        this.deleteUserId = target.userId;
+
+        
     
         console.log(this.deleteChargeId)
         var body = document.querySelector('body');
@@ -718,7 +810,7 @@
       _downgradeNow: function (event){
     
         this.$.downgradeDialog.close();
-        firebase.database(this.$.auth.app).ref(`/user/${this.user.uid}/stripe/organization/${this.deleteLocationId}/charges/${this.deleteChargeId}`)
+        firebase.database(this.$.auth.app).ref(`/user/${this.deleteUserId}/stripe/organization/${this.deleteLocationId}/charges/${this.deleteChargeId}`)
           .update({ delete: true })
           .then(()=>{
             console.log('downgraded')
@@ -761,8 +853,20 @@
         }
         if (this.user.uid === user_id){
           return this.userData.displayName;
+        }else{
+          var that = this;
+            firebase.database(this.$.auth.app).ref(`/user/${user_id}/email`)
+            .once('value')
+            .then (snapshot =>{
+              
+              return snapshot.val();
+            }).then(email =>{
+              that.$[`user_${user_id}`] = 'email';
+              console.log(`user_${user_id}`,email)
+            })
         }
-        return 'someone else';
+
+        // return 'someone else';
       },
 
       _purchase: function (event){
@@ -843,6 +947,9 @@
           }
         }
         return false;
+      },
+      _reloadPage(){
+        location.reload(true);
       },
 
       _test: function(obj){
