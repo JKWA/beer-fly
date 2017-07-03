@@ -1,0 +1,398 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/moment-element/moment-element.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
+ 
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-login.html">
+
+
+<dom-module id="beer-account-plan">
+
+<template strip-whitespace>
+  <style include="paper-material-styles">
+
+    a{
+      text-decoration: none;
+    }
+
+     .card {
+        padding: 12px;
+        margin: 10px;
+        @apply --paper-material-elevation-1;
+    }
+
+    .plan-card {
+        margin: 10px;
+        @apply --paper-material-elevation-0;
+    }
+    .plan-card > div{
+      margin: 5px 0 0 0;
+    }
+
+    .plan-title {
+      @apply --layout-horizontal;
+      @apply --layout-justified;
+    }
+
+    .plan-name {
+        font-size: 1.25em;
+        font-weight: 500;
+        color: var(--app-primary-color);
+    }
+
+     paper-button{
+        text-align: left;
+        text-transform: none;
+        min-height: 40px;
+        width: 220px;
+    }
+
+     .button-wrapper{
+         @apply --layout-vertical;
+      }
+
+
+     .button-wrapper > div{
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+        margin: 20px 0 20px 0;
+        
+    }
+
+      .item {
+        margin: 30px;
+        padding: 10px;
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+      }
+
+      .card-header {
+        font-size: 1.5em;
+        font-weight: 400;
+       
+      }
+
+      .message {
+        font-size: 1.0em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+        margin: 20px 0 10px 0;
+      }
+
+      .edit-icon{
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-secondary-color);
+      }
+
+
+      .name {
+        font-size: 1.5em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+        margin: 10px 0 0 0;
+      }
+
+      .address {
+        font-size: 1.0em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+
+
+    </style>
+
+     <firebase-auth id="auth" app-name="beer"></firebase-auth>
+
+
+    <!--<firebase-document
+        app-name="beer"
+        id="userData"
+        disabled
+        path="user/[[user.uid]]"
+        data="{{userData}}">
+    </firebase-document> -->
+
+     <firebase-query
+        id="organization"
+        app-name="beer"
+        order-by-child="domain";
+        equal-to="[[userData.domain]]"
+        disabled
+        path="organization"
+        data="{{organizations}}">
+    </firebase-query>
+
+     <!--<template is="dom-repeat" items="[[_organizationArray(organizations)]]" as="pub">
+       
+       TEST <div>[[pub.name]]</div>
+     </template>-->
+
+     <template is="dom-repeat" items="[[organizations]]" as="pub">
+       
+       TEST <div>[[pub.name]]</div>
+     </template>
+
+            <!--<div class="card" hidden$="[[!userData.stripe.organization]]">
+            <div class="card-header">Plans</div>
+            
+            <template is="dom-repeat" items="[[_organizationArray(userData.stripe.organization)]]" as="location">
+              <div class="plan-card">
+                <div class="plan-title">
+                  <div class="name">[[location.name]]</div>
+                  <div> 
+                    <a aria-label$="[[location.name]]" href$="/[[_computeNameForUrl(location.name)]]/plan?orgid=[[location.$key]]">
+                      <iron-icon 
+                        class="edit-icon" 
+                        icon="beer-icons:edit">
+                      </iron-icon>
+                    </a>
+                  </div>
+                </div>
+                <div class="address">[[location.formatted_address]]</div>
+                <template is="dom-repeat" items="[[_organizationArray(location.charges)]]" as="charge">
+                  
+                   <div class="plan-name">
+                    <span>Plan Started on </span>
+                    <moment-element
+                        datetime="[[_addMilliseconds(charge.created)]]"
+                        output-format="MMM DD[,] YYYY">
+                    </moment-element>
+                  </div>
+                  <div>Type: [[charge.plan.name]]</div>
+                  <div>Cost: [[_formatCharge(charge.plan.amount)]] per month</div>
+                  <div>Status: [[charge.status]]</div>
+                  <div>
+                    <span>[[_planPaymentMessage(charge.status)]]: </span>
+                    <moment-element
+                        datetime="[[_addMilliseconds(charge.current_period_end)]]"
+                        output-format="MMM DD[,] YYYY">
+                    </moment-element>
+                  </div>
+                  <template is="dom-if" if="[[!_isCanceled(charge.status)]]">
+                  <paper-button location="[[location]]" charge="[[charge]]"on-tap="_downgrade" raised>Downgrade</paper-button>
+                  </template>
+                </template>
+              </div>
+               
+            </template>
+            </div>-->
+            
+
+           
+
+      
+      <paper-dialog 
+            id="downgradeDialog"
+            with-backdrop
+            entry-animation="slide-from-right-animation"
+            exit-animation="slide-right-animation">
+        <h2>[[deleteLocation.name]]</h2>
+        <paper-dialog-scrollable>
+          <div>[[deleteLocation.formatted_address]]</div>
+          <div>Downgrade to Basic Plan</div>
+        </paper-dialog-scrollable>
+         <div class="buttons">
+          <paper-button on-tap="_downgradeNow">Yes</paper-button>
+          <paper-button dialog-dismiss on-tap="_dismiss"autofocus>No</paper-button>
+        </div>
+      </paper-dialog>
+      
+      
+        <paper-toast 
+            id="verificationToast" 
+            duration="0" 
+            horizontal-align="right"
+            horizontal-offset="50"
+            vertical-offset="100">
+            <div>Verification sent to [[user.email]]</div>
+            <div>Please refresh the app after verifying.</div>
+        </paper-toast>
+      
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-account-plan',
+
+      properties: {
+
+        displayNameEditToggle:{
+          type:Boolean,
+          value: false
+        },
+
+        deleteCharge:{
+          type: Object
+        },
+
+        deleteLocation:{
+          type:Object
+        },
+
+        message:{
+          type: String
+        },
+
+        organizations:{
+          type: Object
+        },
+
+        user:{
+          type: Object
+        },
+        
+        userData:{
+          type: Object
+        },
+
+        userStatus:{
+          type: String,
+          value: 'NONE'
+        },
+
+        // provider: {
+        //   type: String,
+        //   computed: '_computeProvider(user)'
+
+        // },
+
+      },
+
+ 
+
+      observers:['_getOrganizations(userData.domain)'],
+
+      _getOrganizations: function (domain){
+        if(domain){
+          this.$.organization.disabled = false;
+        }
+        // console.log('domain',domain)
+       
+        // var that = this;
+        // var organizations = this.organizations
+
+        // if(domain){
+        // firebase.database(this.$.auth.app).ref('/organization')
+        //   .orderByChild('domain').equalTo(domain)
+        //   .once('value')
+        //   .then(snapshot =>{
+            
+        //     snapshot.forEach(pub => {
+             
+        //       if(pub.val()){
+        //          console.log(pub.val())
+        //         // that.push('organizations', pub.val())
+        //         // that.set(`organizations.${pub.val().place_id}`, pub.val())
+        //         organizations[pub.val().place_id] = pub.val();
+        //       }
+        //     });
+            
+        //   });
+        // }
+          
+      },
+      
+      
+
+       _computeNameForUrl: function (name) {
+         'use strict';
+          if (name) {
+            name = name.replace(/\s/g, '-')
+            return name.replace(/[^a-zA-Z\d\s:]/g, '');
+          } else {
+            return 'pub-name-missing'
+          }
+      },
+
+      _organizationArray: function (obj){
+        var returnArray = [];
+        
+        if(typeof obj === 'object'){
+          var key = Object.keys(obj);
+          for (var i=0; i<key.length; i++){
+            obj[key[i]].$key = key[i]
+            returnArray.push(obj[key[i]])
+          }
+        }
+        return returnArray;
+      },
+
+      _addMilliseconds: function (time){
+        if(time){
+          return time*1000
+        }
+        return null
+      },
+
+      _formatCharge(cost){
+        if(cost){
+          var dollar = cost/100;
+          return `$${dollar}`
+        }
+      },
+
+      _downgrade: function (event){
+        var target = event.currentTarget;
+        this.deleteCharge = target.charge;
+        this.deleteLocation = target.location;
+    
+        console.log(this.deleteCharge)
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.downgradeDialog);
+        this.$.downgradeDialog.open();
+
+      },
+
+      _downgradeNow: function (event){
+    
+        this.$.downgradeDialog.close();
+        firebase.database(this.$.auth.app).ref(`/user/${this.user.uid}/stripe/organization/${this.deleteLocation.$key}/charges/${this.deleteCharge.$key}`)
+          .update({ delete: true })
+          .then(()=>{
+            console.log('downgraded')
+          })
+      },
+
+      _isCanceled: function (status){
+        if(status === 'canceled'){
+          return true;
+        }
+        return false;
+      },
+
+      _planPaymentMessage: function (status){
+        if(status === 'canceled'){
+          return "Plan ends"
+        }else{
+          "Next payment"
+        }
+      },
+
+      _test: function(obj){
+          console.log(obj);
+
+      }
+
+    });
+
+  </script>
+
+</dom-module>

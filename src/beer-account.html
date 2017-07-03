@@ -8,8 +8,16 @@
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<!--<link rel="import" href="../bower_components/polymerfire/firebase-query.html">-->
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/moment-element/moment-element.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
+ 
+<link rel="import" href="beer-account-plan-options.html">
+<link rel="import" href="beer-plan-cart.html">
 
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-login.html">
@@ -24,17 +32,99 @@
       text-decoration: none;
     }
 
+    ul {
+      list-style-type: none;
+      list-style:none;
+      padding-left:0;
+    }
+
+    li {
+        border-bottom: 1px solid var(--app-secondary-color);
+        /*margin-bottom: 20px;*/
+        padding: 20px 10px;
+
+    }
+
+    li:first-child {
+        border-top: 1px solid var(--app-secondary-color);
+        /*margin-top: 20px;*/
+    }
+
+    table {
+      margin: 10px;
+      border-top: 1px solid var(--app-secondary-color);
+      border-bottom: 1px solid var(--app-secondary-color);
+    }
+
+    th {
+      color: var(--app-primary-color);
+      text-transform: capitalize;
+      font-size: 1em;
+      font-weight: 400;
+      text-align: left;
+    }
+
+    td {
+      color: var(--app-primary-color);
+      text-transform: capitalize;
+      font-size: 1em;
+      font-weight: 300;
+    }
+
+
+
+
      .card {
         padding: 12px;
         margin: 10px;
         @apply --paper-material-elevation-1;
     }
 
-     paper-button{
+    .plan-card {
+        margin: 10px 5px;
+        padding: 10px 5px;
+        @apply --paper-material-elevation-2;
+    }
+    .plan-card > div{
+      margin: 5px 0 0 0;
+    }
+
+    .plan-title {
+      @apply --layout-horizontal;
+      @apply --layout-justified;
+    }
+
+    .plan-name {
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+    }
+
+    .plan-status {
+      text-transform: capitalize
+    }
+
+    .plan-button {
+      margin-top: 10px;
+    }
+
+     .account-button{
         text-align: left;
         text-transform: none;
         min-height: 40px;
         width: 220px;
+    }
+
+    
+
+    .standard{
+        background-color: var(--app-selected-color);
+        color: white;
+    }
+
+     .basic{
+      background-color: var(--app-secondary-color);
+        color: white;
     }
 
      .button-wrapper{
@@ -56,9 +146,10 @@
         @apply --layout-center-justified;
       }
 
-      .account-details {
+      .card-header {
         font-size: 1.5em;
         font-weight: 400;
+        margin-top: 20px;
        
       }
 
@@ -95,7 +186,6 @@
 
      <firebase-auth id="auth" app-name="beer" status-known="[[statusKnown]]"user="{{user}}"></firebase-auth>
 
-   
 
     <firebase-document
         app-name="beer"
@@ -105,93 +195,249 @@
         data="{{userData}}">
     </firebase-document>
 
-     <firebase-query
-        id="organization"
-        app-name="beer"
-        order-by-child="domain";
-        equal-to="[[userData.domain]]"
-        disabled
-        path="organization"
-        data="{{organizations}}">
-    </firebase-query>
 
+    <div hidden$="[[!statusKnown]]">
+        <div hidden$="[[user]]">
+            <beer-login class="item"></beer-login>
+        </div>
 
-<!--[[userStatus]]-->
-      <div hidden$="[[!statusKnown]]">
-          <div hidden$="[[user]]">
-             <beer-login class="item"></beer-login>
-          </div>
- 
-          <div hidden$="[[!user]]">
-            <div class="card" elevation="1">
-           
-              <div class="account-details">Account Details</div>
-              <div><b>Name:</b>
-                <span> [[userData.displayName]]</span>
-                <paper-icon-button 
-                  class="edit-icon" 
-                  icon="beer-icons:edit"
-                  on-tap="_toggleDisplayNameEdit">
-                </paper-icon-button>
-              </div>
-              
-              <iron-collapse no-animation opened="{{displayNameEditToggle}}"> 
-                <paper-input label="Display Name" value="{{userData.displayName}}"></paper-input>
-              </iron-collapse>
-              
-              <div><b>Email:</b> [[user.email]]</div>
-              <div><b>Provider:</b> [[provider]]</div>
-              <div><b>Verified:</b> [[user.emailVerified]]</div>
-              <div><b>Domain:</b> [[userData.domain]]</div>
-              <div hidden="[[!userData.ADMIN]]"><b>Admin:</b> [[userData.ADMIN]]</div>
-              <div class="message">[[message]]</div>
-            </div>
-
-            <template is="dom-repeat" items="[[organizations]]" as="pub">
-
-              <a aria-label$="[[pub.name]]" href$="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
-                <div class="card" elevation="1">
-                  <div class="name">[[pub.name]]</div>
-                  <div class="address"><b>Domain:</b> [[pub.domain]]</div>
-                  <div class="address">[[pub.formatted_address]]</div>
-                </div>
-              </a>
-                
-            </template>
-           
-            <div class="button-wrapper">
-              <template is="dom-if" if="[[!user.emailVerified]]">
-              <div>
-                <paper-button on-tap="_verifyAccount" raised>
-                  <iron-icon icon="beer-icons:email"></iron-icon>
-                  <div>Verify Email</div>
-                </paper-button>
-              </div>
-              </template>
-             
-              <template is="dom-if" if="[[smallScreen]]">
-                <div hidden$="[[!user]]">
-                  <paper-button on-tap="_logout" raised>
-                      <iron-icon icon="beer-icons:account"></iron-icon>
-                      <div>Sign out</div>
-                  </paper-button>
-                </div>
-              </template>
-            </div>
-                 
-          </div>
+        <div hidden$="[[!user]]">
+          <div class="card" elevation="1">
           
+            <div class="card-header">Account Details</div>
+            <div><b>Name:</b>
+              <span> [[userData.displayName]]</span>
+              <paper-icon-button 
+                class="edit-icon" 
+                icon="beer-icons:edit"
+                on-tap="_toggleDisplayNameEdit">
+              </paper-icon-button>
+            </div>
+            
+            <iron-collapse no-animation opened="{{displayNameEditToggle}}"> 
+              <paper-input label="Display Name" value="{{userData.displayName}}"></paper-input>
+            </iron-collapse>
+            
+            <div><b>Email:</b> [[user.email]]</div>
+            <div><b>Provider:</b> [[provider]]</div>
+            <div><b>Verified:</b> [[user.emailVerified]]</div>
+            <div><b>Domain:</b> [[userData.domain]]</div>
+            <div hidden="[[!userData.ADMIN]]"><b>Admin:</b> [[userData.ADMIN]]</div>
+            <div class="message">[[message]]</div>
+          </div>
+
+        </div>
+    </div>
+
+
+    <template is="dom-if" if="[[_showOrganizations]]">
+
+   
+    <div class="card" >
+      <div class="card-header">Your Organizations</div>
+      <ul>
+      <template id="organizationTemplate" is="dom-repeat" items="[[organizations]]" as="pub">
+        <li>
+        <!--<a aria-label$="[[pub.name]]" href$="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">-->
+          <div class="" >
+            <div class="name">[[pub.name]]</div>
+            <div class="address">[[pub.formatted_address]]</div>
+           
+            <template is="dom-if" if="[[pub.plan]]">
+              <table>
+                <tr>
+                  <th>Plan:</th>
+                  <td>[[_computePlanLabel(pub.plan)]]<td>
+
+                </tr>
+                <tr>
+                  <th>Plan Owner:</th>
+                  <td>[[_computeOwnerName(pub.plan.user_id)]]</td>
+                </tr>
+                <tr>
+                  <th>Status:</th>
+                  <td>[[pub.plan.status]]</td>
+                </tr>
+                <tr>
+                  <th>[[_planPaymentMessage(pub.plan.status)]]:</th>
+                  <td>
+                    <moment-element
+                        datetime="[[_addMilliseconds(pub.plan.current_period_end)]]"
+                        output-format="MMM DD[,] YYYY">
+                    </moment-element>
+                  </td>
+                </tr>
+              </table>
+            </template>
+
+          
+          <div>
+            <template is="dom-if" if="[[!pub.plan.id]]">
+            <paper-button class="plan-button standard" organization="[[pub]]"on-tap="_purchase">UPGRADE TO STANDARD</paper-button>
+            </template>
+          </div>
+
+          <div>
+            <template is="dom-if" if="[[pub.plan.id]]">
+               <paper-button class="plan-button basic" location="[[pub]]" location-id="[[pub.place_id]]" charge-id="[[pub.plan.charge_id]]" on-tap="_downgrade" raised>Downgrade to Basic</paper-button>
+            </template>
+          </div>
+        </div>
+        </li>
+      </template>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Plans Types</div>
+      <beer-account-plan-options>
+      </beer-account-plan-options>
+    </div>
+
+    </template>
+
+
+    <div class="card" hidden$="[[!userData.stripe.organization]]">
+      <div class="card-header">All Your Plans</div>
+      <ul>
+      <template is="dom-repeat" items="[[_organizationArray(userData.stripe.organization)]]" as="location">
+        <li>
+        <div class="">
+          <div class="plan-title">
+            <div class="name">[[location.name]]</div>
+            <div> 
+            </div>
+          </div>
+          <div class="address">[[location.formatted_address]]</div>
+        
+          <template is="dom-repeat" items="[[_organizationArray(location.charges)]]" as="charge">
+            
+              <table>
+                <tr>
+                  <th>Plan Started on </th>
+                  <td>
+                    <moment-element
+                        datetime="[[_addMilliseconds(charge.created)]]"
+                        output-format="MMM DD[,] YYYY">
+                    </moment-element>
+                  </td>
+              </tr>
+              <tr>
+                <th>Type:</th>
+                <td>[[charge.plan.name]]</td>
+              </tr>
+              <tr>
+                <th>Cost:</th>
+                <td>[[_formatCharge(charge.plan.amount)]] per month</td>
+              </tr>
+              <tr>
+                <th>Status:</th>
+                <td>[[charge.status]]</td>
+              </tr>
+              <tr>
+                <th>[[_planPaymentMessage(charge.status)]]:</th>
+                <td>
+                  <moment-element
+                    datetime="[[_addMilliseconds(charge.current_period_end)]]"
+                    output-format="MMM DD[,] YYYY">
+                  </moment-element>
+                </td>
+              </tr>
+              </table>
+            
+            <template is="dom-if" if="[[!_isCanceled(charge.status)]]">
+              <paper-button class="plan-button basic" location="[[location]]" location-id="[[location.$key]]" charge-id="[[charge.$key]]"on-tap="_downgrade" raised>Downgrade to Basic</paper-button>
+            </template>
+              
+          
+          </template>
+         
+        </div>
+          </li>
+      </template>
+      </ul>
+    </div>
+          
+    
+          
+    <div class="button-wrapper">
+      <template is="dom-if" if="[[_showEmailVerifyButton()]]">
+      <div>
+        <paper-button class="account-button" on-tap="_verifyAccount" raised>
+          <iron-icon icon="beer-icons:email"></iron-icon>
+          <div>Verify Email</div>
+        </paper-button>
       </div>
+      </template>
       
-        <paper-toast 
-            id="verificationToast" 
-            duration="0" 
-            horizontal-align="right"
-            horizontal-offset="50"
-            vertical-offset="100">
-            <div>Verification sent to [[user.email]]</div>
-            <div>Please refresh the app after verifying.</div>
-        </paper-toast>
+      <template is="dom-if" if="[[smallScreen]]">
+        <div hidden$="[[!user]]">
+          <paper-button class="account-button" on-tap="_logout" raised>
+              <iron-icon icon="beer-icons:account"></iron-icon>
+              <div>Sign out</div>
+          </paper-button>
+        </div>
+      </template>
+    </div>
+                 
+   
+
+      
+  <paper-dialog 
+        id="downgradeDialog"
+        with-backdrop
+        entry-animation="slide-from-right-animation"
+        exit-animation="slide-right-animation">
+      <h2>[[deleteLocation.name]]</h2>
+      <paper-dialog-scrollable>
+        <div>[[deleteLocation.formatted_address]]</div>
+        <div>Downgrade to Basic Plan</div>
+      </paper-dialog-scrollable>
+        <div class="buttons">
+        <paper-button on-tap="_downgradeNow">Yes</paper-button>
+        <paper-button dialog-dismiss autofocus>No</paper-button>
+      </div>
+  </paper-dialog>
+
+  <paper-dialog 
+          id="cartDialog"
+          with-backdrop
+          modal
+          entry-animation="slide-from-right-animation"
+          exit-animation="slide-right-animation">
+  
+      <h2>Purchase</h2>
+
+      <paper-dialog-scrollable>
+        <beer-plan-cart
+            organization="[[purchaseOrganization]]"
+            card-name="{{cardName}}"
+            email="{{user.email}}">
+        </beer-plan-cart>
+
+        <div id="stripeCardWrapper">
+        </div>
+        <div id="cardError">[[errorMessage]]</div>
+        
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button disabled="[[_disablePurchaseButton]]" on-tap="_submit">PURCHASE</paper-button>
+        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+      </div>
+    
+    </paper-dialog>
+
+  
+  <paper-toast 
+      id="verificationToast" 
+      duration="0" 
+      horizontal-align="right"
+      horizontal-offset="50"
+      vertical-offset="100">
+      <div>Verification sent to [[user.email]]</div>
+      <div>Please refresh the app after verifying.</div>
+  </paper-toast>
+        
       
 
 </template>
@@ -203,9 +449,31 @@
 
       properties: {
 
+        cardName:String,
+        errorMessage:String,
+        token:String,
+        purchaseOrganization:Object,
+
+        allArray:{
+            type: Array,
+            notify: true
+        },
+
         displayNameEditToggle:{
           type:Boolean,
           value: false
+        },
+
+        deleteChargeId:{
+          type: String
+        },
+
+        deleteLocation:{
+          type:Object
+        },
+
+        deleteLocationId:{
+          type:String
         },
 
         message:{
@@ -213,7 +481,10 @@
         },
 
         organizations:{
-          type: Array
+          type: Array,
+          value: function (){
+            return [];
+          }
         },
 
         smallScreen:{
@@ -243,25 +514,31 @@
 
         },
 
+        _disablePurchaseButton:{
+          type:Boolean,
+          value: true
+        },
+
+        _showOrganizations:{
+          type: Boolean,
+          value: false
+        }
       },
 
  
 
-      observers:['_watchUserStatus(user, userData)'],
+      observers:['_watchUserStatus(user, userData)'
+                 ],
       
       _watchUserStatus: function (user, userData){
          var userStatus = "NONE";
          var userMessage = 'Not signed in.';
-         
 
         if(user){
+
           this.$.userData.disabled = false;
-          
-
-
             userStatus = 'SIGNED_IN';
             userMessage = 'Save star ratings for beers and breweries';
-
 
           if(user.emailVerified){
               userStatus = 'VERIFIED';
@@ -273,12 +550,13 @@
                   if(domainEmail){   
                     userStatus = 'VERIFIED_DOMAIN_EMAIL';
                     userMessage = 'Save star ratings and edit information for organizations with matching domains.';
-                    this.$.organization.disabled = false;
+                    this._getOrganizationData();
+
                   }else{
-                    this.$.organization.disabled = true;
+                    this._showOrganizations = false;
                   }
                 }else{
-                  this.$.organization.disabled = true;
+                  this._showOrganizations = false;
                 }
 
                 if(userData.ADMIN){
@@ -287,15 +565,36 @@
                 }
             }
           }
-        
         }else{
           this.$.userData.disabled = true;
+          this._showOrganizations = false;
         }
-
         this.userStatus = userStatus;
         this.message = userMessage;
+      },
 
+     
+      _getOrganizationData: function () {
+        
+        if(this.userData.domain){
+          var that = this;
 
+          firebase.database(this.$.auth.app).ref('organization')
+            .orderByChild('domain').equalTo(this.userData.domain)
+            .on('value', function(snapshot) {
+              that.splice("organizations", 0, that.organizations.length)
+              if(snapshot.numChildren() >0){
+                that._showOrganizations = true;
+              }else{
+                that._showOrganizations = false;
+              }
+              snapshot.forEach(pub => {
+                var pubData = pub.val();
+                console.log(pubData);
+                that.push('organizations', pubData);
+              })
+            })
+        }       
       },
 
 
@@ -325,12 +624,6 @@
           return 'your provider'
         }
 
-      },
-
-      
-      _computedOwnsOrganizations: function (){
-        var organizations = this.$.organizations
-        return !organizations.valueIsEmpty(organizations);
       },
 
       _edit: function(){
@@ -382,10 +675,179 @@
           }
       },
 
-     
+      _organizationArray: function (obj){
+        var returnArray = [];
+        
+        if(typeof obj === 'object'){
+          var key = Object.keys(obj);
+          for (var i=0; i<key.length; i++){
+            obj[key[i]].$key = key[i]
+            returnArray.push(obj[key[i]])
+          }
+        }
+        return returnArray;
+      },
+
+      _addMilliseconds: function (time){
+        if(time){
+          return time*1000
+        }
+        return null
+      },
+
+      _formatCharge(cost){
+        if(cost){
+          var dollar = cost/100;
+          return `$${dollar}`
+        }
+      },
+
+      _downgrade: function (event){
+        var target = event.currentTarget;
+        this.deleteChargeId = target.chargeId;
+        this.deleteLocation = target.location;
+        this.deleteLocationId = target.locationId;
+    
+        console.log(this.deleteChargeId)
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.downgradeDialog);
+        this.$.downgradeDialog.open();
+
+      },
+
+      _downgradeNow: function (event){
+    
+        this.$.downgradeDialog.close();
+        firebase.database(this.$.auth.app).ref(`/user/${this.user.uid}/stripe/organization/${this.deleteLocationId}/charges/${this.deleteChargeId}`)
+          .update({ delete: true })
+          .then(()=>{
+            console.log('downgraded')
+          })
+      },
+
+      _isCanceled: function (status){
+        if(status === 'canceled'){
+          return true;
+        }
+        return false;
+      },
+
+      _planPaymentMessage: function (status){
+        if(status === 'canceled'){
+          return "Plan ends"
+        }else{
+          return "Next payment"
+        }
+      },
+
+      _computePlanLabel: function (plan){
+        if(plan){
+        if(plan.current_period_end){
+          var ends = plan.current_period_end*1000
+          if(Date.now() > ends){
+            return "Basic"
+          }else{
+            return "Standard Monthly"
+          }
+        }
+        }
+        return "Basic"
+      },
+
+      _computeOwnerName(user_id){
+
+        if(!user_id){
+          return 'N/A';
+        }
+        if (this.user.uid === user_id){
+          return this.userData.displayName;
+        }
+        return 'someone else';
+      },
+
+      _purchase: function (event){
+        var target = event.currentTarget;
+        console.log(target);
+        this.purchaseOrganization = target.organization;
+
+        var stripe = Stripe('pk_test_zmATksgUmcB5NyGKp6cyjNOM')
+        var elements = stripe.elements()
+        var style = {
+          base: {
+            color: '#32325d',
+            lineHeight: '24px',
+            fontFamily: '"Roboto Neue", Noto, sans-serif',
+            fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            '::placeholder': {
+              color: '#172C50'
+            }
+          },
+          invalid: {
+            color: 'red',
+            iconColor: 'red'
+          }
+        };
+
+        var card = elements.create('card', {style: style})
+        this._stripe = stripe;
+        this._card = card;
+        
+          
+
+        card.mount(this.$.stripeCardWrapper);
+
+        card.addEventListener('change', event =>{
+          this._disablePurchaseButton = !event.complete;
+          
+          if (event.error) {
+            this.errorMessage = event.error.message;
+          } else {
+            this.errorMessage = '';
+          }
+        });
+
+       
+          var body = document.querySelector('body');
+          Polymer.dom(body).appendChild(this.$.cartDialog);
+          this.$.cartDialog.open();
+      },
+
+       _submit: function (event){
+        var that = this;
+        this._stripe.createToken(this._card)
+          .then(result => {
+            this.token = result.token.id;
+            if(that.user){
+              var obj = {
+                token: result.token.id,
+                plan: 'STANDARD_MONTHLY'
+              }
+              firebase.database(that.$.auth.app).ref(`/user/${that.user.uid}/stripe/organization/${that.purchaseOrganization.place_id}/charges`)
+                .push(obj)
+                .then(()=> {
+                  console.log('SAVED_TOKEN')
+                  that.$.cartDialog.close();
+                })
+                .catch(error =>{
+                  console.log('ERROR_SAVE_TOKEN', error)
+                })
+            }
+          });
+      },
+
+      _showEmailVerifyButton: function (){
+        if (typeof this.user ==="object"){
+          if(!this.user.emailVerified){
+            return true;
+          }
+        }
+        return false;
+      },
 
       _test: function(obj){
           console.log(obj);
+
       }
 
     });

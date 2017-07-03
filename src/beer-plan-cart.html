@@ -1,0 +1,176 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+
+<!--<link rel="import" href="../bower_components/stripe-elements/stripe-elements.html">-->
+<!--<link rel="import" href="../my_components/stripe/stripe-elements.html">-->
+
+<link rel="import" href="beer-plan-options.html">
+
+
+
+<dom-module id="beer-plan-cart">
+
+  <template strip-whitespace>
+
+
+    <style include="paper-material-styles">
+     :host {
+        display: block;
+        max-width: 640px;
+      }
+
+      .label {
+        font-size: 1em;
+        letter-spacing: 0.2em;
+        font-weight: 600;
+        color: var(--app-primary-color);
+      }
+
+      .plan{
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .price{
+        font-size: 1.2em;
+        font-weight: 400;
+        color: var(--app-accent-color);
+      }
+
+      .add-margin {
+          margin: 10px 0;
+      }
+
+     
+      .section-wrapper{
+        @apply --layout-vertical;
+        /*@apply --layout-center-justified;
+        @apply --layout-wrap;*/
+      }
+
+      .section-wrapper > div{
+          margin: 0 0 10px 0;
+          padding: 0 0 10px 0;
+          
+      }
+
+      
+
+      </style>
+   
+
+    <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+    <firebase-document
+        app-name="beer"
+        id="userData"
+        path="user/[[user.uid]]"
+        data="{{userData}}">
+    </firebase-document>
+
+
+    <div class="section-wrapper">
+
+        <div>
+            <div class="label add-margin">Location</div>
+            <div><b>ID: </b>[[organization.place_id]]</div>
+            <div><b>Name: </b>[[organization.name]]</div>
+            <div><b>Address: </b>[[organization.formatted_address]]</div>
+        </div>
+
+        <div>
+            <div class="label add-margin">Account Information</div>
+            <div><b>Name: </b>[[userData.displayName]]</div>
+            <div><b>Email: </b>[[user.email]]</div>
+        </div>
+
+        <div>
+            <div>
+                <div class="label add-margin">Order Summary</div>
+                <div class="price">Standard plan: $10.00 per month</div>
+            </div>
+        </div>
+
+        <div>
+            <div class="label">Card Information</div>
+            <div>
+                <paper-input label="Cardholder Name" value="[[cardName]]"></paper-input>
+            </div>
+        </div>
+        
+    </div>
+    
+    
+  </template>
+    <script>
+
+    Polymer({
+
+      is: 'beer-plan-cart',
+      properties: {
+
+        cardName:{
+            type:String,
+            notify: true
+        },
+
+        email:{
+            type:String,
+            computed: '_computeEmail(user)',
+            notify: true
+        },
+
+        organization:{
+            type:Object
+        },
+
+        plan:{
+            type:String
+        },
+       
+        user:{
+            type:Object
+        },
+
+        userData:{
+            type:Object
+        },
+
+      },
+
+      observers:['_observeUserName(userData.displayName)'],
+
+      _observeUserName: function (name){
+          if(name){
+              this.cardName = name
+          }
+      },
+
+      _computeEmail: function (user){
+          if(user){
+            if(user.email){
+                return user.email
+            }
+          }
+          return ''
+      },
+
+
+     _test: function(obj){
+          console.log("TEST",obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

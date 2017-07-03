@@ -2,6 +2,7 @@
   "name": "functions",
   "description": "Cloud Functions for Firebase",
   "dependencies": {
+    "@google-cloud/logging": "^1.0.2",
     "@google-cloud/storage": "^1.1.0",
     "@google-cloud/vision": "^0.10.0",
     "@google/maps": "^0.3.1",
@@ -9,7 +10,8 @@
     "firebase": "^3.7.4",
     "firebase-admin": "^4.1.2",
     "firebase-functions": "^0.5",
-    "geofire": "^4.1.2"
+    "geofire": "^4.1.2",
+    "stripe": "^4.23.0"
   },
   "private": true
 }

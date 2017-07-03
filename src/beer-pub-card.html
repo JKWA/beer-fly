@@ -5,7 +5,6 @@
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 
 <link rel="import" href="beer-pub-icons.html">
-<link rel="import" href="beer-pub-rating.html">
 <link rel="import" href="beer-pub-favorite.html">
 
 <dom-module id="beer-pub-card">
@@ -83,7 +82,8 @@
       <div class="card">
      
         <template is="dom-if" if="[[sponsor]]">
-          <div hidden$="[[!photoUrl]]">
+          <template is="dom-if" if="[[photoUrl]]">
+         
           <a aria-label$="[[name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
             <iron-image 
                 style="width:100%; height:300px; background-color: #F8F8F8;"
@@ -95,26 +95,14 @@
             </iron-image>
            
           </a>
-          </div>
-        </template>
-      <div class="card-information">
-
-     
-        <div  class="sponsor-wrapper" >
-            <div id="sponsor" hidden$="[[sponsorHide]]">Sponsoring Organization</div>
+          </template>
+          <div  class="sponsor-wrapper" >
+            <div id="sponsor">Sponsoring Organization</div>
         </div>
-            <div class="rating">
-              <!--<beer-pub-rating 
-                  place-id="[[placeId]]"
-                  google-rating="[[googleRating]]"
-                  login="{{login}}"
-                  address="[[address]]"
-                  name="[[name]]">
-              </beer-pub-rating>-->
-            </div>
-           
-           
-   
+        </template>
+
+
+      <div class="card-information">
          
        
           <a aria-label$="[[name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
@@ -124,7 +112,6 @@
                   <div class="motto">[[motto]]</div>
                 </template>
                 <div class="address" hidden$="[[!address]]">[[address]]</div>
-                <!--<div class="address" hidden$="[[address]]">[[city]], [[state]]</div>-->
                 <div class="distance" hidden$="[[!distance]]">[[_computeDisplayDistance(distance)]] miles from you</div>
             </div>
            </a>
@@ -199,6 +186,10 @@
             type: String
           },
 
+          plan:{
+            type:Object
+          },
+
           thumbnail:{
             type: String
           },
@@ -214,12 +205,13 @@
 
           sponsor:{
             type: Boolean,
-            value: false
+            value: false,
+            computed: '_computeSponsor(plan)'
           },
 
           sponsorHide:{
             type: Boolean,
-            computed: '_computeSponsorHide(sponsor)',
+            computed: '_computeSponsor(sponsor)',
             value: true
           },
 
@@ -248,12 +240,16 @@
           return Math.round(distance*10)/10
         },
 
-        _computeSponsorHide: function (sponsor){
-          if(sponsor){
-            return false;
-          }else{
-            return true;
-          }
+        _computeSponsor: function (plan){
+          var today = Date.now()/1000;
+           if(plan){
+               if(plan.current_period_end){
+                   if(plan.current_period_end > today){
+                     return true;
+                   }
+               }
+           }
+           return false;
         },
 
         _computeNameForUrl: function (name) {

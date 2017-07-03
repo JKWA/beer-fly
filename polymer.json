@@ -16,6 +16,9 @@
     "src/beer-tap.html",
     "src/beer-tv.html",
     "src/beer-tap-edit.html",
+    "src/beer-plan.html",
+    "src/beer-plan-options.html",
+    "src/beer-plan-cart.html",
     "src/lazy-resources.html"
   ],
   "sources": [

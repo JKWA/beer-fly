@@ -1,30 +1,29 @@
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
-const GeoFire = require('geofire');
+const functions = require('firebase-functions'),
+      admin = require('firebase-admin'),
+      GeoFire = require('geofire'),
+      gcs = require('@google-cloud/storage')({keyFilename:'serviceAccountKey.json'}),
+      vision = require('@google-cloud/vision')(),
+      exec = require('child-process-promise').exec,
+      spawn = require('child-process-promise').spawn,
+      logging = require('@google-cloud/logging')(),
+      fs = require('fs');
 
-const gcs = require('@google-cloud/storage')({keyFilename:'serviceAccountKey.json'});
-const vision = require('@google-cloud/vision')();
-const exec = require('child-process-promise').exec;
-const spawn = require('child-process-promise').spawn;
-
-const  fs = require('fs');
+const stripe = require('stripe')(functions.config().stripe.token),
+      currency = functions.config().stripe.currency || 'USD';
 
 admin.initializeApp(functions.config().firebase);
 
-const googleMapsClient = require('@google/maps')
-    .createClient({
-        key: 'AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI'
-      });
+const googleMapsClient = require('@google/maps').createClient({key: functions.config().map.key});
 
-const geoRef = admin.database().ref('GeoFire');
-const geoFire = new GeoFire(geoRef);
+const geoRef = admin.database().ref('GeoFire'),
+      geoFire = new GeoFire(geoRef);
 
 
 exports.createNewUser = functions.auth.user().onCreate(function(event) {
-  
-  
-  var data = event.data;
-  var uid = data.uid;
+   
+  const data = event.data;
+  const uid = data.uid;
+
   var obj = {};
   
   if(data.displayName){
@@ -47,194 +46,398 @@ exports.createNewUser = functions.auth.user().onCreate(function(event) {
 
   console.log('USER', obj);
 
-   admin.database().ref('user').child(uid)
-    .update(obj)
-    .catch( function (error){
-      console.log('SAVE_ERROR', error)
-    }).then(function (){
-      console.log('SAVED_INITIAL_USER');
+  return stripe.customers.create({email: data.email})
+    .then(customer => {
+      obj.stripe = {stripe_id: customer.id}
+ 
+      return admin.database().ref('/user').child(uid)
+        .update(obj)
+        .then(function (){
+          console.log('SAVED_INITIAL_USER');
+        })
+        .catch( function (error){
+          console.log('SAVE_ERROR', error)
+          return reportError(error, {user: uid});
+        })
     })
-
-  return 
 });
 
 
+exports.cleanupUser = functions.auth.user()
+  .onDelete(event => {
+    return admin.database().ref(`/user/${event.data.uid}/stripe/stripe_id`)
+      .once('value').then(snapshot => {
+        return snapshot.val();
+      })
+      .then(customer => {
+        return stripe.customers.del(customer);
+      })
+      .then(() => {
+        let obj = {};
+        obj.deleted = true;
+        obj.stripe = null;
+
+        return admin.database().ref(`/user/${event.data.uid}`)
+         .update(obj)
+         .catch(error =>{
+           return reportError(error, {user: event.data.uid});
+         })
+      });
+});
+
+
+exports.createStripeCharge = functions.database.ref('/user/{user_id}/stripe/organization/{place_id}/charges/{charge_id}')
+  .onWrite(event => {
+    const val = event.data.val(),
+          metadata = event.params,
+          charge_id = metadata.charge_id,
+          place_id = metadata.place_id,
+          user_id = metadata.user_id
+
+    //precheck
+    if(val === null){
+      console.log('Deletion event', metadata)
+      return null
+    }
+    if(val.status === 'canceled'){
+      console.log('Charge previously canceled', metadata)
+      return null;
+    }
+    if(val.id){
+      console.log('Stripe charge exists', metadata)
+      if(val.delete){
+        return stripe.subscriptions.del(val.id)
+          .then(deleteResult =>{
+            console.log('Cancel charge', metadata)
+            return event.data.adminRef.update(deleteResult)
+          .then(()=>{
+            const cancelObj = {
+              cancel_at_period_end: deleteResult.cancel_at_period_end,
+              id:null,
+              interval:null,
+              interval_count:null,
+              user_id:null,
+              status: deleteResult.status,
+              charge_id: null
+            }
+            return admin.database().ref(`/organization/${place_id}/plan`).update(cancelObj)
+            })
+          })
+
+      }else{
+        return null
+      }
+    }
+    if(val.error){
+      console.log('Previous stripe error for this charge', metadata)
+      return null
+    }
+    
+    // if pass prechecks
+    // Look up the Stripe customer id
+    return admin.database().ref(`/user/${user_id}/stripe/stripe_id`)
+      .once('value').then(snapshot => {
+        const customer_id = snapshot.val()
+          return customer_id;
+      })
+      .then(customer => {
+        //submit stripe subscription
+        const source = val.token,
+              plan = val.plan
+              
+        return stripe.subscriptions
+          .create({
+              customer: customer,
+              source: source,
+              plan: plan,
+              metadata: {place_id: place_id,
+                        charge_id: charge_id,
+                        user_id: user_id}
+            }, {
+              idempotency_key: charge_id
+          })
+      })
+      .then(response => {
+        //write subscription data back to database
+        return event.data.adminRef.update(response)
+      .then(() => {
+          
+          //get org data
+        return admin.database().ref(`organization/${place_id}`).once('value')
+      })
+      .then(orgSnap =>{
+          const organization = orgSnap.val()
+          console.log('orgdata', organization)
+    
+          //get basic data
+          const orgData = {
+            name: organization.name,
+            formatted_address: organization.formatted_address,
+            place_id: organization.place_id
+          }
+          //save basic data to charge 
+          return admin.database().ref(`/user/${user_id}/stripe/organization/${place_id}`)
+          .update(orgData)
+      })
+      .then(() => {
+        //create obj of basic subscription information
+        const orgPlan = {
+          current_period_end: response.current_period_end,
+          user_id: user_id,
+          id: response.id,
+          interval: response.plan.interval,
+          interval_count: response.plan.interval_count,
+          name: response.plan.id,
+          label: response.plan.name,
+          cancel_at_period_end: response.cancel_at_period_end,
+          status: response.status,
+          charge_id: charge_id
+        };
+        //save to organization
+        return admin.database().ref(`/organization/${place_id}/plan`)
+        .set(orgPlan)
+      })
+        
+      .catch(error => {
+        //catch errors
+        return event.data.adminRef.child('error').set(userFacingMessage(error))
+          .then(() => {
+            return reportError(error, metadata)
+        })
+      })
+    })
+  })
+
+  
+
+
+// exports.updateOrganizationSubscription = functions.database.ref('/user/{user_id}/stripe/organization/{place_id}/charges/{charge_id}/current_period_end')
+//   .onWrite(event => {
+//     const place_id = event.params.place_id,
+//           user_id = event.params.user_id,
+//           chargId = event.params.charge_id
+
+//     if (!event.data.exists()) {
+//       console.log('item deleted')
+//       return admin.database().ref(`/organization/${place_id}/plan`)
+//           .remove()
+//           .then(() =>{
+//             console.log('plan removed')
+//           })
+//           .catch(error =>{
+//             console.log('ERROR_REMOVE', error)
+//             return reportError(error, {user: user_id});
+//           })
+//     }
+
+//     return admin.database().ref(`/user/${user_id}/stripe/${place_id}/charges/${chargId}`)
+//       .once('value')
+//       .then(snapshot => {
+//         const data = snapshot.val(),
+//               subscription_id= data.id,
+//               plan = data.plan,
+//               current_period_end = data.current_period_end
+
+//         const orgPlan = {
+//                 current_period_end: current_period_end,
+//                 user_id: user_id,
+//                 id: data.id,
+//                 interval: plan.interval,
+//                 interval_count: plan.interval_count,
+//                 name: plan.id,
+//                 label: plan.name,
+//                 cancel_at_period_end: data.cancel_at_period_end
+//               };
+       
+
+//         return admin.database().ref(`/organization/${place_id}/plan`)
+//           .set(orgPlan)
+//           .then(()=>{
+//             console.log('org plan updated')
+//           })
+//           .catch(error =>{
+//             console.log('ERROR_PLAN', error)
+//             return reportError(error, {user: user_id});
+//           })
+//       })
+//   })
 
 exports.saveNewPub = functions.database.ref('/newOrg/{placeId}/{domain}')
-    .onWrite(event => {
+  .onWrite(event => {
 
-      const data = event.data;
-      const placeId = event.params.placeId;
-      const domain = event.params.domain;
+    const data = event.data;
+    const placeId = event.params.placeId;
+    const domain = event.params.domain;
+
+    if (!event.data.exists()) {
+      console.log('item deleted')
+      return;
+    }
+
+    return googleMapsClient.place({placeid: placeId}, 
+      function(error, response) {
+          if (!error) {
+      
+            let newPub = {}; 
+            let place = response.json.result;
+            let preOrg = 'organization/'+place.place_id+'/';
+            let brewery = false;
+            let pub = false;
+            let truck = false;
+            let domain;
+
+            console.log('received place data', place);
+          
+            if(place.permanently_closed){
+              newPub[preOrg+'permanently_closed'] = true; 
+            }
+
+            if(place.types){
+              if (!event.data.previous.exists()) {
+                if(isPub(place.types)){
+                    newPub[preOrg+'PUB'] = true;
+                    pub = true;
+                }
+              }
+            }
+
+            if(place.name){
+
+              newPub[preOrg+'/name'] = place.name;
+
+              if (!event.data.previous.exists()) {
+
+
+                if(place.name.toLowerCase().indexOf('brewing')>-1){
+                  newPub[preOrg+'BREWERY'] = true;
+                  brewery = true;
+                }
+
+                if(place.name.toLowerCase().indexOf('brewery')>-1){
+                  newPub[preOrg+'BREWERY'] = true;
+                  brewery = true;
+                }
+
+                if(place.name.toLowerCase().indexOf('truck')>-1){
+                  newPub[preOrg+'TRUCK'] = true;
+                  truck = true;
+                }
+              }
+
+            }
+            
+
+            if(place.geometry){
+              if(place.geometry.location){
+                if(place.geometry.location.lat){
+                    newPub[preOrg+'latitude'] = place.geometry.location.lat
+                }
+                if(place.geometry.location.lng){
+                    newPub[preOrg+'longitude'] = place.geometry.location.lng
+                }
+              }
+            }
+
+          let metaItems = ['place_id', 'formatted_address', 'vicinity', 'formatted_phone_number']
+
+          for (let value of metaItems) {
+            if(place[value]){
+              newPub[preOrg+value] = place[value];
+            }
+          }
+          
+
+          if(place.website){
+              domain = getDomain(place.website);
+              newPub[preOrg+'website'] = place.website;
+              newPub[preOrg+'domain'] = domain;
+              newPub['newOrg/'+place.place_id+'/domain'] = domain;
+          }
+
+
+          if(place.address_components){
+              var placeAddress = getAddressObject(place.address_components);
+              if(placeAddress){
+                  var placeAddressKey = Object.keys(placeAddress);
+                  for (let value of placeAddressKey){
+                      newPub[preOrg+value] = placeAddress[value];
+                  }
+              }
+          }
+
+          if (!event.data.previous.exists()) {
+            newPub[preOrg+'/category'] = _getBaseCategories();
+          }
+
+          console.log('created pub data', newPub);
+          console.log('domain', domain);
+
+          //look for other locations
+          if(domain){
+            admin.database().ref('organization')
+              .orderByChild('domain').equalTo(domain).limitToFirst(1)  
+                .once("value")
+                  .then(snapshot => {
+
+                    console.log('other location', snapshot.val());
+
+                    if (snapshot.exists()){
+                      
+                      if (!event.data.previous.exists()){
+                      
+                        var snapshot = snapshot.val();
+
+                        
+                        var key = Object.keys(snapshot);
+                        var data = snapshot[key[0]];
+
+                        var locationItems = ['breweryName', 'description', 'motto', 'mainImage', 'beerLastUpdated']
+                        for(let locationKey of locationItems)
+
+                        if(data[locationKey]){
+                          newPub[preOrg+locationKey] = data[locationKey];
+                        }
   
-      if (!event.data.exists()) {
-        console.log('item deleted')
-        return;
-      }
-
-      return googleMapsClient.place({placeid: placeId}, 
-        function(error, response) {
-            if (!error) {
-       
-              let newPub = {}; 
-              let place = response.json.result;
-              let preOrg = 'organization/'+place.place_id+'/';
-              let brewery = false;
-              let pub = false;
-              let truck = false;
-              let domain;
-
-              console.log('received place data', place);
-            
-              if(place.permanently_closed){
-                newPub[preOrg+'permanently_closed'] = true; 
-              }
-
-              if(place.types){
-                if (!event.data.previous.exists()) {
-                  if(isPub(place.types)){
-                      newPub[preOrg+'PUB'] = true;
-                      pub = true;
-                  }
-                }
-              }
-
-              if(place.name){
-
-                newPub[preOrg+'/name'] = place.name;
-
-                if (!event.data.previous.exists()) {
-
-
-                  if(place.name.toLowerCase().indexOf('brewing')>-1){
-                    newPub[preOrg+'BREWERY'] = true;
-                    brewery = true;
-                  }
-
-                  if(place.name.toLowerCase().indexOf('brewery')>-1){
-                    newPub[preOrg+'BREWERY'] = true;
-                    brewery = true;
-                  }
-
-                  if(place.name.toLowerCase().indexOf('truck')>-1){
-                    newPub[preOrg+'TRUCK'] = true;
-                    truck = true;
-                  }
-                }
-
-              }
-              
-
-              if(place.geometry){
-                if(place.geometry.location){
-                  if(place.geometry.location.lat){
-                      newPub[preOrg+'latitude'] = place.geometry.location.lat
-                  }
-                  if(place.geometry.location.lng){
-                      newPub[preOrg+'longitude'] = place.geometry.location.lng
-                  }
-                }
-              }
-
-            let metaItems = ['place_id', 'formatted_address', 'vicinity', 'formatted_phone_number']
-
-            for (let value of metaItems) {
-              if(place[value]){
-                newPub[preOrg+value] = place[value];
-              }
-            }
-            
-
-            if(place.website){
-                domain = getDomain(place.website);
-                newPub[preOrg+'website'] = place.website;
-                newPub[preOrg+'domain'] = domain;
-                newPub['newOrg/'+place.place_id+'/domain'] = domain;
-            }
-
-
-            if(place.address_components){
-                var placeAddress = getAddressObject(place.address_components);
-                if(placeAddress){
-                    var placeAddressKey = Object.keys(placeAddress);
-                    for (let value of placeAddressKey){
-                        newPub[preOrg+value] = placeAddress[value];
-                    }
-                }
-            }
-
-            if (!event.data.previous.exists()) {
-              newPub[preOrg+'/category'] = _getBaseCategories();
-            }
-
-            console.log('created pub data', newPub);
-            console.log('domain', domain);
-
-            //look for other locations
-            if(domain){
-              admin.database().ref('organization')
-                .orderByChild('domain').equalTo(domain).limitToFirst(1)  
-                  .once("value")
-                    .then(snapshot => {
-
-                      console.log('other location', snapshot.val());
-
-                      if (snapshot.exists()){
-                        
-                        if (!event.data.previous.exists()){
-                        
-                          var snapshot = snapshot.val();
-
-                          
-                          var key = Object.keys(snapshot);
-                          var data = snapshot[key[0]];
-
-                          var locationItems = ['breweryName', 'description', 'motto', 'mainImage', 'beerLastUpdated']
-                          for(let locationKey of locationItems)
-
-                          if(data[locationKey]){
-                            newPub[preOrg+locationKey] = data[locationKey];
-                          }
-    
-                          if(data.brewBeer){
-                            newPub[preOrg+'brewBeer'] = data.brewBeer;
-                            newPub[preOrg+'category/BEER/display'] = true;
-                          }
+                        if(data.brewBeer){
+                          newPub[preOrg+'brewBeer'] = data.brewBeer;
+                          newPub[preOrg+'category/BEER/display'] = true;
                         }
                       }
-                          
-                      return newPub;
+                    }
+                        
+                    return newPub;
+                  
+                  })
+                  .then(newPub =>{
                     
-                    })
-                    .then(newPub =>{
-                     
-                      if(!place.permanently_closed){
-                        if(brewery|| pub){
-                          // if(place.geometry){
-                          //     geoFire.set(place.place_id, [place.geometry.location.lat, place.geometry.location.lng])
-                          //       .then(data => {
-                          //         console.log("Set GeoFire", data);
-                          //       })
-                          //       .catch(error=>{
-                          //         console.log("Error: " + error);
-                          //       }) 
-                          //     }  
-                          }  
-                        }
-                         console.log('save new pub', newPub);
+                    if(!place.permanently_closed){
+                      if(brewery|| pub){
+                        // if(place.geometry){
+                        //     geoFire.set(place.place_id, [place.geometry.location.lat, place.geometry.location.lng])
+                        //       .then(data => {
+                        //         console.log("Set GeoFire", data);
+                        //       })
+                        //       .catch(error=>{
+                        //         console.log("Error: " + error);
+                        //       }) 
+                        //     }  
+                        }  
+                      }
+                        console.log('save new pub', newPub);
 
-                      admin.database().ref().update(newPub)
-                        .then(saved =>{
-                          console.log('saved data')
-                        })
-                        .catch( error =>{
-                          console.log('ERROR_SAVING_DATA', error)
-                        })
-                    })
-              
-              }
+                    admin.database().ref().update(newPub)
+                      .then(saved =>{
+                        console.log('saved data')
+                      })
+                      .catch( error =>{
+                        console.log('ERROR_SAVING_DATA', error)
+                        return reportError(error, {place_id: placeId});
+                      })
+                  })
+            
             }
-        })   
+          }
+      })   
 
   
 });
@@ -863,5 +1066,74 @@ function _updateGeoFire(placeId){
       })
 }
 
+exports.stripeSubscriptionUpdated = functions.https.onRequest((request, response) => {
+  // Grab the text parameter.
+  const body = request.body,
+        event_id = body.id
+
+  stripe.events.retrieve(event_id)
+    .then(event =>{
+      
+      const data = event.data.object,
+            type = data.object,
+            current_period_end = data.current_period_end,
+            metadata = data.metadata
+            place_id = metadata.place_id,
+            charge_id = metadata.charge_id,
+            user_id = metadata.user_id
+
+      return  admin.database().ref(`/user/${user_id}/stripe/organization/${place_id}/charges/${charge_id}`)
+        .update(data)
+        .then(()=>{
+          console.log('data', data)
+          response.send('okay')
+        })
+        .catch(error =>{
+          console.error('ERROR_SAVING', error)
+          reportError(error, metadata)
+          response.send('error')
+        })
+    })
+});
+
+
+
+
+
+function reportError(err, context = {}) {
+
+  const logName = 'errors';
+  const log = logging.log(logName);
+
+  const metadata = {
+    resource: {
+      type: 'cloud_function',
+      labels: { function_name: process.env.FUNCTION_NAME }
+    }
+  };
+
+  const errorEvent = {
+    message: err.stack,
+    serviceContext: {
+      service: process.env.FUNCTION_NAME,
+      resourceType: 'cloud_function'
+    },
+    context: context
+  };
+
+  // Write the error log entry
+  return new Promise((resolve, reject) => {
+    log.write(log.entry(metadata, errorEvent), error => {
+      if (error) { reject(error); }
+      resolve();
+    });
+  });
+}
+// [END reporterror]
+
+// Sanitize the error message for the user
+function userFacingMessage(error) {
+  return error.type ? error.message : 'An error occurred, developers have been alerted';
+}
 
 

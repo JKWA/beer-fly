@@ -45,6 +45,9 @@
 <link rel="import" href="beer-cache-data.html">
 <link rel="import" href="beer-analytics.html">
 
+<script src="https://js.stripe.com/v3/"></script>
+
+
 
 
 <!--<link rel="import" href="beer-pub.html">-->
@@ -113,7 +116,6 @@
 
       .logo {
         text-align: center;
-        
       }
 
       .logo a {
@@ -125,7 +127,6 @@
         /* required for IE 11, so this <a> can receive pointer events */
         display: inline-block;
         pointer-events: auto;
-        
       }
 
       .left-bar-item {
@@ -397,6 +398,8 @@
               <a name="[[category.name]]" aria-label="To [[category.name]]" href$="/[[nameUrl]]/[[category.name]][[orgParam]]">[[category.title]]</a>
             </template>
           </template>
+            <a hidden$="[[!owner]]" name="plan" aria-label="Plans" href$="/[[nameUrl]]/plan[[orgParam]]">Plans</a>
+
           <hr>
         </template>
         <a name="near" aria-label="Breweries near me" href="/home"><iron-icon class="drawer-icon" icon="beer-icons:gps-fixed"></iron-icon>Near me</a>
@@ -438,6 +441,8 @@
         <div class="main">
         <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
           <beer-account name="account" organization="[[organization]]" small-screen="[[smallScreen]]"owner="[[owner]]"></beer-account>
+          <beer-plan name="plan" organization="[[organization]]" small-screen="[[smallScreen]]"owner="[[owner]]"></beer-plan>
+
           <beer-allbeers name="allbeers" owner="[[owner]]"></beer-allbeers>
           <beer-pub name="pub" login="{{login}}" organization="{{organization}}" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" owner="[[owner]]" online="[[online]]"></beer-pub>
           <beer-tap name="tap" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.TAP]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap>
@@ -902,6 +907,7 @@
                page = 'search';
             }else if(subRoute==='account'){
                page = 'account';
+            
             }else if(subRoute==='favorite'){
                
                if(!thirdRoute){
@@ -932,6 +938,8 @@
               
             }else if(subRoute==='beer'){
                page = 'beer';
+            }else if(subRoute==='plan'){
+               page = 'plan';
             }else if(subRoute ==='description'){
                 page='beer-info';
             }else if(subRoute==='tap'){

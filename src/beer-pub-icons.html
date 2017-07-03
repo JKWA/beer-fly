@@ -27,6 +27,7 @@
         margin: 4px 10px;
         text-align: center;
         line-height: 30px;
+        cursor: pointer;
       }
 
       .icon {
@@ -36,6 +37,7 @@
         margin: 0 10px;
         text-align: center;
         line-height: 30px;
+        cursor: pointer;
 
       }
 
@@ -49,9 +51,6 @@
             <iron-icon on-tap="_toast" id="patio" icon="beer-icons:patio"></iron-icon>
           </div>
           <div id="over21" on-tap="_toast" class="over21" hidden$="[[over21]]">+21</div>  
-          <!--<div  class="icon" hidden$="[[crowdSource]]">
-              <iron-icon on-tap="_toast" id="crowdSource" icon="beer-icons:crowd-source"></iron-icon>
-          </div>-->
         </div>
 
         
@@ -61,7 +60,6 @@
             horizontal-offset="50"
             vertical-offset="100"
             text="[[message]]">
-          <!--<paper-button>TEST</paper-button>-->
         </paper-toast>
         
 

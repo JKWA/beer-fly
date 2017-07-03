@@ -1,0 +1,208 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+<link rel="import" href="beer-plan-options.html">
+<link rel="import" href="beer-plan-cart.html">
+
+
+
+<dom-module id="beer-plan">
+
+  <template strip-whitespace>
+
+   
+    <style is="custom-style" include="paper-material-styles">
+
+      :host {
+        display: block;
+        max-width: 640px;
+      }
+
+      .card{
+        margin: 10px;
+        padding:10px;
+        @apply --paper-material-elevation-0;
+      }
+
+    </style>
+
+    
+    <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+
+
+    <div class="card">
+        <beer-plan-options
+            plan="{{plan}}"
+            purchase="{{purchase}}"
+            organization="[[organization]]">
+        </beer-plan-options>
+    </div>
+      
+      <paper-dialog 
+            id="cartDialog"
+            with-backdrop
+            modal
+            entry-animation="slide-from-right-animation"
+            exit-animation="slide-right-animation">
+   
+        <h2>Purchase</h2>
+
+        <paper-dialog-scrollable>
+          <beer-plan-cart
+              organization="[[organization]]"
+              card-name="{{cardName}}"
+              email="{{email}}">
+          </beer-plan-cart>
+
+          <div id="stripeCardWrapper">
+          </div>
+          <div id="cardError">[[errorMessage]]</div>
+          <div hidden$="[[!token]]">Token: [[token]]</div>
+        </paper-dialog-scrollable>
+        <div class="buttons">
+          <paper-button on-tap="_submit">PURCHASE</paper-button>
+          <paper-button dialog-dismiss on-tap="_dismiss"autofocus>CLOSE</paper-button>
+        </div>
+     
+      </paper-dialog>
+      
+    
+  </template>
+    <script>
+
+    Polymer({
+
+      is: 'beer-plan',
+      properties: {
+
+        cardName: String,
+
+        email: String,
+
+        errorMessage: String,
+
+        organization:{
+            type:Object
+        },
+
+        plan:{
+            type:String
+        },
+
+        purchase:{
+          type:Boolean
+       
+        },
+
+        token: String,
+
+        user:{
+          type: Object
+        },
+
+        _stripe: Object
+      },
+
+      observers:['_purchasePlan(purchase)'],
+      
+      _purchasePlan: function (purchase){
+        if(purchase){
+          this._purchase();
+        }
+      },
+
+      _purchase: function (){
+        var stripe = Stripe('pk_test_zmATksgUmcB5NyGKp6cyjNOM')
+        var elements = stripe.elements()
+        var style = {
+          base: {
+            color: '#32325d',
+            lineHeight: '24px',
+            fontFamily: '"Roboto Neue", Noto, sans-serif',
+            fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            '::placeholder': {
+              color: '#172C50'
+            }
+          },
+          invalid: {
+            color: 'red',
+            iconColor: 'red'
+          }
+        };
+
+        var card = elements.create('card', {style: style})
+        this._stripe = stripe;
+        this._card = card;
+        
+          
+
+        card.mount(this.$.stripeCardWrapper);
+
+        card.addEventListener('change', event =>{
+          if (event.error) {
+            this.errorMessage = event.error.message;
+          } else {
+            this.errorMessage = '';
+          }
+        });
+
+       
+          var body = document.querySelector('body');
+          Polymer.dom(body).appendChild(this.$.cartDialog);
+          this.$.cartDialog.open();
+      },
+
+      _dismiss: function (){
+        this.purchase = false;
+      },
+
+      _submit: function (event){
+        
+        var that = this;
+
+          this._stripe.createToken(this._card)
+            .then(result => {
+              
+              console.log('token', result.token)
+              this.token = result.token.id;
+              if(that.user){
+           
+                var obj = {
+                  token: result.token.id,
+                  plan: 'STANDARD_MONTHLY'
+                }
+               
+                firebase.database(that.$.auth.app).ref(`/user/${that.user.uid}/stripe/organization/${that.organization.place_id}/charges`)
+                  .push(obj)
+                  .then(()=> {
+                    console.log('SAVED_TOKEN')
+                  })
+                  .catch(error =>{
+                    console.log('ERROR_SAVE_TOKEN', error)
+                  })
+              }
+              
+
+          });
+
+          
+        
+      },
+
+     _test: function(obj){
+          console.log("TEST",obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

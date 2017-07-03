@@ -84,7 +84,7 @@
 
                         var sort = distance;
                         
-                        if(pub.PREMIUM){
+                        if(this._isPremium(pub.plan)){
                             if(distance <= 5){
                                 sort = sort-5;
                             }
@@ -126,9 +126,9 @@
                         pub.longitude = location[1];
                     }
 
-                    if(pub.PREMIUM){
-                            if(pubDistance <= 10){
-                                pub.sort = pubDistance -10;
+                    if(that._isPremium(pub.plan)){
+                            if(pubDistance <= 5){
+                                pub.sort = pubDistance -5;
 
                             }else{
                                 pub.sort = pubDistance;
@@ -199,6 +199,18 @@
 
        deg2rad: function (deg) {
               return deg * (Math.PI/180)
+       },
+
+       _isPremium: function (plan){
+           var today = Date.now()/1000;
+           if(plan){
+               if(plan.current_period_end){
+                   if(plan.current_period_end > today){
+                     return true;
+                   }
+               }
+           }
+           return false;
        },
 
   

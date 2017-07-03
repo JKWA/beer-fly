@@ -51,7 +51,9 @@
     "iron-ajax": "PolymerElements/iron-ajax#^2.0.2",
     "iron-a11y-announcer": "PolymerElements/iron-a11y-announcer#^2.0.0",
     "iron-input": "PolymerElements/iron-input#^2.0.0",
-    "iron-form-element-behavior": "PolymerElements/iron-form-element-behavior#^2.0.0"
+    "iron-form-element-behavior": "PolymerElements/iron-form-element-behavior#^2.0.0",
+    "stripe-elements": "bennypowers/stripe-elements#^0.1.1",
+    "moment-element": "abdonrd/moment-element#^2.0.0"
   },
   "devDependencies": {
     "web-component-tester": "^6.0.0",
