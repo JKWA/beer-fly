@@ -398,13 +398,15 @@
               <a name="[[category.name]]" aria-label="To [[category.name]]" href$="/[[nameUrl]]/[[category.name]][[orgParam]]">[[category.title]]</a>
             </template>
           </template>
-            <a hidden$="[[!owner]]" name="plan" aria-label="Plans" href$="/[[nameUrl]]/plan[[orgParam]]">Plans</a>
+            <!--<a hidden$="[[!owner]]" name="plan" aria-label="Plans" href$="/[[nameUrl]]/plan[[orgParam]]">Plans</a>-->
 
           <hr>
         </template>
         <a name="near" aria-label="Breweries near me" href="/home"><iron-icon class="drawer-icon" icon="beer-icons:gps-fixed"></iron-icon>Near me</a>
         <a name="search" aria-label="Search for breweries" href$="/[[nameUrl]]/search[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:search"></iron-icon>Search</a>
         <a name="favorite" aria-label="My favorites" href$="/[[nameUrl]]/favorite[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:favorite"></iron-icon>Favorites</a>
+        <a name="question" aria-label="Frequently asked questions" href="/home/question"><iron-icon class="drawer-icon" icon="beer-icons:question"></iron-icon>Questions</a>
+
       </iron-selector>
 
       <div class="extra-links" hidden$="[[verified]]" on-tap="_verifyAccount"><iron-icon class="drawer-icon" icon="beer-icons:warning"></iron-icon>Verify email</div>
@@ -441,7 +443,8 @@
         <div class="main">
         <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
           <beer-account name="account" organization="[[organization]]" small-screen="[[smallScreen]]"owner="[[owner]]"></beer-account>
-          <beer-plan name="plan" organization="[[organization]]" small-screen="[[smallScreen]]"owner="[[owner]]"></beer-plan>
+          <!--<beer-plan name="plan" organization="[[organization]]" small-screen="[[smallScreen]]"owner="[[owner]]"></beer-plan>-->
+          <beer-question name="question" login="{{login}}" online="[[online]]"></beer-question>
 
           <beer-allbeers name="allbeers" owner="[[owner]]"></beer-allbeers>
           <beer-pub name="pub" login="{{login}}" organization="{{organization}}" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" owner="[[owner]]" online="[[online]]"></beer-pub>
@@ -907,7 +910,8 @@
                page = 'search';
             }else if(subRoute==='account'){
                page = 'account';
-            
+            }else if(subRoute==='question'){
+               page = 'question';
             }else if(subRoute==='favorite'){
                
                if(!thirdRoute){
@@ -938,8 +942,6 @@
               
             }else if(subRoute==='beer'){
                page = 'beer';
-            }else if(subRoute==='plan'){
-               page = 'plan';
             }else if(subRoute ==='description'){
                 page='beer-info';
             }else if(subRoute==='tap'){

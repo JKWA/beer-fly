@@ -156,9 +156,29 @@ exports.createStripeCharge = functions.database.ref('/user/{user_id}/stripe/orga
             }, {
               idempotency_key: charge_id
           })
+          .catch(error =>{
+            
+            console.log('error', error)
+            var errorObj = {
+              type: error.type,
+              message: error.message,
+              code: error.code,
+              created: Math.round(Date.now()/1000)
+            }
+            return event.data.adminRef.child('error')
+              .update(errorObj)
+              // .then(()=>{
+              //   return reportError(error, metadata)
+              // })
+            
+          })
       })
       .then(response => {
         //write subscription data back to database
+        if(!response){
+          return null;
+        }
+        console.log('response', response)
         return event.data.adminRef.update(response)
       .then(() => {
           

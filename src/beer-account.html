@@ -197,6 +197,41 @@
         font-size: 1.2em;
       }
 
+      .error-wrapper{
+        @apply --layout-vertical;
+        margin: 20px 5px 10px 5px;
+        padding: 10px 5px;
+        border-top: 1px solid var(--app-secondary-color);
+        border-bottom: 1px solid var(--app-secondary-color);
+      }
+
+      .error-wrapper > div {
+        margin: 10px 0;
+      }
+
+      .error-title-wrapper{
+        @apply --layout-horizontal;
+        font-size: 1.1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+      .error-title-wrapper > div{
+        margin: 0 10px 0 0;
+      }
+
+      .error-message{
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+  
+
+      .error-icon{
+        color: red;
+        
+      }
+
 
 
 
@@ -325,7 +360,12 @@
           
           <div>
             <template is="dom-if" if="[[!pub.plan.id]]">
-            <paper-button class="plan-button standard" organization="[[pub]]"on-tap="_purchase">UPGRADE TO STANDARD</paper-button>
+              <paper-button 
+                  class="plan-button standard" 
+                  organization="[[pub]]"
+                  on-tap="_purchase">
+                UPGRADE TO STANDARD PLAN
+              </paper-button>
             </template>
           </div>
 
@@ -372,7 +412,7 @@
           </div>
           <div class="address">[[location.formatted_address]]</div>
         
-          <template is="dom-repeat" items="[[_organizationArray(location.charges)]]" as="charge">
+          <template is="dom-repeat" items="[[_chargeArray(location.charges)]]" as="charge">
             
               <table>
                 <tr>
@@ -420,19 +460,40 @@
               
           
           </template>
-         
-        </div>
-          </li>
-      </template>
-      </ul>
-    </div>
-          
-    
-          
-    
-                 
-   
 
+          
+          <template is="dom-repeat" items="[[_errorArray(location.charges)]]" as="error">
+          
+            <div class="error-wrapper">
+              <div class="error-title-wrapper">
+                <div class="error-icon">
+                  <iron-icon icon="beer-icons:error"></iron-icon>
+                </div>
+                <div>ERROR</div>
+                <div>
+                  <moment-element
+                      datetime="[[_addMilliseconds(error.created)]]"
+                      output-format="MMM D[,] YYYY h:mm:ss a">
+                  </moment-element>
+                </div>
+              </div>
+              
+              <div class="error-message">
+                <div>[[error.message]]</div>
+              </div>
+            </div>
+          </template>
+          
+        </div>
+        
+      </li>
+      
+    </template>
+    
+    </ul>
+    
+  </div>
+          
       
   <paper-dialog 
         id="downgradeDialog"
@@ -497,6 +558,25 @@
         </div>
       </div>
   </paper-toast>
+
+  <paper-toast 
+      id="errorToast" 
+      duration="0" 
+      horizontal-align="right"
+      horizontal-offset="50"
+      vertical-offset="100">
+
+      <div class="toast-wrapper">
+        <div class="toast-section">
+          <div>ERROR</div>
+          <div>[[error.message]]</div>
+        </div>
+      
+        <div>   
+          <paper-icon-button icon="beer-icons:clear" on-tap="_closeErrorToast"></paper-icon-button>
+        </div>
+      </div>
+  </paper-toast>
         
       
 
@@ -540,6 +620,10 @@
           type:String
         },
 
+        error:{
+          type:Object
+        },
+
         message:{
           type: String
         },
@@ -578,6 +662,11 @@
 
         },
 
+        _initialLoad:{
+          type:Boolean,
+          value:false
+        },
+
         _disablePurchaseButton:{
           type:Boolean,
           value: true
@@ -589,12 +678,10 @@
         }
       },
 
- 
-
       observers:['_watchUserStatus(user, userData)'],
       
       // ready : function (){
-      //   this.$.verificationToast.open();
+      //   this.$.errorToast.open();
       // },
       
       _watchUserStatus: function (user, userData){
@@ -616,7 +703,7 @@
                 if(userData.domain){  
                   if(domainEmail){   
                     userStatus = 'VERIFIED_DOMAIN_EMAIL';
-                    userMessage = 'This account can save star ratings and edit information for organizations with matching domains.';
+                    userMessage = `This account can edit information for organizations with the "${this.userData.domain}" domain.`;
                     this._getOrganizationData();
 
                   }else{
@@ -777,6 +864,82 @@
         return returnArray;
       },
 
+      _chargeArray: function (obj){
+        var activeArray = [];
+        var cancelArray = [];
+        
+        if(typeof obj === 'object'){
+          var key = Object.keys(obj);
+          for (var i=0; i<key.length; i++){
+            var charge = obj[key[i]];
+            charge.$key = key[i];
+            
+            if(!obj[key[i]].error){
+              if(charge.status){
+                if(charge.status === 'active'){
+                  activeArray.push(charge);
+                }else if(charge.status === 'canceled'){
+                  cancelArray.push(charge);
+                }
+              }
+            }
+          }
+          if(activeArray.length > 0){
+            return activeArray.sort(this._sortByKey);
+          }else if (cancelArray.length > 0){
+            var lastCharge =  cancelArray.sort(this._sortByKey).pop()
+            return [lastCharge];
+          }
+        }
+        return [];
+      },
+
+      _errorArray: function (obj) {
+        var returnArray = [];
+        
+        if(typeof obj === 'object'){
+          var key = Object.keys(obj);
+          for (var i=0; i<key.length; i++){
+            var charge = obj[key[i]]
+            obj[key[i]].$key = key[i]
+            returnArray.push(obj[key[i]])
+          }
+        }
+
+        if(returnArray.length > 0){
+          var lastCharge = returnArray.sort(this._sortByKey).pop();
+          console.log('lastCharge', lastCharge);
+          if(lastCharge.error){
+            if(lastCharge.error.created){
+              var yesterday = (Date.now()/1000)-(24*60*60);
+              console.log('yesterday', yesterday)
+              if(charge.error.created > yesterday){
+                if(!this._initialLoad){
+                  this._initialLoad = true;
+                }else{
+                  this.error = lastCharge.error;
+                  this.$.errorToast.open();
+                }
+                return [lastCharge.error];
+              }
+            }
+          }
+        }
+        if(!this._initialLoad){
+          this._initialLoad = true;
+        }
+        return [];
+      },
+
+      _sortByKey: function(a,b){
+
+        if (a.$key < b.$key)
+          return -1;
+        if (a.$key > b.$key)
+          return 1;
+        return 0;
+      },
+
       _addMilliseconds: function (time){
         if(time){
           return time*1000
@@ -797,10 +960,6 @@
         this.deleteLocation = target.location;
         this.deleteLocationId = target.locationId;
         this.deleteUserId = target.userId;
-
-        
-    
-        console.log(this.deleteChargeId)
         var body = document.querySelector('body');
         Polymer.dom(body).appendChild(this.$.downgradeDialog);
         this.$.downgradeDialog.open();
@@ -919,7 +1078,8 @@
 
        _submit: function (event){
         var that = this;
-        this._stripe.createToken(this._card)
+        console.log(this.cardName);
+        this._stripe.createToken(this._card, {name: this.cardName})
           .then(result => {
             this.token = result.token.id;
             if(that.user){
@@ -950,6 +1110,10 @@
       },
       _reloadPage(){
         location.reload(true);
+      },
+
+      _closeErrorToast: function (){
+        this.$.errorToast.close();
       },
 
       _test: function(obj){
