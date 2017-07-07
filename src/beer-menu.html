@@ -1,5 +1,4 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
@@ -20,6 +19,8 @@
 
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-banner.html">
+
 
 <dom-module id="beer-menu">
 
@@ -141,14 +142,12 @@
     </firebase-auth>
 
 
-    <iron-image 
-        style="width:100%; height:300px; background-color: #F8F8F8;"
-        sizing="cover" 
-        preload 
-        placeholder="[[placeholder]]"
-        fade
-        src="[[photoUrl]]">
-    </iron-image>
+    <beer-banner
+      google-photo="[[place.photos]]"
+      photo-index="2"
+      photo="[[category.image]]"
+      org-id="[[orgId]]">
+    </beer-banner>
 
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab> 
 
@@ -293,10 +292,7 @@
       is: 'beer-menu',
       properties: {
 
-        photoUrl: {
-          type: String,
-          computed: '_computePhotoUrl(category, place)'
-        },
+       
 
         category:{
           type: Object
@@ -324,6 +320,10 @@
 
         nameUrl:{
           type: String
+        },
+
+        place:{
+          type:Object
         },
 
         organization:{
@@ -446,29 +446,6 @@
         }
       },
 
-      _computePhotoUrl: function (category, place) {
-         try{
-          if(category.image){
-            if(category.image.banner){
-              if(category.image.banner.url){
-                return category.image.banner.url;
-              }
-            }
-          }
-          var photoMeta = {};
-          var photos = place.photos
-          var categoryIndex = 3
-          if(photos.length < categoryIndex){
-            categoryIndex = photos.length
-          }
-          photoMeta.maxWidth = place.photos[categoryIndex].width;
-          photoMeta.maxHeight = place.photos[categoryIndex].height;
-          return place.photos[categoryIndex].getUrl(photoMeta);
-         
-       }catch (error){
-
-       }
-      },
 
       _scrollTag: function (menuItem, menuItemId){
           if(menuItem === menuItemId){

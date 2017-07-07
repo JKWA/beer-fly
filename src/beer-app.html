@@ -240,8 +240,6 @@
         min-height: 75vh;
       }
 
-
-
       .footer {
         text-align: center;
         width: 100%;
@@ -286,7 +284,7 @@
 
 <beer-analytics key="UA-97017491-1"></beer-analytics>
 
-<iron-location path="{{path}}" query="{{query}}"></iron-location>
+<iron-location path="{{path}}" query="{{query}}" hash="{{anchor}}"></iron-location>
 <iron-query-params params-string="{{query}}" params-object="{{queryParams}}">
 </iron-query-params>
 <app-route-converter path="{{path}}" query-params="{{queryParams}}" route="{{route}}">
@@ -404,6 +402,7 @@
         </template>
         <a name="near" aria-label="Breweries near me" href="/home"><iron-icon class="drawer-icon" icon="beer-icons:gps-fixed"></iron-icon>Near me</a>
         <a name="search" aria-label="Search for breweries" href$="/[[nameUrl]]/search[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:search"></iron-icon>Search</a>
+        <a name="crawl" aria-label="My Beer Crawls" href="/home/crawl"><iron-icon class="drawer-icon" icon="beer-icons:crawl"></iron-icon>Beer-Crawls</a>
         <a name="favorite" aria-label="My favorites" href$="/[[nameUrl]]/favorite[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:favorite"></iron-icon>Favorites</a>
         <a name="question" aria-label="Frequently asked questions" href="/home/question"><iron-icon class="drawer-icon" icon="beer-icons:question"></iron-icon>Questions</a>
 
@@ -444,7 +443,9 @@
         <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
           <beer-account name="account" organization="[[organization]]" small-screen="[[smallScreen]]"owner="[[owner]]"></beer-account>
           <!--<beer-plan name="plan" organization="[[organization]]" small-screen="[[smallScreen]]"owner="[[owner]]"></beer-plan>-->
-          <beer-question name="question" login="{{login}}" online="[[online]]"></beer-question>
+          <beer-question name="question" anchor="[[anchor]]" login="{{login}}" online="[[online]]"></beer-question>
+          <beer-crawl name="crawl" location="[[location]]" online="[[online]]" crawl-id="[[crawlId]]" sorted-location-history="[[sortedLocationHistory]]"></beer-crawl>
+          <beer-crawl-owner name="crawl-owner" online="[[online]]" crawl-id="[[crawlId]]" ></beer-crawl-owner>
 
           <beer-allbeers name="allbeers" owner="[[owner]]"></beer-allbeers>
           <beer-pub name="pub" login="{{login}}" organization="{{organization}}" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" owner="[[owner]]" online="[[online]]"></beer-pub>
@@ -563,6 +564,10 @@
           value: function (){return {};}
         },
 
+        anchor:{
+          type:String
+        },
+
         beerId: {
           type: String,
           computed: '_computeBeerId(queryParams)'
@@ -571,6 +576,11 @@
         categories: {
           type: Array,
           computed: '_computeCategories(organization)'
+        },
+
+         crawlId: {
+          type: String,
+          computed: '_computeCrawlId(queryParams)'
         },
 
         drawerOpened:{
@@ -875,9 +885,6 @@
       },
 
 
-     
-
-
       _routePageChanged: function (route) {
 
         var place = this.place;
@@ -890,8 +897,7 @@
           page ='home';
           this._isHome=true;
         }else{
-          
-          pathArray = path.split('/');
+          var pathArray = path.split('/');
           var route = pathArray[1];
           var subRoute = pathArray[2];
           var thirdRoute = pathArray[3];
@@ -912,6 +918,17 @@
                page = 'account';
             }else if(subRoute==='question'){
                page = 'question';
+            }else if(subRoute==='crawl'){
+               if(!thirdRoute){
+                 page = 'crawl';
+               }else{
+                 if(thirdRoute === 'mine'){
+                   page='crawl-owner';
+                   returnPage='crawl';
+                 }else{
+                   page = 'crawl';
+                 }
+               }
             }else if(subRoute==='favorite'){
                
                if(!thirdRoute){
@@ -1086,8 +1103,6 @@
         }
       },
 
-     
-
 
       _pageLoaded: function (shouldResetLayout) {
         this._ensureLazyLoaded();
@@ -1169,7 +1184,6 @@
 
 
 
-
       _computeSubPage: function (subPage) {
         if (subPage) {
           return subPage;
@@ -1191,6 +1205,17 @@
         if (queryParams) {
           if (queryParams.beerId) {
             return queryParams.beerId
+          }
+        }
+        return null;
+      },
+
+      
+
+      _computeCrawlId: function (queryParams) {
+        if (queryParams) {
+          if (queryParams.crawlId) {
+            return queryParams.crawlId
           }
         }
         return null;

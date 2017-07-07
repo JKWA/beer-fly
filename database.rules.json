@@ -82,6 +82,9 @@
             	".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
               ".validate": "newData.isBoolean()"
           },
+          "foodTruck":{
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
+          },
           "mainImage": {
               ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
           },
@@ -99,7 +102,10 @@
           "patio": {
              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
              ".validate": "newData.isBoolean()"
-          }    
+          },
+          "schedule":{
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
+          }
         }
       },
     "breweryDB": {
@@ -108,7 +114,15 @@
     },
     "category": {
       ".read": "true"
+      
       },
+    "crawl":{
+      ".read": "true",
+      "$crawlid":{
+        ".write": "true"
+      },
+      ".indexOn": "user_id"
+    },
     "beerStyle": {
       ".read": "true"
       },
@@ -159,6 +173,9 @@
           "displayName" :{
               ".write": "$uid==auth.uid"
           },
+          "email":{
+            ".read": "true"
+          },
           "favorite":{
      		  	".write": "$uid==auth.uid"
           },
@@ -168,7 +185,6 @@
                 "charges":{
                   "$chargeId":{
                     ".write": "$uid==auth.uid",
-                   
                      "plan": { ".validate": "newData.val() === 'STANDARD_MONTHLY'" },
                      "token": { ".validate": "newData.isString()" },
                      "delete":{".validate": "newData.isBoolean()"},
@@ -177,6 +193,10 @@
                 }
               }
             }
+          },
+          "crawl":{
+            ".write": "$uid==auth.uid",
+            ".read": "true"
           },
             
           "rating":{

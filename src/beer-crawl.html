@@ -1,0 +1,258 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/moment-element/moment-element.html">
+<!--<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">-->
+
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-login.html">
+<link rel="import" href="beer-location.html">
+
+
+
+<dom-module id="beer-crawl">
+
+<template strip-whitespace>
+  <style include="paper-material-styles">
+
+    a{
+      color: var(--app-accent-color);
+    }
+
+    a > iron-icon {
+      text-decoration: none;
+    }
+
+    ol{
+      list-style-type: none;
+    }
+
+    li{
+      @apply --layout-horizontal;
+      padding: 10px;
+      /*margin-left:20px;*/
+      border-bottom: 1px solid var(--app-secondary-color);
+
+    }
+
+    li:first-child{
+      border-top: 1px solid var(--app-secondary-color);
+
+    }
+
+
+    li > div {
+      margin: 0 10px 0 0;
+      font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+    }
+
+    paper-fab{
+      background-color: var(--app-accent-color);
+    }
+
+  
+
+    .add-icon{
+      color: var(--app-accent-color);
+    }
+
+    .card{
+      padding: 12px;
+      margin: 15px;
+      @apply --paper-material-elevation-1;
+    }
+
+    .title-wrapper{
+       @apply --layout-horizontal;
+       @apply --layout-justified;
+    }
+
+    .icon-wrapper{
+      @apply --layout-horizontal;
+      @apply --layout-justified;
+      font-size: 1em;
+      
+    }
+
+    .organization-wrapper{
+      @apply --layout-horizontal;
+      @apply --layout-justified;
+      width: 100%;
+    }
+
+    .public{
+      color: var(--app-selected-color);
+    }
+    .icon{
+      color: var(--app-secondary-color);
+    }
+
+    .public-label{
+      color: var(--app-selected-color);
+      font-size: .8em;
+      font-weight: 300;
+    }
+
+    .name{
+      font-size: 1.5em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+    }
+
+    .description{
+      font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 300;
+      margin: 10px 0 20px 0;
+    }
+
+    .question-header{
+      font-size: 1.5em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+    }
+
+    .question-body-list{
+      @apply --layout-vertical;
+    }
+    .question-body-list > div:not(:first-child){
+      margin: 10px 0 0 0;
+    }
+
+    .delete{
+      color:red;
+    }
+
+    /*.description {
+      @apply --layout-horizontal;
+      padding: 10px 10px 0 10px;
+      margin: 10px 10px 0 10px;
+    }
+
+    .description > div {
+      margin: 0 10px 0 0;
+      color: var(--app-primary-color);
+      font-weight: 400;
+      font-size: 1em;
+    }*/
+
+    /*.description-can {
+      color: var(--app-accent-color);
+      font-weight: 400;
+      font-size: 1.2em;
+      margin: 20px 0 0 20px;
+    }*/
+
+    .plan {
+      margin: 20px 0;
+      @apply --layout-horizontal;
+      @apply --layout-center-justified;
+    }
+
+  </style>
+
+  <firebase-auth id="auth" app-name="beer" status-known="[[statusKnown]]"user="{{user}}"></firebase-auth>
+  
+
+  <div hidden="[[user]]">
+     <div>Sign in to create a Beer-Crawl.</div>
+        <beer-login></beer-login>
+    </div>
+    <div class="card" hidden="[[!user]]">
+      <a href="/home/crawl/mine">
+      <iron-label>
+        <paper-icon-button class="add-icon" icon="beer-icons:crawl"></paper-icon-button>
+        My Beer-Crawls
+      </iron-label>
+      </a>
+    </div>
+
+    <div class="card">
+      
+      <beer-location
+      location={{location}} 
+      search-string="{{searchString}}" 
+      sorted-location-history="[[sortedLocationHistory]]">
+    </beer-location>
+
+    </div>
+
+
+
+
+ 
+  
+
+      
+      
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-crawl',
+
+      properties: {
+
+        crawlData:Array,
+        crawlName:String,
+        crawlDescription:String,
+        crawlId:String,
+        crawlPublic:Boolean,
+
+        deleteCrawlId:String,
+        deleteName:String,
+        deleteDescription:String,
+
+        location:Object,
+
+        sortedLocationHistory:{
+          type:Array
+        },
+       
+        user:{
+          type: Object
+        },
+        
+        userData:{
+          type: Object
+        },
+        
+      },
+
+    
+
+      
+      
+
+      _test: function(obj){
+          console.log(obj);
+
+      }
+
+    });
+
+  </script>
+
+</dom-module>

@@ -1,5 +1,4 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
@@ -16,6 +15,8 @@
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-foodtruck-card.html">
+<link rel="import" href="beer-banner.html">
+
 
 <dom-module id="beer-foodtruck">
 
@@ -128,14 +129,12 @@
         user="{{user}}">
     </firebase-auth>
 
-    <iron-image 
-        style="width:100%; height:300px; background-color: #F8F8F8;"
-        sizing="cover" 
-        preload 
-        placeholder="[[placeholder]]"
-        fade
-        src="[[photoUrl]]">
-    </iron-image>
+    <beer-banner
+      google-photo="[[place.photos]]"
+      photo-index="4"
+      photo="[[category.image]]"
+      org-id="[[orgId]]">
+    </beer-banner>
 
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
 
@@ -211,10 +210,7 @@
       is: 'beer-foodtruck',
       properties: {
 
-        photoUrl: {
-          type: String,
-          computed: '_computePhotoUrl(category, place)'
-        },
+       
 
         category:{
           type: Object
@@ -241,6 +237,10 @@
           type: Boolean
         },
 
+        place:{
+          type:Object
+        },
+
         truckId:{
           type:String
           
@@ -261,7 +261,6 @@
         }
       },
 
-      // observer:['_watchFoodTrucks(organization.foodTruck)'],
 
     _watchFoodTrucks: function (truck){
 
@@ -307,8 +306,6 @@
         }
       },
 
-     
-
       _addBreaks: function(str){
         'use strict';
         if(str){
@@ -316,32 +313,6 @@
         }else{
           return [];
         }
-      },
-
-      _computePhotoUrl: function (category, place) {
-         try{
-          if(category.image){
-            if(category.image.banner){
-              if(category.image.banner.url){
-                return category.image.banner.url;
-              }
-            }
-          }
-          var photoMeta = {};
-          var photos = place.photos
-          console.log('photos', photos);
-          var categoryIndex = 2
-          if(photos.length < categoryIndex){
-            categoryIndex = photos.length
-          }
-          photoMeta.maxWidth = place.photos[categoryIndex].width;
-          photoMeta.maxHeight = place.photos[categoryIndex].height;
-
-          return place.photos[categoryIndex].getUrl(photoMeta);
-         
-       }catch (error){
-
-       }
       },
 
       _sortByName: function(a,b){

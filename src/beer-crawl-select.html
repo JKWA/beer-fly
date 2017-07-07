@@ -1,0 +1,262 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+<link rel="import" href="beer-icons.html">
+<dom-module id="beer-crawl-select">
+
+<template strip-whitespace>
+  <style include="paper-material-styles">
+
+    a{
+      text-decoration: none;
+    }
+
+    paper-dropdown-menu.light{
+        --paper-input-container-color: var(--app-primary-color);
+    }
+
+    paper-icon-button{
+      color: var(--app-accent-color);
+    }
+
+    iron-icon{
+      color:var(--app-selected-color);
+    }
+
+    .wrapper{
+      @apply --layout-horizontal;
+      padding: 10px;
+    }
+
+    .toast-wrapper{
+         @apply --layout-horizontal;
+         @apply --layout-justified;
+      }
+
+      .toast-item{
+        @apply --layout-vertical;
+        font-size: 1.2em;
+      }
+
+  </style>
+
+  <firebase-auth id="auth" app-name="beer" status-known="[[statusKnown]]"user="{{user}}"></firebase-auth>
+
+  <firebase-query
+      app-name="beer"
+      id="crawlData"
+      order-by-child="user_id"
+      equal-to="[[user.uid]]"
+      disabled
+      path="crawl"
+      data="{{crawlData}}">
+  </firebase-query>
+
+  <div class="wrapper" hidden$="[[!crawlData]]">  
+    <iron-collapse horizontal opened="{{toggle}}">
+      <paper-dropdown-menu no-label-float label="Add to a Beer-Crawl">
+        <paper-listbox 
+            attr-for-selected="crawl"
+            slot="dropdown-content" 
+            class$="dropdown-content"
+            selected="{{crawl}}">
+
+          <template is="dom-repeat" items="{{crawlData}}" as="crawl" filter="_filterDeleted" observe="deleted">
+              <paper-item crawl="[[crawl]]">[[crawl.name]]</paper-item>
+          </template>
+
+        </paper-listbox>
+      </paper-dropdown-menu>
+    </iron-collapse>
+    <div>    
+      <paper-icon-button id="crawlButton" disabled icon="beer-icons:crawl" on-tap="_toggle"></paper-icon-button>
+    </div>
+  </div>
+
+  <paper-toast 
+      id="confirmToast" 
+      duration="5000" 
+      horizontal-align="right"
+      horizontal-offset="50"
+      >
+
+      <div class="toast-wrapper">
+        <div class="toast-section">
+          <div>Added to Beer-Crawl</div>
+          <div>[[crawl.name]]</div>
+        </div>
+      
+        <div>
+          <a href="/home/crawl/mine?crawlId=[[crawlId]]">
+            <iron-icon icon="beer-icons:link" ></iron-icon>
+          </a>
+
+        </div>
+      </div>
+  </paper-toast>
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-crawl-select',
+
+      properties: {
+        toastMessage:String,
+        
+        crawlId:{
+          type:String,
+          computed: '_computeCrawlId(crawl)',
+          notify:true
+        },
+
+        crawl:{
+          type:Object
+        },
+
+        place:{
+          type:Object
+        },
+
+        placeId:{
+          type:String,
+          computed: '_computePlaceId(place)'
+        },
+
+        toggle:{
+          type:Boolean,
+          value: false
+        },
+
+        user:{
+          type: Object
+        },
+        
+        userData:{
+          type: Object
+        },
+        
+      },
+
+      observers:['_watchUser(user)',
+                '_watchToggle(toggle)',
+                '_watchPlaceId(placeId)',
+                '_watchCrawlId(crawlId)'],
+
+      _watchUser: function (user){
+        if(user){
+          if(user.uid){
+            // this.$.userData.disabled = false;
+            this.$.crawlData.disabled=false;
+
+          }else{
+            // this.$.userData.disabled = true;
+            this.$.crawlData.disabled=true;
+          }
+        }else{
+          // this.$.userData.disabled = true;
+          this.$.crawlData.disabled=true;
+        }
+      },
+
+      _watchToggle: function (toggle){
+        if(this.user){
+          if(toggle){
+            this.$.crawlData.disabled=false;
+          }else{
+            this.$.crawlData.disabled=true;
+          }
+        }else{
+          this.$.crawlData.disabled=true;
+        }
+      },
+
+      _watchPlaceId(placeId){
+        if(placeId){
+          this.$.crawlButton.disabled = false;
+        }else{
+          this.$.crawlButton.disabled = true;
+        }
+      },
+
+      _watchCrawlId: function (crawlId) {
+        if(crawlId){
+          if(this.placeId){
+            var that = this;
+            var org = this.place;
+            
+            var obj = {
+                        name: org.name,
+                        place_id: org.place_id,
+                        formatted_address: org.formatted_address,
+                        created: Math.round(Date.now()/1000)
+                      };
+            var uploadObj = {};
+            uploadObj['user_id'] = this.user.uid;
+            uploadObj[`organization/${this.placeId}`] = obj;
+
+            firebase.database(this.$.auth.app).ref(`/crawl/${crawlId}`)
+              .update(uploadObj)
+              .then(() =>{
+                console.log('Added to Beer-Crawl')
+                that.toggle = false;
+                 
+                that.$.confirmToast.open();
+              })
+              .catch(error =>{
+                console.log('ERROR_CRAWL', error)
+              })
+          }
+        }
+        // console.log('close')
+        // this.toggle = false;
+      },
+
+      _toggle: function (){
+          if(this.placeId){
+          this.toggle = !this.toggle
+        }else{
+          this.toggle = false;
+        }
+      },
+
+      _filterDeleted(item){
+        if(item.deleted){
+          return false;
+        }
+        return true;
+      },
+
+      _computePlaceId:function (place){
+        if(place){
+        return place.place_id;
+        }
+      },
+
+      _computeCrawlId:function (crawl){
+        console.log(crawl);
+        return crawl.$key;
+      },
+
+      _test: function(obj){
+          console.log(obj);
+
+      }
+
+    });
+
+  </script>
+
+</dom-module>

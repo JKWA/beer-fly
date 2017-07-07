@@ -1,6 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
@@ -20,6 +19,8 @@
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-beer-tap.html">
 <link rel="import" href="beer-beer-rating.html">
+<link rel="import" href="beer-banner.html">
+
 
 
 
@@ -119,13 +120,12 @@
   <firebase-auth  app-name="beer" id="auth"></firebase-auth>
 
 
-    <iron-image 
-        style="width:100%; height:300px; background-color: #F8F8F8;"
-        sizing="cover" 
-        preload 
-        fade
-        src="[[photoUrl]]">
-    </iron-image>
+    <beer-banner
+      google-photo="[[place.photos]]"
+      photo-index="1"
+      photo="[[category.image]]"
+      org-id="[[orgId]]">
+    </beer-banner>
 
     
     
@@ -299,10 +299,14 @@
          type: Boolean
        },
        
-        photoUrl: {
-          type: String,
-          computed: '_computePhotoUrl(category, place)'
-        }
+       place:{
+         type:Object
+       },
+       
+        // photoUrl: {
+        //   type: String,
+        //   computed: '_computePhotoUrl(category, place)'
+        // }
      
     },
 
@@ -358,28 +362,28 @@
         return 0;
       },
 
-      _computePhotoUrl: function (category, place) {
-        try{
-          if(category.image){
-            if(category.image.banner){
-              if(category.image.banner.url){
-                return category.image.banner.url;
-              }
-            }
-          }
-          var photoMeta = {};
-          var photos = place.photos
-          var categoryIndex = 1
-          if(photos.length < categoryIndex){
-            categoryIndex = photos.length
-          }
-          photoMeta.maxWidth = place.photos[categoryIndex].width;
-          photoMeta.maxHeight = place.photos[categoryIndex].height;
-          return place.photos[categoryIndex].getUrl(photoMeta);
-        }catch (error){
+      // _computePhotoUrl: function (category, place) {
+      //   try{
+      //     if(category.image){
+      //       if(category.image.banner){
+      //         if(category.image.banner.url){
+      //           return category.image.banner.url;
+      //         }
+      //       }
+      //     }
+      //     var photoMeta = {};
+      //     var photos = place.photos
+      //     var categoryIndex = 1
+      //     if(photos.length < categoryIndex){
+      //       categoryIndex = photos.length
+      //     }
+      //     photoMeta.maxWidth = place.photos[categoryIndex].width;
+      //     photoMeta.maxHeight = place.photos[categoryIndex].height;
+      //     return place.photos[categoryIndex].getUrl(photoMeta);
+      //   }catch (error){
 
-       }
-      },
+      //  }
+      // },
 
       _updateCask: function (event){
         var target =  event.currentTarget

@@ -1,0 +1,108 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+
+
+
+<dom-module id="beer-banner">
+
+  <template strip-whitespace>
+    
+    <!--<style include="paper-material-styles">
+
+
+    </style>-->
+    
+    <div hidden="[[!usePhotoUrl]]">
+      <iron-image 
+          style="width:100%; height:300px; background-color: #F8F8F8;"
+          sizing="cover" 
+          preload 
+          placeholder="[[placeholder]]"
+          fade
+          src="[[photoUrl]]">
+      </iron-image>
+    </div>
+    <!--PHOTO: [[photoUrl]]-->
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-banner',
+
+      properties:{
+       googlePhoto:Array,
+       photoIndex:String,
+       photoUrl: String,
+       photo:Object,
+       placeholder: String,
+       orgId:{
+         type:String,
+         observer: '_orgIdChanged'
+       }
+      },
+
+      observers:['_watchPhotoUrl(photo)',
+                '_watchPlacePhotos(googlePhoto)'],
+
+      _orgIdChanged: function (newId, oldId){
+        // console.log(newId, oldId)
+        if(newId !== oldId){
+          this.photoUrl = null;
+          this.placeholder=null;
+        }
+      },
+
+     
+
+      _watchPhotoUrl: function (photo){
+        this.photoUrl = null;
+        if(photo){
+          if(photo.banner){
+            if(photo.banner.url){
+              this.photoUrl = photo.banner.url
+            }
+            if(photo.banner.thumbnail){
+              this.placeholder = 'data:image/png;base64, '+photo.banner.thumbnail;
+            }
+          }
+        }
+      },
+
+
+      _watchPlacePhotos(photos){
+        // console.log('photos', photos)
+        if(!this.photoUrl){
+          if(photos){
+            var numberOfPhotos = photos.length;
+            var index = this.photoIndex;
+            if(numberOfPhotos < index){
+              this.photoUrl = this._getGooglePhotoUrl(photos[0])
+            }else{
+              this.photoUrl = this._getGooglePhotoUrl(photos[index])
+            }
+          }
+        }
+      },
+
+      _getGooglePhotoUrl: function(photo){
+        var index = this.placeIndex;
+          var metadata = {
+            maxWidth: photo.width,
+            maxHeight: photo.height
+          };
+          var url = photo.getUrl(metadata);
+          return url;
+      },
+
+      _test: function (obj){
+        console.log(obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

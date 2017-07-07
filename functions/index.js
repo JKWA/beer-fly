@@ -228,59 +228,6 @@ exports.createStripeCharge = functions.database.ref('/user/{user_id}/stripe/orga
     })
   })
 
-  
-
-
-// exports.updateOrganizationSubscription = functions.database.ref('/user/{user_id}/stripe/organization/{place_id}/charges/{charge_id}/current_period_end')
-//   .onWrite(event => {
-//     const place_id = event.params.place_id,
-//           user_id = event.params.user_id,
-//           chargId = event.params.charge_id
-
-//     if (!event.data.exists()) {
-//       console.log('item deleted')
-//       return admin.database().ref(`/organization/${place_id}/plan`)
-//           .remove()
-//           .then(() =>{
-//             console.log('plan removed')
-//           })
-//           .catch(error =>{
-//             console.log('ERROR_REMOVE', error)
-//             return reportError(error, {user: user_id});
-//           })
-//     }
-
-//     return admin.database().ref(`/user/${user_id}/stripe/${place_id}/charges/${chargId}`)
-//       .once('value')
-//       .then(snapshot => {
-//         const data = snapshot.val(),
-//               subscription_id= data.id,
-//               plan = data.plan,
-//               current_period_end = data.current_period_end
-
-//         const orgPlan = {
-//                 current_period_end: current_period_end,
-//                 user_id: user_id,
-//                 id: data.id,
-//                 interval: plan.interval,
-//                 interval_count: plan.interval_count,
-//                 name: plan.id,
-//                 label: plan.name,
-//                 cancel_at_period_end: data.cancel_at_period_end
-//               };
-       
-
-//         return admin.database().ref(`/organization/${place_id}/plan`)
-//           .set(orgPlan)
-//           .then(()=>{
-//             console.log('org plan updated')
-//           })
-//           .catch(error =>{
-//             console.log('ERROR_PLAN', error)
-//             return reportError(error, {user: user_id});
-//           })
-//       })
-//   })
 
 exports.saveNewPub = functions.database.ref('/newOrg/{placeId}/{domain}')
   .onWrite(event => {
@@ -320,6 +267,7 @@ exports.saveNewPub = functions.database.ref('/newOrg/{placeId}/{domain}')
                 }
               }
             }
+            // console.log('past type', newPub)
 
             if(place.name){
 
@@ -345,7 +293,7 @@ exports.saveNewPub = functions.database.ref('/newOrg/{placeId}/{domain}')
               }
 
             }
-            
+            console.log('past name', newPub)
 
             if(place.geometry){
               if(place.geometry.location){
@@ -358,6 +306,8 @@ exports.saveNewPub = functions.database.ref('/newOrg/{placeId}/{domain}')
               }
             }
 
+            // console.log('past geometry', newPub)
+
           let metaItems = ['place_id', 'formatted_address', 'vicinity', 'formatted_phone_number']
 
           for (let value of metaItems) {
@@ -365,6 +315,8 @@ exports.saveNewPub = functions.database.ref('/newOrg/{placeId}/{domain}')
               newPub[preOrg+value] = place[value];
             }
           }
+
+          console.log('past meta', newPub)
           
 
           if(place.website){
@@ -373,7 +325,7 @@ exports.saveNewPub = functions.database.ref('/newOrg/{placeId}/{domain}')
               newPub[preOrg+'domain'] = domain;
               newPub['newOrg/'+place.place_id+'/domain'] = domain;
           }
-
+          console.log('past website', newPub)
 
           if(place.address_components){
               var placeAddress = getAddressObject(place.address_components);
@@ -384,12 +336,13 @@ exports.saveNewPub = functions.database.ref('/newOrg/{placeId}/{domain}')
                   }
               }
           }
+          console.log('past address', newPub)
 
           if (!event.data.previous.exists()) {
             newPub[preOrg+'/category'] = _getBaseCategories();
           }
 
-          console.log('created pub data', newPub);
+          // console.log('created pub data', newPub);
           console.log('domain', domain);
 
           //look for other locations
@@ -430,20 +383,7 @@ exports.saveNewPub = functions.database.ref('/newOrg/{placeId}/{domain}')
                   })
                   .then(newPub =>{
                     
-                    if(!place.permanently_closed){
-                      if(brewery|| pub){
-                        // if(place.geometry){
-                        //     geoFire.set(place.place_id, [place.geometry.location.lat, place.geometry.location.lng])
-                        //       .then(data => {
-                        //         console.log("Set GeoFire", data);
-                        //       })
-                        //       .catch(error=>{
-                        //         console.log("Error: " + error);
-                        //       }) 
-                        //     }  
-                        }  
-                      }
-                        console.log('save new pub', newPub);
+                    // console.log('save new pub', newPub);
 
                     admin.database().ref().update(newPub)
                       .then(saved =>{
