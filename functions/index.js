@@ -16,7 +16,9 @@ admin.initializeApp(functions.config().firebase);
 const googleMapsClient = require('@google/maps').createClient({key: functions.config().map.key});
 
 const geoRef = admin.database().ref('GeoFire'),
-      geoFire = new GeoFire(geoRef);
+      geoFire = new GeoFire(geoRef),
+      geoCrawlRef = admin.database().ref('GeoCrawl'),
+      geoCrawl = new GeoFire(geoCrawlRef)
 
 
 exports.createNewUser = functions.auth.user().onCreate(function(event) {
@@ -978,6 +980,57 @@ exports.watchPubFlag = functions.database.ref('/organization/{placeId}/PUB')
        const placeId = event.params.placeId;
        return _updateGeoFire(placeId);
   })
+
+exports.setGeoForCrawl = functions.database.ref('/crawl/{crawl_id}')
+  .onWrite(event => {
+    //TODO change this to onUpdate after updating cli
+
+    if (!event.data.exists()) {
+      console.log('item deleted')
+      return;
+    }
+    
+    const val = event.data.val(),
+          metadata = event.params,
+          crawl_id = metadata.crawl_id,
+          public = val.public,
+          deleted = val.deleted,
+          organization = val.organization
+    
+    if(!public || deleted || !organization){
+      return geoCrawl.remove(crawl_id)
+        .then(()=>{
+          console.log('Removed Geo', metadata)
+        })
+    }
+    admin.database().ref(`/crawl/${crawl_id}/organization`).orderByChild('created').limitToFirst(1)
+      .once('value')
+      .then(snapshot =>{
+        if(!snapshot.exists()){
+          return geoCrawl.remove(crawl_id)
+            .then(()=>{
+              console.log('Removed Geo', metadata)
+            })
+        }
+        return snapshot.forEach(firstPub =>{
+          const pub = firstPub.val()
+
+        
+        return geoCrawl.set(crawl_id, [firstPub.child('latitude').val(), firstPub.child('longitude').val()])
+            .then(()=>{
+             console.log('Saved GeoCrawl', metadata)
+            })
+        })
+      })
+      .catch(error => {
+        console.error('GEO_CRAWL_ERROR', error)
+      })
+})
+
+
+
+
+
 
 function _updateGeoFire(placeId){
 

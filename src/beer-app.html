@@ -455,6 +455,7 @@
           <beer-favorite-beer name="favorite-beer" location="[[location]]" offline="[[offline]]"></beer-favorite-beer>
           <beer-favorite-brewery name="favorite-brewery" offline="[[offline]]"></beer-favorite-brewery>
           <beer-favorite-pub name="favorite-pub" offline="[[offline]]"></beer-favorite-pub>
+          <beer-favorite-crawl name="favorite-crawl" offline="[[offline]]"></beer-favorite-crawl>
 
           <beer-review name="review" organization="[[organization]]" place="[[place]]" category=[[organization.category.REVIEW]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-review>
           
@@ -942,6 +943,9 @@
                    returnPage='favorite';
                  }else if(thirdRoute === 'pub'){
                    page='favorite-pub';
+                   returnPage='favorite';
+                  }else if(thirdRoute === 'crawl'){
+                   page='favorite-crawl';
                    returnPage='favorite';
                  }else{
                    page = 'favorite';

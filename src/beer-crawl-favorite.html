@@ -1,0 +1,182 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+<link rel="import" href="beer-icons.html">
+
+
+<dom-module id="beer-crawl-favorite">
+
+<template strip-whitespace>
+  <style include="paper-material-styles">
+
+
+    .favorite{
+      color: var(--app-selected-color);
+    }
+
+    .favorite-border{
+      color: var(--app-secondary-color);
+    }
+
+    .number{
+      font-size: .8em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+    }
+
+  </style>
+
+  <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+  
+  <div>
+    <iron-label>
+      <span class="number" hidden="[[!number]]">([[number]])</span>
+     
+      <paper-icon-button 
+        id="favoriteButton"
+        class$="[[icon]]"
+        icon="beer-icons:[[icon]]"
+        on-tap="_saveFavorite"
+        disabled>
+      </paper-icon-button>
+      
+    </iron-label>
+  </div>
+
+
+ 
+    
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-crawl-favorite',
+
+      properties: {
+        crawlId:String,
+        user:Object,
+        favorite:{
+          type:Boolean,
+          value:false,
+          notify:true
+        },
+
+        userId:String,
+
+        icon:{
+          type:String,
+          computed:"_computeIcon(favorite)"
+        },
+
+        number:{
+          type:Number,
+          notify: true
+        }
+        
+      },
+
+      observers:['_watchUser(user)',
+                '_watchCrawlId(crawlId, userId)',
+                '_watchForCount(crawlId)'],
+
+
+      _watchUser: function (user){
+        if(user){
+          if(user.uid){
+            this.$.favoriteButton.disabled = false;
+            this.userId = user.uid;
+            
+          }else{
+            this.$.favoriteButton.disabled = true;
+            this.userId = null;
+          }
+        }else{
+          this.$.favoriteButton.disabled = true;
+          this.userId = null;
+        }
+      },
+
+      _watchCrawlId:function (crawlId, userId){
+        if(crawlId){
+          // var userId = this.userId;
+          if(userId){
+            var that = this;
+            firebase.database(this.$.auth.app).ref(`user/${userId}/favoriteCrawl/${crawlId}/favorite`)
+            .on('value', snapshot =>{
+              if(snapshot.exists()){
+                that.favorite = true;
+              }else{
+                that.favorite = false;
+              }
+            })
+          }
+        }
+      },
+
+      _watchForCount:function (crawlId){
+        if(crawlId){
+          var that = this;
+          firebase.database(this.$.auth.app).ref(`favoriteCrawl/${crawlId}`)
+          .on('value', snapshot =>{
+            if(!snapshot.exists()){
+              that.number = null;
+            }else{
+              that.number = snapshot.numChildren();
+            }
+          })
+          
+        }
+      },
+      
+
+      _saveFavorite: function () {
+        var crawlId = this.crawlId;
+        var userId = this.user.uid;
+        var favorite = true;
+
+        if(this.favorite){
+          favorite = null;
+        }
+        
+        if(crawlId){
+          if(userId){
+            var obj = {};
+            obj[`user/${userId}/favoriteCrawl/${crawlId}/favorite`] = favorite;
+            obj[`favoriteCrawl/${crawlId}/${userId}/favorite`] = favorite;
+          
+            firebase.database(this.$.auth.app).ref()
+            .update(obj)
+            .then(()=>{
+              console.log('Saved Favorite');
+            })
+            .catch(error =>{
+              console.log('ERROR_SAVED', error);
+            })
+          }
+        }
+      },
+
+      _computeIcon: function (favorite) {
+        if(favorite){
+          return 'favorite'
+        }
+        return 'favorite-border'
+      },
+
+     
+      _test: function(obj){
+          console.log(obj);
+
+      }
+
+    });
+
+  </script>
+
+</dom-module>

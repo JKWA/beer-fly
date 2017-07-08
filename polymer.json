@@ -5,6 +5,8 @@
     "src/beer-beer.html",
     "src/beer-beer-edit.html",
     "src/beer-contact.html",
+    "src/beer-crawl.html",
+    "src/beer-favorite.html",
     "src/beer-foodtruck.html",
     "src/beer-foodtruck-edit.html",
     "src/beer-home.html",

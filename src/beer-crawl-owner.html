@@ -32,7 +32,8 @@
   <style include="paper-material-styles">
 
     a{
-      color: var(--app-accent-color);
+      /*color: var(--app-accent-color);*/
+      text-decoration: none;
     }
 
     a > iron-icon {
@@ -98,14 +99,14 @@
       width: 100%;
     }
 
-    .public{
+    .shared{
       color: var(--app-selected-color);
     }
     .icon{
       color: var(--app-secondary-color);
     }
 
-    .public-label{
+    .shared-label{
       color: var(--app-selected-color);
       font-size: .8em;
       font-weight: 300;
@@ -121,7 +122,7 @@
       font-size: 1em;
       color: var(--app-primary-color);
       font-weight: 300;
-      margin: 10px 0 20px 0;
+      margin: 10px 0 30px 0;
     }
 
     .question-header{
@@ -141,25 +142,31 @@
       color:red;
     }
 
-    /*.description {
-      @apply --layout-horizontal;
-      padding: 10px 10px 0 10px;
-      margin: 10px 10px 0 10px;
+   
+
+    .message-wrapper > div{
+      margin: 10px 0 0 0;
     }
 
-    .description > div {
-      margin: 0 10px 0 0;
-      color: var(--app-primary-color);
-      font-weight: 400;
-      font-size: 1em;
-    }*/
-
-    /*.description-can {
-      color: var(--app-accent-color);
-      font-weight: 400;
+    .message-title span{
       font-size: 1.2em;
-      margin: 20px 0 0 20px;
-    }*/
+      color: var(--app-primary-color);
+      font-weight: 300;
+      margin-left: 10px;
+    }
+
+    .message span{
+      font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 300;
+      margin-left: 10px;
+    }
+
+    .message iron-icon{
+      font-size: 1em;
+      color: var(--app-accent-color);
+      font-weight: 300;
+    }
 
     .plan {
       margin: 20px 0;
@@ -178,7 +185,7 @@
       data="{{userData}}">
   </firebase-document>
 
-  <div hidden="[[user]]">
+  <div class="card" hidden="[[user]]">
      <div>Sign in to create a Beer-Crawl.</div>
         <beer-login></beer-login>
     </div>
@@ -201,18 +208,19 @@
               items="{{crawls}}" 
               as="crawl" 
               filter="_filter"
-              observe="deleted">
+              sort="_sortByNew"
+              observe="deleted created">
       <div class="card">
         <div class="title-wrapper">
           <div class="name">[[crawl.name]]</div>
           <div class="icon-wrapper">
             <div>
               <iron-label>
-               <span class="public-label" hidden$="[[!crawl.public]]">(public)</span>
+               <span class="shared-label" hidden$="[[!crawl.shared]]">(shared)</span>
               <paper-icon-button 
                   class$="[[_ifPublic(crawl.public)]]"
                   icon="beer-icons:public" 
-                  public="[[crawl.public]]" 
+                  shared="[[crawl.public]]" 
                   crawlid="[[crawl.$key]]" 
                   on-tap="_makePublic">
               </paper-icon-button>
@@ -229,6 +237,29 @@
          <template is="dom-repeat" items="[[_addBreaks(crawl.description)]]" as="description">
             <div class="description">[[description]]</div>
          </template>
+
+      
+         <div class="message-wrapper" hidden$="[[crawl.organization]]">
+           
+            <div>
+              <a class="message" href="#near_me">
+                <iron-icon icon="beer-icons:gps-fixed"></iron-icon>
+                <span>Find nearby pubs and breweries.</span>
+              </a>
+            </div>
+            <div>
+              <a class="message" href="/home/search">
+                <iron-icon icon="beer-icons:search"></iron-icon>
+                <span>Search for pubs and breweries </span>
+              </a>
+            </div>
+             <div class="message"> 
+              <iron-icon icon="beer-icons:crawl"></iron-icon>
+               <span>Add breweries and pubs using the crawl icon on the pub or brewery main page</span>
+            </div>
+         </div>
+         
+
         <ol>
         <template is="dom-repeat" items="[[_organizationArray(crawl.organization)]]" as="pub">
           <li> 
@@ -278,7 +309,7 @@
          
           <iron-label>
             <span>Share</span>
-            <paper-toggle-button checked="{{editCrawlPublic}}"></paper-toggle-button>
+            <paper-toggle-button checked="{{editCrawlShared}}"></paper-toggle-button>
           </iron-label>
           <paper-input label="Crawl Name" value="{{editCrawlName}}"></paper-input>
           <paper-textarea label="Crawl Description" value="{{editCrawlDescription}}"></paper-textarea>
@@ -331,7 +362,7 @@
         editCrawlName:String,
         editCrawlDescription:String,
         editCrawlId:String,
-        editCrawlPublic:Boolean,
+        editCrawlShared:Boolean,
 
         deleteCrawlId:String,
         deleteName:String,
@@ -393,15 +424,13 @@
 
             this.$.userData.disabled = false;
             
-            // this.$.crawlData.disabled=false;
-
           }else{
             this.$.userData.disabled = true;
-            // this.$.crawlData.disabled=true;
+            this.splice("crawls", 0, this.crawls.length);
           }
         }else{
           this.$.userData.disabled = true;
-          // this.$.crawlData.disabled=true;
+          this.splice("crawls", 0, this.crawls.length);
         }
       },
 
@@ -432,11 +461,7 @@
         firebase.database(this.$.auth.app).ref(`/crawl/${crawlId}`)
           .on('value', function(snapshot) {
             that.splice("crawls", 0, that.crawls.length)
-            // if(snapshot.numChildren() >0){
-            //   that._showCrawls = true;
-            // }else{
-            //   that._showCrawls = false;
-            // }
+           
             var crawlData = snapshot.val();
             console.log(crawlData);
             crawlData.$key = snapshot.key;
@@ -449,7 +474,7 @@
       _ifPublic: function (isPublic){
 
         if(isPublic){
-          return 'public'
+          return 'shared'
         }
         return 'icon'
       },
@@ -482,15 +507,15 @@
       },
 
       _updateCrawl(event){
-        if(!this.editCrawlPublic){
-          this.editCrawlPublic = null;
+        if(!this.editCrawlShared){
+          this.editCrawlShared = null;
         }
         var obj = {
           user_id: this.user.uid,
           name: this.editCrawlName,
           description: this.editCrawlDescription,
           created: Math.round(Date.now()/1000),
-          public: this.editCrawlPublic
+          public: this.editCrawlShared
         }
         console.log('obj', obj);
 
@@ -512,20 +537,19 @@
       _makePublic: function (event){
         var target = event.currentTarget;
         var crawlId = target.crawlid;
-        var public = target.public;
-        var savePublic = null;
-        console.log(public)
+        var shared = target.shared;
+
+        var saveshared = null;
         
 
-        if(!public){
-          savePublic = true;
+        if(!shared){
+          saveshared = true;
         }
-        console.log(savePublic)
 
         firebase.database(this.$.auth.app).ref(`/crawl/${crawlId}`)
-          .update({public: savePublic})
+          .update({public: saveshared})
           .then(()=>{
-            console.log('public updated');
+            console.log('shared updated');
           })
           .catch(error =>{
             console.log('ERROR_SAVING', error);
@@ -541,10 +565,10 @@
         this.editCrawlDescription = target.crawl.description;
         this.editCrawlName = target.crawl.name;
         
-        if(target.crawl.public){
-          this.editCrawlPublic = target.crawl.public
+        if(target.crawl.shared){
+          this.editCrawlShared = target.crawl.shared
         }else{
-          this.editCrawlPublic = null;
+          this.editCrawlShared = null;
         }
         
         var body = document.querySelector('body');
@@ -622,6 +646,15 @@
         return 0;
       },
 
+       _sortByNew: function(a,b){
+        if (a.created > b.created)
+          return -1;
+        if (a.created < b.created)
+          return 1;
+        return 0;
+      },
+
+
       _addBreaks: function(str){
         'use strict';
         if(str){
@@ -637,6 +670,7 @@
         }
         return false;
       },
+
 
       
 

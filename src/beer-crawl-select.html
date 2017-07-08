@@ -135,6 +135,9 @@
           computed: '_computePlaceId(place)'
         },
 
+        latitude:Number,
+        longitude:Number,
+
         toggle:{
           type:Boolean,
           value: false
@@ -201,7 +204,9 @@
                         name: org.name,
                         place_id: org.place_id,
                         formatted_address: org.formatted_address,
-                        created: Math.round(Date.now()/1000)
+                        created: Math.round(Date.now()/1000),
+                        latitude: org.geometry.location.lat(),
+                        longitude: org.geometry.location.lng(),
                       };
             var uploadObj = {};
             uploadObj['user_id'] = this.user.uid;
@@ -222,6 +227,7 @@
         }
         // console.log('close')
         // this.toggle = false;
+        this.crawl = {};
       },
 
       _toggle: function (){
@@ -241,6 +247,7 @@
 
       _computePlaceId:function (place){
         if(place){
+          console.log(place);
         return place.place_id;
         }
       },

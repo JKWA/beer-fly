@@ -19,11 +19,10 @@
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-location.html">
 <link rel="import" href="beer-crawl-favorite.html">
+<link rel="import" href="beer-login.html">
 
 
-
-
-<dom-module id="beer-crawl">
+<dom-module id="beer-favorite-crawl">
 
 <template strip-whitespace>
   <style include="paper-material-styles">
@@ -105,8 +104,14 @@
       font-weight: 300;
     }
 
-    .edit-message{
+    .crawl-message{
       font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 300;
+    }
+
+    .notice{
+      font-size: 1.5em;
       color: var(--app-primary-color);
       font-weight: 300;
     }
@@ -116,22 +121,41 @@
   <firebase-auth id="auth" app-name="beer" status-known="[[statusKnown]]"user="{{user}}"></firebase-auth>
   
 
- 
-    <div class="card" hidden="[[!user]]">
-      <a href="/home/crawl/mine">
+  <div hidden="[[user]]">
+    <div class="card">
+      <a href="/home/crawl">
       <iron-label>
-        <paper-icon-button class="add-icon" icon="beer-icons:edit"></paper-icon-button>
-        <span class="edit-message">Edit my Beer-Crawls</span>
+        <paper-icon-button class="add-icon" icon="beer-icons:crawl"></paper-icon-button>
+        <span class="crawl-message">Go to Beer-Crawls</span>
       </iron-label>
+    </a>
+    </div>
+    <div class="card">
+      <div class="notice">Sign in to view your favorite Beer-Crawls.</div>
+     <beer-login></beer-login>
+    </div>
+     
+  </div>
+
+
+  <div hidden="[[!user]]">
+    <div class="card">
+      <div>
+        <a href="/home/crawl">
+          <iron-label>
+            <paper-icon-button class="add-icon" icon="beer-icons:crawl"></paper-icon-button>
+            <span class="crawl-message">Go to Beer-Crawls</span>
+          </iron-label>
+        </a>
+      </div>
+    <div>
+      <a href="/home/crawl/mine">
+        <iron-label>
+          <paper-icon-button class="add-icon" icon="beer-icons:account"></paper-icon-button>
+            <span class="crawl-message">Go to my Beer-Crawls</span>
+        </iron-label>
       </a>
     </div>
-
-    <div class="card">
-      <beer-location
-        location={{location}} 
-        search-string="{{searchString}}" 
-        sorted-location-history="[[sortedLocationHistory]]">
-      </beer-location>
     </div>
 
     <template is="dom-repeat" items="[[crawlData]]" as="crawl" sort="_sortByNew" observe="created">
@@ -172,18 +196,16 @@
           </a>
         </template>
         </ol>
-        <div class="distance">Begins [[crawl.distance]] miles from you.</div>
       </div>
     </template>
-   
+  </div>
     
-
 </template>
   <script>
 
     Polymer({
 
-      is: 'beer-crawl',
+      is: 'beer-favorite-crawl',
 
       properties: {
 
@@ -210,50 +232,31 @@
         
       },
 
-      observers:['_getData(location)'],
+      observers:['_getData(user.uid)'],
 
 
-      _getData: function (location){
-        this.splice("crawlData", 0, this.crawlData.length)
+      _getData: function (userId){
+        
 
         var that = this;
         var app = this.$.auth.app;
-        var firebaseRef = app.database().ref('GeoCrawl');
-        var geoFire = new GeoFire(firebaseRef);
-  
+        var db = firebase.database(this.$.auth.app);
+      
 
-        var query = {};
-        if(this.location){
-        query.center = [this.location.location.latitude, this.location.location.longitude];
-        query.radius = 30*1.609344;
-
-        geoFire.query(query)
-          .on("key_entered", function(key, location, distance) {
-
-            app.database().ref('/crawl/'+key)
-              .once('value')
-              .then( snapshot => {
-                var crawl = snapshot.val();
-                crawl.distance = Math.round((distance*0.621371)*10)/10;
-                crawl.crawl_id = key
-                that.push('crawlData', crawl)
-
+        db.ref(`user/${userId}/favoriteCrawl`)
+        .on('value', snapshot=>{
+          that.splice("crawlData", 0, this.crawlData.length)
+          console.log('change')
+          snapshot.forEach(crawl => {
+            db.ref(`crawl/${crawl.key}`)
+            .once('value')
+            .then(crawlObj => {
+              var returnCrawl = crawlObj.val();
+              returnCrawl.crawl_id = crawlObj.key;
+              that.push('crawlData', returnCrawl)
             })
           })
-
-        geoFire.query(query)
-          .on('key_exited', function(key){
-            var crawls = that.crawlData
-            if(Array.isArray(crawls)){
-              for(var i=0; i<crawls.length; i++){
-                var crawl = crawls[i];
-                if(crawl.crawl_id === key){
-                  that.splice('crawlData', i, 1);
-                }
-              }
-            }
-          })
-        }
+        })
       },
 
         _organizationArray: function (obj){

@@ -119,7 +119,20 @@
     "crawl":{
       ".read": "true",
       "$crawlid":{
-        ".write": "true"
+        "created":{".validate": "newData.isNumber()"},
+        "deleted":{".validate": "newData.isBoolean()"},
+        "description":{".validate": "newData.isString()"},
+        "name":{".validate": "newData.isString()"},
+        "organization":{
+          "place_id":{".validate": "newData.isString()"},
+          ".indexOn": "created"
+        },
+          
+        "public":{".validate": "newData.isBoolean()"},
+        "user_id":{".validate": "newData.isString()"},
+        "$other": { ".validate": false },
+        ".write": "newData.child('user_id').val() == auth.uid",
+        ".indexOn": "created"
       },
       ".indexOn": "user_id"
     },
@@ -157,6 +170,21 @@
       	}          
       }
     },
+    "favoriteCrawl": {
+      ".read": "true",
+        "$crawlId":{
+          "$uid":{
+            ".write": "$uid==auth.uid",
+            "favorite":{".validate": "newData.isBoolean()"},
+            "$other": { ".validate": false }
+      	}          
+      }
+    },
+      
+    "GeoCrawl": {
+      ".read": "true",
+      ".indexOn": "g"  
+    },
     "GeoTap": {
       ".read": "true",
         "$beerId":{
@@ -178,6 +206,14 @@
           },
           "favorite":{
      		  	".write": "$uid==auth.uid"
+          },
+          "favoriteCrawl":{
+            "$crawlId":{
+              ".write": "$uid==auth.uid",
+             	"favorite":{".validate": "newData.isBoolean()"},
+             	"$other": { ".validate": false }
+            }
+     		  	
           },
           "stripe":{
             "organization":{
