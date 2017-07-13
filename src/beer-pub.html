@@ -438,10 +438,10 @@
               if(place.place_id){
                 var domain = this._getDomain(place.website);
                 if(domain){
-                  var obj = {};
-                  obj.domain = domain
                   
-                  firebase.database(this.$.auth.app).ref('newOrg/'+place.place_id).update(obj)
+                  
+                  firebase.database(this.$.auth.app).ref(`/newOrg/${place.place_id}`)
+                    .update({domain:domain})
                     .then(function (){
                       console.log('SAVED_NEW_PUB')
                     })

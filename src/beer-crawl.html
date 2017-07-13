@@ -19,8 +19,7 @@
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-location.html">
 <link rel="import" href="beer-crawl-favorite.html">
-
-
+<link rel="import" href="beer-crawl-url.html">
 
 
 <dom-module id="beer-crawl">
@@ -100,9 +99,9 @@
     }
 
     .distance{
-      font-size: .9em;
+      font-size: 1em;
       color: var(--app-primary-color);
-      font-weight: 300;
+      font-weight: 400;
     }
 
     .edit-message{
@@ -111,7 +110,13 @@
       font-weight: 300;
     }
 
-  </style>
+    .footer{
+      @apply --layout-horizontal;
+      @apply --layout-justified;
+      margin: 15px;
+    }
+
+  </style> 
 
   <firebase-auth id="auth" app-name="beer" status-known="[[statusKnown]]"user="{{user}}"></firebase-auth>
   
@@ -155,16 +160,13 @@
         <template is="dom-repeat" items="[[_organizationArray(crawl.organization)]]" as="pub">
           <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
             <li> 
-              <div>
-                <iron-icon icon="beer-icons:beer"></iron-icon>
-              </div>
+    
             <div class="organization-wrapper">
                 <div>
                   <div>[[pub.name]]</div>
                   <div>[[pub.formatted_address]]</div>
                 </div>
                 <div> 
-                  <!--<paper-icon-button class="delete" crawlid="[[crawl.$key]]" placeid="[[pub.place_id]]" icon="beer-icons:delete" on-tap="_removeOrganization"></paper-icon-button>-->
                   
                 </div>
             </div>
@@ -172,7 +174,13 @@
           </a>
         </template>
         </ol>
-        <div class="distance">Begins [[crawl.distance]] miles from you.</div>
+        <div class="footer">
+          <div>
+            <beer-crawl-url organizations="[[crawl.organization]]">
+            </beer-crawl-url>
+          </div>
+          <div class="distance">Begins [[crawl.distance]] miles from you.</div>
+        </div>
       </div>
     </template>
    
@@ -193,6 +201,7 @@
             return [];
           }
         },
+        crawlUrl:String,
 
         location:Object,
 
@@ -304,6 +313,8 @@
           return 'home'
         }
       },
+
+      
 
    
       

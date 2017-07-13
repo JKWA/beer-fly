@@ -14,11 +14,22 @@
 
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../bower_components/google-apis/google-maps-api.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-down-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-bottom-animation.html">
 
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-rating-card.html">
+<link rel="import" href="beer-home-dialog.html">
+
 <link rel="import" href="beer-pub-card.html">
+<link rel="import" href="beer-login.html">
+
 
 
 <dom-module id="beer-home">
@@ -131,6 +142,14 @@
       
     </style>
 
+    <firebase-auth 
+        id="auth" 
+        app-name="beer"
+        user="{{user}}">
+    </firebase-auth>
+
+   
+
       <div class="card" elevation="1">
         <div class="locationAddress">[[location.address]]</div>
         <paper-spinner-lite id="spinner"></paper-spinner-lite>
@@ -173,12 +192,19 @@
    
       <div id="pubCards">
       <template id="repeater" is="dom-repeat" 
-          items="[[allArray]]" as="pub" 
+          items="{{allArray}}" as="pub" 
           initial-count="20"  sort="_sort" 
           observe="sort distance" filter="{{_computeFilter(radius)}}" >
 
          <beer-pub-card 
+            
+            open-edit-pub-crawl="{{openEditPubCrawl}}"
             place-id="[[pub.place_id]]"
+            user-data="[[userData]]"
+            edit-favorite="{{editFavorite}}"
+            place="[[pub]]"
+            edit-place="{{editPlace}}"
+            user="[[user]]"
             name="[[pub.name]]"
             address="[[pub.vicinity]]"
             motto="[[pub.motto]]"
@@ -191,12 +217,82 @@
             over21="[[!pub.over21]]"
             login="{{login}}">
         </beer-pub-card>
+     
 
       </template>
       </div>
     </div>
 
     </div>
+
+    <beer-home-dialog 
+          id="favoriteDialogEditor"
+          entry-animation="slide-from-bottom-animation"
+          exit-animation="slide-down-animation"
+          with-backdrop
+          edit-place="[[editPlace]]"
+          edit-favorite="[[editFavorite]]"
+          crawl-data="{{crawlData}}"
+          opened="{{openEditPubCrawl}}"
+          places="{{allArray}}"
+          places-obj="{{allObject}}">
+   TEST: [[editFavorite]]
+       </beer-home-dialog>
+   
+
+    </paper-dialog>
+    
+
+
+     <!--<paper-dialog 
+            id="favoriteDialogEditor"
+           
+            with-backdrop
+            entry-animation="slide-from-bottom-animation"
+            >
+        <h2>Add to Beer-Crawl</h2>
+        <paper-dialog-scrollable>
+          [[editPlace.name]]
+          [[editPlace.place_id]]
+          <paper-dropdown-menu no-label-float label="Add to a Beer-Crawl">
+        <paper-listbox 
+            attr-for-selected="crawl"
+            slot="dropdown-content" 
+            class$="dropdown-content"
+            selected="{{crawl}}">
+   
+          <template is="dom-repeat" items="{{crawlData}}" as="crawl" filter="_filterDeleted" sort="_sortByNew" observe="deleted">
+              <paper-item crawl="[[crawl]]">[[crawl.name]]</paper-item>
+          </template>
+
+        </paper-listbox>
+      </paper-dropdown-menu>
+          
+
+        </paper-dialog-scrollable>
+         <div class="buttons">
+          <paper-button on-tap="_updateCrawl">Add</paper-button>
+          <paper-button dialog-dismiss autofocus>Close</paper-button>
+        </div>
+      </paper-dialog>-->
+
+      <paper-dialog 
+            entry-animation="scale-up-animation"
+            exit-animation="fade-out-animation"
+            with-backdrop
+            id="loginDialog"
+            opened="{{login}}">
+        <paper-dialog-scrollable>
+          <section class="beer-login-dialog">
+            <!--lazy loaded-->
+            <beer-login class="beer-login-dialog"></beer-login>
+          </section>
+        </paper-dialog-scrollable>
+        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+      </paper-dialog>
+  
+      
+    
 </template>
   <script>
 
@@ -220,6 +316,24 @@
         allArray: {
           type: Array,
           notify: true
+        },
+
+        crawlData:{
+          type: Array
+        },
+
+        editPlace:{
+          type:Object
+        },
+
+        editFavorite:{
+          type:String,
+          value:'TESTING'
+        },
+
+        favoriteDialogEditorOpen:{
+          type:Boolean,
+          value:false
         },
 
 
@@ -255,9 +369,14 @@
           type: Array
         },
 
-        login: {
+      login: {
          type: Boolean,
-         notify: true
+         observer:'_watchLogin'
+       },
+
+       openEditPubCrawl:{
+         type: Boolean,
+         value:false
        },
 
        organization: {
@@ -281,14 +400,32 @@
 
         toggleClass:{
           type: String
-        }
+        },
+
+        user:Object,
+
+        userData:Object
 
       },
 
 
+      ready: function (){
+        var body = document.querySelector('body');
+          Polymer.dom(body).appendChild(this.$.favoriteDialogEditor);
+      },
+
+
+       _watchLogin: function (newData, oldData){
+        if(newData){
+          var body = document.querySelector('body');
+          Polymer.dom(body).appendChild(this.$.loginDialog);
+          this.$.loginDialog.open();
+        }
+      },
+
 
       _observeLocation: function (newLocation, oldLocation){
-
+        
         // console.log('newLocation', newLocation);
         // console.log('oldLocation', oldLocation);
         this.$.spinner.active = false;
@@ -327,8 +464,6 @@
         this.idle = false;
        
       },
-
-
   
 
       _watchForSubmit: function (event){
@@ -348,9 +483,6 @@
         this.toggle =false;
       },
 
-
-
-
       _sort: function (a,b){
         // console.log('sorted');
         return parseFloat(a.sort) - parseFloat(b.sort) ;
@@ -364,8 +496,7 @@
           return 1;
         return 0;
       },
-      
-     
+
 
       _defaultIcon: function (icon){
         if(icon){
@@ -393,6 +524,10 @@
           this.toggleClass = '';
         }
       },
+
+      
+
+      
 
 
       close: function (){

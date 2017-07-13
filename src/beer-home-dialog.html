@@ -1,0 +1,516 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/neon-animation/neon-animation-runner-behavior.html">
+<link rel="import" href="../bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
+<link rel="import" href="../bower_components/paper-dialog-behavior/paper-dialog-shared-styles.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+
+
+
+
+
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+
+<dom-module id="beer-home-dialog">
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
+      :host {
+          width: 100vw; 
+          height: 100vh;
+        }
+
+
+     .dialog {
+       width: 90vw; 
+       height: 70vh;
+       position:fixed;
+       padding:0;
+       margin:0;
+       bottom:0;
+       left:0;
+       /* background-color: white; */
+       
+     }
+     /* .edit{
+       
+     } */
+
+     .dialog > div{
+       margin: 10px;
+       width:100%;
+       padding: 10px;
+       background-color: white;
+     }
+     .edit{
+       height: 50vh;
+     }
+
+
+    .name {
+      font-size: 1.2em;
+      font-weight: 300;
+      color: var(--app-primary-color);
+      margin: 20px 0 ;
+    }
+     
+
+     /* .actions{
+         width: 80px;
+         height:100%;
+         background-color: var(--app-shadow-color);
+      } */
+
+      .actions-wrapper{
+          @apply --layout-vertical; 
+         
+      }
+
+      .actions{
+         @apply --layout-horizontal;
+         @apply --layout-center-justified;
+         border-top: 1px solid var(--app-secondary-color);
+         border-bottom: 1px solid var(--app-secondary-color);
+         /* margin: 0 0 20px 0; */
+      }
+
+      .action{
+         @apply --layout-vertical;
+         width: 60px;
+         margin: 0 5px;
+      }
+
+      .action-button{
+        color: var(--app-secondary-color);
+        margin: 10px 20px;
+      }
+
+      .action-label{
+        font-size: .8em;
+        text-align: center;
+      }
+
+      .crawl-wrapper{
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+        margin: 20px 0;
+      }
+      .crawl-wrapper > div{
+        margin: 10px;
+      }
+
+      .crawl-message{
+        font-size: .9em;
+        text-align: center;
+        color: var(--app-primary-color);
+      }
+
+      .favorite{
+          color: green;
+      }
+
+      .not-favorite{
+        color: red;
+      }
+
+      .not-selected {
+        color: var(--app-secondary-color);
+      }
+
+      .close-button{
+        width: 100%
+      }
+
+
+    
+
+
+        
+    </style>
+  <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+
+    <div class="dialog">
+      <div class="edit">
+
+          <div class="name">[[editPlace.name]]</div>
+          <!-- [[editPlace.place_id]]
+          [[editFavorite]] -->
+          <div class="actions-wrapper">
+            <div class="actions">
+              <div class="action">
+                <iron-label>
+                  <paper-icon-button class$="action-button [[_isFavoriteCSS]]"  icon="beer-icons:thumb-up" place="[[place]]" on-tap="_updateFavorite"></paper-icon-button>
+                  <div class="action-label">Like</div>
+                </iron-label>
+              </div>
+              <div class="action">
+                <iron-label>
+                  <paper-icon-button class$="action-button [[_isNotFavoriteCSS]]" icon="beer-icons:thumb-down" place="[[place]]" on-tap="_updateNotFavorite"></paper-icon-button>
+                  <div class="action-label">Don't like</div>
+                </iron-label>
+              </div>
+              <div class="action">
+                <iron-label>
+                  <paper-icon-button class="action-button" icon="beer-icons:crawl" place="[[place]]" on-tap="_openEditCrawl"></paper-icon-button>
+                  <div class="action-label">Select a crawl</div>
+                </iron-label>
+              </div>
+            </div>
+        
+            <div>
+              <iron-collapse opened="[[toggle]]">
+                <div class="crawl-wrapper">
+                  <div>
+                    <paper-dropdown-menu no-label-float dynamic-align label="Add to a Beer-Crawl">
+                      <paper-listbox 
+                        attr-for-selected="crawl"
+                        slot="dropdown-content" 
+                        class$="dropdown-content"
+                        selected="{{crawl}}">
+              
+                        <template is="dom-repeat" items="{{crawlData}}" as="crawl" filter="_filterDeleted" sort="_sortByNew" observe="deleted">
+                            <paper-item crawl="[[crawl]]">[[crawl.name]]</paper-item>
+                        </template>
+
+                      </paper-listbox>
+                    </paper-dropdown-menu>
+                  </div>
+                  <div>
+                    <paper-button id="crawlAddButton" disabled on-tap="_updateCrawl">Add</paper-button>
+                  </div>
+                </div>
+                <div class="crawl-message">[[crawlMessage]]</div>
+              </iron-collapse>
+          </div>
+          
+        </div>
+      </div>
+
+      <div>
+        <paper-button class="close-button" dialog-dismiss autofocus>Close</paper-button>
+      </div>
+      <!-- <slot></slot> -->
+
+    </div>
+   
+    
+     
+  </template>
+</dom-module>
+
+<script>
+
+(function() {
+'use strict';
+
+  Polymer({
+
+    is: 'beer-home-dialog',
+
+    properties:{
+
+      crawlData:Array,
+      crawl:Object,
+      crawlMessage:String,
+
+      editPlace:{
+        type:Object
+      },
+
+      editFavorite:String,
+
+      places:{
+        type:Array,
+        notify:true
+      },
+
+      placesObj:{
+        type:Object,
+        notify:true
+      },
+
+      toggle:{
+        type: Boolean,
+        value:false
+      },
+
+      user:{
+        type: Object
+      },
+
+
+      _isFavoriteCSS:{
+          type:String,
+          value:'not-selected'
+        },
+
+        _isNotFavoriteCSS:{
+          type:String,
+          value:'not-selected'
+        },
+
+    }, 
+
+    behaviors: [
+      Polymer.PaperDialogBehavior,
+      Polymer.NeonAnimationRunnerBehavior
+    ],
+
+    listeners: {
+      'neon-animation-finish': '_onNeonAnimationFinish'
+    },
+
+    observers: ['_watchFavorite(editFavorite)',
+                '_watchCrawl(crawl)'],
+
+    _watchFavorite: function (favorite){
+          
+      if(favorite){
+        
+        if(favorite === 'yes'){
+          this._isFavoriteCSS = 'favorite';
+          this._isNotFavoriteCSS = 'not-selected';
+          this.favorite = 'yes';
+          
+        }else if(favorite === 'no'){
+          this._isFavoriteCSS = 'not-selected';
+          this._isNotFavoriteCSS = 'not-favorite';
+          this.favorite = 'no';
+        }else{
+          this._isFavoriteCSS = 'not-selected';
+          this._isNotFavoriteCSS = 'not-selected';
+          this.favorite = 'none';
+        }
+      }
+          
+    },
+
+    _watchCrawl: function (crawl){
+      if(typeof crawl ==='object'){
+
+        if(crawl.$key){
+          this.$.crawlAddButton.disabled = false;
+          // this.crawlMessage = '';
+        }else{
+          this.$.crawlAddButton.disabled = true;
+        }
+      }else{
+        this.$.crawlAddButton.disabled = true;
+      }
+    },
+
+    _updateFavorite: function (){
+      var place = this.editPlace;
+      var placeId = place.place_id;
+      var favorite = this.editFavorite;
+      var that = this;
+      var places = this.places;
+
+      var index
+      if(this.placesObj[placeId]){
+        if(this.placesObj[placeId].arrayPosition){
+          //have to subtract one to get actual position, prevents error with [0]
+          index = this.placesObj[placeId].arrayPosition -1;
+        }
+      }
+
+      if(this.user){
+        if(place.place_id){
+          if(favorite === 'yes'){
+            firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${place.place_id}`)
+              .remove()
+              .then(() =>{
+                console.log('Removed from favorite');
+                that._isFavoriteCSS = 'not-selected';
+                that._isNotFavoriteCSS = 'not-selected';
+                that.editFavorite = 'none';
+                that._watchFavorite(that.editFavorite);
+                //too difficult to watch an object, so added action string
+                that.set(`places.${index}.favorite.${that.user.uid}.favorite`, 'none');
+                that.set(`places.${index}.action`, 'REMOVE_FAVORITE');
+                
+              })
+              .catch(error =>{
+                console.log('FAVORITE_DELETE_ERROR', error)
+              })
+
+          }else{
+            var obj={
+              created: Math.round(Date.now()/1000),
+              name:place.name,
+              place_id:place.place_id,
+              favorite:'yes',
+              vicinity:place.vicinity,
+              latitude:place.latitude,
+              longitude:place.longitude
+            };
+
+            firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${place.place_id}`)
+              .update(obj)
+              .then(() =>{
+                console.log('Added to Favorite');
+                that.editFavorite = 'yes';
+                that.set(`places.${index}.favorite.${that.user.uid}.favorite`, 'yes');
+                that.set(`places.${index}.action`, 'ADD_FAVORITE');
+              })
+              .catch(error =>{
+                console.log('FAVORITE_ERROR', error)
+              })
+          }
+        }
+      }else{
+        this.login = true;
+      }
+    },
+
+    _updateNotFavorite: function (){
+      var place = this.editPlace;
+      var favorite = this.editFavorite;
+      var that = this;
+      
+      if(this.user){
+        if(place.place_id){
+          if(favorite === 'no'){
+            firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${place.place_id}`)
+              .remove()
+              .then(() =>{
+                console.log('Removed from favorite');
+                that._isFavoriteCSS = 'not-selected';
+                that._isNotFavoriteCSS = 'not-selected';
+                that.editFavorite = 'none';
+                
+              })
+              .catch(error =>{
+                console.log('FAVORITE_DELETE_ERROR', error)
+              })
+
+          }else{
+            var obj={
+              created: Math.round(Date.now()/1000),
+              name:place.name,
+              place_id:place.place_id,
+              favorite:'no',
+              vicinity:place.vicinity,
+              latitude:place.latitude,
+              longitude:place.longitude
+            };
+
+            firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${place.place_id}`)
+              .update(obj)
+              .then(() =>{
+                console.log('Added to Not-Favorite');
+                that.editFavorite = 'no';
+              })
+              .catch(error =>{
+                console.log('FAVORITE_ERROR', error)
+              })
+          }
+        }
+      }else{
+        this.login = true;
+      }
+    },
+
+    _updateCrawl: function (event){
+        var crawl = this.crawl; 
+        var crawlId = crawl.$key;
+        var that = this;
+
+        if (this.editPlace){
+          var placeId = this.editPlace.place_id;
+          if(placeId){
+            if(this.user.uid){
+             if(crawlId){
+              var that = this;
+              var place = this.editPlace;
+             
+              
+              var obj = {
+                    name: place.name,
+                    place_id: place.place_id,
+                    formatted_address: place.formatted_address,
+                    created: Math.round(Date.now()/1000),
+                    latitude: place.latitude,
+                    longitude: place.longitude,
+                  };
+                  
+              var uploadObj = {};
+              uploadObj['user_id'] = this.user.uid;
+              uploadObj[`organization/${placeId}`] = obj;
+
+              firebase.database(this.$.auth.app).ref(`/crawl/${crawlId}`)
+                .update(uploadObj)
+                .then(() =>{
+                  console.log('Added to Beer-Crawl');
+                  // that.$.favoriteDialogEditor.close();
+                  // that.openEditPubCrawl = false;
+                  that.crawl = {};
+                  // that.toggle = false;
+                  that.crawlMessage = `Added ${place.name} to ${crawl.name}`;
+                  
+                })
+                .catch(error =>{
+                  console.log('ERROR_CRAWL', error)
+                  that.crawlMessage = error.message;
+                })
+              }
+            } 
+          }
+        }     
+    },
+
+    _openEditCrawl: function (){
+      this.toggle = !this.toggle
+    },
+
+    _sortByNew: function(a,b){
+        if (a.created > b.created)
+          return -1;
+        if (a.created < b.created)
+          return 1;
+        return 0;
+      },
+
+      _filterDeleted: function (item){
+        if(item.deleted){
+          return false;
+        }
+        return true;
+      },
+
+    // _renderOpened: function() {
+    //   this.cancelAnimation();
+    //   // this.modal=true;
+    //   this.playAnimation('entry');
+    // },
+
+    // _renderClosed: function() {
+    //   this.cancelAnimation();
+    //   this.playAnimation('exit');
+    // },
+
+    _onNeonAnimationFinish: function() {
+      if (this.opened) {
+        this._finishRenderOpened();
+      } else {
+        this._finishRenderClosed();
+      }
+    },
+    // _addOne: function (index){
+    //   return index+1;
+    // }
+
+  });
+
+})();
+
+</script>

@@ -72,7 +72,7 @@
             class$="dropdown-content"
             selected="{{crawl}}">
 
-          <template is="dom-repeat" items="{{crawlData}}" as="crawl" filter="_filterDeleted" observe="deleted">
+          <template is="dom-repeat" items="{{crawlData}}" as="crawl" filter="_filterDeleted" sort="_sortByNew" observe="deleted">
               <paper-item crawl="[[crawl]]">[[crawl.name]]</paper-item>
           </template>
 
@@ -236,6 +236,14 @@
         }else{
           this.toggle = false;
         }
+      },
+
+      _sortByNew: function(a,b){
+        if (a.created > b.created)
+          return -1;
+        if (a.created < b.created)
+          return 1;
+        return 0;
       },
 
       _filterDeleted(item){

@@ -170,6 +170,7 @@
       	}          
       }
     },
+
     "favoriteCrawl": {
       ".read": "true",
         "$crawlId":{
@@ -212,8 +213,20 @@
               ".write": "$uid==auth.uid",
              	"favorite":{".validate": "newData.isBoolean()"},
              	"$other": { ".validate": false }
+          	}
+          },
+          "favoriteOrganization":{
+            "$placeId":{
+              ".write": "$uid==auth.uid",
+              "created":{".validate": "newData.isNumber()"},
+              "favorite":{".validate": "newData.isString()"},
+              "latitude":{".validate": "newData.isNumber()"},
+              "longitude":{".validate": "newData.isNumber()"},
+              "name":{".validate": "newData.isString()"},
+              "place_id":{".validate": "newData.isString()"},
+              "vicinity":{".validate": "newData.isString()"},
+              "$other": { ".validate": false }
             }
-     		  	
           },
           "stripe":{
             "organization":{

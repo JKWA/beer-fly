@@ -19,6 +19,8 @@
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-location.html">
 <link rel="import" href="beer-crawl-favorite.html">
+<link rel="import" href="beer-crawl-url.html">
+
 <link rel="import" href="beer-login.html">
 
 
@@ -158,7 +160,7 @@
     </div>
     </div>
 
-    <template is="dom-repeat" items="[[crawlData]]" as="crawl" sort="_sortByNew" observe="created">
+       <template is="dom-repeat" items="[[crawlData]]" as="crawl" sort="_sortByNew" observe="created">
       <div class="card">
         
         <div class="title-wrapper"> 
@@ -179,16 +181,13 @@
         <template is="dom-repeat" items="[[_organizationArray(crawl.organization)]]" as="pub">
           <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
             <li> 
-              <div>
-                <iron-icon icon="beer-icons:beer"></iron-icon>
-              </div>
+    
             <div class="organization-wrapper">
                 <div>
                   <div>[[pub.name]]</div>
                   <div>[[pub.formatted_address]]</div>
                 </div>
                 <div> 
-                  <!--<paper-icon-button class="delete" crawlid="[[crawl.$key]]" placeid="[[pub.place_id]]" icon="beer-icons:delete" on-tap="_removeOrganization"></paper-icon-button>-->
                   
                 </div>
             </div>
@@ -196,6 +195,13 @@
           </a>
         </template>
         </ol>
+        <div class="footer">
+          <div>
+            <beer-crawl-url organizations="[[crawl.organization]]">
+            </beer-crawl-url>
+          </div>
+          <!--<div class="distance">Begins [[crawl.distance]] miles from you.</div>-->
+        </div>
       </div>
     </template>
   </div>
@@ -306,6 +312,14 @@
         } else {
           return 'home'
         }
+      },
+
+      _sortByNew: function(a,b){
+        if (a.created > b.created)
+          return -1;
+        if (a.created < b.created)
+          return 1;
+        return 0;
       },
 
    

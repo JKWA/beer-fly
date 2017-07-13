@@ -88,6 +88,282 @@ exports.cleanupUser = functions.auth.user()
 });
 
 
+// return  (place_id) => new Promise((resolve, reject)) => {
+    
+  //     if(!error){
+  //        response.json.result = resolve
+  //   })
+  // })
+   
+  //   return new Promise(function(resolve, reject){
+
+  //     var data = googleMapsClient.place({placeid: place_id},  function(error, response) { 
+    
+  //      if(!error){
+  //        response.json.result = resolve
+        //   const place = response.json.result,
+        //         preOrg = `${place_id}/`,
+        //         newPub = {}
+        //         // pubDomain = newPub.domain
+        //    console.log('google response', place);
+        
+        //   // let brewery = false;
+        //   // let pub = false;
+        //   // let truck = false;
+        //   // let domain;
+
+        //   // console.log('received place data', place);
+        
+        //   if(place.permanently_closed){
+        //     newPub[preOrg+'permanently_closed'] = true
+        //   }
+
+        //   // if(place.types){
+        //   //   if (!event.data.previous.exists()) {
+        //   //     if(isPub(place.types)){
+        //   //         newPub[preOrg+'PUB'] = true;
+        //   //         pub = true;
+        //   //     }
+        //   //   }
+        //   // }
+        //   // console.log('past type', newPub)
+
+        //   // if(place.name){
+
+        //   //   newPub[preOrg+'/name'] = place.name;
+
+        //   //     if(place.name.toLowerCase().indexOf('brewing')>-1){
+        //   //       newPub[preOrg+'BREWERY'] = true;
+        //   //       brewery = true;
+        //   //     }
+
+        //   //     if(place.name.toLowerCase().indexOf('brewery')>-1){
+        //   //       newPub[preOrg+'BREWERY'] = true;
+        //   //       brewery = true;
+        //   //     }
+
+        //   //     if(place.name.toLowerCase().indexOf('truck')>-1){
+        //   //       newPub[preOrg+'TRUCK'] = true;
+        //   //       truck = true;
+        //   //     }
+            
+
+        //   // }
+        //   // console.log('past name', newPub)
+
+        //   if(place.geometry){
+        //     if(place.geometry.location){
+        //       if(place.geometry.location.lat){
+        //           newPub[preOrg+'latitude'] = place.geometry.location.lat
+        //       }
+        //       if(place.geometry.location.lng){
+        //           newPub[preOrg+'longitude'] = place.geometry.location.lng
+        //       }
+        //     }
+        //   }
+
+        //   // console.log('past geometry', newPub)
+
+        // let metaItems = ['place_id', 'formatted_address', 'vicinity', 'formatted_phone_number']
+
+        // for (let value of metaItems) {
+        //   if(place[value]){
+        //     newPub[preOrg+value] = place[value]
+        //   }
+        // }
+
+        // // console.log('past meta', newPub)
+        
+
+        // if(place.website){
+        //     domain = getDomain(place.website)
+        //     newPub[preOrg+'website'] = place.website
+        //     newPub[preOrg+'domain'] = domain
+        //     newPub['newOrg/'+place.place_id+'/domain'] = domain
+        // }
+        // // console.log('past website', newPub)
+
+        // if(place.address_components){
+        //     var placeAddress = getAddressObject(place.address_components);
+        //     if(placeAddress){
+        //         var placeAddressKey = Object.keys(placeAddress)
+        //         for (let value of placeAddressKey){
+        //             newPub[preOrg+value] = placeAddress[value]
+        //         }
+        //     }
+        // }
+        // console.log('new google pub', newPub);    
+         
+        // return newPub
+      // }else{
+      //   error = reject
+        // return null;
+        // console.error(error)
+        // return null
+    //   }
+    // })
+    // if(data){
+    //   resolve(data)  
+    // }else{
+    //   reject('no data')
+    // }
+      
+      
+      
+  //   })
+  // }
+
+exports.createNewOrganization = functions.database.ref('/organization/{place_id}')
+  .onCreate(event => {
+
+    const data = event.data,
+          place_id = event.params.place_id
+
+
+    // if (!data.exists()) {
+    //   console.log('item deleted')
+    //   return null;
+    // }
+
+    return googleMapsClient.place({placeid: place_id},  function(error, response) { 
+      if(!error){
+        const place = parseGooglePlaceData(response.json.result, place_id),
+              domain = place.domain
+        if(!place.place_id){
+          return null
+        }
+
+        if(place.types){
+          if (!event.data.previous.exists()) {
+            if(isPub(place.types)){
+                place['PUB'] = true;
+            }
+          }
+        }
+
+        if(place.name){
+
+          if(place.name.toLowerCase().indexOf('brewing')>-1){
+            place['BREWERY'] = true
+          }
+
+          if(place.name.toLowerCase().indexOf('brewery')>-1){
+            place['BREWERY'] = true
+          }
+
+          if(place.name.toLowerCase().indexOf('truck')>-1){
+            place['TRUCK'] = true
+          }
+        }
+
+
+        if(domain){
+          admin.database().ref(`/organization`).orderByChild(`domain`).equalTo(domain).limitToFirst(1)
+          .once('value')
+          .then(snapshot =>{
+            if(snapshot.exists()){
+               snapshot.forEach(child => {
+                  var locationItems = ['breweryName', 'description', 'motto', 'mainImage', 'beerLastUpdated']
+                  for(let locationKey of locationItems)
+
+                    if(child[locationKey]){
+                      place[locationKey] = child[locationKey];
+                    }
+
+                    if(child.brewBeer){
+                      place['brewBeer'] = child.brewBeer;
+                      place['category/BEER/display'] = true
+                      place['category/BEER/name'] = 'beer'
+                      place['category/BEER/label'] = 'Beer'
+                      place['category/BEER/order'] = 200
+                    }
+
+               })
+            }
+          })
+        }
+
+        admin.database().ref(`/organization/${place_id}`)
+          .update(place)
+          .then(() =>{
+            console.log('PLACE_SAVED', place)
+            
+          })
+          .catch(error => {
+            console.error(error)
+          })
+        
+        
+      }else{
+        console.error(error)
+      }
+    })
+  })
+
+
+exports.updateDomainData = functions.database.ref('/newOrg/{place_id}/{domain}')
+  .onWrite(event => {
+
+    const data = event.data,
+          place_id = event.params.place_id,
+          domain = event.params.place_id
+
+    if (!data.exists()) {
+      console.log('item deleted')
+      return null;
+    }
+
+    return googleMapsClient.place({placeid: place_id},  function(error, response) { 
+      if(!error){
+        const place = parseGooglePlaceData(response.json.result, place_id)
+        if(place.place_id){
+          admin.database().ref(`/organization/${place_id}`)
+          .update(place)
+          .then(() =>{
+            console.log('PLACE_SAVED', place)
+            admin.database().ref(`/newOrg/${place_id}`).update({domain:place.domain})
+            .then(() =>{
+              console.log('domain saved back to google')
+            })
+            .catch(error =>{
+              console.log('ERROR', error)
+            })
+          })
+          .catch(error => {
+            console.error(error)
+          })
+        }
+        
+      }else{
+        console.error(error)
+      }
+    })
+  })
+
+// exports.createNewOrganization = functions.database.ref('/organization/{place_id')
+//   .onCreate(event => {
+//     const val = event.data.val(),
+//           metadata = event.params,
+//           place_id = metadata.place_id
+    
+//     return googleMapsClient.place({placeid: placeId}, 
+//       function(error, response) {
+//           if (!error) {
+//             var newPub = parseGooglePlaceData(placeId)
+//             console.log(newPub);
+//             admin.database().ref().update(newPub)
+//               .then(saved =>{
+//                 console.log('saved data')
+//               })
+//               .catch( error =>{
+//                 console.log('ERROR_SAVING_DATA', error)
+//                 return reportError(error, {place_id: placeId});
+//               })
+//           }
+//       })
+//   })
+
+
 exports.createStripeCharge = functions.database.ref('/user/{user_id}/stripe/organization/{place_id}/charges/{charge_id}')
   .onWrite(event => {
     const val = event.data.val(),
@@ -231,178 +507,60 @@ exports.createStripeCharge = functions.database.ref('/user/{user_id}/stripe/orga
   })
 
 
-exports.saveNewPub = functions.database.ref('/newOrg/{placeId}/{domain}')
-  .onWrite(event => {
 
-    const data = event.data;
-    const placeId = event.params.placeId;
-    const domain = event.params.domain;
+    // return getGooglePlaceData(place_id)
+    //   .then(place =>{
+    //   console.log('place promise', place)
+    // }) 
+    // var placeData = getGooglePlaceData(place_id)
 
-    if (!event.data.exists()) {
-      console.log('item deleted')
-      return;
-    }
-
-    return googleMapsClient.place({placeid: placeId}, 
-      function(error, response) {
-          if (!error) {
-      
-            let newPub = {}; 
-            let place = response.json.result;
-            let preOrg = 'organization/'+place.place_id+'/';
-            let brewery = false;
-            let pub = false;
-            let truck = false;
-            let domain;
-
-            console.log('received place data', place);
-          
-            if(place.permanently_closed){
-              newPub[preOrg+'permanently_closed'] = true; 
-            }
-
-            if(place.types){
-              if (!event.data.previous.exists()) {
-                if(isPub(place.types)){
-                    newPub[preOrg+'PUB'] = true;
-                    pub = true;
-                }
-              }
-            }
-            // console.log('past type', newPub)
-
-            if(place.name){
-
-              newPub[preOrg+'/name'] = place.name;
-
-              if (!event.data.previous.exists()) {
-
-
-                if(place.name.toLowerCase().indexOf('brewing')>-1){
-                  newPub[preOrg+'BREWERY'] = true;
-                  brewery = true;
-                }
-
-                if(place.name.toLowerCase().indexOf('brewery')>-1){
-                  newPub[preOrg+'BREWERY'] = true;
-                  brewery = true;
-                }
-
-                if(place.name.toLowerCase().indexOf('truck')>-1){
-                  newPub[preOrg+'TRUCK'] = true;
-                  truck = true;
-                }
-              }
-
-            }
-            console.log('past name', newPub)
-
-            if(place.geometry){
-              if(place.geometry.location){
-                if(place.geometry.location.lat){
-                    newPub[preOrg+'latitude'] = place.geometry.location.lat
-                }
-                if(place.geometry.location.lng){
-                    newPub[preOrg+'longitude'] = place.geometry.location.lng
-                }
-              }
-            }
-
-            // console.log('past geometry', newPub)
-
-          let metaItems = ['place_id', 'formatted_address', 'vicinity', 'formatted_phone_number']
-
-          for (let value of metaItems) {
-            if(place[value]){
-              newPub[preOrg+value] = place[value];
-            }
-          }
-
-          console.log('past meta', newPub)
-          
-
-          if(place.website){
-              domain = getDomain(place.website);
-              newPub[preOrg+'website'] = place.website;
-              newPub[preOrg+'domain'] = domain;
-              newPub['newOrg/'+place.place_id+'/domain'] = domain;
-          }
-          console.log('past website', newPub)
-
-          if(place.address_components){
-              var placeAddress = getAddressObject(place.address_components);
-              if(placeAddress){
-                  var placeAddressKey = Object.keys(placeAddress);
-                  for (let value of placeAddressKey){
-                      newPub[preOrg+value] = placeAddress[value];
-                  }
-              }
-          }
-          console.log('past address', newPub)
-
-          if (!event.data.previous.exists()) {
-            newPub[preOrg+'/category'] = _getBaseCategories();
-          }
-
-          // console.log('created pub data', newPub);
-          console.log('domain', domain);
-
-          //look for other locations
-          if(domain){
-            admin.database().ref('organization')
-              .orderByChild('domain').equalTo(domain).limitToFirst(1)  
-                .once("value")
-                  .then(snapshot => {
-
-                    console.log('other location', snapshot.val());
-
-                    if (snapshot.exists()){
-                      
-                      if (!event.data.previous.exists()){
-                      
-                        var snapshot = snapshot.val();
-
-                        
-                        var key = Object.keys(snapshot);
-                        var data = snapshot[key[0]];
-
-                        var locationItems = ['breweryName', 'description', 'motto', 'mainImage', 'beerLastUpdated']
-                        for(let locationKey of locationItems)
-
-                        if(data[locationKey]){
-                          newPub[preOrg+locationKey] = data[locationKey];
-                        }
   
-                        if(data.brewBeer){
-                          newPub[preOrg+'brewBeer'] = data.brewBeer;
-                          newPub[preOrg+'category/BEER/display'] = true;
-                        }
-                      }
-                    }
-                        
-                    return newPub;
-                  
-                  })
-                  .then(newPub =>{
-                    
-                    // console.log('save new pub', newPub);
 
-                    admin.database().ref().update(newPub)
-                      .then(saved =>{
-                        console.log('saved data')
-                      })
-                      .catch( error =>{
-                        console.log('ERROR_SAVING_DATA', error)
-                        return reportError(error, {place_id: placeId});
-                      })
-                  })
+    // return 
+          // if(pubDomain){
+          //   admin.database().ref(`organization/${place_id}/place_id`)
+          //   .once('value')
+          //   .then(snapshot =>{
+          //     if(snapshot.exists()){
+          //        admin.database().ref('organization')
+          //         .orderByChild('domain').equalTo(pubDomain).limitToFirst(1)  
+          //           .once("value")
+          //           .then(snapshot =>{
+          //             if (snapshot.exists()){
+          //               snapshot.forEach(child =>{
+
+          //               var locationItems = ['breweryName', 'description', 'motto', 'mainImage', 'beerLastUpdated']
+          //               for(let locationKey of locationItems)
+
+          //               if(child[locationKey]){
+          //                 newPub[preOrg+locationKey] = child[locationKey];
+          //               }
+
+          //               if(child.brewBeer){
+          //                 newPub[preOrg+'brewBeer'] = child.brewBeer;
+          //                 newPub[preOrg+'category/BEER/display'] = true;
+          //               }
+                        
+          //               })       
+          //             }
+          //           })
+          //       }
+
+          //     })
+          // }
+      // console.log('newPub2', placeData);
+      // return admin.database().ref('/organization')
+      //   .update(placeData)
+      //   .catch( error =>{
+      //     console.error(error)
+      //   })
+
+       
+    // })   
             
-            }
-          }
-      })   
+  // });
 
-  
-});
+
 
 
 
@@ -632,13 +790,9 @@ exports.updateFoodTruckScheduleToPub = functions.database.ref('/organization/{tr
                     console.log('ERROR_SAVING_SCHEDULE', error)
                   })
               })
-
         })
       
-
       return;
- 
-  
 });
 
 
@@ -692,6 +846,53 @@ exports.updateFoodTruckScheduleToPub = functions.database.ref('/organization/{tr
       console.log('SAVED_BEER');
     })
   }
+
+ 
+function parseGooglePlaceData (place){
+
+  const newPlace = {},
+        metaItems = ['name','place_id', 'formatted_address', 'vicinity', 'formatted_phone_number']
+  
+    if(place.permanently_closed){
+      newPlace['permanently_closed'] = true
+    }
+
+    for (let value of metaItems) {
+      if(place[value]){
+        newPlace[value] = place[value]
+      }
+    }
+
+    if(place.geometry){
+      if(place.geometry.location){
+        if(place.geometry.location.lat){
+            newPlace['latitude'] = place.geometry.location.lat
+        }
+        if(place.geometry.location.lng){
+            newPlace['longitude'] = place.geometry.location.lng
+        }
+      }
+    }
+
+    if(place.website){
+      let domain = getDomain(place.website)
+      newPlace['website'] = place.website
+      newPlace['domain'] = domain
+    }
+
+    if(place.address_components){
+        var placeAddress = getAddressObject(place.address_components);
+        if(placeAddress){
+            var placeAddressKey = Object.keys(placeAddress)
+            for (let value of placeAddressKey){
+                newPlace[value] = placeAddress[value]
+            }
+        }
+    }
+  return newPlace
+}
+
+  
 
   function updateAllBeerData(beerId, placeId, beerData){
     admin.database().ref('organization').child(placeId)
@@ -1078,6 +1279,33 @@ function _updateGeoFire(placeId){
           }
       })
 }
+
+exports.updateFavorite = functions.database.ref('/user/{user_id}/favoriteOrganization/{place_id}')
+  .onWrite(event => {
+      const snapshot = event.data;
+      const user_id = event.params.user_id;
+      const place_id = event.params.place_id;
+  
+  if(!snapshot.exists()){
+    return admin.database().ref(`/organization/${place_id}/favorite/${user_id}`)
+    .remove()
+    .then(()=>{
+      console.log('Removed Favorite')
+    })
+    .catch(error =>{
+      console.error('ERROR_REMOVE', error)
+    })
+  }
+
+  return admin.database().ref(`/organization/${place_id}/favorite/${user_id}`)
+    .update({created:snapshot.child('created').val(), favorite:snapshot.child('favorite').val()})
+    .then(()=>{
+      console.log('Updated Favorite')
+    })
+    .catch(error =>{
+      console.error('ERROR_UPDATE', error)
+    })
+  })
 
 exports.stripeSubscriptionUpdated = functions.https.onRequest((request, response) => {
   // Grab the text parameter.

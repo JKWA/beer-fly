@@ -77,6 +77,7 @@
         --app-secondary-color: #757575;
         --app-accent-color: #172C50;
         --app-selected-color: #F07310;
+        --app-shadow-color: #F8F8F8;
         --paper-button-ink-color: var(--app-accent-color);
         --paper-icon-button-ink-color: var(--app-accent-color);
         --paper-spinner-color: var(--app-accent-color);
@@ -321,6 +322,16 @@
       data="{{userData}}">
   </firebase-document>
 
+   <firebase-query
+        app-name="beer"
+        id="crawlData"
+        order-by-child="user_id"
+        equal-to="[[user.uid]]"
+        disabled
+        path="crawl"
+        data="{{crawlData}}">
+    </firebase-query>
+
   <beer-geo-location
       location = "{{location}}"
       idle = "{{idle}}">
@@ -380,7 +391,7 @@
           <div class="login-account">My Account</div>
         </div>  
       </a>
-    
+   
       <div class="card">
         
       <div class="card-title">[[_showOrgName(place.name)]]</div>
@@ -448,7 +459,7 @@
           <beer-crawl-owner name="crawl-owner" online="[[online]]" crawl-id="[[crawlId]]" ></beer-crawl-owner>
 
           <beer-allbeers name="allbeers" owner="[[owner]]"></beer-allbeers>
-          <beer-pub name="pub" login="{{login}}" organization="{{organization}}" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" owner="[[owner]]" online="[[online]]"></beer-pub>
+          <beer-pub name="pub" login="{{login}}" organization="{{organization}}" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" owner="[[owner]]" user-data="[[userData]]" online="[[online]]"></beer-pub>
           <beer-tap name="tap" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.TAP]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap>
           <beer-beer name="beer" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-beer>
           <beer-tv name="tv" organization="[[organization]]" place="[[place]]" org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-tv>
@@ -473,7 +484,7 @@
           <beer-schedule name="schedule" category=[[organization.category.SCHEDULE]] organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-schedule>
           <beer-schedule-edit name="schedule-edit" location-id="[[locationId]]" location="{{location}}" organization="[[organization]]" org-id="[[orgId]]" name-url="[[nameUrl]]" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" geo-error="[[geoError]]"></beer-schedule-edit>
 
-          <beer-home name="home" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" all-object="[[allObject]]" all-array="[[allArray]]"></beer-home>
+          <beer-home name="home" user-data="[[userData]]" crawl-data="[[crawlData]]" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" all-object="[[allObject]]" all-array="[[allArray]]"></beer-home>
           <beer-favorite name="favorite"></beer-favorite>
           <beer-tap-add name="tap-add" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap-add>
           <beer-beer-edit name="beer-edit" offline="[[offline]]" place="[[place]]" organization="[[organization]]"org-id="[[orgId]]" beer-id="[[beerId]]" name-url="[[nameUrl]]" owner="[[owner]]" return-name="[[returnName]]" return-org-id="[[returnOrgId]]"></beer-beer-edit>
@@ -518,7 +529,7 @@
     </app-header-layout>
 
   </app-drawer-layout>
-
+  
       <paper-dialog 
             entry-animation="scale-up-animation"
             exit-animation="fade-out-animation"
@@ -582,6 +593,10 @@
          crawlId: {
           type: String,
           computed: '_computeCrawlId(queryParams)'
+        },
+
+        crawlData:{
+          type:Array
         },
 
         drawerOpened:{
@@ -770,6 +785,7 @@
         '_isSignedIn(user)',
         '_updatePageTitle(place.name, page)',
         '_scrollToTop(page)',
+        '_watchUser(user)'
 
         // '_setTimeoutForGeo(page)'
       ],
@@ -788,6 +804,24 @@
         window.performance && performance.mark && performance.mark('beer-app.created');
         // Custom elements polyfill safe way to indicate an element has been upgraded.
         this.removeAttribute('unresolved');
+      },
+
+       _watchUser: function (user){
+        if(user){
+          if(user.uid){
+
+            this.$.crawlData.disabled=false;
+            this.$.userData.disabled=false;
+            
+            
+          }else{
+            this.$.crawlData.disabled=true;
+            this.$.userData.disabled=true;
+          }
+        }else{
+          this.$.crawlData.disabled=true;
+          this.$.userData.disabled=true;
+        }
       },
 
   

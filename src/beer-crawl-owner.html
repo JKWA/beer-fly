@@ -54,7 +54,10 @@
 
     li:first-child{
       border-top: 1px solid var(--app-secondary-color);
+    }
 
+    li:last-child{
+      background-color:green;
     }
 
 
@@ -142,8 +145,6 @@
       color:red;
     }
 
-   
-
     .message-wrapper > div{
       margin: 10px 0 0 0;
     }
@@ -172,6 +173,15 @@
       margin: 20px 0;
       @apply --layout-horizontal;
       @apply --layout-center-justified;
+    }
+
+    .org-icon-wrapper{
+      @apply --layout-horizontal;
+      @apply --layout-end-justified;
+    }
+
+    .move{
+      color: var(--app-accent-color);
     }
 
   </style>
@@ -263,15 +273,16 @@
         <ol>
         <template is="dom-repeat" items="[[_organizationArray(crawl.organization)]]" as="pub">
           <li> 
-            <div>
-              <iron-icon icon="beer-icons:beer"></iron-icon>
-            </div>
+            
            <div class="organization-wrapper">
               <div>
                 <div>[[pub.name]]</div>
                 <div>[[pub.formatted_address]]</div>
               </div>
-              <div> 
+              <div class="org-icon-wrapper"> 
+                <div hidden$="[[_hideLastIcon(index, pub.totalLength)]]">
+                  <paper-icon-button  class="move" crawlid="[[crawl.$key]]" placeid="[[pub.place_id]]" icon="beer-icons:align-bottom" on-tap="_moveOrganizationToBottom"></paper-icon-button>
+                </div>
                 <paper-icon-button class="delete" crawlid="[[crawl.$key]]" placeid="[[pub.place_id]]" icon="beer-icons:delete" on-tap="_removeOrganization"></paper-icon-button>
                 
               </div>
@@ -306,11 +317,7 @@
             exit-animation="slide-right-animation">
         <h2>Edit a Beer-Crawl</h2>
         <paper-dialog-scrollable>
-         
-          <iron-label>
-            <span>Share</span>
-            <paper-toggle-button checked="{{editCrawlShared}}"></paper-toggle-button>
-          </iron-label>
+          <paper-toggle-button checked="{{editCrawlPublic}}">[[editCrawlPublicMessage]]</paper-toggle-button>
           <paper-input label="Crawl Name" value="{{editCrawlName}}"></paper-input>
           <paper-textarea label="Crawl Description" value="{{editCrawlDescription}}"></paper-textarea>
         </paper-dialog-scrollable>
@@ -362,7 +369,11 @@
         editCrawlName:String,
         editCrawlDescription:String,
         editCrawlId:String,
-        editCrawlShared:Boolean,
+        editCrawlPublic:Boolean,
+        editCrawlPublicMessage:{
+          type:String,
+          computed: '_computedEditPublicMessage(editCrawlPublic)'
+        },
 
         deleteCrawlId:String,
         deleteName:String,
@@ -449,7 +460,7 @@
             snapshot.forEach(crawl => {
               var crawlData = crawl.val();
               crawlData.$key = crawl.key
-              console.log(crawlData);
+              // console.log(crawlData);
               that.push('crawls', crawlData);
           })
         })
@@ -463,7 +474,7 @@
             that.splice("crawls", 0, that.crawls.length)
            
             var crawlData = snapshot.val();
-            console.log(crawlData);
+            // console.log(crawlData);
             crawlData.$key = snapshot.key;
             that.push('crawls', crawlData);
         })
@@ -507,17 +518,17 @@
       },
 
       _updateCrawl(event){
-        if(!this.editCrawlShared){
-          this.editCrawlShared = null;
+        if(!this.editCrawlPublic){
+          this.editCrawlPublic = null;
         }
         var obj = {
           user_id: this.user.uid,
           name: this.editCrawlName,
           description: this.editCrawlDescription,
           created: Math.round(Date.now()/1000),
-          public: this.editCrawlShared
+          public: this.editCrawlPublic
         }
-        console.log('obj', obj);
+        // console.log('obj', obj);
 
         if(this.user.uid){
           if(this.editCrawlId){
@@ -560,15 +571,13 @@
       _openEditCrawlDialog: function (){
         var target = event.currentTarget;
         var crawl = target.crawl
-        console.log('crawl', crawl)
-        this.editCrawlId = target.crawl.$key;
-        this.editCrawlDescription = target.crawl.description;
-        this.editCrawlName = target.crawl.name;
-        
-        if(target.crawl.shared){
-          this.editCrawlShared = target.crawl.shared
+        this.editCrawlId = crawl.$key;
+        this.editCrawlDescription = crawl.description;
+        this.editCrawlName = crawl.name;
+        if(crawl.public){
+          this.editCrawlPublic = crawl.public
         }else{
-          this.editCrawlShared = null;
+          this.editCrawlPublic = null;
         }
         
         var body = document.querySelector('body');
@@ -579,7 +588,7 @@
       _openDeleteCrawlDialog: function (){
         var target = event.currentTarget;
         var crawl = target.crawl
-        console.log('crawl', crawl)
+        // console.log('crawl', crawl)
         this.deleteCrawlId = target.crawl.$key;
         this.deleteDescription = target.crawl.description;
         this.deleteName = target.crawl.name;
@@ -587,6 +596,8 @@
         Polymer.dom(body).appendChild(this.$.deleteCrawlDialog);
         this.$.deleteCrawlDialog.open();
       },
+
+      
 
       _deleteCrawl: function (){
         if(this.deleteCrawlId){
@@ -602,6 +613,25 @@
           })
         }
         this.$.deleteCrawlDialog.close();
+      },
+
+      _moveOrganizationToBottom: function (){
+         var target = event.currentTarget;
+         var crawl_id = target.crawlid;
+         var place_id = target.placeid;
+       
+         if(crawl_id){
+           if(place_id){
+             firebase.database(this.$.auth.app).ref(`crawl/${crawl_id}/organization/${place_id}`)
+              .update({created: Math.round(Date.now()/1000)})
+              .then(()=>{
+                console.log('organization moved to bottom')
+              })
+              .catch(error =>{
+                console.log('MOVE_ERROR', error)
+              })
+           }
+         }
       },
 
       _removeOrganization: function () {
@@ -631,6 +661,8 @@
         if(typeof obj ==='object'){
           var key = Object.keys(obj);
           for (let value of key){
+            obj[value].totalLength = key.length;
+
            returnArray.push(obj[value])
           }
         }
@@ -654,6 +686,13 @@
         return 0;
       },
 
+      _hideLastIcon:function (index, total){
+        if (total <= index+1){
+          return true;
+        }
+        return false;
+      },
+
 
       _addBreaks: function(str){
         'use strict';
@@ -672,7 +711,12 @@
       },
 
 
-      
+      _computedEditPublicMessage: function (share){
+        if(share){
+          return 'Shared'
+        }
+        return 'Private'
+      },
 
       _test: function(obj){
           console.log(obj);
