@@ -10,13 +10,7 @@
 <dom-module id="beer-geo-data">
 <template>
 
-    <!--<firebase-document 
-        app-name="beer" 
-        id="organization">
-    </firebase-document>-->
-
   <firebase-auth  id="auth" app-name="beer"></firebase-auth>
-
 
 
   </template>
@@ -114,34 +108,46 @@
 
                 var locations = geoFire.query(query).on("key_entered", function(key, location, distance) {
                     app.database().ref('/organization/'+key).once('value').then( function(snapshot) {
-                    
-                    var pub = snapshot.val();
-                    
-                    var pubDistance = distance*0.621371;
-                    pub.distance = pubDistance;
-
-                    if(location){
-                        // console.log('geo-location', location)
-                        pub.latitude = location[0];
-                        pub.longitude = location[1];
+                    if(!snapshot.exists()){
+                        console.log('null')
+                        return null;
                     }
+                        var pub = snapshot.val();
+                        
+                        // console.log('pub', pub)
+                        
+                        var pubDistance = distance*0.621371;
+                        pub.distance = pubDistance;
 
-                    if(that._isPremium(pub.plan)){
-                            if(pubDistance <= 5){
-                                pub.sort = pubDistance -5;
+                        if(location){
+                            // console.log('geo-location', location)
+                            pub.latitude = location[0];
+                            pub.longitude = location[1];
+                        }
 
+                        if(that._isPremium(pub.plan)){
+                                if(pubDistance <= 5){
+                                    pub.sort = pubDistance -5;
+
+                                }else{
+                                    pub.sort = pubDistance;
+                                }
                             }else{
                                 pub.sort = pubDistance;
                             }
-                        }else{
-                            pub.sort = pubDistance;
-                        }
 
-                    pub.beerfly = true;
-                    pub.organization = true;
-                    return pub;
+                        pub.beerfly = true;
+                        pub.organization = true;
+                        if(!pub.favorite){
+                            pub.favorite = {};
+                        }
+                        return pub;
+                    
 
                 }).then(function (pub){
+                    if(!pub){
+                        return null;
+                    }
                     if(allObject[pub.place_id]){
                         pub.arrayPosition = allObject[pub.place_id].arrayPosition;
                         that.set('allArray.'+pub.arrayPosition-1, pub);
@@ -166,18 +172,12 @@
                             pub.organization=true;
                             window.localStorage.setItem('organization_'+pub.place_id, JSON.stringify(pub));
                             // console.log('cached');
+                        }
                     }
-                }
                     
                 });
-                    
-                //  console.log(key + " entered query at " + location + " (" + distance*.62 + " km from center)");
-                //  return true;
             })
 
-            
-            // console.log(allObject);
-            // locations.cancel();
              }
             }
         },

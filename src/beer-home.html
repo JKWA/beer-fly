@@ -198,7 +198,7 @@
 
          <beer-pub-card 
             
-            open-edit-pub-crawl="{{openEditPubCrawl}}"
+            open-edit-pub-crawl="{{homeDialogOpened}}"
             place-id="[[pub.place_id]]"
             user-data="[[userData]]"
             edit-favorite="{{editFavorite}}"
@@ -226,18 +226,17 @@
     </div>
 
     <beer-home-dialog 
-          id="favoriteDialogEditor"
-          entry-animation="slide-from-bottom-animation"
-          exit-animation="slide-down-animation"
-          with-backdrop
-          edit-place="[[editPlace]]"
-          edit-favorite="[[editFavorite]]"
-          crawl-data="{{crawlData}}"
-          opened="{{openEditPubCrawl}}"
-          places="{{allArray}}"
-          places-obj="{{allObject}}">
-   TEST: [[editFavorite]]
-       </beer-home-dialog>
+      id="favoriteDialogEditor"
+      entry-animation="slide-from-bottom-animation"
+      exit-animation="slide-down-animation"
+      with-backdrop
+      edit-place="[[editPlace]]"
+      edit-favorite="[[editFavorite]]"
+      crawl-data="{{crawlData}}"
+      opened="{{homeDialogOpened}}"
+      places="{{allArray}}"
+      places-obj="{{allObject}}">
+    </beer-home-dialog>
    
 
     </paper-dialog>
@@ -374,7 +373,7 @@
          observer:'_watchLogin'
        },
 
-       openEditPubCrawl:{
+       homeDialogOpened:{
          type: Boolean,
          value:false
        },

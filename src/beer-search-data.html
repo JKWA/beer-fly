@@ -51,16 +51,15 @@
 
         },
 
-     _mapHasLoaded: function (){
-        this.mapLoaded = true;
+      _mapHasLoaded: function (){
+          this.mapLoaded = true;
       },
 
-       _getGoogleSearchData: function(mapLoaded, location, page){
+      _getGoogleSearchData: function(mapLoaded, location, page){
        if(page === 'home'){
       if(mapLoaded){
-        console.log('search', location)
+        // console.log('search', location)
        if(location){
-        
           var searchLocation = {};
           searchLocation.lat = location.location.latitude;
           searchLocation.lng = location.location.longitude;
@@ -76,7 +75,7 @@
          
           
             if(result){
-              console.log('google data', result);
+              // console.log('google data', result);
             
               for (var i=0; i<result.length; i++){
                 var typeOK = 0;
@@ -116,13 +115,16 @@
                       result[i].distance = distance;
                       result[i].sort = distance;
                       result[i].googleSearch = true;
+                      result[i].favorite = {};
                     //   console.log('okay', result[i].name+' '+result[i].place_id);
 
                       if(!that.allObject[result[i].place_id]){
-                        result[i].arrayLocation = that.allArray.length + 1;
-                        that.allObject[result[i].place_id] = result[i];
+                        // result[i].arrayLocation = that.allArray.length + 1;
+                        // that.allObject[result[i].place_id] = result[i];
+                        
+                        result[i].arrayLocation = (that.push('allArray', result[i]))+1;
+                        // console.log(result[i]);
                         that.set('allObject.'+[result[i].place_id], result[i])
-                        that.push('allArray', result[i]);
                         // console.log('push', result[i]);
                       }else{
                         // console.log('already there', that.allObject[result[i].place_id]);

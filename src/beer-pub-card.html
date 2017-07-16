@@ -27,11 +27,9 @@
       }
 
       a{
-      color: var(--app-primary-color);
-      text-decoration: none;
+        color: var(--app-primary-color);
+        text-decoration: none;
       }
-
-      
 
       .card{
         @apply --paper-material-elevation-1;
@@ -61,10 +59,6 @@
         margin: 10px 20px;
       }
 
-     
-
-      
-
       .favorite-rating{
         overflow: hidden;
         color: var(--app-accent-color);
@@ -74,10 +68,6 @@
         right: 0;
         bottom: 0;
       }
-      
-
-      
-      
 
       .toggle-button{
         @apply --layout-horizontal;
@@ -121,21 +111,20 @@
         font-weight: 300;
         color: var(--app-secondary-color);
       }
-      .swipe{
-        
-        overflow:hidden;
 
+      .swipe{
+        overflow:hidden;
       }
 
       .favorite-icon-message{
         font-size: 1.0em;
         font-weight: 300;
+        margin: 7px 0 0 0;
         color: var(--app-accent-color);
       }
 
       .icons-wrapper{
         @apply --layout-horizontal;
-        @apply --layout-justified;
         @apply --layout-wrap;
       }
 
@@ -147,13 +136,8 @@
 
 
     </style>
-
-     
-     <!--[[_test(userData)]]-->
-    
    
       <div class="card">
-        
         
         <template is="dom-if" if="[[sponsor]]">
           <template is="dom-if" if="[[photoUrl]]">
@@ -183,13 +167,6 @@
                 <a aria-label$="[[name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
                   <div class="name">[[name]]</div>
                 </a>
-            
-                <div class="favorite-icon-message" hidden$="[[!_numberFavorite]]">
-                  <iron-label>
-                    <paper-icon-button no-ink icon="thumb-up" place="[[place]]" on-tap="_openEditPlaceDialog"></paper-icon-button>
-                    <span>([[_numberFavorite]])</span>
-                  </iron-label>
-                </div>
 
                 <a aria-label$="[[name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
                 <template is="dom-if" if="[[sponsor]]">
@@ -200,12 +177,20 @@
                 </a>
               </div>
 
-              <div>
+              <div class="icons-wrapper">
                 <beer-pub-icons
                   dogs="[[dogFriendly]]"
                   patio="[[patio]]"
                   over21="[[over21]]">
                 </beer-pub-icons>
+                
+                <div id="favoriteIcon" class="favorite-icon-message" hidden$="[[!_numberFavorite]]">
+                  <iron-label>
+                    <paper-icon-button no-ink icon="thumb-up" place="[[place]]" on-tap="_openEditPlaceDialog"></paper-icon-button>
+                    <span>([[_numberFavorite]])</span>
+                  </iron-label>
+                </div>
+               
               </div>
           </div>
           
@@ -376,8 +361,7 @@
          
         },
 
-        observers:[
-                  '_watchFavorite(userData.favoriteOrganization)',
+        observers:['_watchFavorite(userData.favoriteOrganization)',
                   '_watchPlaceFavorite(place.favorite)',
                   '_watchFavoriteActivity(place.action)'],
 
@@ -388,6 +372,7 @@
           switch(action){
             case 'ADD_FAVORITE':
              this._watchPlaceFavorite(this.place.favorite)
+             this.$.favoriteIcon.hidden=false;
               break;
 
             case 'REMOVE_FAVORITE':
@@ -401,8 +386,9 @@
 
           }
         },
+
         _watchFavorite: function (favorite){
-          
+          // console.log(favorite);
           if(favorite){
             
             if(favorite[this.placeId]){

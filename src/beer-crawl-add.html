@@ -1,0 +1,164 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="beer-icons.html">
+
+
+<dom-module id="beer-crawl-add">
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
+
+      .add-beer-crawl-button{
+        color: var(--app-accent-color);
+      }
+
+      .crawl-add-buttons{
+         @apply --layout-horizontal;
+         @apply --layout-justified;
+         color: var(--app-accent-color);
+      }
+
+        
+    </style>
+      <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+      
+      <iron-collapse opened="[[opened]]">
+        <div>
+          <paper-input id="crawlNameInput" label="Crawl Name" required maxlength="100" char-counter value="{{addCrawlName}}"></paper-input>
+          <paper-textarea id="crawlDescriptionInput" label="Crawl Description" required maxlength="500" char-counter value="{{addCrawlDescription}}"></paper-textarea>
+          <div class="crawl-add-buttons">
+            <paper-button id="addNewCrawlButton" on-tap="_addNewCrawl">Add New Crawl</paper-button>
+            <paper-button on-tap="_closeCrawlAddEditor">Cancel</paper-button>
+          </div>
+        </div>
+      </iron-collapse>
+     
+  </template>
+</dom-module>
+
+<script>
+
+(function() {
+'use strict';
+
+  Polymer({
+
+    is: 'beer-crawl-add',
+
+    properties:{
+
+      addCrawlName:{
+        type:String,
+        value:''
+      },
+
+      addCrawlDescription:{
+        type:String,
+        value:''
+      },
+
+      message:{
+        type:String,
+        notify:true
+      },
+
+
+
+      opened:{
+        type:Boolean,
+        value:true
+      },
+
+      place:{
+        type:Object
+      },
+
+      user:Object
+
+    },
+
+    
+    _addNewCrawl(){
+      var error = false
+      var place = this.place;
+
+      if(this.addCrawlName.length === 0){
+        this.$.crawlNameInput.invalid = true;
+        error = true;
+      }else{
+        this.$.crawlNameInput.invalid = false;
+      }
+
+      if(this.addCrawlDescription.length === 0){
+        this.$.crawlDescriptionInput.invalid = true;
+      }else{
+        this.$.crawlDescriptionInput.invalid = false;
+      }
+
+      if(error){
+        return;
+      }
+
+      if(this.user.uid){
+
+      var obj = {
+          user_id: this.user.uid,
+          name: this.addCrawlName,
+          description: this.addCrawlDescription,
+          created: Math.round(Date.now()/1000)
+        }
+        if(place){
+          if(place.name && place.place_id && place.latitude && place.longitude && place.formatted_address){
+            obj.organization = {}
+            obj.organization[place.place_id] = {
+              name:place.name,
+              place_id:place.place_id,
+              latitude:place.latitude,
+              longitude:place.longitude,
+              formatted_address:place.formatted_address,
+              created: Math.round(Date.now()/1000)
+            }
+          }
+        }
+
+      firebase.database(this.$.auth.app).ref(`crawl`)
+          .push(obj)
+          .then(() =>{
+            
+            if(obj.organization){
+              this.message = `${this.addCrawlName} was created with ${place.name}.`
+            }else{
+              this.message = `${this.addCrawlName} was created.`
+            }
+
+            this.opened = false;
+
+            console.log('Added New Beer Crawl')
+          })
+          .catch(error =>{
+            console.log('ERROR_PUSH', error)
+          })
+      }
+    },
+
+    _closeCrawlAddEditor: function(){
+      this.opened=false;
+    },
+
+   
+
+  })
+})();
+
+</script>

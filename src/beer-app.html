@@ -26,7 +26,7 @@
 <link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
-
+<link rel="import" href="../bower_components/neon-animation/web-animations.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
@@ -484,7 +484,7 @@
           <beer-schedule name="schedule" category=[[organization.category.SCHEDULE]] organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-schedule>
           <beer-schedule-edit name="schedule-edit" location-id="[[locationId]]" location="{{location}}" organization="[[organization]]" org-id="[[orgId]]" name-url="[[nameUrl]]" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" geo-error="[[geoError]]"></beer-schedule-edit>
 
-          <beer-home name="home" user-data="[[userData]]" crawl-data="[[crawlData]]" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" all-object="[[allObject]]" all-array="[[allArray]]"></beer-home>
+          <beer-home name="home" user-data="[[userData]]" crawl-data="[[crawlData]]" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" all-object="[[allObject]]" all-array="[[allArray]]" home-dialog-opened="{{homeDialogOpened}}"></beer-home>
           <beer-favorite name="favorite"></beer-favorite>
           <beer-tap-add name="tap-add" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap-add>
           <beer-beer-edit name="beer-edit" offline="[[offline]]" place="[[place]]" organization="[[organization]]"org-id="[[orgId]]" beer-id="[[beerId]]" name-url="[[nameUrl]]" owner="[[owner]]" return-name="[[returnName]]" return-org-id="[[returnOrgId]]"></beer-beer-edit>
@@ -620,6 +620,8 @@
           type: Boolean,
           value: false
         },
+
+        homeDialogOpened:Boolean,
 
         idle: {
           type: Boolean,
@@ -785,6 +787,7 @@
         '_isSignedIn(user)',
         '_updatePageTitle(place.name, page)',
         '_scrollToTop(page)',
+        '_closeDialogs(page)',
         '_watchUser(user)'
 
         // '_setTimeoutForGeo(page)'
@@ -793,8 +796,11 @@
      
       behaviors: [
         Polymer.AppNetworkStatusBehavior,
-       
        ],
+
+       ready: function (){
+         this.homeDialogOpened = false;
+       },
 
       //  listeners: {
       //             'geo-error': '_geoError', 
@@ -849,6 +855,11 @@
       _scrollToTop: function (page){
         console.log('scroll_top');
         Polymer.AppLayout.scroll({ top: 0, behavior: 'silent' });
+      },
+
+      _closeDialogs: function (page){
+        console.log('close dialogs')
+        // this.homeDialogOpened = false;
       },
 
       _updateUserEmailVerified: function (user){
@@ -1177,13 +1188,13 @@
       },
 
       _toggleDrawerOnPageChange: function (page){
-        console.log('page_change', page)
+        // console.log('page_change', page)
         this._closeDrawer();
         // this.drawerOpened = !this.drawerOpened;
       },
 
       _closeDrawer: function (){
-        console.log('close');
+        // console.log('close');
         if(this.smallScreen){
           this.drawerOpened = false;
         }

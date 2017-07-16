@@ -3,39 +3,66 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+
 <link rel="import" href="../bower_components/neon-animation/neon-animation-runner-behavior.html">
+<link rel="import" href="../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
 <link rel="import" href="../bower_components/paper-dialog-behavior/paper-dialog-shared-styles.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
-
-
-
-
-
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-crawl-add.html">
+
+
 
 
 <dom-module id="beer-home-dialog">
   <template strip-whitespace>
     
     <style include="paper-material-styles">
-      :host {
-          width: 100vw; 
-          height: 100vh;
-        }
+      
+    :host {
+        width: 100vw; 
+        height: 100vh;
+      }
 
+    a{
+      text-decoration: none;
+      color: var(--app-accent-color);
+    }
+
+    li{
+      @apply --layout-horizontal;
+      padding: 10px;
+      border-bottom: 1px solid var(--app-secondary-color);
+    }
+
+    li:first-child{
+      border-top: 1px solid var(--app-secondary-color);
+    }
+
+    li > div {
+      margin: 0 10px 0 0;
+      font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+    }
 
      .dialog {
-       width: 90vw; 
-       height: 70vh;
+       width: 94vw; 
+       height: 75vh;
        position:fixed;
        padding:0;
-       margin:0;
+       margin:0 3vw;
        bottom:0;
        left:0;
        /* background-color: white; */
@@ -46,13 +73,23 @@
      } */
 
      .dialog > div{
-       margin: 10px;
-       width:100%;
+        margin: 10px 0; 
+       /* width:100%; */
        padding: 10px;
        background-color: white;
      }
+
      .edit{
-       height: 50vh;
+       height: 55vh;
+       overflow-x: hidden;
+       overflow-y: auto;
+       /* @apply --layout-vertical;  */
+       /* @apply --layout-flex-auto; */
+     }
+
+     .edit > div{
+       max-width: 500px;
+       margin: 3vh auto;
      }
 
 
@@ -60,7 +97,7 @@
       font-size: 1.2em;
       font-weight: 300;
       color: var(--app-primary-color);
-      margin: 20px 0 ;
+     
     }
      
 
@@ -126,8 +163,18 @@
         color: var(--app-secondary-color);
       }
 
+      .add-beer-crawl-button:{
+        color: var(--app-accent-color);
+      }
+
       .close-button{
         width: 100%
+      }
+
+      .crawl-add-buttons{
+         @apply --layout-horizontal;
+         @apply --layout-justified;
+         color: var(--app-accent-color);
       }
 
 
@@ -154,42 +201,95 @@
               </div>
               <div class="action">
                 <iron-label>
-                  <paper-icon-button class$="action-button [[_isNotFavoriteCSS]]" icon="beer-icons:thumb-down" place="[[place]]" on-tap="_updateNotFavorite"></paper-icon-button>
+                  <paper-icon-button class$="action-button [[_isNotFavoriteCSS]]" icon="beer-icons:thumb-down" on-tap="_updateNotFavorite"></paper-icon-button>
                   <div class="action-label">Don't like</div>
                 </iron-label>
               </div>
               <div class="action">
                 <iron-label>
-                  <paper-icon-button class="action-button" icon="beer-icons:crawl" place="[[place]]" on-tap="_openEditCrawl"></paper-icon-button>
-                  <div class="action-label">Select a crawl</div>
+                  <paper-icon-button class="action-button" icon="beer-icons:crawl" on-tap="_openEditCrawl"></paper-icon-button>
+                  <div class="action-label">Add to a crawl</div>
                 </iron-label>
               </div>
+
+              <!-- <div class="action">
+                <a href="sms:?&body=https://www.beer-fly.com/[[_computeNameForUrl(editPlace.name)]]/main?orgid=[[editPlace.place_id]]">
+                <iron-label>
+                  <paper-icon-button class="action-button" icon="beer-icons:sms"></paper-icon-button>
+                  <div class="action-label">Text</div>
+                </iron-label>
+                </a>
+              </div> -->
+
+
+             
+
             </div>
         
             <div>
-              <iron-collapse opened="[[toggle]]">
-                <div class="crawl-wrapper">
-                  <div>
-                    <paper-dropdown-menu no-label-float dynamic-align label="Add to a Beer-Crawl">
-                      <paper-listbox 
-                        attr-for-selected="crawl"
-                        slot="dropdown-content" 
-                        class$="dropdown-content"
-                        selected="{{crawl}}">
-              
-                        <template is="dom-repeat" items="{{crawlData}}" as="crawl" filter="_filterDeleted" sort="_sortByNew" observe="deleted">
-                            <paper-item crawl="[[crawl]]">[[crawl.name]]</paper-item>
-                        </template>
 
-                      </paper-listbox>
-                    </paper-dropdown-menu>
+
+            <iron-collapse opened="[[!toggle]]">
+             <ul>
+              <template is="dom-repeat" items="[[crawlData]]" as="crawl" filter="{{_filterCrawls(editPlace.place_id)}}" sort="_sortByName" observe="organization">
+                <li >
+                  <div>   
+                
+                  <a href="/home/crawl?crawlId=[[crawl.$key]]">
+                  <paper-icon-button 
+                      icon="beer-icons:link">
+                  </paper-icon-button> 
+                  </a>
+                  [[crawl.name]]
+ 
                   </div>
-                  <div>
-                    <paper-button id="crawlAddButton" disabled on-tap="_updateCrawl">Add</paper-button>
-                  </div>
+                </li>
+              </template>
+             </ul>
+            </iron-collapse>
+
+            <iron-collapse opened="[[toggle]]">
+              
+              <div class="crawl-wrapper">
+                
+                <div>
+                  <paper-dropdown-menu no-label-float dynamic-align label="Select a Beer-Crawl">
+                    
+                    
+                    <paper-listbox 
+                      attr-for-selected="crawl"
+                      slot="dropdown-content" 
+                      class$="dropdown-content"
+                      selected="{{crawl}}">
+            
+                      <template is="dom-repeat" items="{{crawlData}}" as="crawl" filter="_filterDeleted" sort="_sortByNew" observe="deleted">
+                          <paper-item crawl="[[crawl]]">[[crawl.name]]</paper-item>
+                      </template>
+
+                    </paper-listbox>
+                  </paper-dropdown-menu>
                 </div>
-                <div class="crawl-message">[[crawlMessage]]</div>
-              </iron-collapse>
+                <div>
+                  <paper-button id="crawlAddButton" disabled on-tap="_updateCrawl">Add</paper-button>
+                </div>
+              </div>
+              <iron-label class="add-beer-crawl-button">
+                <paper-icon-button icon="beer-icons:add" on-tap="_openCrawlAddEditor"></paper-icon-button>
+              <span>Add to a new Beer-Crawl</span>
+              </iron-label>
+            </iron-collapse>
+
+            
+            <beer-crawl-add
+              opened="{{addCrawlToggle}}"
+              place = "[[editPlace]]"
+              message = "{{crawlMessage}}">
+            </beer-crawl-add>
+
+
+          </iron-collapse>
+          <div class="crawl-message">[[crawlMessage]]</div>
+
           </div>
           
         </div>
@@ -217,13 +317,28 @@
     is: 'beer-home-dialog',
 
     properties:{
+      addCrawlName:{
+        type:String,
+        value:''
+      },
+
+      addCrawlDescription:{
+        type:String,
+        value:''
+      },
+
+      addCrawlToggle:{
+        type:Boolean,
+        value:false
+      },
 
       crawlData:Array,
       crawl:Object,
       crawlMessage:String,
 
       editPlace:{
-        type:Object
+        type:Object,
+        value: function (){return {}}
       },
 
       editFavorite:String,
@@ -270,7 +385,8 @@
     },
 
     observers: ['_watchFavorite(editFavorite)',
-                '_watchCrawl(crawl)'],
+                '_watchCrawl(crawl)',
+                ],
 
     _watchFavorite: function (favorite){
           
@@ -308,6 +424,48 @@
       }
     },
 
+    _watchDescriptionAndName(name, description){
+      console.log('name', name)
+      console.log('description', description)
+      if(name.length === 0 || description.length === 0){
+        this.$.addNewCrawlButton.disabled = true;
+      }else{
+        this.$.addNewCrawlButton.disabled = false;
+      }
+      if(name.length === 0){
+        this.$.crawlNameInput.invalid = true;
+      }else{
+        this.$.crawlNameInput.invalid = false;
+      }
+      if(description.length === 0){
+        this.$.crawlDescriptionInput.invalid = true;
+      }else{
+        this.$.crawlDescriptionInput.invalid = false;
+      }
+    },
+
+    _addNewCrawl(){
+      var error = false
+      if(this.addCrawlName.length === 0){
+        this.$.crawlNameInput.invalid = true;
+        error = true;
+      }else{
+        this.$.crawlNameInput.invalid = false;
+      }
+
+      if(this.addCrawlDescription.length === 0){
+        this.$.crawlDescriptionInput.invalid = true;
+      }else{
+        this.$.crawlDescriptionInput.invalid = false;
+      }
+
+      if(error){
+        return;
+      }
+
+
+    },
+
     _updateFavorite: function (){
       var place = this.editPlace;
       var placeId = place.place_id;
@@ -335,7 +493,7 @@
                 that.editFavorite = 'none';
                 that._watchFavorite(that.editFavorite);
                 //too difficult to watch an object, so added action string
-                that.set(`places.${index}.favorite.${that.user.uid}.favorite`, 'none');
+                that.set(`places.${index}.favorite.${that.user.uid}`, {});
                 that.set(`places.${index}.action`, 'REMOVE_FAVORITE');
                 
               })
@@ -359,7 +517,12 @@
               .then(() =>{
                 console.log('Added to Favorite');
                 that.editFavorite = 'yes';
-                that.set(`places.${index}.favorite.${that.user.uid}.favorite`, 'yes');
+
+                // if(!place.favorite){
+                //   that.set(`places.${index}.favorite`, {});
+                // }
+                
+                that.set(`places.${index}.favorite.${that.user.uid}`, obj);
                 that.set(`places.${index}.action`, 'ADD_FAVORITE');
               })
               .catch(error =>{
@@ -456,7 +619,8 @@
                   that.crawl = {};
                   // that.toggle = false;
                   that.crawlMessage = `Added ${place.name} to ${crawl.name}`;
-                  
+                  that.toggle = false;
+                  that.addCrawlToggle=false;
                 })
                 .catch(error =>{
                   console.log('ERROR_CRAWL', error)
@@ -469,13 +633,36 @@
     },
 
     _openEditCrawl: function (){
-      this.toggle = !this.toggle
+      this.toggle = !this.toggle;
+      this.addCrawlToggle=false;
     },
+
+    _openCrawlAddEditor: function(){
+      this.toggle=false;
+      this.addCrawlToggle=true;
+    },
+
+    
+    _closeCrawlAddEditor: function(){
+      this.toggle=false;
+      this.addCrawlToggle=false;
+    },
+    
 
     _sortByNew: function(a,b){
         if (a.created > b.created)
           return -1;
         if (a.created < b.created)
+          return 1;
+        return 0;
+      },
+
+      
+
+     _sortByName: function(a,b){
+        if (a.name < b.name)
+          return -1;
+        if (a.name > b.name)
           return 1;
         return 0;
       },
@@ -486,6 +673,38 @@
         }
         return true;
       },
+
+    _filterCrawls: function (placeId){
+
+       
+
+        if(!placeId){
+          return null;
+        }
+        return function(crawl) {
+          if(crawl.organization){
+            if(crawl.organization[placeId]){
+              return true
+            }
+          }
+        };
+
+      // var place = this.editPlace;
+      // var placeId = place.place_id;
+      console.log('placeId', placeId )
+
+        
+    },
+
+    _computeNameForUrl: function (name) {
+      'use strict';
+      if (name) {
+        name = name.replace(/\s/g, '-')
+        return name.replace(/[^a-zA-Z\d\s:]/g, '');
+      } else {
+        return 'home'
+      }
+    },
 
     // _renderOpened: function() {
     //   this.cancelAnimation();
@@ -508,6 +727,9 @@
     // _addOne: function (index){
     //   return index+1;
     // }
+    _test(obj){
+      console.log('test', obj)
+    }
 
   });
 

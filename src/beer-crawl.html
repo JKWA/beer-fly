@@ -3,7 +3,8 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
-
+<link rel="import" href="../bower_components/neon-animation/animations/slide-down-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
@@ -20,6 +21,8 @@
 <link rel="import" href="beer-location.html">
 <link rel="import" href="beer-crawl-favorite.html">
 <link rel="import" href="beer-crawl-url.html">
+<link rel="import" href="beer-dialog.html">
+
 
 
 <dom-module id="beer-crawl">
@@ -59,6 +62,14 @@
     }
 
     .add-icon{
+      color: var(--app-accent-color);
+    }
+
+    .edit-icon{
+      color: var(--app-secondary-color);
+    }
+
+    .link-icon{
       color: var(--app-accent-color);
     }
 
@@ -120,16 +131,83 @@
 
   <firebase-auth id="auth" app-name="beer" status-known="[[statusKnown]]"user="{{user}}"></firebase-auth>
   
-
- 
     <div class="card" hidden="[[!user]]">
-      <a href="/home/crawl/mine">
-      <iron-label>
-        <paper-icon-button class="add-icon" icon="beer-icons:edit"></paper-icon-button>
-        <span class="edit-message">Edit my Beer-Crawls</span>
-      </iron-label>
-      </a>
+      <div>
+        <a href="/home/crawl/mine">
+          <iron-label>
+            <paper-icon-button class="add-icon" icon="beer-icons:edit"></paper-icon-button>
+            <span class="edit-message">Edit my Beer-Crawls</span>
+          </iron-label>
+        </a>
+      </div>
+   
+
+      <template is="dom-if" if="[[crawlId]]">
+        <div>
+          <a href="/home/crawl">
+            <iron-label>
+              <paper-icon-button class="add-icon" icon="beer-icons:view-all" on-tap="_resetLocation"></paper-icon-button>
+              <span class="edit-message">Show all near-by Beer-Crawls</span>
+            </iron-label>
+          </a>
+        </div>
+      </template>
+
+      
     </div>
+
+    <template is="dom-if" if="[[crawlId]]">
+      <div class="card">
+        
+        <div class="title-wrapper"> 
+          <div class="name">[[crawl.name]]</div>
+          <div class="icon-wrapper">
+             <div hidden$="[[!crawl.owner]]"> 
+                <paper-icon-button class="edit-icon" icon="beer-icons:edit" on-tap="_openEditor"></paper-icon-button>
+             </div> 
+            <div>
+              <beer-crawl-favorite
+                crawl-id="[[crawl.crawl_id]]">
+              </beer-crawl-favorite>
+            </div>
+          </div>
+        </div>
+        
+         <template is="dom-repeat" items="[[_addBreaks(crawl.description)]]" as="description">
+            <div class="description">[[description]]</div>
+         </template>
+        <ol>
+        <template is="dom-repeat" items="[[_organizationArray(crawl.organization)]]" as="pub">
+          <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
+            <li> 
+    
+            <div class="organization-wrapper">
+                <div>
+                  <div>[[pub.name]]</div>
+                  <div>[[pub.formatted_address]]</div>
+                </div>
+                <div> 
+                  
+                </div>
+            </div>
+            </li>
+          </a>
+        </template>
+        </ol>
+        <div class="footer">
+          <div>
+            <beer-crawl-url organizations="[[crawl.organization]]">
+            </beer-crawl-url>
+          </div>
+          <!-- <div class="distance">Begins [[crawl.distance]] miles from you.</div> -->
+        </div>
+      </div>
+    
+    </template>
+    
+
+    <template is="dom-if" if="[[!crawlId]]">
+    
 
     <div class="card">
       <beer-location
@@ -145,6 +223,17 @@
         <div class="title-wrapper"> 
           <div class="name">[[crawl.name]]</div>
           <div class="icon-wrapper">
+
+            <div hidden$="[[!crawl.owner]]"> 
+              <paper-icon-button class="edit-icon" icon="beer-icons:edit" on-tap="_openEditor"></paper-icon-button>
+            </div> 
+            
+            <div>
+              <a href="/home/crawl?crawlId=[[crawl.crawl_id]]">
+              <paper-icon-button class="link-icon" icon="beer-icons:link"></paper-icon-button>
+              </a>
+            </div>
+            
             <div>
               <beer-crawl-favorite
                 crawl-id="[[crawl.crawl_id]]">
@@ -183,8 +272,15 @@
         </div>
       </div>
     </template>
+
+    </template>
    
-    
+    <beer-dialog
+      id="crawlEditDialog"
+      entry-animation="slide-from-bottom-animation"
+      exit-animation="slide-down-animation"
+      with-backdrop>
+    </beer-dialog>
 
 </template>
   <script>
@@ -201,6 +297,10 @@
             return [];
           }
         },
+
+        crawl:Object,
+
+        crawlId:String,
         crawlUrl:String,
 
         location:Object,
@@ -219,10 +319,33 @@
         
       },
 
-      observers:['_getData(location)'],
+      ready: function (){
+        var body = document.querySelector('body');
+          Polymer.dom(body).appendChild(this.$.crawlEditDialog);
+          this.$.crawlEditDialog.open();
+      },
+
+      observers:['_getData(location)',
+                '_watchCrawlId(crawlId)'],
+
+      _watchCrawlId: function (crawlId){
+        if(crawlId){
+          var that = this;
+          firebase.database(this.$.auth.app).ref(`/crawl/${crawlId}`)
+          .on('value', snapshot =>{
+            if(snapshot.exists){
+              var obj = snapshot.val();
+              obj.crawl_id = snapshot.key;
+              that.crawl = obj
+              document.title = obj.name;
+            }
+          })
+        }
+      },
 
 
       _getData: function (location){
+        // if(!this.crawlId){
         this.splice("crawlData", 0, this.crawlData.length)
 
         var that = this;
@@ -233,6 +356,7 @@
 
         var query = {};
         if(this.location){
+        document.title = `Beer-Crawls: ${location.address}`;
         query.center = [this.location.location.latitude, this.location.location.longitude];
         query.radius = 30*1.609344;
 
@@ -244,9 +368,17 @@
               .then( snapshot => {
                 var crawl = snapshot.val();
                 crawl.distance = Math.round((distance*0.621371)*10)/10;
-                crawl.crawl_id = key
-                that.push('crawlData', crawl)
+                crawl.crawl_id = key;
 
+                if(that.user){
+                  if(snapshot.child('user_id').val() === that.user.uid){
+                    crawl.owner = true;
+                  }
+                }
+                
+                 if (snapshot.child('public').exists() || crawl.owner){
+                   that.push('crawlData', crawl);
+                 }
             })
           })
 
@@ -263,6 +395,25 @@
             }
           })
         }
+      },
+
+      _resetLocation: function (){
+        this._getData(this.location);
+      },
+
+      _openEditor(){
+        console.log('worked')
+        this.$.crawlEditDialog.open();
+      },
+
+      _isOwner: function (user_id, user){
+        if(!user){
+          return false;
+        }
+        if(user_id === user.uid){
+          return true;
+        }
+        return false;
       },
 
         _organizationArray: function (obj){

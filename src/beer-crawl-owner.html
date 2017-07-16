@@ -184,6 +184,10 @@
       color: var(--app-accent-color);
     }
 
+    .share-button{
+      color: var(--app-accent-color);
+    }
+
   </style>
 
   <firebase-auth id="auth" app-name="beer" status-known="[[statusKnown]]"user="{{user}}"></firebase-auth>
@@ -217,9 +221,9 @@
     <template is="dom-repeat" 
               items="{{crawls}}" 
               as="crawl" 
-              filter="_filter"
+              filter="{{_filter(crawlId)}}"
               sort="_sortByNew"
-              observe="deleted created">
+              observe="deleted $key created">
       <div class="card">
         <div class="title-wrapper">
           <div class="name">[[crawl.name]]</div>
@@ -291,7 +295,14 @@
           </li>
         </template>
         </ol>
+        <div>
+          <a href="/home/crawl?crawlId=[[crawl.$key]]">
+
+            <paper-button class="share-button">Share this Beer-Crawl</paper-button>
+          </a>
+        </div>
       </div>
+      
     </template>
 
      <paper-dialog 
@@ -364,6 +375,7 @@
         },
 
         crawlData:Array,
+
         crawlId:String,
 
         editCrawlName:String,
@@ -403,8 +415,7 @@
         
       },
 
-      observers:['_watchUser(user)',
-                  '_watchCrawlId(crawlId)'],
+      observers:['_watchUser(user)'],
       
       _watchCrawlId: function (crawlId){
         if(crawlId){
@@ -496,26 +507,26 @@
           this.$.addCrawlDialog.open();
       },
       
-      _addCrawl(event){
-        var obj = {
-          user_id: this.user.uid,
-          name: this.editCrawlName,
-          description: this.editCrawlDescription,
-          created: Math.round(Date.now()/1000)
-        }
+      // _addCrawl(event){
+      //   var obj = {
+      //     user_id: this.user.uid,
+      //     name: this.editCrawlName,
+      //     description: this.editCrawlDescription,
+      //     created: Math.round(Date.now()/1000)
+      //   }
 
-        if(this.user.uid){
-          firebase.database(this.$.auth.app).ref(`crawl`)
-          .push(obj)
-          .then(() =>{
-            console.log('Added New Beer Crawl')
-          })
-          .catch(error =>{
-            console.log('ERROR_PUSH', error)
-          })
-        }
-        this.$.addCrawlDialog.close();
-      },
+      //   if(this.user.uid){
+      //     firebase.database(this.$.auth.app).ref(`crawl`)
+      //     .push(obj)
+      //     .then(() =>{
+      //       console.log('Added New Beer Crawl')
+      //     })
+      //     .catch(error =>{
+      //       console.log('ERROR_PUSH', error)
+      //     })
+      //   }
+      //   this.$.addCrawlDialog.close();
+      // },
 
       _updateCrawl(event){
         if(!this.editCrawlPublic){
@@ -703,7 +714,22 @@
         }
       },
       
-      _filter(item){
+      _filter(crawlId){
+        console.log('crawlId', crawlId)
+        return function (crawl){
+          
+          if(!crawlId){
+            if(crawl.deleted){
+              return false;
+            }
+            return true;
+          }else if(crawl.$key === crawlId){
+            return true;
+          }
+          return true;
+          
+        }
+        
         if(!item.deleted){
           return true;
         }

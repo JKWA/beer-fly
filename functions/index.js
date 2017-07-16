@@ -228,17 +228,21 @@ exports.createNewOrganization = functions.database.ref('/organization/{place_id}
     return googleMapsClient.place({placeid: place_id},  function(error, response) { 
       if(!error){
         const place = parseGooglePlaceData(response.json.result, place_id),
-              domain = place.domain
+              domain = place.domain,
+              types = response.json.result.types
+
         if(!place.place_id){
           return null
         }
-
-        if(place.types){
-          if (!event.data.previous.exists()) {
-            if(isPub(place.types)){
-                place['PUB'] = true;
+        console.log('types', types)
+        if(types){
+          for(let value of types){
+            // console.log(value)
+            if(value === 'bar'){
+              place['PUB'] = true;
+              break;
             }
-          }
+          }          
         }
 
         if(place.name){
@@ -1198,7 +1202,7 @@ exports.setGeoForCrawl = functions.database.ref('/crawl/{crawl_id}')
           deleted = val.deleted,
           organization = val.organization
     
-    if(!public || deleted || !organization){
+    if(deleted || !organization){
       return geoCrawl.remove(crawl_id)
         .then(()=>{
           console.log('Removed Geo', metadata)
