@@ -38,7 +38,7 @@
     .card{
       padding: 10px;
       margin: 10px;
-      @apply --paper-material-elevation-0;
+      @apply --paper-material-elevation-1;
     }
 
    
@@ -105,18 +105,17 @@
 
     <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
 
-    <div class="card">
+    
 
     <beer-location
-      location={{location}} 
-      search-string="{{searchString}}" 
-      sorted-location-history="[[sortedLocationHistory]]">
+      location={{location}}>
     </beer-location>
 
-      <paper-input label="Search for [[searchMessage]]" value="{{queryString}}">
+    <div class="card">
 
+      <paper-input label="Search for [[searchMessage]]" value="{{queryString}}">
         <iron-icon icon="beer-icons:search" slot="prefix"></iron-icon>
-          <paper-icon-button class="clear" slot="suffix" on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
+        <paper-icon-button class="clear" slot="suffix" on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
       </paper-input>
 
       <iron-label class="tap-status-wrapper">
@@ -237,8 +236,8 @@
           request.query = queryString+' '+searchMessage;
           // request.location = this.location.location.latitude.toString()+','+this.location.location.longitude.toString();
           request.location = {};
-          request.location.lat = this.location.location.latitude;
-          request.location.lng = this.location.location.longitude;
+          request.location.lat = this.location.latitude;
+          request.location.lng = this.location.longitude;
           request.radius = 50000;
           // console.log('request', request);
           
@@ -256,7 +255,7 @@
                   result[i].vicinity = result[i].formatted_address;
                 }
                 var resultLocation = result[i].geometry.location;
-                  result[i].distance = that._distance (that.location.location.latitude, that.location.location.longitude, resultLocation.lat(), resultLocation.lng())
+                  result[i].distance = that._distance (that.location.latitude, that.location.longitude, resultLocation.lat(), resultLocation.lng())
                 console.log(result[i]);
                 if(!that.allPub[result[i].place_id]){
                   that.push('data', result[i]);

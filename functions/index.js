@@ -1186,6 +1186,15 @@ exports.watchPubFlag = functions.database.ref('/organization/{placeId}/PUB')
        return _updateGeoFire(placeId);
   })
 
+exports.watchPermanentlyClosedFlag = functions.database.ref('/organization/{placeId}/permanently_closed')
+    .onWrite(event => {
+       const snapshot = event.data;
+       const placeId = event.params.placeId;
+       return _updateGeoFire(placeId);
+  })
+
+
+
 exports.setGeoForCrawl = functions.database.ref('/crawl/{crawl_id}')
   .onWrite(event => {
     //TODO change this to onUpdate after updating cli

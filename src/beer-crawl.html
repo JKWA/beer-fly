@@ -21,6 +21,8 @@
 <link rel="import" href="beer-location.html">
 <link rel="import" href="beer-crawl-favorite.html">
 <link rel="import" href="beer-crawl-url.html">
+<link rel="import" href="beer-crawl-edit.html">
+
 <link rel="import" href="beer-dialog.html">
 
 
@@ -153,7 +155,6 @@
         </div>
       </template>
 
-      
     </div>
 
     <template is="dom-if" if="[[crawlId]]">
@@ -172,7 +173,13 @@
             </div>
           </div>
         </div>
-        
+        <div>
+          CREATED[[crawl.created]]
+          <moment-element
+              datetime="[[crawl.created]]"
+              output-format="MMM DD[,] YYYY">
+          </moment-element>
+        </div>
          <template is="dom-repeat" items="[[_addBreaks(crawl.description)]]" as="description">
             <div class="description">[[description]]</div>
          </template>
@@ -209,13 +216,12 @@
     <template is="dom-if" if="[[!crawlId]]">
     
 
-    <div class="card">
+    
       <beer-location
-        location={{location}} 
-        search-string="{{searchString}}" 
-        sorted-location-history="[[sortedLocationHistory]]">
+        location={{location}}>
       </beer-location>
-    </div>
+  
+
 
     <template is="dom-repeat" items="[[crawlData]]" as="crawl" sort="_sortByNew" observe="created">
       <div class="card">
@@ -225,7 +231,7 @@
           <div class="icon-wrapper">
 
             <div hidden$="[[!crawl.owner]]"> 
-              <paper-icon-button class="edit-icon" icon="beer-icons:edit" on-tap="_openEditor"></paper-icon-button>
+              <paper-icon-button class="edit-icon" crawl="[[crawl]]" icon="beer-icons:edit" on-tap="_openEditor"></paper-icon-button>
             </div> 
             
             <div>
@@ -240,6 +246,13 @@
               </beer-crawl-favorite>
             </div>
           </div>
+        </div>
+        <div>
+          <!-- CREATED[[crawl.created]] -->
+          <moment-element
+              datetime="[[crawl.timestamp]]"
+              output-format="MMM DD[,] YYYY">
+          </moment-element>
         </div>
         
          <template is="dom-repeat" items="[[_addBreaks(crawl.description)]]" as="description">
@@ -280,6 +293,10 @@
       entry-animation="slide-from-bottom-animation"
       exit-animation="slide-down-animation"
       with-backdrop>
+      <beer-crawl-edit
+        crawl-id="[[editCrawlId]]">
+      </beer-crawl-edit>
+
     </beer-dialog>
 
 </template>
@@ -298,16 +315,33 @@
           }
         },
 
+        crawlDataLocation:{
+          type: Object,
+          value: function (){
+            return {};
+          }
+        },
+
         crawl:Object,
 
         crawlId:String,
         crawlUrl:String,
+        editCrawl:Object,
+        editCrawlId:String,
 
-        location:Object,
+        location:{
+          type:Object,
+          notify:true
+        },
+        // latitude:Number,
+        // longitude:Number,
+        
 
         sortedLocationHistory:{
           type:Array
         },
+
+        urlParameter:String,
        
         user:{
           type: Object
@@ -316,13 +350,15 @@
         userData:{
           type: Object
         },
+
+
         
       },
 
       ready: function (){
         var body = document.querySelector('body');
           Polymer.dom(body).appendChild(this.$.crawlEditDialog);
-          this.$.crawlEditDialog.open();
+          // this.$.crawlEditDialog.open();
       },
 
       observers:['_getData(location)',
@@ -346,7 +382,7 @@
 
       _getData: function (location){
         // if(!this.crawlId){
-        this.splice("crawlData", 0, this.crawlData.length)
+        // this.splice("crawlData", 0, this.crawlData.length)
 
         var that = this;
         var app = this.$.auth.app;
@@ -355,18 +391,19 @@
   
 
         var query = {};
-        if(this.location){
+        if(location.latitude && location.longitude){
+        
         document.title = `Beer-Crawls: ${location.address}`;
-        query.center = [this.location.location.latitude, this.location.location.longitude];
+        query.center = [Number(location.latitude), Number(location.longitude)];
         query.radius = 30*1.609344;
 
         geoFire.query(query)
           .on("key_entered", function(key, location, distance) {
-
+            // that.splice("crawlData", 0, that.crawlData.length)
             app.database().ref('/crawl/'+key)
-              .once('value')
-              .then( snapshot => {
+              .on('value', snapshot => {
                 var crawl = snapshot.val();
+                crawl.timestamp = snapshot.child('created').val()*1000;
                 crawl.distance = Math.round((distance*0.621371)*10)/10;
                 crawl.crawl_id = key;
 
@@ -377,9 +414,17 @@
                 }
                 
                  if (snapshot.child('public').exists() || crawl.owner){
-                   that.push('crawlData', crawl);
+                  
+                  // console.log(`crawlData.${key}`)
+                  if (!that.crawlDataLocation[key]){
+                    var arrayLocation = that.push('crawlData', crawl);
+                    that.crawlDataLocation[key] = {location:arrayLocation}
+                  }else{
+                    var existingLocation = that.crawlDataLocation[key].location -1;
+                    that.set(`crawlData.${existingLocation}`, crawl);
+                  }
                  }
-            })
+              })
           })
 
         geoFire.query(query)
@@ -394,6 +439,7 @@
               }
             }
           })
+        
         }
       },
 
@@ -401,8 +447,10 @@
         this._getData(this.location);
       },
 
-      _openEditor(){
+      _openEditor(event){
         console.log('worked')
+        var crawl = event.currentTarget.crawl;
+        this.editCrawlId = crawl.crawl_id;
         this.$.crawlEditDialog.open();
       },
 
@@ -443,7 +491,6 @@
           return 1;
         return 0;
       },
-
       
 
       _addBreaks: function(str){

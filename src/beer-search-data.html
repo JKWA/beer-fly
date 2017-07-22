@@ -34,8 +34,12 @@
 
         location:{
             type:Object,
-            
         },
+        // address:String,
+        // latitude:Number,
+        // longitude:Number,
+
+        
 
         page:{
             type: String
@@ -43,7 +47,7 @@
 
        },
        
-       observers: ['_getGoogleSearchData(mapLoaded, location, page)'],
+       observers: ['_getGoogleSearchData(mapLoaded, location)'],
 
        listeners: {'api-load':'_mapHasLoaded'},
 
@@ -55,31 +59,36 @@
           this.mapLoaded = true;
       },
 
-      _getGoogleSearchData: function(mapLoaded, location, page){
-       if(page === 'home'){
-      if(mapLoaded){
+      _getGoogleSearchData: function(mapLoaded, location){
+      // console.log('search', location)
+      let latitude = location.latitude;
+      let longitude = location.longitude;
+      let address = location.address;
+
+      // console.log(address);
+
+      if(mapLoaded && latitude && longitude && address){
+
+       
         // console.log('search', location)
-       if(location){
+      
           var searchLocation = {};
-          searchLocation.lat = location.location.latitude;
-          searchLocation.lng = location.location.longitude;
+          searchLocation.lat = latitude;
+          searchLocation.lng = longitude;
 
           var that = this;
           var request = {};
           request.location = searchLocation;
           request.radius = 10000
-          request.query = 'Brewery in '+location.address+' Craft Beer';
+          request.query = 'Brewery in '+address+' Craft Beer';
           
+          // console.log('google request', request);
           var places = new google.maps.places.PlacesService(this.$.map);
           places.textSearch(request, function (result){
          
-          
-            if(result){
-              // console.log('google data', result);
-            
+            if(result){ 
               for (var i=0; i<result.length; i++){
                 var typeOK = 0;
-
                 var types = result[i].types;
 
                 if(types){
@@ -89,6 +98,7 @@
                       typeOK ++;
                     }
                   }
+
                   if(result[i].name){
                     if(result[i].name.toLowerCase().indexOf('brewery')>-1){
                       typeOK ++
@@ -96,50 +106,43 @@
                     if(result[i].name.toLowerCase().indexOf('brewing')>-1){
                       typeOK ++
                     }
-                    
                   }
 
-                    if(typeOK > 0){
-                      var formatted_address = result[i].formatted_address;
+                  if(typeOK > 0){
+                    var formatted_address = result[i].formatted_address;
+                    
+                    if(formatted_address){
+                      var addressArray = formatted_address.split(', ').slice(0,2);
+                      result[i].vicinity = addressArray.join(', ');
+                    }
                       
-                      if(formatted_address){
-                        var addressArray = formatted_address.split(', ').slice(0,2);
-                        result[i].vicinity = addressArray.join(', ');
+                    var resultLocation = result[i].geometry.location;
+                    var distance = that._distance (latitude, longitude, resultLocation.lat(), resultLocation.lng())
+                    result[i].latitude = resultLocation.lat();
+                    result[i].longitude = resultLocation.lng();
+                    result[i].distance = distance;
+                    result[i].sort = distance;
+                    result[i].googleSearch = true;
+                    result[i].favorite = {};
 
-                      }
-                      
-                      var resultLocation = result[i].geometry.location;
-                      var distance = that._distance (location.location.latitude, location.location.longitude, resultLocation.lat(), resultLocation.lng())
-                      result[i].latitude = resultLocation.lat();
-                      result[i].longitude = resultLocation.lng();
-                      result[i].distance = distance;
-                      result[i].sort = distance;
-                      result[i].googleSearch = true;
-                      result[i].favorite = {};
-                    //   console.log('okay', result[i].name+' '+result[i].place_id);
-
+                    if(distance <= 10){
                       if(!that.allObject[result[i].place_id]){
-                        // result[i].arrayLocation = that.allArray.length + 1;
-                        // that.allObject[result[i].place_id] = result[i];
-                        
-                        result[i].arrayLocation = (that.push('allArray', result[i]))+1;
-                        // console.log(result[i]);
-                        that.set('allObject.'+[result[i].place_id], result[i])
-                        // console.log('push', result[i]);
-                      }else{
-                        // console.log('already there', that.allObject[result[i].place_id]);
-
+                        that.set(`allObject.${result[i].place_id}`,{})
+                        var position = (that.push('allArray', result[i]));
+                        result[i].arrayPosition = position;
+                        that.set(`allObject.${result[i].place_id}`, result[i]);
+                        that.notifyPath(`allObject.${result[i].place_id}}.sort`)
                       }
-
                     }
                   }
                 }
               }
+            }
           }) 
       
     }
-       }
-       }
+       
+       
       //  console.log('after', this.allObject)
    },
 

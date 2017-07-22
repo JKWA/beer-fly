@@ -38,11 +38,11 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
 <link rel="import" href="beer-organization-data.html">
-<link rel="import" href="beer-location-data.html">
-<link rel="import" href="beer-geo-data.html">
-<link rel="import" href="beer-geo-location.html">
-<link rel="import" href="beer-search-data.html">
-<link rel="import" href="beer-cache-data.html">
+<!-- <link rel="import" href="beer-location-data.html"> -->
+<!-- <link rel="import" href="beer-geo-data.html"> -->
+<!-- <link rel="import" href="beer-geo-location.html"> -->
+<!-- <link rel="import" href="beer-search-data.html"> -->
+<!-- <link rel="import" href="beer-cache-data.html"> -->
 <link rel="import" href="beer-analytics.html">
 
 <script src="https://js.stripe.com/v3/"></script>
@@ -332,17 +332,17 @@
         data="{{crawlData}}">
     </firebase-query>
 
-  <beer-geo-location
+  <!-- <beer-geo-location
       location = "{{location}}"
       idle = "{{idle}}">
-  </beer-geo-location>
+  </beer-geo-location> -->
 
-  <beer-location-data
+  <!-- <beer-location-data
       location="{{location}}"
       location-history="{{locationHistory}}"
       sorted-location-history="{{sortedLocationHistory}}"
       search-string="[[searchString]]">
-  </beer-location-data>
+  </beer-location-data> -->
 
   <beer-place-data
     place-id="[[orgId]]"
@@ -350,28 +350,28 @@
     data="{{place}}">
   </beer-place-data>
 
-   <beer-cache-data
+   <!-- <beer-cache-data
       location="[[location]]"
       online="[[online]]"
       all-object="{{allObject}}"
       all-array="{{allArray}}">
-  </beer-cache-data>
+  </beer-cache-data> -->
 
-  <beer-geo-data
+  <!-- <beer-geo-data
     org-id="[[orgId]]"
     location="[[location]]"
     all-object="{{allObject}}"
     all-array="{{allArray}}"
     page="[[page]]">
-  </beer-geo-data>
+  </beer-geo-data> -->
 
-  <beer-search-data
+  <!-- <beer-search-data
     org-id="[[orgId]]"
     location="[[location]]"
     all-object="{{allObject}}"
     all-array="{{allArray}}"
     page="[[page]]">
-  </beer-search-data>
+  </beer-search-data> -->
 
   <beer-organization-data
       org-id="[[orgId]]"
@@ -393,6 +393,8 @@
       </a>
    
       <div class="card">
+
+       
         
       <div class="card-title">[[_showOrgName(place.name)]]</div>
 
@@ -411,9 +413,9 @@
 
           <hr>
         </template>
-        <a name="near" aria-label="Breweries near me" href="/home"><iron-icon class="drawer-icon" icon="beer-icons:gps-fixed"></iron-icon>Near me</a>
-        <a name="search" aria-label="Search for breweries" href$="/[[nameUrl]]/search[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:search"></iron-icon>Search</a>
-        <a name="crawl" aria-label="My Beer Crawls" href="/home/crawl"><iron-icon class="drawer-icon" icon="beer-icons:crawl"></iron-icon>Beer-Crawls</a>
+        <a name="near" aria-label="Breweries near me" href$="/home[[locationParams]]"><iron-icon class="drawer-icon" icon="beer-icons:gps-fixed"></iron-icon>Near me</a>
+        <a name="search" aria-label="Search for breweries" href$="/home/search[[locationParams]]"><iron-icon class="drawer-icon" icon="beer-icons:search"></iron-icon>Search</a>
+        <a name="crawl" aria-label="My Beer Crawls" href$="/home/crawl[[locationParams]]"><iron-icon class="drawer-icon" icon="beer-icons:crawl"></iron-icon>Beer-Crawls</a>
         <a name="favorite" aria-label="My favorites" href$="/[[nameUrl]]/favorite[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:favorite"></iron-icon>Favorites</a>
         <a name="question" aria-label="Frequently asked questions" href="/home/question"><iron-icon class="drawer-icon" icon="beer-icons:question"></iron-icon>Questions</a>
 
@@ -455,7 +457,7 @@
           <beer-account name="account" organization="[[organization]]" small-screen="[[smallScreen]]"owner="[[owner]]"></beer-account>
           <!--<beer-plan name="plan" organization="[[organization]]" small-screen="[[smallScreen]]"owner="[[owner]]"></beer-plan>-->
           <beer-question name="question" anchor="[[anchor]]" login="{{login}}" online="[[online]]"></beer-question>
-          <beer-crawl name="crawl" location="[[location]]" online="[[online]]" crawl-id="[[crawlId]]" sorted-location-history="[[sortedLocationHistory]]"></beer-crawl>
+          <beer-crawl name="crawl" location={{location}} online="[[online]]" crawl-id="[[crawlId]]"></beer-crawl>
           <beer-crawl-owner name="crawl-owner" online="[[online]]" crawl-id="[[crawlId]]" ></beer-crawl-owner>
 
           <beer-allbeers name="allbeers" owner="[[owner]]"></beer-allbeers>
@@ -484,7 +486,7 @@
           <beer-schedule name="schedule" category=[[organization.category.SCHEDULE]] organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-schedule>
           <beer-schedule-edit name="schedule-edit" location-id="[[locationId]]" location="{{location}}" organization="[[organization]]" org-id="[[orgId]]" name-url="[[nameUrl]]" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" geo-error="[[geoError]]"></beer-schedule-edit>
 
-          <beer-home name="home" user-data="[[userData]]" crawl-data="[[crawlData]]" location="{{location}}" idle="{{idle}}" search-string="{{searchString}}" sorted-location-history="[[sortedLocationHistory]]" all-object="[[allObject]]" all-array="[[allArray]]" home-dialog-opened="{{homeDialogOpened}}"></beer-home>
+          <beer-home name="home" location={{location}} user-data="[[userData]]" crawl-data="[[crawlData]]"></beer-home>
           <beer-favorite name="favorite"></beer-favorite>
           <beer-tap-add name="tap-add" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap-add>
           <beer-beer-edit name="beer-edit" offline="[[offline]]" place="[[place]]" organization="[[organization]]"org-id="[[orgId]]" beer-id="[[beerId]]" name-url="[[nameUrl]]" owner="[[owner]]" return-name="[[returnName]]" return-org-id="[[returnOrgId]]"></beer-beer-edit>
@@ -616,7 +618,7 @@
           type: Object
         },
 
-         geoRendered: {
+        geoRendered: {
           type: Boolean,
           value: false
         },
@@ -638,17 +640,24 @@
           value: true
         },
 
-        location:{
-          type: Object,
-        },
+       
 
-        locationHistory:{
-          type: Array
+        // locationHistory:{
+        //   type: Array
+        // },
+
+        location:{
+          type:Object
         },
 
         locationId:{
           type: String,
           computed: '_computeLocationId(queryParams)',
+        },
+
+        locationParams: {
+          type: String,
+          computed: '_computeLocationParamsUrl(location)'
         },
         
 
@@ -749,6 +758,8 @@
           computed: '_computeTruckId(queryParams)',
         },
 
+
+
         verified: {
           type: Boolean,
           value: true
@@ -787,7 +798,6 @@
         '_isSignedIn(user)',
         '_updatePageTitle(place.name, page)',
         '_scrollToTop(page)',
-        '_closeDialogs(page)',
         '_watchUser(user)'
 
         // '_setTimeoutForGeo(page)'
@@ -853,13 +863,7 @@
       },
  
       _scrollToTop: function (page){
-        console.log('scroll_top');
         Polymer.AppLayout.scroll({ top: 0, behavior: 'silent' });
-      },
-
-      _closeDialogs: function (page){
-        console.log('close dialogs')
-        // this.homeDialogOpened = false;
       },
 
       _updateUserEmailVerified: function (user){
@@ -1261,6 +1265,21 @@
 
       
 
+      _computeLocationParamsUrl: function (location) {
+        // console.log(location)
+        if(!location){
+          return null
+        }
+        if(location.latitude && location.longitude && location.address){
+          var address = encodeURIComponent(location.address); 
+          var geo = encodeURIComponent(`${location.latitude} ${location.longitude}`);
+          return `?location=${geo}&locationAddress=${address}`;
+        }
+          
+        return null;
+      },
+
+
       _computeCrawlId: function (queryParams) {
         if (queryParams) {
           if (queryParams.crawlId) {
@@ -1278,6 +1297,8 @@
         }
         return null;
       },
+
+      
 
       _computeLocationId: function (queryParams) {
         if (queryParams) {

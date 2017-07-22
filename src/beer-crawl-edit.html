@@ -1,0 +1,573 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+<link rel="import" href="../bower_components/moment-element/moment-element.html">
+
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-login.html">
+
+
+<dom-module id="beer-crawl-edit">
+
+<template strip-whitespace>
+  <style include="paper-material-styles">
+
+    a{
+      /*color: var(--app-accent-color);*/
+      text-decoration: none;
+    }
+
+    a > iron-icon {
+      text-decoration: none;
+    }
+
+    .dialog{
+      @apply --layout-vertical;
+      height: 55vh;
+      
+
+    }
+
+    .info{
+      @apply --layout-vertical;
+      height: 50vh;
+      overflow: scroll;
+    }
+
+    .public-wrapper {
+      @apply --layout-horizontal;
+      @apply --layout-end-justified;
+      @apply --layout-flex-auto;
+    }
+
+    .edit-wrapper{
+      @apply --layout-flex-9;
+      overflow: scroll;
+    }
+    
+
+    .button{
+      width:100%;
+      color: var(--app-accent-color);
+      @apply --layout-flex-12;
+      @apply --layout-flex-auto;
+    }
+
+    .description{
+      height: 200px;
+    }
+
+    ol{
+      list-style-type: none;
+    }
+
+    li{
+      @apply --layout-horizontal;
+      padding: 10px;
+      /*margin-left:20px;*/
+      border-bottom: 1px solid var(--app-secondary-color);
+
+    }
+
+    li:first-child{
+      border-top: 1px solid var(--app-secondary-color);
+    }
+
+    li:last-child{
+      background-color:green;
+    }
+
+
+    li > div {
+      margin: 0 10px 0 0;
+      font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+    }
+
+    .organization-wrapper{
+      @apply --layout-horizontal;
+      @apply --layout-justified;
+      width: 100%;
+    }
+
+    /* .icon-wrapper{
+      @apply --layout-horizontal;
+      @apply --layout-justified;
+      font-size: 1em;
+    } */
+
+    .org-icon-wrapper{
+      @apply --layout-horizontal;
+
+       @apply --layout-end-justified; 
+    }
+
+    .move-icon-wrapper{
+      @apply --layout-vertical;
+    }
+
+    .move{
+      color: var(--app-accent-color);
+    }
+
+    .delete{
+      color:red;
+    }
+
+
+  </style>
+
+  <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+  
+  <div class="dialog">
+
+    <paper-tabs selected="{{selected}}">
+      <paper-tab>Basic</paper-tab>
+      <paper-tab>Pubs</paper-tab>
+      <paper-tab>Delete</paper-tab>
+    </paper-tabs>
+
+    <iron-pages selected="{{selected}}">
+
+    <div class="info">
+  
+
+    <div class="public-wrapper">
+      <paper-toggle-button checked="{{crawl.public}}">[[editCrawlPublicMessage]]</paper-toggle-button>
+    </div>
+
+    <div class="edit-wrapper">
+      <paper-input always-float-label label="Crawl Name" value="{{crawl.name}}"></paper-input>
+      <paper-textarea always-float-label rows="3" label="Crawl Description" value="{{crawl.description}}"></paper-textarea>
+    </div>
+
+    <div class="buttons">
+      <paper-button dialog-dismiss class="button" on-tap="_updateCrawl">Save</paper-button>
+    </div>
+    </div>
+
+    <div class="info">
+      <ol>
+        <template is="dom-repeat" items="[[_organizationArray(crawl.organization)]]" as="pub">
+          <li> 
+            
+           <div class="organization-wrapper">
+              <div>
+                <!-- <div>[[pub.earlier]]</div>
+                <div>[[pub.later]]</div> -->
+                <div>[[pub.name]]</div>
+                <div>[[pub.formatted_address]]</div>
+              </div>
+              <div>
+              <div class="org-icon-wrapper"> 
+                <div class="move-icon-wrapper">
+                  <div hidden$="[[!pub.earlier]]">
+                    <paper-icon-button  class="move" crawlid="[[crawl.crawl_id]]" update="[[pub.earlier]]" placeid="[[pub.place_id]]" icon="beer-icons:arrow-upward" on-tap="_moveOrganization"></paper-icon-button>
+                  </div>
+                  <div hidden$="[[!pub.later]]">
+                    <paper-icon-button  class="move" crawlid="[[crawl.crawl_id]]" update="[[pub.later]]" placeid="[[pub.place_id]]" icon="beer-icons:arrow-downward" on-tap="_moveOrganization"></paper-icon-button>
+                  </div>
+                </div>
+
+                  <paper-icon-button class="delete" crawlid="[[crawl.crawl_id]]" placeid="[[pub.place_id]]" icon="beer-icons:delete" on-tap="_removeOrganization"></paper-icon-button>
+              </div>
+              </div>
+           </div>
+            
+          </li>
+        </template>
+        </ol>
+    </div>
+  <div>
+  <div class="info">
+    <div>Delete [[crawl.name]]?</div>
+    
+    <paper-button dialog-dismiss class="button">Delete</paper-button>
+    
+  </div>
+          
+</iron-pages>
+
+  </div>
+
+
+   
+
+      
+      
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-crawl-edit',
+
+      properties: {
+
+        crawl: {
+          type: Object
+        },
+
+        crawlId:{
+          type:String
+        },
+
+        editCrawlPublicMessage: {
+          type:String
+        },
+
+        selected:{
+          type:Number,
+          value:0
+        },
+
+        user:{
+          type: Object
+        },
+        
+        userData:{
+          type: Object
+        }
+        
+      },
+
+      // observers:['_watchUser(user)'],
+
+      observers:['_watchPublicStatus(crawl.public)',
+                 '_watchCrawlId(crawlId)'],
+
+      
+
+      _watchPublicStatus: function (crawlPublic){
+        if(crawlPublic){
+          this.editCrawlPublicMessage = 'Public'
+        }else{
+          this.editCrawlPublicMessage = 'Private'
+        }
+      },
+
+      _watchCrawlId: function (crawlId){
+        if(crawlId){
+          var that = this;
+          firebase.database(this.$.auth.app).ref(`crawl/${crawlId}`)
+            .on('value', snapshot =>{
+              var obj = snapshot.val();
+              obj.crawl_id = snapshot.key;
+              that.crawl = obj;
+            })
+        }
+      },
+      
+
+      _updateCrawl(event){
+        
+        if(!this.crawl.public){
+          this.crawl.public = null;
+        }
+        var obj = {
+          user_id: this.user.uid,
+          name: this.crawl.name,
+          description: this.crawl.description,
+          created: Math.round(Date.now()/1000),
+          public: this.crawl.public
+        }
+
+
+        if(this.user.uid){
+          if(this.crawl.crawl_id){
+            firebase.database(this.$.auth.app).ref(`crawl/${this.crawl.crawl_id}`)
+            .update(obj)
+            .then(() =>{
+              console.log('Updated Beer Crawl')
+            })
+            .catch(error =>{
+              console.log('ERROR_PUSH', error)
+            })
+          }
+        }
+      },
+
+      _makePublic: function (event){
+        var target = event.currentTarget;
+        var crawlId = target.crawlid;
+        var shared = target.shared;
+
+        var saveshared = null;
+        
+
+        if(!shared){
+          saveshared = true;
+        }
+
+        firebase.database(this.$.auth.app).ref(`/crawl/${crawlId}`)
+          .update({public: saveshared})
+          .then(()=>{
+            console.log('shared updated');
+          })
+          .catch(error =>{
+            console.log('ERROR_SAVING', error);
+          })
+      },
+
+      _openEditCrawlDialog: function (){
+        var target = event.currentTarget;
+        var crawl = target.crawl
+        this.editCrawlId = crawl.$key;
+        this.editCrawlDescription = crawl.description;
+        this.editCrawlName = crawl.name;
+        if(crawl.public){
+          this.editCrawlPublic = crawl.public
+        }else{
+          this.editCrawlPublic = null;
+        }
+        
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.editCrawlDialog);
+        this.$.editCrawlDialog.open();
+      },
+
+      _openDeleteCrawlDialog: function (){
+        var target = event.currentTarget;
+        var crawl = target.crawl
+        this.deleteCrawlId = target.crawl.$key;
+        this.deleteDescription = target.crawl.description;
+        this.deleteName = target.crawl.name;
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.deleteCrawlDialog);
+        this.$.deleteCrawlDialog.open();
+      },
+
+      
+
+      _deleteCrawl: function (){
+        if(this.deleteCrawlId){
+          
+          firebase.database(this.$.auth.app).ref(`/crawl/${this.deleteCrawlId}`)
+          .update({deleted: true,
+                   user_id: this.user.uid})
+          .then(()=>{
+            console.log('Deleted crawl')
+          })
+          .catch(error =>{
+            console.log('DELETE_ERROR', error)
+          })
+        }
+        this.$.deleteCrawlDialog.close();
+      },
+
+      _moveOrganization: function (){
+         var target = event.currentTarget;
+         var crawl_id = target.crawlid;
+         var update = target.update;
+         var place_id = target.placeid;
+       
+         if(crawl_id){
+           if(place_id){
+             firebase.database(this.$.auth.app).ref(`crawl/${crawl_id}/organization/${place_id}`)
+              .update({created: update})
+              .then(()=>{
+                console.log('organization moved')
+              })
+              .catch(error =>{
+                console.log('MOVE_ERROR', error)
+              })
+           }
+         }
+      },
+
+      _removeOrganization: function () {
+         var target = event.currentTarget;
+         var crawl_id = target.crawlid;
+         var place_id = target.placeid;
+
+         console.log(crawl_id)
+         console.log(place_id)
+
+         if(crawl_id){
+           if(place_id){
+             firebase.database(this.$.auth.app).ref(`crawl/${crawl_id}/organization/${place_id}`)
+              .remove()
+              .then(()=>{
+                console.log('organization removed')
+              })
+              .catch(error =>{
+                console.log('DELETE_ERROR', error)
+              })
+           }
+         }
+      },
+
+
+      _organizationArray: function (obj){
+        var returnArray = [];
+        if(typeof obj ==='object'){
+          var key = Object.keys(obj);
+          for (let value of key){
+            obj[value].totalLength = key.length;
+            returnArray.push(obj[value])
+          }
+        }
+
+        var sorted = returnArray.sort(this._sortByCreated);
+        var earlier = null;
+        var later = null;
+        var current = Math.round(Date.now()/1000);
+
+        
+
+        if(sorted.length <= 1){
+          earlier = null;
+          later = null;
+        }else if(sorted.length === 2){
+          sorted[0].earlier = null;
+          sorted[0].later = current;
+          sorted[1].earlier = null;
+          sorted[1].later = null;
+        }else{
+
+          for(var i=0; i<sorted.length; i++){
+            if(i === 0){
+              sorted[i].earlier = null;
+              sorted[i].later = null;
+              // sorted[i].later =  Math.round((sorted[i+1].created + (sorted[i+2]) ? sorted[i+2].created : current)/2);
+
+            }else if(i===1){
+              sorted[1].earlier = sorted[0].created - (24*60*60);
+              sorted[1].later = (sorted.length ===3) ? current :  Math.round((sorted[i+1].created + sorted[i+2].created)/2);
+
+            }else if(i === sorted.length-1){
+              sorted[i].earlier = (sorted[i-2].created+sorted[i-1].created)/2;
+              sorted[i].later = null;
+            
+            }else{
+                sorted[i].earlier = (sorted[i-2].created+sorted[i-1].created)/2;
+                sorted[i].later =  (!sorted[i+2]) ? current : Math.round((sorted[i+1].created + sorted[i+2].created)/2);
+            }
+          }
+
+        }
+
+
+        // for(var i=0; i<sorted.length; i++){
+        //   if(i===0){
+        //     earlier = null
+        //     later = ((i+2) >= sorted.length) ? Math.round(Date.now()/1000): Math.round((sorted[i].created + sorted[i+2].created)/2);
+        //   if(i===1){
+        //      earlier = sorted[0].created/2;
+        //   }
+        //   if(i === (sorted.length-1)){
+
+        //   }
+        //   if(sorted)
+          
+        //   if(i === (sorted.length-1)){
+        //      later = null  : Math.round((sorted[i].created + sorted[i+1].created)/2);
+        //   }
+
+        //   }
+
+
+        //   var later = (i === (sorted.length-1)) ? null : Math.round((sorted[i].created + sorted[i+1].created)/2);
+        //   var earlier = (i===0) ? null : (sorted[i-1].created + sorted[i].created)/2;
+          
+        //   sorted[i].later = later;
+        //   sorted[i].earlier = earlier;
+
+        // }
+        // for (let value of sorted){
+        //   value.previous = (earlier+value.created)/2;
+        //   earlier = value.created;
+        // }
+        return sorted;
+      },
+
+      _sortByCreated: function(a,b){
+
+        if (a.created < b.created)
+          return -1;
+        if (a.created > b.created)
+          return 1;
+        return 0;
+      },
+
+       _sortByNew: function(a,b){
+        if (a.created > b.created)
+          return -1;
+        if (a.created < b.created)
+          return 1;
+        return 0;
+      },
+
+      _hideLastIcon:function (index, total){
+        if (total <= index+1){
+          return true;
+        }
+        return false;
+      },
+
+
+      _addBreaks: function(str){
+        'use strict';
+        if(str){
+          return str.split('\n');
+        }else{
+          return [];
+        }
+      },
+      
+      _filter(crawlId){
+        console.log('crawlId', crawlId)
+        return function (crawl){
+          
+          if(!crawlId){
+            if(crawl.deleted){
+              return false;
+            }
+            return true;
+          }else if(crawl.$key === crawlId){
+            return true;
+          }
+          return true;
+          
+        }
+        
+        if(!item.deleted){
+          return true;
+        }
+        return false;
+      },
+
+
+      _computedEditPublicMessage: function (share){
+        if(share){
+          return 'Shared'
+        }
+        return 'Private'
+      },
+
+      _test: function(obj){
+          console.log(obj);
+
+      }
+
+    });
+
+  </script>
+
+</dom-module>

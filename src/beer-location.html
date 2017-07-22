@@ -1,20 +1,28 @@
 
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
-
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-location/iron-location.html">
+<link rel="import" href="../bower_components/iron-location/iron-query-params.html">
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+
 <link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+
+<link rel="import" href="../bower_components/geo-location/geo-location.html">
 
 <link rel="import" href="beer-icons.html">
 
@@ -25,290 +33,611 @@
 
   <template strip-whitespace>
     
-    <style include="paper-material-styles">
-
-     a{
-      color: var(--app-primary-color);
-      text-decoration: none;
-     }
-
-    paper-spinner-lite{
-      position: absolute;
-      top: 5%;
-      right: 5%;
-      font-size: .4em;
-
+  <style include="paper-material-styles">
+    :host {
+      display: block;
+      --paper-progress-container-color: white;
+      --paper-progress-active-color: var(--app-accent-color);
+      --paper-progress-secondary-color: var(--app-accent-color);
+      --paper-progress-disabled-active-color: white;
+      --paper-progress-disabled-secondary-color: white;
+      --paper-progress-height: 1px;
+      
+     
+      margin: 15px 10px;
+      @apply --paper-material-elevation-1;
+    }
+    
+    .card{
+      padding: 10px;
     }
 
-    paper-material > div{
-        margin: 10px
-      }
+    .input-wrapper{
+      @apply --layout-horizontal; 
+    }
 
+    .title{
+      font-size: 1.2em;
+      font-weight: 400;
+      margin: 10px 0;
+    }
+
+    .change-location-wrapper{
+      @apply --layout-horizontal;
+      color: var(--app-accent-color); 
+    }
+
+    .change-location{
+      font-size: 1em;
+      font-weight: 300;
+      color: var(--app-accent-color);
+      cursor: pointer;
+      margin: 9px 0 0 0;
+    }
+
+    .gps-wrapper{
+      @apply --layout-horizontal;
+      color: var(--app-accent-color); 
+    }
+
+    .gps-label{
+      font-size: 1em;
+      font-weight: 300;
+      color: var(--app-accent-color);
+      cursor: pointer;
+      margin: 9px 0 0 0;
+    }
+
+    .toast-wrapper{
+      @apply --layout-horizontal; 
+      @apply --layout-justified; 
+    }
+
+    
+
+    .location-input{
+      width: 100%;
+    }
 
     .flip{
       -webkit-transform: scale(1, -1);
       transform: scale(1, -1);
     }
-
-    .title-wrapper{
-       @apply --layout-horizontal;
-       @apply --layout-justified;
-       @apply --layout-wrap;
+    .progress{
+      width: 100%;
     }
-
-    .locationAddress{
-      font-size: 1.2em;
-      font-weight: 500;
-      color: var(--app-primary-color);
-    }
-
-   .title{
-     font-size: 1em;
-     font-weight: 500;
-     color: var(--app-accent-color);
-     margin: 10px 0
-   }
-
-   .location-list {
-        color: var(--app-primary-color);
-    }
-
-   .geo-error{
-      font-size: .8em;
-      font-weight: 300;
-      color: var(--app-secondary-color);
-    }
-
-    .distance {
-      color: var(--app-secondary-color);
-      font-size: 1.2em;
-      font-weight: 300;
-    }
-    
-    .name{
-      font-size: 1.5em;
-      font-weight: 300;
-      color: var(--app-primary-color);
-    }
-
-    .address{
-      color: var(--app-seconpdary-color);
-      font-size: 1em;
-      font-weight: 400;
-    }
-
-    .wrapper{
-        @apply --layout-horizontal;
-        font-size: 1em;
-        font-weight: 300;
-        color: var(--app-accent-color);
-      }
-
-      .location-label{
-        margin: 10px 0
-      }
-      
-      paper-input{
-        margin: 0 10px;
-        color: var(--app-accent-color);
-      }
-
-      paper-button{
-        color: var(--app-accent-color);
-      }
-
      
+  </style> 
 
-      
-    </style>
+    <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api> 
+    <iron-location query="{{query}}"></iron-location>
+    <iron-query-params params-string="{{query}}" params-object="{{queryParams}}"></iron-query-params>
+    <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+    <geo-location 
+      id="geoLocation"
+      idle="{{idle}}"
+      latitude="{{geoLatitude}}"
+      longitude="{{geoLongitude}}">
+    </geo-location>
 
-        <div class="card">
-        <div class="locationAddress">[[location.address]]</div>
-        <paper-spinner-lite id="spinner"></paper-spinner-lite>
-        <div hidden$="[[!geoError]]">
-          <div class="geo-error">Location not available from this device.</div>
-        </div>
-        <div>
-        <iron-label class="wrapper">
-              <paper-icon-button icon="beer-icons:[[gpsIcon]]" on-tap="_resetToLocal"></paper-icon-button>
-              <span class="title">Near my location<span>
-          </iron-label>
+    <app-localstorage-document 
+        id="locationHistory"
+        key="locationHistory" 
+        data="{{locationHistory}}">
+    </app-localstorage-document>
+
+    <!-- <app-localstorage-document 
+        key="location" 
+        data="{{location}}">
+    </app-localstorage-document> -->
 
 
-        <iron-label class="wrapper">
+    <div class="card">
 
-            
-            <paper-icon-button class$="[[toggleClass]]" icon="beer-icons:expand-more" noink on-tap="_toggle"></paper-icon-button>
-            
-            <span class="location-label">Change location</span>
-          </iron-label>
-        </div>
-       
-
-          <iron-collapse opened="[[toggle]]" no-animation>        
-              <paper-listbox
-                attr-for-selected="location"
-                selected-class="location-list" 
-                class="location-list"
-                selected="{{location}}"
-                on-click="close">
-                <template is="dom-repeat" items="[[sortedLocationHistory]]" as="history" sort="_sortLocation">
-                  <paper-item location="[[history]]">[[history.address]]</paper-item>
-              </template>
-            </paper-listbox>
-              <paper-input value="{{address}}" on-keydown="_watchForSubmit" label="City, State; or Zip"></paper-input>
-            <paper-button on-click="_getGeoFromAddress">SET LOCATION</paper-button>
-          </iron-collapse>
-              
+      <div class="title" on-tap="_closeLocationSearch">[[location.address]]</div>
+    
+      <div class="change-location-wrapper">
+        <paper-icon-button class$="[[toggleClass]]" icon="beer-icons:expand-more" noink on-tap="_closeLocationSearch" alt="Change location" title="Change location"> </paper-icon-button>
+        <div class="change-location" on-tap="_closeLocationSearch">Change locations</div>
       </div>
 
+      <div hidden$="[[!toggleSearch]]">
 
+        <div class="gps-wrapper">
+          <paper-icon-button icon="beer-icons:[[gpsIcon]]" on-tap="_resetToLocal"></paper-icon-button>
+          <div class="gps-label" on-tap="_resetToLocal">Near my location</div>
+        </div>
+
+        <div class="input-wrapper">
+          <paper-input no-label-float class="location-input" label="location" value="{{editLocationAddress}}" on-keydown="_watchForSubmit" focused="{{locationInputFocus}}">
+            <paper-icon-button icon="beer-icons:search" slot="prefix"></paper-icon-button>
+          </paper-input>
+        </div>
+
+        <div hidden$="[[!toggle]]">
+          <paper-listbox
+                attr-for-selected="locationitem"
+                selected-class="location-list" 
+                class="location-list"
+                selected="{{selectLocation}}"
+                on-tap="_testOnTap">
+
+            <template is="dom-repeat" items="[[searchLocationArray]]" as="location">
+              <paper-item locationitem="[[location]]">[[location.address]]</paper-item>
+            </template>  
+
+            <template is="dom-repeat" items="[[locationArray]]" as="location" sort="_sortByAddress">
+              <paper-item locationitem="[[location]]">[[location.address]]</paper-item>
+            </template>   
+          </paper-listbox>
+        </div>
+      </div>
+    </div>
+
+    <paper-progress id="progress" disabled indeterminate class="progress"></paper-progress>
+    
+    <paper-toast 
+        id="toast" 
+        duration="0"
+        horizontal-align="right"
+        horizontal-offset="50"
+        vertical-offset="100"
+        opened="[[geoError]]">
+        <div class="toast-wrapper">
+            <div>Having trouble getting Geo Data from this device.</div>
+            <div>
+              <paper-button on-tap="_closeGeoError" >Close</paper-button>
+            </div>
+        </div>
+        
+      </paper-toast>
+     
+   
   
-</template>
+  </template>
   <script>
 
     Polymer({
 
       is: 'beer-location',
 
+   
+
       properties: {
 
-        address: {
-          type: String
+        editLocationAddress:String,
+        searchAddress:String,
+
+        searchLocationArray:{
+          type:Array,
+          value: function (){return [];}
+        },
+
+        queryParams:{
+          type:Object
+        },
+
+        gpsIcon:{
+          type:String,
+          value:'gps-searching'
         },
 
         idle:{
           type: Boolean,
+          value:true
+        },
+
+        geoLatitude:Number,
+        geoLongitude:Number,
+        geoError:{
+          type:Boolean,
+          value:false
+        },
+
+        locationInputFocus:{
+          type:Boolean
+        },
+
+        location:{
+          type:Object,
+          // computed: '_computeLocationParams(queryParams)', 
           notify: true
         },
 
-        geoError:{
-          type: Boolean,
-          value: false
+        locationParams:{
+          type:Object,
+          computed: '_computeLocationParams(queryParams)'
         },
 
-        gpsIcon:{
-          type: String,
-          value: 'gps-searching'
+        locationHistory:{
+          type:Object,
+          value: function () {return {};}
         },
 
+        // locationHistoryArray:{
+        //   type:Array,
+        //   value: function () {return []},
+        //   computed: '_computeLocationArray(locationHistory)',
+        // },
 
-        location: {
-          type: Object,
-          notify: true,
-          observer: '_observeLocation'
+        locationCache:{
+          type:Object,
+          // computed: '_computeLocationCache()'
         },
 
-        locationHistory: {
-          type: Object,
+        locationArray:{
+          type:Array,
           
-        },
-        sortedLocationHistory: {
-          type: Array
+          value: function () {return []}
         },
 
-        login: {
-         type: Boolean,
-         notify: true
-       },
+        locationInputFocus:{
+          type:Boolean,
+          value:false
+        },
 
-
-        searchString:{
-          type: 'String',
-          notify:true
+        selectLocation:{
+          type:Object
         },
 
         toggle:{
+          type:Boolean,
+          value:false
+        },
+
+        toggleClass:String,
+
+        toggleSearch:{
+          type:Boolean,
+          value:false
+        },
+
+        user:{
+          type:Object
+        },
+
+        _mapLoaded:{
           type: Boolean,
           value: false
         },
 
-        toggleClass:{
-          type: String
+        _cacheHistorySet:{
+          type:Boolean,
+          value: false
+        },
+
+        _ready:{
+          type:Boolean,
+          value:false
+        }
+     
+      },
+
+      ready:function (){
+        if(this.locationParams){
+          // console.log('ready')
+         this.location = this.locationParams;
+         
+         
+        }else{
+          try{
+           this.location = JSON.parse(window.localStorage.getItem('location'))
+          }catch(error){
+            console.error(error);
+          }
+
+          // this._saveLocation(this.location);
         }
 
+        this._ready=true;
+        
+       
+          
       },
 
 
+      observers:[                 
+                '_saveLocation(location)',
+                // '_updateLocationParams(location)',
+                '_watchUser(user)',
+                '_setNewLocation(searchAddress, _mapLoaded)',
+                '_updateChangingLocations(selectLocation)',
+                '_watchInputFocus(locationInputFocus)',
+                '_watchLocalData(geoLatitude, geoLongitude)',
+                '_getCachedLocationHistory(locationHistory, user)'
+                // '_syncLocationHistoryToLocal(locationArray)'
 
-      _observeLocation: function (newLocation, oldLocation){
+                ],
 
-        this.$.spinner.active = false;
+      listeners: {'api-load':'_mapHasLoaded'},
 
-        if(oldLocation){
+      _mapHasLoaded: function (){
+        this._mapLoaded = true;
+      },
+
+      _syncLocationHistoryToLocal: function (locationArray){
+        // console.log(locationArray);
+        window.localStorage.setItem('locationHistory', JSON.stringify(locationArray));
+      },
+
+      _resetToLocal: function (){
+        // this.$.spinner.active = true;
+        this.gpsIcon = 'gps-searching'
+        this.$.progress.disabled = false;
+        this.toggle = false;
+        this.idle = false;
+
+        var that = this; 
+        this.timeout = setTimeout(function(){ 
+            console.log('sent error message');
+            that.geoError = true;
+            that.toggle = true;
+            that.$.progress.disabled = true;
+            }, 7000);
+          },
+
+      _closeGeoError: function () {
+        this.geoError=false;
+      },
+
+       _watchLocalData: function (latitude, longitude){
+        if(latitude && longitude){
+          var that = this;
+          var locationObj = {};
+          locationObj.location = {};
+          locationObj.location.lat = latitude;
+          locationObj.location.lng = longitude;
+
+          this.geocode(locationObj, function (location, placeId) {
+            // console.log('geo', location);
+            that.location = location;
+            
+            that.$.progress.disabled = true;
+            that.toggle = false;
+            that.toggleSearch = false;
+            clearTimeout(that.timeout);
+          });
+        }
+      },
+
+
+      _watchUser: function (user){
+        // console.log(user);
+        if(user){
+          
+          if(user.uid){
+            this._saveLocation(this.location);
+            var that = this;
+            firebase.database(this.$.auth.app).ref(`/user/${user.uid}/location`)
+              .orderByChild('created').limitToLast(5)
+              .on('value', snapshot => {
+                that.splice("locationArray", 0, that.locationArray.length);
+                // console.log(snapshot.val())
+                snapshot.forEach(location =>{
+                  // console.log(location)
+                  if(location.child('address').exists()){
+                    that.push('locationArray', location.val());
+                    that.set(`locationHistory.${location.child('address').val()}`, location.val());
+                  }
+                })
+              })
+          }
+        }else{
+        
+          
+        }
+      },
+
+
+      _saveLocation: function (location){
+        // console.log(location)
+
+        this.toggle = false;
+        this.toggleSearch = false;
+        this.toggleClass = '';
+        if(location){
+          this.editLocationAddress = location.address;
+          //  console.log('location', location);
+          location.created = Math.round(Date.now()/1000);
+
+          window.localStorage.setItem('location', JSON.stringify(location));
        
+          if(this.user){
+            if(this.user.uid){
+              // console.log(location)
+              firebase.database(this.$.auth.app).ref(`/user/${this.user.uid}/location/${location.address}`)
+              .update(location)
+              .then(() =>{
+                console.log('updated location');
+                
+              })
+            }
+          }
+          // console.log('has location')
+            var address = encodeURIComponent(this.location.address);
+            var geo = encodeURIComponent(`${this.location.latitude} ${this.location.longitude}`);
+            this.set(`queryParams.locationAddress`, address);
+            this.set(`queryParams.location`, geo);
+            this.urlParameter=`location=${geo}&locationAddress=${address}`;
         }
         
       },
 
+      _updateLocationParams: function (location) {
+        console.log('location', location);
 
-      _resetToLocal: function (){
-        this.$.spinner.active = true;
-        this.gpsIcon = 'gps-searching'
-        this.toggle = false;
-        this.idle = false;
-       
+        // if(!this.locationParams){
+          
+          if(this.location){
+            console.log('has location')
+            var address = encodeURIComponent(this.location.address);
+            var geo = encodeURIComponent(`${this.location.latitude} ${this.location.longitude}`);
+            this.set(`queryParams.locationAddress`, address);
+            this.set(`queryParams.location`, geo);
+            this.urlParameter=`location=${geo}&locationAddress=${address}`;
+          // }
+        }
       },
 
-
-  
+      _watchInputFocus: function (focus){
+        if(focus){
+          this.toggle = true;
+          this.editLocationAddress='';
+          this.$.progress.disabled = true;
+        }
+      },
 
       _watchForSubmit: function (event){
+
          var key = event.which || event.keyCode;
+         if(this.editLocationAddress.length >=7){
+           if (this.editLocationAddress.indexOf(' ') > -1){
+            console.log('submitted');
+            this._getGeoFromAddress();
+           }
+         }
+
          if(key === 13){
+           console.log('submitted');
           this._getGeoFromAddress();
          }
       },
 
-      _getGeoFromAddress: function () {
-        this.searchString = this.address;
-        this.searchString = '';
-        this.address = '';
-        this.$.spinner.active = true;
-        this.toggle =false;
+
+
+       _getGeoFromAddress: function () {
+        
+        this.searchAddress = this.editLocationAddress;
+        console.log(this.searchAddress)
+
       },
 
 
+       _setNewLocation: function (searchAddress, mapLoaded) {
 
+        // console.log('new location', searchAddress);
+        if(searchAddress){
+          if(mapLoaded){
+            this.radius = 10;
+            var that = this;
+            var location = {};
+            location.address = searchAddress;
 
-      _sort: function (a,b){
-        // console.log('sorted');
-        return parseFloat(a.sort) - parseFloat(b.sort) ;
-      },
+            this.geocodeLocation(location, function (location, placeId) {
 
-
-      _sortLocation: function(a,b){
-        'use strict';
-        if (a.address < b.address)
-          return -1;
-        if (a.address > b.address)
-          return 1;
-        return 0;
-      },
-      
-     
-
-      _defaultIcon: function (icon){
-        if(icon){
-          true;
-        }else{
-          false
+            });
+          }
         }
       },
 
-      _computeFilter: function (radius){
-        return function(pub) {
-          if(pub){
-          return pub.distance <=radius;
-          }else{
-            return false
+
+      geocodeLocation: function (location, onComplete) {
+
+        var geocoder = this._geocoder || new google.maps.Geocoder();
+        var that = this;
+        this.splice('searchLocationArray', 0, this.searchLocationArray.length)
+
+        geocoder.geocode(location, function(results, status) {
+
+          if(status == google.maps.GeocoderStatus.OK){
+            for (let place of results){
+              var neighborhood = '';
+              var city = '';
+              var state = '';
+            
+              for (let address of place.address_components){
+                console.log(address.long_name);
+                for (let type of address.types){
+                  
+                  if(type === 'locality'){
+                    city = address.long_name + ', ';
+                  }else if (type === 'administrative_area_level_1') {
+                    state = address.long_name + ' ';
+                  }else if (type === 'neighborhood') {
+                    neighborhood = address.long_name + ', ';
+                  }
+                }
+              }
+
+              let obj = {address: neighborhood+city+state,
+                        latitude: place.geometry.location.lat(),
+                        longitude: place.geometry.location.lng()};
+              that.push('searchLocationArray', obj);
+
+            }
           }
-        };
+        })     
       },
 
-      _toggle: function (){
-        this.toggle = !this.toggle
-        if(this.toggle){
+
+       geocode: function(location, onComplete) {
+
+         var geocoder = this._geocoder || new google.maps.Geocoder();
+
+            geocoder.geocode(location, function(results, status) {
+
+              if (status == google.maps.GeocoderStatus.OK && results[0]) {
+
+                var searchAddressString = '';
+                var neighborhood = '';
+                var city = '';
+                var state = '';
+                var zipcode = '';
+                
+                var address = results[0].address_components;
+  
+                for (var i=0; i<address.length; i++){
+                  var type = address[i].types;
+
+                  for (var j=0; j<type.length; j++){
+                    if(type[j] === 'locality'){
+                      city = address[i].long_name + ', ';
+                    }else if (type[j] === 'administrative_area_level_1') {
+                      state = address[i].long_name + ' ';
+
+                    }else if (type[j] === 'neighborhood') {
+                      neighborhood = address[i].long_name + ', ';
+
+                    }else if (type[j] === 'postal_code') {
+                      zipcode = address[i].long_name + ' ';
+                    }
+                  }
+                }
+                addressKey = neighborhood+city+state
+                searchAddressString = neighborhood+city+state+zipcode;
+
+                var completeObj = {};
+
+                completeObj.latitude = results[0].geometry.location.lat(), 
+                completeObj.longitude = results[0].geometry.location.lng(), 
+                completeObj.address = searchAddressString;
+                completeObj.addressKey = addressKey;
+                console.log('completeObj', completeObj)
+                
+                onComplete(completeObj,results[0].place_id);  
+                                         
+              } else {
+                console.warn('Geocode failed for ' + address + '. Status ' + status, results);
+                
+                onComplete();
+              }
+            });
+            return true;
+      },
+
+
+      _updateChangingLocations(location){
+        if(location){
+          this.splice('searchLocationArray', 0, this.searchLocationArray.length)
+          this.location = location;
+        }
+      },
+
+      _closeLocationSearch: function (){
+
+        this.toggle = false;
+        this.toggleSearch = !this.toggleSearch;
+        if(this.toggleSearch){
           this.toggleClass = 'flip'
         }else{
           this.toggleClass = '';
@@ -316,11 +645,60 @@
       },
 
 
-      close: function (){
-        this.toggle = false;
-        // this.searchString = this.address;
+      _computeLocationParams: function (newParams){
+
+        if(!newParams){
+          return null;
+        }
+   
+        if (newParams.location && newParams.locationAddress) {
+          var locationArray = decodeURIComponent(newParams.location).split(' ');
+          var address = decodeURIComponent(newParams.locationAddress);
+
+          if(locationArray.length !== 2){
+            return null;
+          }
+          var location = {address: address, latitude:Number(locationArray[0]), longitude:Number(locationArray[1])}
+          return location;
+        }
+        return null;
       },
 
+      _getCachedLocationHistory: function (locationHistory, user) {
+        let returnArray = [];
+        if(!user){
+        if(this.locationHistory){
+            for (let key of Object.keys(this.locationHistory)){
+              var location = this.locationHistory[key];
+              // console.log('location', location)
+              this.push('locationArray', location);
+            }
+          }
+        }
+      },
+
+      _sortByAddress: function(a,b){
+        'use strict';
+        if (a.address < b.address)
+          return -1;
+        if (a.address > b.address)
+          return 1;
+        return 0;
+      },
+
+      _computeLocationCache: function (){
+        var cache = window.localStorage.getItem('locationHistory')
+        if (cache){
+          return JSON.parse(cache);
+        }else{
+          return {};
+        }
+      },
+
+      _testOnTap: function (event){
+        console.log(event)
+      },
+     
       _test: function(obj){
           console.log("TEST",obj);
       }

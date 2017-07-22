@@ -424,12 +424,19 @@
           type: Object
         },
 
+        permenentlyClosed:{
+          type:Boolean,
+          value:false,
+          computed: '_computePermanentlyClosed(place)'
+        },
+
         user:{
           type: Object
         }
       },
 
-      observers:['_addNewOrg(place, user)'],
+      observers:['_addNewOrg(place, user)',
+                  '_closeLocation(permenentlyClosed)'],
 
       _addNewOrg: function (place, user){
         if(user){
@@ -454,6 +461,20 @@
             }
           }
         
+      },
+
+      _closeLocation: function (closed){
+        if(closed){
+          firebase.database(this.$.auth.app).ref(`/newOrg/${this.place.place_id}`)
+            .update({domain:'permenently_closed'})
+            .then(function (){
+              console.log('SUBMIT_CLOSED')
+            })
+            .catch(function (error){
+              console.log('SUBMIT_CLOSED_ERROR', error);
+            })
+          
+        }
       },
 
       _getDomain: function (website){
@@ -649,6 +670,15 @@
         }else{
           return false;
         }
+      },
+
+      _computePermanentlyClosed: function (place){
+      if(place){
+        if(place.permanently_closed){
+          return true;
+        }
+      }
+        return false;
       },
 
 

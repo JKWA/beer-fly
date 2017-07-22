@@ -9,6 +9,7 @@
 <link rel="import" href="../bower_components/geo-query/geofire-import.html">
 
 <link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-location.html">
 <link rel="import" href="beer-beer-rating.html">
 <link rel="import" href="beer-pub-card.html">
 
@@ -42,7 +43,7 @@
     .card{
       padding: 10px;
       margin: 10px;
-      @apply --paper-material-elevation-0;
+      @apply --paper-material-elevation-1;
     }
 
     .title{
@@ -127,33 +128,37 @@
       data="{{beer}}">
     </firebase-document>
 
-    <div class='card' animated-shadow="false">
-      <div class="your-location">Your location: [[location.address]]</div>
-    </div>
-    
-     <div class='card' animated-shadow="false">
-          
-          <div class="title">
-            <div>
-              <beer-beer-rating 
-                  beer-id="[[beerId]]"
-                  login="{{login}}">
-              </beer-beer-rating>
-            </div> 
-          </div>
 
-          <div class="wrapper">
-            <div class="name">[[beer.name]]</div>
-            <div class="style">[[beer.styleName]]</div>
-            <div class="description">[[beer.description]]</div>       
-            <div class="location">
-              <div>[[beer.breweryName]] - </div>
-              <div>[[beer.city]],</div>
-              <div>[[beer.state]]</div>
-            </div>
-            <div class="footer-abv" hidden$="[[!abv]]">ABV: [[beer.abv]]</div>
-              
+
+      <div>
+        <beer-location
+          location={{location}}>
+        </beer-location>    
+      </div>
+    
+      <div class="card">
+          
+        <div class="title">
+          <div>
+            <beer-beer-rating 
+                beer-id="[[beerId]]"
+                login="{{login}}">
+            </beer-beer-rating>
+          </div> 
+        </div>
+
+        <div class="wrapper">
+          <div class="name">[[beer.name]]</div>
+          <div class="style">[[beer.styleName]]</div>
+          <div class="description">[[beer.description]]</div>       
+          <div class="location">
+            <div>[[beer.breweryName]] - </div>
+            <div>[[beer.city]],</div>
+            <div>[[beer.state]]</div>
           </div>
+          <div class="footer-abv" hidden$="[[!abv]]">ABV: [[beer.abv]]</div>
+            
+        </div>
 
       </div>
     
@@ -166,17 +171,15 @@
           observe="sort distance">
 
          <beer-pub-card 
+            open-edit-pub-crawl="{{homeDialogOpened}}"
             place-id="[[pub.place_id]]"
-            name="[[pub.name]]"
-            address="[[pub.vicinity]]"
-            motto="[[pub.motto]]"
-            distance="[[pub.distance]]"  
-            photo-url="[[pub.mainImage.banner.url]]"
-            thumbnail="[[pub.mainImage.banner.thumbnail]]"
-   
-            dog-friendly="[[!pub.dogFriendly]]"
-            patio="[[!pub.patio]]"
-            over21="[[!pub.over21]]"
+            user-data="[[userData]]"
+            edit-favorite="{{editFavorite}}"
+            place="[[pub]]"
+            edit-place="{{editPlace}}"
+            user="[[user]]"
+            
+           
             login="{{login}}">
         </beer-pub-card>
 
@@ -229,7 +232,7 @@
         var number = 0;
         var radius = 100;
 
-        query.center = [location.location.latitude, location.location.longitude];
+        query.center = [location.latitude, location.longitude];
         query.radius = radius*1.609344;
 
 

@@ -1,0 +1,742 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-location/iron-location.html">
+<link rel="import" href="../bower_components/iron-location/iron-query-params.html">
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+
+<link rel="import" href="../bower_components/geo-location/geo-location.html">
+
+<link rel="import" href="beer-icons.html">
+
+
+
+
+<dom-module id="beer-location">
+
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
+
+     a{
+      color: var(--app-primary-color);
+      text-decoration: none;
+     }
+
+    paper-spinner-lite{
+      position: absolute;
+      top: 5%;
+      right: 5%;
+      font-size: .4em;
+
+    }
+
+    paper-material > div{
+        margin: 10px
+      }
+
+
+    .flip{
+      -webkit-transform: scale(1, -1);
+      transform: scale(1, -1);
+    }
+
+    .title-wrapper{
+       @apply --layout-horizontal;
+       @apply --layout-justified;
+       @apply --layout-wrap;
+    }
+
+    .locationAddress{
+      font-size: 1.2em;
+      font-weight: 500;
+      color: var(--app-primary-color);
+    }
+
+    .title{
+      font-size: 1em;
+      font-weight: 500;
+      color: var(--app-accent-color);
+      margin: 10px 0
+    }
+
+   .location-list {
+        color: var(--app-primary-color);
+    }
+
+    .geo-wrapper{
+      @apply --layout-vertical;
+    }
+
+   .geo-error{
+      font-size: .8em;
+      font-weight: 300;
+      color: var(--app-secondary-color);
+    }
+
+    .distance {
+      color: var(--app-secondary-color);
+      font-size: 1.2em;
+      font-weight: 300;
+    }
+    
+    .name{
+      font-size: 1.5em;
+      font-weight: 300;
+      color: var(--app-primary-color);
+    }
+
+    .address{
+      color: var(--app-secondary-color);
+      font-size: 1em;
+      font-weight: 400;
+    }
+
+    .wrapper{
+        @apply --layout-horizontal;
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-accent-color);
+      }
+
+      .location-label{
+        margin: 10px 0
+      }
+      
+      paper-input{
+        margin: 0 10px;
+        color: var(--app-accent-color);
+      }
+
+      paper-button{
+        color: var(--app-accent-color);
+      }
+
+  </style> 
+
+     <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api> 
+    <iron-location query="{{query}}"></iron-location>
+    <iron-query-params params-string="{{query}}" params-object="{{queryParams}}"></iron-query-params>
+    
+    <app-localstorage-document 
+      id="locationHistory"
+      key="locationHistory"
+      data="{{locationHistory}}">
+    </app-localstorage-document> 
+      
+    <geo-location 
+      id="geoLocation"
+      idle="{{idle}}"
+      latitude="{{geoLatitude}}"
+      longitude="{{geoLongitude}}">
+    </geo-location>
+      
+
+
+
+    <div class="geo-wrapper">
+      <div class="locationAddress">[[address]]</div>
+      <div hidden$="[[!geoError]]">
+        <div class="geo-error">Location not available from this device.</div>
+      </div>
+
+      <div>
+        <iron-label>
+          <paper-icon-button icon="beer-icons:[[gpsIcon]]" on-tap="_resetToLocal"></paper-icon-button>
+          <span class="title">Near my location<span>
+        </iron-label>
+      </div>
+      <div>
+        <iron-label>
+          <paper-icon-button class$="[[toggleClass]]" icon="beer-icons:expand-more" noink on-tap="_toggle"></paper-icon-button>
+          <span class="location-label">Change location</span>
+        </iron-label>
+      </div>
+
+      <div>
+        <iron-collapse opened="[[toggle]]" no-animation>        
+            <paper-listbox
+              attr-for-selected="location"
+              selected-class="location-list" 
+              class="location-list"
+              selected="{{locationSelect}}"
+              on-click="close">
+              <template is="dom-repeat" items="[[sortedLocationHistory]]" as="history" sort="_sortLocation">
+                  <paper-item location="[[history]]">[[history.address]]</paper-item>
+              </template>
+            </paper-listbox>
+            <paper-input value="{{searchAddress}}" on-keydown="_watchForSubmit" label="City, State; or Zip">
+              <iron-icon icon="beer-icons:search" slot="prefix"></iron-icon>
+              <paper-icon-button class="clear" slot="suffix" on-tap="_clearInput" icon="beer-icons:clear" alt="clear" title="clear"> 
+            </paper-input>
+          <paper-button on-click="_getGeoFromAddress">SET LOCATION</paper-button>
+        </iron-collapse>
+      </div> 
+    </div>
+  
+  </template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-location',
+
+      // behaviors: [
+      //   Polymer.AppStorageBehavior
+      // ],
+
+      properties: {
+
+        address: {
+          type: String,
+          notify: true
+        },
+
+        searchAddress:{
+          type:String
+        },
+
+        idle:{
+          type: Boolean,
+          value:true
+        },
+
+        geoLatitude:Number,
+        geoLongitude:Number,
+
+        geoError:{
+          type: Boolean,
+          value: false
+        },
+
+        gpsIcon:{
+          type: String,
+          value: 'gps-searching'
+        },
+
+        latitude:{
+          type:Number,
+          notify:true
+        },
+
+        longitude:{
+          type:Number,
+          notify:true
+        },
+
+        login: {
+         type: Boolean,
+         notify: true
+       },
+
+        location: {
+          type: Object,
+          notify: true
+        },
+
+        locationSelect:{
+          type:Object
+        },
+
+        locationParam:{
+          type: Object,
+          computed: '_computeLocation(queryParams)',
+        },
+
+        locationAddress:{
+          type: String,
+          computed: '_computeLocationAddress(queryParams)',
+        },
+
+        locationHistory: {
+          type: Object,
+          value: function (){return {};},
+          // notify: true
+        },
+
+        locationHistoryLocal: {
+          type: Object,
+          value: function (){return {};},
+          // notify: true
+        },
+
+        locationSession:{
+          type: Object,
+          value: function (){return {};}
+        },
+
+        mapLoaded:{
+          type:Boolean,
+          value:false
+        },
+
+        queryParams:{
+          type:Object
+        },
+
+        sortedLocationHistory: {
+          type: Array,
+          value: function (){return [];}
+        },
+
+        searchString:{
+          type: 'String',
+          notify:true
+        },
+
+        toggle:{
+          type: Boolean,
+          value: false
+        },
+
+        toggleClass:{
+          type: String
+        },
+
+        urlParameter:{
+          type:String,
+          notify:true
+        },
+        _pageReady:{
+          type:Boolean,
+          value:false
+        }
+
+
+      },
+
+
+      observers:[                 
+                '_watchLocationHistory(locationHistory)',
+                '_watchLocationChange(locationSelect)',
+                '_setNewLocation(searchString, mapLoaded)',
+                '_watchLocationParam(locationParam)',
+                '_watchLocalData(geoLatitude, geoLongitude)'
+                ],
+
+      listeners: {'api-load':'_mapHasLoaded'},
+
+      _watchLocalData: function (latitude, longitude){
+        if(latitude && longitude){
+          var that = this;
+          var locationObj = {};
+          locationObj.location = {};
+          locationObj.location.lat = latitude;
+          locationObj.location.lng = longitude;
+
+          this.geocode(locationObj, function (location, placeId) {
+              
+            console.log('geo', location);
+            var address = encodeURIComponent(location.addressKey); 
+            var geo = encodeURIComponent(`${location.latitude} ${location.longitude}`);
+            that.set(`queryParams.locationAddress`, location.address);
+            that.set(`queryParams.location`, geo);
+            that.urlParameter=`location=${geo}&locationAddress=${address}`;
+              
+          });
+
+        }
+      },
+
+      _watchLocationHistory: function (locationHistory){
+       
+        //  console.log('noticed history change', locationHistory);
+          
+        try{
+          if(typeof locationHistory === 'object'){
+            
+            var key = Object.keys(locationHistory);
+             
+            var locationArray = [];
+            for (var i=0; i<key.length; i++){
+              locationHistory[key[i]].addressKey = key[i];
+              locationArray.push(locationHistory[key[i]]);
+            }
+
+            if(locationArray.length > 0){
+              var sortedLocations = locationArray.sort(this._sortCreated);
+              
+              if(sortedLocations.length > 5){       
+                var trimmed = sortedLocations.splice(0,5);
+                var trimmedObj = {};
+                for(var i=0; i<trimmed.length; i++){
+                  trimmedObj[trimmed[i].addressKey] = trimmed[i]
+                }
+                // console.log(trimmedObj);
+                this.locationHistory = trimmedObj;
+              }
+              this.sortedLocationHistory = sortedLocations.slice();
+              var location = sortedLocations.shift();
+           
+              location.first = this._firstTimeSession(location);
+              // console.log('location', location);
+              this.location = location;
+            }
+          }
+        }catch (error){
+          console.error('LOCATION_HISTORY_ERROR', error);
+          this.location = {};
+        }
+      },
+
+      _firstTimeSession: function (location){
+        var session = this.locationSession;
+        try{
+          if(Object.keys(session).length === 0){
+            // console.log('no session')
+            return true;
+          }
+
+          if(session[location.addressKey]){
+            if(session[location.addressKey].place_id === location.place_id){
+              // console.log('matching placeid')
+              return false;
+            }else{
+              // console.log('not matching placeid')
+              return true;
+            }
+          }else{
+            // console.log('no addreskey')
+            return true;
+          }
+          
+        }catch (error){
+          return true;
+        }
+      },
+
+      _watchLocationChange: function (location){
+        //resets timestamp so preloads final view on reload.
+
+
+        console.log(location);
+
+        // this.address = location.address;
+        // this.latitude = location.latitude;
+        // this.longitude = location.longitude;
+        var address = encodeURIComponent(location.addressKey);
+        var geo = encodeURIComponent(`${location.latitude} ${location.longitude}`);
+        this.set(`queryParams.locationAddress`, location.address);
+        this.set(`queryParams.location`, geo);
+        this.urlParameter=`location=${geo}&locationAddress=${address}`;
+        
+      },
+
+
+      _watchLocationParam: function (locationParam){
+        var locationAddress = this.locationAddress
+        if(locationParam && locationAddress){
+          var paramLocation = {
+            addressKey: locationAddress,
+            address: locationAddress,
+            latitude: Number(locationParam.latitude),
+            longitude: Number(locationParam.longitude),
+            created: Math.round(Date.now())
+          }
+
+          this.address = paramLocation.address;
+          // this.latitude = paramLocation.latitude;
+          // this.longitude = paramLocation.longitude;
+          this.location = {latitude: paramLocation.latitude, 
+                          longitude: paramLocation.longitude}
+
+          this._setToLocalHistory(paramLocation);
+
+        }
+      },
+     
+
+     
+      _mapHasLoaded: function (){
+        this.mapLoaded = true;
+        
+      },
+
+    
+      _setNewLocation: function (searchString, mapLoaded) {
+        // console.log('new location', searchString);
+        if(searchString){
+          if(mapLoaded){
+          this.radius = 10;
+          console.log('serch')
+        
+            var that = this;
+            var location = {};
+            location.address = searchString;
+              this.geocode(location, function (location, placeId) {
+                console.log('location', location)
+
+                 var address = encodeURIComponent(location.addressKey);
+                  
+                  var geo = encodeURIComponent(`${location.latitude} ${location.longitude}`);
+                  that.set(`queryParams.locationAddress`, location.address);
+                  that.set(`queryParams.location`, geo);
+                  that.urlParameter=`location=${geo}&locationAddress=${address}`;
+              });
+          }
+        }
+      },
+
+
+       geocode: function(location, onComplete) {
+
+         var geocoder = this._geocoder || new google.maps.Geocoder();
+
+            geocoder.geocode(location, function(results, status) {
+
+              if (status == google.maps.GeocoderStatus.OK && results[0]) {
+
+                var searchAddressString = '';
+                var neighborhood = '';
+                var city = '';
+                var state = '';
+                var zipcode = '';
+                
+                var address = results[0].address_components;
+  
+                for (var i=0; i<address.length; i++){
+                  var type = address[i].types;
+
+                  for (var j=0; j<type.length; j++){
+                    if(type[j] === 'locality'){
+                      city = address[i].long_name + ', ';
+                    }else if (type[j] === 'administrative_area_level_1') {
+                      state = address[i].long_name + ' ';
+
+                    }else if (type[j] === 'neighborhood') {
+                      neighborhood = address[i].long_name + ', ';
+
+                    }else if (type[j] === 'postal_code') {
+                      zipcode = address[i].long_name + ' ';
+                    }
+                  }
+                }
+                addressKey = neighborhood+city+state
+                searchAddressString = neighborhood+city+state+zipcode;
+
+                var completeObj = {};
+
+                completeObj.latitude = results[0].geometry.location.lat(), 
+                completeObj.longitude = results[0].geometry.location.lng(), 
+                completeObj.address = searchAddressString;
+                completeObj.addressKey = addressKey;
+                console.log('completeObj', completeObj)
+                
+                onComplete(completeObj,results[0].place_id);  
+                                         
+              } else {
+                console.warn('Geocode failed for ' + address + '. Status ' + status, results);
+                
+                onComplete();
+              }
+            });
+            return true;
+      },
+
+      _setToLocalHistory: function (location){
+
+       console.log('location history', location);
+
+
+       try{
+         if(location){
+          location.created = Date.now();
+          // delete location.first;
+          if(this.locationHistory){
+            
+            this.set(["locationHistory", location.addressKey], location);
+          }else{
+            var newLocationObj = {};
+            newLocationObj[location.addressKey] = location;
+            this.locationHistory = newLocationObj
+          }
+          this._watchLocationHistory(this.locationHistory);
+         }
+       }catch (error){
+         console.error('LOCATION_SET_ERROR', error);
+       }
+
+      //resets data
+       try{
+        this.locationSession[location.addressKey] = location;
+       }catch(error){
+          console.error("LOCATION_SESSION_ERROR", error);
+       }
+      },
+
+
+      _distance: function (myLat, myLng, pubLat, pubLng){
+          var R = 3959; 
+          var dLat = this.deg2rad(pubLat-myLat);  
+          var dLon = this.deg2rad(pubLng-myLng); 
+          var a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(myLat)) * Math.cos(this.deg2rad(pubLat)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+
+          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+          var d = R * c; 
+          return d
+       },
+
+      
+
+       deg2rad: function (deg) {
+              return deg * (Math.PI/180)
+       },
+
+
+      _sort: function (a,b){
+        return parseFloat(a.sort) - parseFloat(b.sort) ;
+      },
+      
+      _sortCreated: function(a,b){
+        'use strict';
+        if (a.created > b.created)
+          return -1;
+        if (a.created < b.created)
+          return 1;
+        return 0;
+      },
+
+
+
+      _observeLocation: function (newLocation, oldLocation){
+
+        this.$.spinner.active = false;
+
+        if(oldLocation){
+       
+        }
+        
+      },
+
+
+      _resetToLocal: function (){
+        // this.$.spinner.active = true;
+        this.gpsIcon = 'gps-searching'
+        this.toggle = false;
+        this.idle = false;
+
+       
+      },
+
+
+  
+
+      _watchForSubmit: function (event){
+         var key = event.which || event.keyCode;
+         if(key === 13){
+          this._getGeoFromAddress();
+         }
+      },
+
+      _getGeoFromAddress: function () {
+        this.searchString = this.searchAddress;
+        this.searchString = '';
+        this.searchAddress = '';
+        // this.$.spinner.active = true;
+        this.toggle = false;
+      },
+
+
+
+
+      _sort: function (a,b){
+        // console.log('sorted');
+        return parseFloat(a.sort) - parseFloat(b.sort) ;
+      },
+
+
+      _sortLocation: function(a,b){
+        'use strict';
+        if (a.address < b.address)
+          return -1;
+        if (a.address > b.address)
+          return 1;
+        return 0;
+      },
+      
+     
+
+      _defaultIcon: function (icon){
+        if(icon){
+          true;
+        }else{
+          false
+        }
+      },
+
+      _computeFilter: function (radius){
+        return function(pub) {
+          if(pub){
+          return pub.distance <=radius;
+          }else{
+            return false
+          }
+        };
+      },
+
+      _toggle: function (){
+        this.toggle = !this.toggle
+        if(this.toggle){
+          this.toggleClass = 'flip'
+        }else{
+          this.toggleClass = '';
+        }
+      },
+
+      _computeLocation: function (queryParams){
+        if (queryParams) {
+          if (queryParams.location) {
+
+            var locationArray = decodeURIComponent(queryParams.location).split(' ');
+            // console.log('test', locationArray);
+            return {latitude:locationArray[0], longitude:locationArray[1]}
+          }
+        }
+        return null;
+      },
+
+      _computeLocationAddress: function (queryParams){
+        // console.log('queryParams', queryParams)
+        if (queryParams) {
+          if (queryParams.locationAddress) {
+            return decodeURIComponent(queryParams.locationAddress)
+          }
+        }
+        return null;
+      },
+
+      _clearInput:function (){
+        this.searchAddress = '';
+      },
+
+
+      close: function (){
+        this.toggle = false;
+        // this.searchString = this.address;
+      },
+
+      _test: function(obj){
+          console.log("TEST",obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

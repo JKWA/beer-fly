@@ -93,7 +93,6 @@
       @apply --layout-horizontal;
       @apply --layout-justified;
       font-size: 1em;
-      
     }
 
     .organization-wrapper{
@@ -285,9 +284,9 @@
               </div>
               <div class="org-icon-wrapper"> 
                 <div hidden$="[[_hideLastIcon(index, pub.totalLength)]]">
-                  <paper-icon-button  class="move" crawlid="[[crawl.$key]]" placeid="[[pub.place_id]]" icon="beer-icons:align-bottom" on-tap="_moveOrganizationToBottom"></paper-icon-button>
+                  <paper-icon-button  class="move" crawlid="[[crawl.crawl_id]]" placeid="[[pub.place_id]]" icon="beer-icons:align-bottom" on-tap="_moveOrganizationToBottom"></paper-icon-button>
                 </div>
-                <paper-icon-button class="delete" crawlid="[[crawl.$key]]" placeid="[[pub.place_id]]" icon="beer-icons:delete" on-tap="_removeOrganization"></paper-icon-button>
+                <paper-icon-button class="delete" crawlid="[[crawl.crawl_id]]" placeid="[[pub.place_id]]" icon="beer-icons:delete" on-tap="_removeOrganization"></paper-icon-button>
                 
               </div>
            </div>

@@ -29,6 +29,7 @@
         allArray:{
           type:Array,
           notify: true,
+          value: function (){[];}
         },
 
         initialLoad:{
@@ -36,8 +37,8 @@
           value: true
         },
 
-        location: {
-          type: Object
+        location:{
+          type:Object
         },
 
         online:{
@@ -53,26 +54,22 @@
       
       observers:[' _getInitialCache(location)'],
 
-    
-
       ready: function (){
-        this.initialLoad = true;
-        this.allArray = [];
-        this.allObject = {};
+        // this.initialLoad = true;
+        // this.allArray = [];
+        // this.allObject = {};
         // console.log('readycache')
         // _getInitialCache()
-
-        
       },
 
 
       _getInitialCache: function (location){
         try{
-          var returnArray = [];
+          // console.log('location', location)
+          if(location){
+      
           if(this.initialLoad){
-            this.initialLoad = false;
-            console.log(location);
-            console.log('StartingInitialCache')
+
             for ( var i = 0; i<window.localStorage.length; i++ ) {
                   
               try{
@@ -83,42 +80,34 @@
                 if(storedItem.organization){
                   if(storedItem.place_id){
                     if(storedItem.cacheTimestamp) {
-                      var distance = this._distance (location.location.latitude, location.location.longitude, storedItem.latitude, storedItem.longitude)
-                      // console.log('distance', distance)
-                      // if(distance <=10){
-                        storedItem.precached = true;
-                      
-                        if(storedItem.beerfly){
-                          delete storedItem.beerfly
-                        }
 
-
-                          if(storedItem.beerfly){
-                            delete storedItem.beerfly
-                          }
-        
-                          var position = returnArray.push(storedItem);
-                          // console.log('cache-position', position);
+                      storedItem.distance = this._distance (location.latitude, location.longitude, storedItem.latitude, storedItem.longitude);
+                     
+                      if(storedItem.distance <= 10){
+                        if(!this.allObject[storedItem.place_id]){
+                          var position = this.push('allArray',storedItem);
                           storedItem.arrayPosition = position;
-                          var stringSet = 'allObject.'+storedItem.place_id;
-                          this.set(stringSet, storedItem);
-                          
-                      // }
+                          this.set(`allObject.${storedItem.place_id}`, storedItem);
+                        }
+                      }
+                     
                     }
+                  }
                   }else{
                       window.localStorage.removeItem(window.localStorage.key(i));
                   }
                 }
-              }
+              
               
             }catch (error){
               console.log('preset error', error);
               console.log('caused-error', window.localStorage.getItem(window.localStorage.key(i)))
             }
-
+            }
+            console.log('complete pre-load cache');
           }
-          console.log('complete pre', this.allObject);
-          this.allArray = returnArray;
+          // console.log('test', this.allArray);
+          
           this.initialLoad = false;
           this._removeOldCacheData();
           }

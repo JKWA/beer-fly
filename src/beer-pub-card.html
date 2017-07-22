@@ -32,8 +32,8 @@
       }
 
       .card{
-        @apply --paper-material-elevation-1;
-        margin: 10px;
+         @apply --paper-material-elevation-1;
+        margin: 10px; 
       }
 
       .card-wrapper{
@@ -139,23 +139,23 @@
    
       <div class="card">
         
-        <template is="dom-if" if="[[sponsor]]">
-          <template is="dom-if" if="[[photoUrl]]">
+        <template is="dom-if" if="[[_isPremium]]">
+          <template is="dom-if" if="[[place.mainImage.banner.url]]">
          
-          <a aria-label$="[[name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
+          <a aria-label$="[[place.name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
             <iron-image 
                 style="width:100%; height:300px; background-color: #F8F8F8;"
                 sizing="cover" 
                 preload 
                 placeholder="[[_computedPlaceHolder]]"
                 fade
-                src="[[photoUrl]]">
+                src="[[place.mainImage.banner.url]]">
             </iron-image>
           </a>
           </template>
           <div  class="sponsor-wrapper">
             <div id="sponsor">Sponsoring Organization</div>
-        </div>
+          </div>
         </template>
    
         <div class="card-wrapper">
@@ -164,24 +164,24 @@
           <div class="card-information">
        
               <div class="items">
-                <a aria-label$="[[name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
-                  <div class="name">[[name]]</div>
+                <a aria-label$="[[place.name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
+                  <div class="name">[[place.name]]</div>
                 </a>
 
-                <a aria-label$="[[name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
-                <template is="dom-if" if="[[sponsor]]">
-                  <div class="motto">[[motto]]</div>
+                <a aria-label$="[[place.name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
+                <template is="dom-if" if="[[_isPremium]]">
+                  <div class="motto">[[place.motto]]</div>
                 </template>
-                <div class="address" hidden$="[[!address]]">[[address]]</div>
-                <div class="distance" hidden$="[[!distance]]">[[_computeDisplayDistance(distance)]] miles from you</div>
+                <div class="address" hidden$="[[!place.vicinity]]">[[place.vicinity]]</div>
+                <div class="distance" hidden$="[[!place.distance]]">[[_computeDisplayDistance(place.distance)]] miles from you</div>
                 </a>
               </div>
 
               <div class="icons-wrapper">
                 <beer-pub-icons
-                  dogs="[[dogFriendly]]"
-                  patio="[[patio]]"
-                  over21="[[over21]]">
+                  dogs="[[place.dogFriendly]]"
+                  patio="[[place.patio]]"
+                  over21="[[place.over21]]">
                 </beer-pub-icons>
                 
                 <div id="favoriteIcon" class="favorite-icon-message" hidden$="[[!_numberFavorite]]">
@@ -195,13 +195,14 @@
           </div>
           
           <div class="toggle-button">
-            <paper-icon-button no-ink icon="more-vert" place="[[place]]" on-tap="_openEditPlaceDialog"></paper-icon-button>
+            <div hidden$="[[!edit]]">
+              <paper-icon-button no-ink icon="more-vert" place="[[place]]" on-tap="_openEditPlaceDialog"></paper-icon-button>
+            </div>
           </div>
         
       </div>
     </div>
    
-      
     
   </template>
 
@@ -211,272 +212,230 @@
 
       is: 'beer-pub-card',
 
-       properties: {
+      properties: {
 
-          address:{
-            type: String
-          },
-
-          city:{
-            type: String
-          },
-
-          distance:{
-            type: Number,
-            value: false
-          },
-
-          dogFriendly:{
-            type: Boolean,
-            value: false
-          },
-
-          favorite:{
-            type:Boolean
-          },
-
-          googleRating:{
-            type: Number
-          },
-
-          login: {
-            type: Boolean,
-            notify: true
-          },
-
-          motto:{
-            type: String
-          },
-
-          name:{
-              type: String
-          },
-
-          openEditPubCrawl:{
-            type:Boolean,
-            notify:true
-            // observer: '_watchOpenEditPubCrawl'
-          },
-
-          over21:{
-            type: Boolean,
-            value: false
-          },
-
-          patio:{
-            type: Boolean,
-            value: false
-          },
-
-          photoUrl:{
-            type: String
-          },
-
-          place:{
-            type:Object
-          },
-
-          plan:{
-            type:Object
-          },
-
-          thumbnail:{
-            type: String
-          },
-
-          toggle:{
-            type:Boolean,
-            value: false
-          },
-
-          _computedPlaceHolder:{
-            type: String,
-            computed: '_computePlaceHolder(thumbnail)'
-          },
-
-          placeId:{
-            type: String
-          },
-
-          editPlace:{
-            type:Object,
-            notify:true
-          },
-
-          editFavorite:{
-            type:String,
-            notify:true
-          },
-
-          sponsor:{
-            type: Boolean,
-            value: false,
-            computed: '_computeSponsor(plan)'
-          },
-
-          sponsorHide:{
-            type: Boolean,
-            computed: '_computeSponsor(sponsor)',
-            value: true
-          },
-
-          state:{
-            type: String
-          },
-
-          user: {
-            type:Object
-          },
-
-          userData:{
-            type:Object
-          },
-
-          _isFavoriteCSS:{
-            type:String,
-            value:'not-selected'
-          },
-
-          _isNotFavoriteCSS:{
-            type:String,
-            value:'not-selected'
-          },
-          
-          urlName:{
-              type: String,
-              computed: '_computeNameForUrl(name)'
-          },
-
-          
-
-          _numberFavorite:{
-            type:Number,
-            value: 0
-          },
-
-          _numberNotFavorite: Number,
-          _percentFavorite: Number,
-          _totalFavorite: Number,
-          _favoriteIcon:String
-         
+        edit:{
+          type:Boolean,
+          value:false,
+          reflectToAttribute:true
         },
 
-        observers:['_watchFavorite(userData.favoriteOrganization)',
+        favorite:{
+          type:Boolean
+        },
+
+        login: {
+          type: Boolean,
+          notify: true
+        },
+
+        openEditPubCrawl:{
+          type:Boolean,
+          notify:true
+          // observer: '_watchOpenEditPubCrawl'
+        },
+
+        place:{
+          type:Object
+        },
+
+        toggle:{
+          type:Boolean,
+          value: false
+        },
+
+        placeId:{
+          type: String
+        },
+
+        editPlace:{
+          type:Object,
+          notify:true
+        },
+
+        editFavorite:{
+          type:String,
+          notify:true
+        },
+
+        _computedImageUrl:{
+          type: String,
+          computed: '_computeImageUrl(place.mainImage.banner.url)'
+        },
+
+        _computedPlaceHolder:{
+          type: String,
+          computed: '_computePlaceHolder(place.mainImage.banner.thumbnail)'
+        },
+
+        _isPremium:{
+          type:Boolean,
+          value:false,
+          computed: '_computeIsPremium(place.plan)'
+        },
+
+
+        user: {
+          type:Object
+        },
+
+        userData:{
+          type:Object
+        },
+
+        _isFavoriteCSS:{
+          type:String,
+          value:'not-selected'
+        },
+
+        _isNotFavoriteCSS:{
+          type:String,
+          value:'not-selected'
+        },
+        
+        urlName:{
+            type: String,
+            computed: '_computeNameForUrl(place.name)'
+        },
+
+        _numberFavorite:{
+          type:Number,
+          value: 0
+        },
+
+        _numberNotFavorite: Number,
+        _percentFavorite: Number,
+        _totalFavorite: Number,
+        _favoriteIcon:String
+        
+      },
+
+      observers:['_watchFavorite(userData.favoriteOrganization)',
                   '_watchPlaceFavorite(place.favorite)',
                   '_watchFavoriteActivity(place.action)'],
 
-     
+    
 
-        _watchFavoriteActivity: function (action){
-          // console.log(action);
-          switch(action){
-            case 'ADD_FAVORITE':
-             this._watchPlaceFavorite(this.place.favorite)
-             this.$.favoriteIcon.hidden=false;
-              break;
+      _watchFavoriteActivity: function (action){
+        // console.log(action);
+        switch(action){
+          case 'ADD_FAVORITE':
+            this._watchPlaceFavorite(this.place.favorite)
+            this.$.favoriteIcon.hidden=false;
+            break;
 
-            case 'REMOVE_FAVORITE':
-              this._watchPlaceFavorite(this.place.favorite)
-              break;
+          case 'REMOVE_FAVORITE':
+            this._watchPlaceFavorite(this.place.favorite)
+            break;
 
-            case 'ADD_NOT_FAVORITE':
-              break;
-            case 'REMOVE_NOT_FAVORITE':
-              break;
+          case 'ADD_NOT_FAVORITE':
+            break;
+          case 'REMOVE_NOT_FAVORITE':
+            break;
 
-          }
-        },
+        }
+      },
 
-        _watchFavorite: function (favorite){
-          // console.log(favorite);
-          if(favorite){
+      _watchFavorite: function (favorite){
+        // console.log(favorite);
+        if(favorite){
+          
+          if(favorite[this.placeId]){
+            // console.log(favorite[this.placeId]);
             
-            if(favorite[this.placeId]){
-              // console.log(favorite[this.placeId]);
+            if(favorite[this.placeId].favorite === 'yes'){
+              this._isFavoriteCSS = 'favorite';
+              this._isNotFavoriteCSS = 'not-selected';
+              this.favorite = 'yes';
+            
               
-              if(favorite[this.placeId].favorite === 'yes'){
-                this._isFavoriteCSS = 'favorite';
-                this._isNotFavoriteCSS = 'not-selected';
-                this.favorite = 'yes';
+            }else if(favorite[this.placeId].favorite === 'no'){
+              this._isFavoriteCSS = 'not-selected';
+              this._isNotFavoriteCSS = 'not-favorite';
+              this.favorite = 'no';
+            }else{
+              this._isFavoriteCSS = 'not-selected';
+              this._isNotFavoriteCSS = 'not-selected';
+              this.favorite = 'none';
               
-                
-              }else if(favorite[this.placeId].favorite === 'no'){
-                this._isFavoriteCSS = 'not-selected';
-                this._isNotFavoriteCSS = 'not-favorite';
-                this.favorite = 'no';
-              }else{
-                this._isFavoriteCSS = 'not-selected';
-                this._isNotFavoriteCSS = 'not-selected';
-                this.favorite = 'none';
-                
-              }
             }
           }
-          
-        },
-
-        _watchPlaceFavorite: function (favorite){
-          var numFav = 0;
-          var numNotFav = 0;
-          // console.log('noticed change', this.place.name)
+        }
         
+      },
 
-          if(typeof favorite ==='object'){
-            // console.log(Object.keys(favorite).length)
-            for (let key of Object.keys(favorite)){
+      _watchPlaceFavorite: function (favorite){
+        var numFav = 0;
+        var numNotFav = 0;
+        // console.log('noticed change', this.place.name)
+      
+
+        if(typeof favorite ==='object'){
+          // console.log(Object.keys(favorite).length)
+          for (let key of Object.keys(favorite)){
+            
+            var fav = favorite[key];
+            //  console.log(key);
+        
+            if (fav) {
               
-              var fav = favorite[key];
-              //  console.log(key);
-          
-              if (fav) {
-               
-                  if(fav.favorite){
-                    if(fav.favorite === 'yes'){
-                      numFav++
-                    }else if(fav.favorite === 'no'){
-                      numNotFav++
-                    }
+                if(fav.favorite){
+                  if(fav.favorite === 'yes'){
+                    numFav++
+                  }else if(fav.favorite === 'no'){
+                    numNotFav++
                   }
                 }
-              // }
+              }
+            // }
+          }
+        }else{
+          this.set('place.favorite', {});
+        }
+
+        this._numberFavorite = numFav;
+        this._numberNotFavorite = numNotFav;
+        this._percentFavorite = (numFav/(numFav+numNotFav));
+        this._totalFavorite = numFav+numNotFav;
+        if(this._totalFavorite == 0 ){
+          this._favoriteIcon = 'favorite-border';
+        }
+
+        if(this._percentFavorite > 0){
+          this._favoriteIcon = 'favorite';
+        }else{
+          this._favoriteIcon = 'favorite-border';
+        }
+      },
+
+      _computeIsPremium: function (plan) {
+
+        var today = Date.now() / 1000;
+        if (plan) {
+          if (plan.current_period_end) {
+            if (plan.current_period_end > today) {
+                return true;
             }
-          }else{
-            this.set('place.favorite', {});
           }
+        }
+        return false;
+      },
 
-          this._numberFavorite = numFav;
-          this._numberNotFavorite = numNotFav;
-          this._percentFavorite = (numFav/(numFav+numNotFav));
-          this._totalFavorite = numFav+numNotFav;
-          if(this._totalFavorite == 0 ){
-            this._favoriteIcon = 'favorite-border';
-          }
 
-          if(this._percentFavorite > 0){
-            this._favoriteIcon = 'favorite';
-          }else{
-            this._favoriteIcon = 'favorite-border';
-          }
-        },
+      _computeDisplayDistance: function (distance){
+        return Math.round(distance*10)/10
+      },
 
-         _computeDisplayDistance: function (distance){
-          return Math.round(distance*10)/10
-        },
 
-        _computeSponsor: function (plan){
-          var today = Date.now()/1000;
-           if(plan){
-               if(plan.current_period_end){
-                   if(plan.current_period_end > today){
-                     return true;
-                   }
-               }
-           }
-           return false;
-        },
+      _computeImageUrl: function (url){
+        if(url){
+          return url
+        }
+        return false
+      },
 
       _computeNameForUrl: function (name) {
-         'use strict';
+          'use strict';
           if (name) {
             name = name.replace(/\s/g, '-')
             return name.replace(/[^a-zA-Z\d\s:]/g, '');
@@ -491,6 +450,7 @@
         }
       },
 
+
       _openEditPlaceDialog: function (){
         var target = event.currentTarget;
         var place = target.place;
@@ -503,8 +463,6 @@
           this.login = true;
         }
       },
-
-    
 
       _computeFavoriteStatus: function (favorite){
         console.log(favorite);
@@ -523,15 +481,6 @@
 
       },
 
-
-     
-     
-
-      // _watchOpenEditPubCrawl:function (newData, oldData){
-      //   if(!newData){
-      //     this.toggle = false;
-      //   }
-      // },
 
       _toggle:function (){
         this.toggle = !this.toggle;
