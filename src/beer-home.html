@@ -23,17 +23,21 @@
 <link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-bottom-animation.html">
 
+<link rel="import" href="beer-home-search-data.html">
+<link rel="import" href="beer-home-geo-data.html">
+<link rel="import" href="beer-home-cache-data.html">
+
+
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-rating-card.html">
-<link rel="import" href="beer-home-dialog.html">
+<link rel="import" href="beer-crawl-dialog.html">
+<link rel="import" href="beer-dialog.html">
 <link rel="import" href="beer-location.html">
-<link rel="import" href="beer-geo-data.html">
-<link rel="import" href="beer-cache-data.html">
 
 
 <link rel="import" href="beer-pub-card.html">
 <link rel="import" href="beer-login.html">
-<link rel="import" href="beer-search-data.html">
+
 
 
 <dom-module id="beer-home">
@@ -110,12 +114,12 @@
       color: var(--app-primary-color);
     }
 
-   .title{
-     font-size: 1em;
-     font-weight: 500;
-     color: var(--app-accent-color);
-     margin: 10px 0
-   }
+    .title{
+      font-size: 1em;
+      font-weight: 500;
+      color: var(--app-accent-color);
+      margin: 10px 0
+    }
 
    .location-list {
         color: var(--app-primary-color);
@@ -145,65 +149,117 @@
     }
 
     .address{
-      color: var(--app-seconpdary-color);
+      color: var(--app-secondary-color);
       font-size: 1em;
       font-weight: 400;
     }
 
+    .new-user-title{
+      font-size: 1.5em;
+      font-weight: 300;
+      color: var(--app-primary-color);
+      margin: 10px;
+
+    }
+
+    .new-user-body{
+      color: var(--app-primary-color);
+      font-size: 1.2em;
+      font-weight: 400;
+    }
+    .new-user-item{
+       @apply --layout-horizontal; 
+       margin:20px 10px
+    }
+
+    .new-user-icon{
+      margin: 0 10px 0 0; 
+      color: var(--app-accent-color);
+    }
+
     .wrapper{
-        @apply --layout-horizontal;
-        font-size: 1em;
-        font-weight: 300;
-        color: var(--app-accent-color);
-      }
+      @apply --layout-horizontal;
+      font-size: 1em;
+      font-weight: 300;
+      color: var(--app-accent-color);
+    }
 
-      .location-label{
-        margin: 10px 0
-      }
+    .location-label{
+      margin: 10px 0
+    }
       
-      paper-input{
-        margin: 0 10px;
-        color: var(--app-accent-color);
-      }
+    paper-input{
+      margin: 0 10px;
+      color: var(--app-accent-color);
+    }
 
-      paper-button{
-        color: var(--app-accent-color);
-      }
-
-     
+    paper-button{
+      color: var(--app-accent-color);
+    }  
       
-    </style>
+  </style>
 
-    <firebase-auth 
-        id="auth" 
-        app-name="beer"
-        user="{{user}}">
-    </firebase-auth>
+    <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
 
-      <beer-geo-data
-        location="[[location]]"
-        all-object="{{allObject}}"
-        all-array="{{allArray}}">
-    </beer-geo-data>    
+    <beer-home-geo-data
+      location="[[location]]"
+      all-object="{{allObject}}"
+      all-array="{{allArray}}">
+    </beer-home-geo-data>     
 
-     <!-- <beer-cache-data
-        location="[[location]]"
-        online="[[online]]"
-        all-object="{{allObject}}"
-        all-array="{{allArray}}">
-    </beer-cache-data>    -->
+    <beer-home-cache-data
+      location="[[location]]"
+      all-object="{{allObject}}"
+      all-array="{{allArray}}">
+    </beer-home-cache-data>    
 
-      <beer-search-data
-        location="[[location]]"
-        all-object="{{allObject}}"  
-        all-array="{{allArray}}">
-      </beer-search-data>
+    <beer-home-search-data
+      location="[[location]]"
+      all-object="{{allObject}}"  
+      all-array="{{allArray}}">
+    </beer-home-search-data> 
 
-      <div>
-        <beer-location
-          location="{{location}}">
-        </beer-location>
+    <template is="dom-if" if="[[_isNewUser]]">
+      <div class="card">
+        <div class="new-user-title">Welcome to Beer-Fly</div>
+        <div class="new-user-body">
+
+          <a href="/home/question">
+            <div class="new-user-item">
+              <div class="new-user-icon">
+                <iron-icon icon="beer-icons:question"></iron-icon>
+              </div>
+              <div>What is Beer-Fly?</div>
+            </div>
+          </a>
+
+          <div class="new-user-item">
+            <div class="new-user-icon">
+              <iron-icon icon="beer-icons:near-me"></iron-icon>
+            </div>
+            <div>Add a location to see pubs and breweries near you.</div>
+          </div>
+
+          <a href="/home/account">
+            <div class="new-user-item" hidden$="[[user]]">
+              <div class="new-user-icon">
+                <iron-icon icon="beer-icons:account"></iron-icon>
+              </div>
+              <div>
+                Sign into Beer-Fly
+              </div>
+            </div>
+          </a>
+        </div>
       </div>
+    </template>
+
+    <div>
+      <beer-location
+        location="{{location}}"
+        toggle-search="{{locationToggle}}">
+      </beer-location>
+    </div>
 
       <div hidden$="[[_hideInitial]]">
         <template is="dom-repeat"  items="[[initialArray]]">
@@ -220,22 +276,19 @@
    
       <div id="pubCards">
       <template id="repeater" is="dom-repeat" 
-          items="{{allArray}}" as="pub" 
+          items="{{allArray}}" as="pub" filter="_filter"
           initial-count="20"  sort="_sort" 
-          observe="sort distance"  >
-  
+          observe="sort distance">
+
          <beer-pub-card 
             open-edit-pub-crawl="{{homeDialogOpened}}"
             place-id="[[pub.place_id]]"
             user-data="[[userData]]"
-            edit-favorite="{{editFavorite}}"
-            place="[[pub]]"
+            organization="[[pub]]"
             edit-place="{{editPlace}}"
-            user="[[user]]"
             login="{{login}}"
             edit>
         </beer-pub-card>
-       
      
       </template>
       </div>
@@ -243,37 +296,37 @@
 
     </div>
 
-    <beer-home-dialog 
+    <beer-dialog
       id="favoriteDialogEditor"
       entry-animation="slide-from-bottom-animation"
       exit-animation="slide-down-animation"
       with-backdrop
-      edit-place="[[editPlace]]"
-      edit-favorite="[[editFavorite]]"
-      crawl-data="{{crawlData}}"
-      opened="{{homeDialogOpened}}"
-      places="{{allArray}}"
-      places-obj="{{allObject}}">
-    </beer-home-dialog>
-   
+      opened="{{homeDialogOpened}}">
+      
+      <beer-crawl-dialog
+        edit-place="[[editPlace]]"
+        crawl-data="{{crawlData}}"
+        places="{{allArray}}"
+        places-obj="{{allObject}}">
+      </beer-crawl-dialog>
 
+    </beer-dialog>
+
+    <paper-dialog 
+      entry-animation="scale-up-animation"
+      exit-animation="fade-out-animation"
+      with-backdrop
+      id="loginDialog"
+      opened="{{login}}">
+
+      <paper-dialog-scrollable>
+        <section class="beer-login-dialog">
+          <beer-login class="beer-login-dialog"></beer-login>
+        </section>
+      </paper-dialog-scrollable>
+
+      <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
     </paper-dialog>
-    
-
-      <paper-dialog 
-            entry-animation="scale-up-animation"
-            exit-animation="fade-out-animation"
-            with-backdrop
-            id="loginDialog"
-            opened="{{login}}">
-        <paper-dialog-scrollable>
-          <section class="beer-login-dialog">
-            <!--lazy loaded-->
-            <beer-login class="beer-login-dialog"></beer-login>
-          </section>
-        </paper-dialog-scrollable>
-        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
-      </paper-dialog>
   
       
     
@@ -365,6 +418,11 @@
         homeDialogOpened:{
           type: Boolean,
           value:false
+          // reflectToAttribute:true
+        },
+
+        locationToggle:{
+          type:Boolean
         },
 
         numberOrganizations:{
@@ -401,8 +459,13 @@
         _hideInitial:{
           type:Boolean,
           value: false,
-          reflectToAttribute:true,
-          // computed: '_computeHideInitial(allArray)'
+          reflectToAttribute:true
+        },
+
+        _isNewUser:{
+          type:Boolean,
+          value:false,
+          reflectToAttribute:true
         }
 
       },
@@ -410,11 +473,54 @@
 
       observers:[
         '_locationChanged(location)',
-        '_getArrayLength(allArray.length)'
+        '_getArrayLength(allArray.length)',
+        '_watchForNewUser(location)',
+        // '_updateNotLikedSort(userData.favoriteOrganization)'
       ],
 
+      _updateNotLikedSort:function (favoriteOrganization){
+        if(typeof favoriteOrganization === 'object'){
+          
+          for (let key of Object.keys(favoriteOrganization)){
+            let pub = favoriteOrganization[key];
+            if(pub.favorite === 'no'){
+              
+              if(this.allObject[key]){
+                console.log('is there', pub)
+                let position = this.allObject[key].arrayPosition -1;
+                console.log(position);
+                
+                // this.set(`allArray.${position}.sort`,this.allObject[key].sort+10);
+                this.set(`allArray.${position}.test`,100);
+                // this.notifyPath(`allArray.${position}.sort`);
+                // console.log(this.allArray)
+
+              }else{
+                console.log('is not there', pub)
+              }
+            }
+          }
+        }
+      },
+
+      _watchForNewUser: function (location){
+        var that = this; 
+        if(!location){
+          this.timeout = setTimeout(function(){ 
+            console.log('sent location message');
+            that._isNewUser = true;
+            that._hideInitial = true;
+            that.locationToggle = true;
+            }, 2000);
+          }else{
+            clearTimeout(this.timeout);
+            this.locationToggle = false;
+            this._isNewUser = false;
+          }
+      },
+
       _getArrayLength: function (length){
-        // console.log('array', allArray)
+        // console.log('array', length)
         if(length===0){
           this._hideInitial = false;
         }else{
@@ -424,28 +530,32 @@
       },
 
       _locationChanged: function (location){
-        this.set('allArray', []);
-        this.set('allObject', {});
-        // if(Array.isArray(this.allArray)){
-        //       // for (var i=0; i<this.allArray.length; i++){
-        //   for(i=this.allArray.length-1; i>=0; i--){
-        //     var pub = this.allArray[i];
-            
-        //     var distance = this._distance (location.latitude, location.longitude, pub.latitude, pub.longitude);
-        //     // console.log('ARRAY', distance);
-        //     var sort = distance;
-        //     if(pub.PREMIUM){
-        //         if(distance <= 10){
-        //             sort = sort-10;
-        //         }
-        //     }
-        //     this.set('allArray.'+[i]+'.distance', distance)
-        //     this.set('allArray.'+[i]+'.sort', sort)
-        //     this.set('allArray.'+[i]+'.distance', distance)
-        //     this.set('allObject.'+pub.place_id+'.sort', sort)
-        //     this.set('allObject.'+pub.place_id+'.arrayPosition', i+1);
-        //   }
-        // }
+        if(location){
+        // this.set('allArray', []);
+        // this.set('allObject', {});
+          if(location.latitude && location.longitude){
+            if(Array.isArray(this.allArray)){
+                  // for (var i=0; i<this.allArray.length; i++){
+              for(i=this.allArray.length-1; i>=0; i--){
+                var pub = this.allArray[i];
+                
+                var distance = this._distance (location.latitude, location.longitude, pub.latitude, pub.longitude);
+                // console.log('ARRAY', distance);
+                var sort = distance;
+                if (this._isPremium(pub.plan)) {
+                    if(distance <= 10){
+                        sort = sort-10;
+                    }
+                }
+                this.set('allArray.'+[i]+'.distance', distance)
+                this.set('allArray.'+[i]+'.sort', sort)
+                this.set('allArray.'+[i]+'.distance', distance)
+                this.set('allObject.'+pub.place_id+'.sort', sort)
+                this.set('allObject.'+pub.place_id+'.arrayPosition', i+1);
+              }
+            }
+          }
+        }
       },
 
 
@@ -453,6 +563,7 @@
         var body = document.querySelector('body');
           Polymer.dom(body).appendChild(this.$.favoriteDialogEditor);
         this.initialArray = [{},{},{},{},{}];
+        // this.$.favoriteDialogEditor.open()
       },
 
 
@@ -756,6 +867,13 @@
         };
       },
 
+      _filter: function (item){
+        if(item.distance <= 10){
+          return true;
+        }
+        return false;
+      },
+
       _toggle: function (){
         this.toggle = !this.toggle
         if(this.toggle){
@@ -766,15 +884,15 @@
       },
 
       _isPremium: function (plan){
-           var today = Date.now()/1000;
-           if(plan){
-               if(plan.current_period_end){
-                   if(plan.current_period_end > today){
-                     return true;
-                   }
-               }
-           }
-           return false;
+        var today = Date.now()/1000;
+        if(plan){
+          if(plan.current_period_end){
+            if(plan.current_period_end > today){
+              return true;
+            }
+          }
+        }
+        return false;
        },
 
        _distance: function (myLat, myLng, pubLat, pubLng){
@@ -794,17 +912,6 @@
        deg2rad: function (deg) {
               return deg * (Math.PI/180)
        },
-
-      
-
-      _computeHideInitial: function (allArray){
-        this.$.repeater
-        return allArray.length;
-        // if(allArray.length > 0){
-        //   return true
-        // }
-        // return false;
-      },
 
 
       close: function (){

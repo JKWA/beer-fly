@@ -170,17 +170,9 @@
           initial-count="20"  sort="_sort" 
           observe="sort distance">
 
-         <beer-pub-card 
-            open-edit-pub-crawl="{{homeDialogOpened}}"
-            place-id="[[pub.place_id]]"
-            user-data="[[userData]]"
-            edit-favorite="{{editFavorite}}"
-            place="[[pub]]"
-            edit-place="{{editPlace}}"
-            user="[[user]]"
-            
-           
-            login="{{login}}">
+        <beer-pub-card 
+          place-id="[[pub.place_id]]"
+          organization="[[pub]]">
         </beer-pub-card>
 
       </template>

@@ -1,7 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/google-apis/google-maps-api.html">
 
-<dom-module id="beer-search-data">
+<dom-module id="beer-home-search-data">
 
   <template>
     <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
@@ -11,7 +11,7 @@
 
     Polymer({
 
-      is: 'beer-search-data',
+      is: 'beer-home-search-data',
        properties: {
       
         orgId:{
@@ -61,6 +61,7 @@
 
       _getGoogleSearchData: function(mapLoaded, location){
       // console.log('search', location)
+      if(location){
       let latitude = location.latitude;
       let longitude = location.longitude;
       let address = location.address;
@@ -139,6 +140,7 @@
               }
             }
           }) 
+      }
       
     }
        

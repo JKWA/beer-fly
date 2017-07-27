@@ -7,10 +7,10 @@
 
 
 
-<dom-module id="beer-geo-data">
+<dom-module id="beer-home-geo-data">
     <template>
 
-        <firebase-auth id="auth" app-name="beer"></firebase-auth>
+        <firebase-auth id="auth" app-name="beer" status-known="{{statusKnown}}" user="{{user}}"></firebase-auth>
 
 
     </template>
@@ -18,7 +18,7 @@
     <script>
         Polymer({
 
-            is: 'beer-geo-data',
+            is: 'beer-home-geo-data',
             properties: {
                 geofire: {
                     type: Object
@@ -47,27 +47,35 @@
                     value: 10
                 },
 
+                statusKnown:{
+                    type:Boolean,
+                    value:false
+                },
+
                 page: {
                     type: String
                 },
 
-                
+                user:{
+                    type:Object
+                }
 
 
             },
 
-            observers: ['_getLocation(location)'],
+            observers: ['_getLocation(location, statusKnown)'],
 
-   
-
-            _getLocation: function (location) {
+            _getLocation: function (location, statusKnown) {
+                if(statusKnown){
+                    console.log(this.user.uid)
+              if(location){
                 var latitude = location.latitude;
                 var longitude = location.longitude;
-
+            
                var radius = 10;
-                var obj={
-                    latitude: latitude, longitude: longitude, radius: radius
-                }
+                // var obj={
+                //     latitude: latitude, longitude: longitude, radius: radius
+                // }
                 // console.log(obj); 
 
                 if (latitude && longitude) {
@@ -159,7 +167,6 @@
                     var app = this.$.auth.app;
                     var firebaseRef = app.database().ref('GeoFire');
                     var geoFire = new GeoFire(firebaseRef);
-                    // var ref = geoFire.ref();
 
                     var query = {};
                     var number = 0;
@@ -168,41 +175,73 @@
                     query.radius = radius * 1.609344;
 
                     var locations = geoFire.query(query).on("key_entered", function (key, location, distance) {
-                        app.database().ref('/organization/' + key).once('value').then(function (snapshot) {
+                        app.database().ref(`/organization/${key}`)
+                          .once('value').then(function (snapshot) {
                             if (!snapshot.exists()) {
                                 console.log('null')
                                 return null;
                             }
                             var pub = snapshot.val();
 
-                            // console.log('pub', pub)
+                            pub.favoriteTotal = 0;
+                            pub.favoriteYes = 0;
+                            pub.favoriteNo = 0;
+                            pub.favoritePercent=null;
+                            let dislike = false;
 
-                            var pubDistance = distance * 0.621371;
-                            pub.distance = pubDistance;
-
-                            if (location) {
-                                // console.log('geo-location', location)
-                                pub.latitude = location[0];
-                                pub.longitude = location[1];
-                            }
-
-                            if (that._isPremium(pub.plan)) {
-                                if (pubDistance <= 5) {
-                                    pub.sort = pubDistance - 5;
-
-                                } else {
-                                    pub.sort = pubDistance;
+                            if(snapshot.child('favorite').exists()){
+                              snapshot.child('favorite').forEach(favorite =>{
+                                pub.favoriteTotal ++
+                                if(favorite.child('favorite').val() === 'yes'){
+                                  pub.favoriteYes++
+                                }else if(favorite.child('favorite').val() === 'no'){
+                                  pub.favoriteNo++
+                                  if(that.user){
+                                    if(that.user.uid){
+                                        if(favorite.key === that.user.uid){
+                                            dislike = true;
+                                        }
+                                    }
+                                  }
                                 }
+                              })
+                            }
+                        if(pub.favoriteTotal >0){
+                        pub.favoritePercent = Math.round((pub.favoriteYes/pub.favoriteTotal)*1000)/10;
+                        }
+
+                        var pubDistance = distance * 0.621371;
+                        pub.distance = pubDistance;
+
+                        if (location) {
+                            // console.log('geo-location', location)
+                            pub.latitude = location[0];
+                            pub.longitude = location[1];
+                        }
+
+                        if (that._isPremium(pub.plan)) {
+                            if (pubDistance <= 5) {
+                                pub.sort = pubDistance - 5;
+
                             } else {
                                 pub.sort = pubDistance;
                             }
-
-                            pub.beerfly = true;
-                            pub.organization = true;
-                            if (!pub.favorite) {
-                                pub.favorite = {};
+                        } else {
+                            if(dislike){   
+                                pub.sort = pubDistance+10
+                            }else{
+                                pub.sort = pubDistance;
                             }
-                            return pub;
+                        }
+
+                        pub.beerfly = true;
+                        pub.organization = true;
+
+
+                        // if (!pub.favorite) {
+                        //     pub.favorite = {};
+                        // }
+                        return pub;
 
 
                         }).then(function (pub) {
@@ -243,6 +282,8 @@
                         });
                     })
 
+                }
+              }
                 }
 
             },

@@ -1,7 +1,7 @@
 
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
 
 <dom-module id="beer-organization-data">
@@ -9,12 +9,14 @@
   <template>
  
 
-    <firebase-document 
+    <!-- <firebase-document 
         app-name="beer" 
         id="pub"
         path="organization/[[orgId]]"
         data="{{fireOrg}}">
-    </firebase-document>
+    </firebase-document> -->
+    <firebase-auth id="auth" app-name="beer"></firebase-auth>
+
 
 
 </template>
@@ -45,8 +47,49 @@
         }
       },
       
-      observers:[ '_watchForFirebaseOrgData(fireOrg)'],
+      observers:['_getOrganizationData(orgId)'],
 
+      _getOrganizationData: function (orgId){
+        if(orgId){
+          firebase.database(this.$.auth.app).ref(`/organization/${orgId}`)
+          .on('value', snapshot =>{
+            if(!snapshot.exists()){
+              this.organization = null;
+            }else{
+              var organization = snapshot.val();
+
+              organization.cacheTimestamp = Date.now()+604800000;
+              organization.organization = true;
+              organization.favoriteTotal = 0;
+              organization.favoriteYes = 0;
+              organization.favoriteNo = 0;
+              organization.favoritePercent=null;
+
+            if(snapshot.child('favorite').exists()){
+              snapshot.child('favorite').forEach(favorite =>{
+                organization.favoriteTotal ++
+                // console.log(favorite);
+                if(favorite.child('favorite').val() === 'yes'){
+                  organization.favoriteYes++
+                }else if(favorite.child('favorite').val() === 'no'){
+                  organization.favoriteNo++
+                }
+
+              })
+            }
+            if(organization.favoriteTotal >0){
+              organization.favoritePercent = Math.round((organization.favoriteYes/organization.favoriteTotal)*1000)/10;
+            }
+
+            this.organization = organization;
+
+            window.localStorage.setItem('organization_'+organization.place_id, JSON.stringify(organization))
+            console.log('cached', organization);
+
+            }
+          })
+        }
+      },
 
       _watchForFirebaseOrgData: function (fireOrg){
 

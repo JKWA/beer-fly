@@ -88,131 +88,6 @@ exports.cleanupUser = functions.auth.user()
 });
 
 
-// return  (place_id) => new Promise((resolve, reject)) => {
-    
-  //     if(!error){
-  //        response.json.result = resolve
-  //   })
-  // })
-   
-  //   return new Promise(function(resolve, reject){
-
-  //     var data = googleMapsClient.place({placeid: place_id},  function(error, response) { 
-    
-  //      if(!error){
-  //        response.json.result = resolve
-        //   const place = response.json.result,
-        //         preOrg = `${place_id}/`,
-        //         newPub = {}
-        //         // pubDomain = newPub.domain
-        //    console.log('google response', place);
-        
-        //   // let brewery = false;
-        //   // let pub = false;
-        //   // let truck = false;
-        //   // let domain;
-
-        //   // console.log('received place data', place);
-        
-        //   if(place.permanently_closed){
-        //     newPub[preOrg+'permanently_closed'] = true
-        //   }
-
-        //   // if(place.types){
-        //   //   if (!event.data.previous.exists()) {
-        //   //     if(isPub(place.types)){
-        //   //         newPub[preOrg+'PUB'] = true;
-        //   //         pub = true;
-        //   //     }
-        //   //   }
-        //   // }
-        //   // console.log('past type', newPub)
-
-        //   // if(place.name){
-
-        //   //   newPub[preOrg+'/name'] = place.name;
-
-        //   //     if(place.name.toLowerCase().indexOf('brewing')>-1){
-        //   //       newPub[preOrg+'BREWERY'] = true;
-        //   //       brewery = true;
-        //   //     }
-
-        //   //     if(place.name.toLowerCase().indexOf('brewery')>-1){
-        //   //       newPub[preOrg+'BREWERY'] = true;
-        //   //       brewery = true;
-        //   //     }
-
-        //   //     if(place.name.toLowerCase().indexOf('truck')>-1){
-        //   //       newPub[preOrg+'TRUCK'] = true;
-        //   //       truck = true;
-        //   //     }
-            
-
-        //   // }
-        //   // console.log('past name', newPub)
-
-        //   if(place.geometry){
-        //     if(place.geometry.location){
-        //       if(place.geometry.location.lat){
-        //           newPub[preOrg+'latitude'] = place.geometry.location.lat
-        //       }
-        //       if(place.geometry.location.lng){
-        //           newPub[preOrg+'longitude'] = place.geometry.location.lng
-        //       }
-        //     }
-        //   }
-
-        //   // console.log('past geometry', newPub)
-
-        // let metaItems = ['place_id', 'formatted_address', 'vicinity', 'formatted_phone_number']
-
-        // for (let value of metaItems) {
-        //   if(place[value]){
-        //     newPub[preOrg+value] = place[value]
-        //   }
-        // }
-
-        // // console.log('past meta', newPub)
-        
-
-        // if(place.website){
-        //     domain = getDomain(place.website)
-        //     newPub[preOrg+'website'] = place.website
-        //     newPub[preOrg+'domain'] = domain
-        //     newPub['newOrg/'+place.place_id+'/domain'] = domain
-        // }
-        // // console.log('past website', newPub)
-
-        // if(place.address_components){
-        //     var placeAddress = getAddressObject(place.address_components);
-        //     if(placeAddress){
-        //         var placeAddressKey = Object.keys(placeAddress)
-        //         for (let value of placeAddressKey){
-        //             newPub[preOrg+value] = placeAddress[value]
-        //         }
-        //     }
-        // }
-        // console.log('new google pub', newPub);    
-         
-        // return newPub
-      // }else{
-      //   error = reject
-        // return null;
-        // console.error(error)
-        // return null
-    //   }
-    // })
-    // if(data){
-    //   resolve(data)  
-    // }else{
-    //   reject('no data')
-    // }
-      
-      
-      
-  //   })
-  // }
-
 exports.createNewOrganization = functions.database.ref('/organization/{place_id}')
   .onCreate(event => {
 
@@ -344,28 +219,6 @@ exports.updateDomainData = functions.database.ref('/newOrg/{place_id}/{domain}')
     })
   })
 
-// exports.createNewOrganization = functions.database.ref('/organization/{place_id')
-//   .onCreate(event => {
-//     const val = event.data.val(),
-//           metadata = event.params,
-//           place_id = metadata.place_id
-    
-//     return googleMapsClient.place({placeid: placeId}, 
-//       function(error, response) {
-//           if (!error) {
-//             var newPub = parseGooglePlaceData(placeId)
-//             console.log(newPub);
-//             admin.database().ref().update(newPub)
-//               .then(saved =>{
-//                 console.log('saved data')
-//               })
-//               .catch( error =>{
-//                 console.log('ERROR_SAVING_DATA', error)
-//                 return reportError(error, {place_id: placeId});
-//               })
-//           }
-//       })
-//   })
 
 
 exports.createStripeCharge = functions.database.ref('/user/{user_id}/stripe/organization/{place_id}/charges/{charge_id}')
@@ -710,7 +563,6 @@ exports.updateFoodTruckScheduleFromPub = functions.database.ref('/organization/{
       
 
       return;
- 
 });
 
 exports.updateFoodTruckScheduleToPub = functions.database.ref('/organization/{truckId}/schedule/{day}/organization/{placeId}')
@@ -946,7 +798,6 @@ function parseGooglePlaceData (place){
                     }
                   })
                  
-
         }
       })
   }
@@ -978,8 +829,6 @@ function parseGooglePlaceData (place){
           console.error("GeoTapFireError: " + error);
       });
   }
-
-
 
 
 
@@ -1239,6 +1088,41 @@ exports.setGeoForCrawl = functions.database.ref('/crawl/{crawl_id}')
       .catch(error => {
         console.error('GEO_CRAWL_ERROR', error)
       })
+})
+
+exports.setPlaceForCrawl = functions.database.ref('/crawl/{crawl_id}/organization/{place_id}')
+.onCreate(event =>{
+  const val = event.data.val(),
+        created = val.created,
+        metadata = event.params,
+        crawl_id = metadata.crawl_id,
+        place_id = metadata.place_id
+
+  admin.database().ref(`/organization/${place_id}/crawl/${crawl_id}`)
+    .update({created: created, crawl_id: crawl_id})
+    .then(() =>{
+      console.log('Added crawl to org', val)
+    })
+    .catch(error =>{
+      console.error('ERROR', error)
+    })
+})
+
+exports.deletePlaceForCrawl = functions.database.ref('/crawl/{crawl_id}/organization/{place_id}')
+.onDelete(event =>{
+  const val = event.data.val(),
+        metadata = event.params,
+        crawl_id = metadata.crawl_id,
+        place_id = metadata.place_id
+
+  admin.database().ref(`/organization/${place_id}/crawl/${crawl_id}`)
+    .remove()
+    .then(() =>{
+      console.log('Removed crawl to org', val)
+    })
+    .catch(error =>{
+      console.error('ERROR', error)
+    })
 })
 
 

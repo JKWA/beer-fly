@@ -142,8 +142,6 @@
 
           for (var i=0; i<key.length; i++){
             var truck = truckObj[key[i]];
-            console.log(key[i])
-            // console.log('truckObj', truckObj);
             
            if(truck){
             if(truck.period){
@@ -187,13 +185,11 @@
         truck.id = id;
         truck.open = period.OPEN;
         truck.close = period.CLOSE;
-        console.log(truck)
         obj.trucks.push(truck);
         return obj;
       },
 
        _createArray : function (obj){
-        console.log('obj', obj)
         var returnArray = [];
         if(typeof obj ==='object'){
           var key = Object.keys(obj);

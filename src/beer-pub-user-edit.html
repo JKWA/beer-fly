@@ -5,11 +5,7 @@
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 
-<link rel="import" href="../bower_components/neon-animation/neon-animation-runner-behavior.html">
-<link rel="import" href="../bower_components/neon-animation/web-animations.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
-<link rel="import" href="../bower_components/paper-dialog-behavior/paper-dialog-shared-styles.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
@@ -25,14 +21,14 @@
 
 
 
-<dom-module id="beer-home-dialog">
+<dom-module id="beer-pub-user-edit">
   <template strip-whitespace>
     
     <style include="paper-material-styles">
       
     :host {
-        width: 100vw; 
-        height: 100vh;
+        /* width: 100vw; 
+        height: 100vh; */
       }
 
     a{
@@ -43,11 +39,11 @@
     li{
       @apply --layout-horizontal;
       padding: 10px;
-      border-bottom: 1px solid var(--app-secondary-color);
+      border-bottom: 1px solid var(--app-line-color);
     }
 
     li:first-child{
-      border-top: 1px solid var(--app-secondary-color);
+      border-top: 1px solid var(--app-line-color);
     }
 
     li > div {
@@ -64,17 +60,12 @@
        padding:0;
        margin:0 3vw;
        bottom:0;
-       left:0;
-       /* background-color: white; */
-       
+       left:0;       
      }
-     /* .edit{
-       
-     } */
+ 
 
      .dialog > div{
-        margin: 10px 0; 
-       /* width:100%; */
+       margin: 10px 0; 
        padding: 10px;
        background-color: white;
      }
@@ -99,13 +90,6 @@
       color: var(--app-primary-color);
      
     }
-     
-
-     /* .actions{
-         width: 80px;
-         height:100%;
-         background-color: var(--app-shadow-color);
-      } */
 
       .actions-wrapper{
           @apply --layout-vertical; 
@@ -115,9 +99,8 @@
       .actions{
          @apply --layout-horizontal;
          @apply --layout-center-justified;
-         border-top: 1px solid var(--app-secondary-color);
-         border-bottom: 1px solid var(--app-secondary-color);
-         /* margin: 0 0 20px 0; */
+         border-top: 1px solid var(--app-line-color);
+         border-bottom: 1px solid var(--app-line-color);
       }
 
       .action{
@@ -176,11 +159,6 @@
          @apply --layout-justified;
          color: var(--app-accent-color);
       }
-
-
-    
-
-
         
     </style>
   <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
@@ -189,9 +167,8 @@
       <div class="edit">
 
           <div class="name">[[editPlace.name]]</div>
-          <!-- [[editPlace.place_id]]
-          [[editFavorite]] -->
-          <div class="actions-wrapper">
+      
+          <!-- <div class="actions-wrapper">
             <div class="actions">
               <div class="action">
                 <iron-label>
@@ -212,19 +189,7 @@
                 </iron-label>
               </div>
 
-              <!-- <div class="action">
-                <a href="sms:?&body=https://www.beer-fly.com/[[_computeNameForUrl(editPlace.name)]]/main?orgid=[[editPlace.place_id]]">
-                <iron-label>
-                  <paper-icon-button class="action-button" icon="beer-icons:sms"></paper-icon-button>
-                  <div class="action-label">Text</div>
-                </iron-label>
-                </a>
-              </div> -->
-
-
-             
-
-            </div>
+            </div> -->
         
             <div>
 
@@ -295,11 +260,6 @@
         </div>
       </div>
 
-      <div>
-        <paper-button class="close-button" dialog-dismiss autofocus>Close</paper-button>
-      </div>
-      <!-- <slot></slot> -->
-
     </div>
    
     
@@ -314,7 +274,7 @@
 
   Polymer({
 
-    is: 'beer-home-dialog',
+    is: 'beer-pub-user-edit',
 
     properties:{
       addCrawlName:{
@@ -355,7 +315,7 @@
 
       toggle:{
         type: Boolean,
-        value:false
+        value:true
       },
 
       user:{
@@ -375,14 +335,7 @@
 
     }, 
 
-    behaviors: [
-      Polymer.PaperDialogBehavior,
-      Polymer.NeonAnimationRunnerBehavior
-    ],
-
-    listeners: {
-      'neon-animation-finish': '_onNeonAnimationFinish'
-    },
+   
 
     observers: ['_watchFavorite(editFavorite)',
                 '_watchCrawl(crawl)',
@@ -466,122 +419,7 @@
 
     },
 
-    _updateFavorite: function (){
-      var place = this.editPlace;
-      var placeId = place.place_id;
-      var favorite = this.editFavorite;
-      var that = this;
-      var places = this.places;
-
-      var index
-      if(this.placesObj[placeId]){
-        if(this.placesObj[placeId].arrayPosition){
-          //have to subtract one to get actual position, prevents error with [0]
-          index = this.placesObj[placeId].arrayPosition -1;
-        }
-      }
-
-      if(this.user){
-        if(place.place_id){
-          if(favorite === 'yes'){
-            firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${place.place_id}`)
-              .remove()
-              .then(() =>{
-                console.log('Removed from favorite');
-                that._isFavoriteCSS = 'not-selected';
-                that._isNotFavoriteCSS = 'not-selected';
-                that.editFavorite = 'none';
-                that._watchFavorite(that.editFavorite);
-                //too difficult to watch an object, so added action string
-                that.set(`places.${index}.favorite.${that.user.uid}`, {});
-                that.set(`places.${index}.action`, 'REMOVE_FAVORITE');
-                
-              })
-              .catch(error =>{
-                console.log('FAVORITE_DELETE_ERROR', error)
-              })
-
-          }else{
-            var obj={
-              created: Math.round(Date.now()/1000),
-              name:place.name,
-              place_id:place.place_id,
-              favorite:'yes',
-              vicinity:place.vicinity,
-              latitude:place.latitude,
-              longitude:place.longitude
-            };
-
-            firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${place.place_id}`)
-              .update(obj)
-              .then(() =>{
-                console.log('Added to Favorite');
-                that.editFavorite = 'yes';
-
-                // if(!place.favorite){
-                //   that.set(`places.${index}.favorite`, {});
-                // }
-                
-                that.set(`places.${index}.favorite.${that.user.uid}`, obj);
-                that.set(`places.${index}.action`, 'ADD_FAVORITE');
-              })
-              .catch(error =>{
-                console.log('FAVORITE_ERROR', error)
-              })
-          }
-        }
-      }else{
-        this.login = true;
-      }
-    },
-
-    _updateNotFavorite: function (){
-      var place = this.editPlace;
-      var favorite = this.editFavorite;
-      var that = this;
-      
-      if(this.user){
-        if(place.place_id){
-          if(favorite === 'no'){
-            firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${place.place_id}`)
-              .remove()
-              .then(() =>{
-                console.log('Removed from favorite');
-                that._isFavoriteCSS = 'not-selected';
-                that._isNotFavoriteCSS = 'not-selected';
-                that.editFavorite = 'none';
-                
-              })
-              .catch(error =>{
-                console.log('FAVORITE_DELETE_ERROR', error)
-              })
-
-          }else{
-            var obj={
-              created: Math.round(Date.now()/1000),
-              name:place.name,
-              place_id:place.place_id,
-              favorite:'no',
-              vicinity:place.vicinity,
-              latitude:place.latitude,
-              longitude:place.longitude
-            };
-
-            firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${place.place_id}`)
-              .update(obj)
-              .then(() =>{
-                console.log('Added to Not-Favorite');
-                that.editFavorite = 'no';
-              })
-              .catch(error =>{
-                console.log('FAVORITE_ERROR', error)
-              })
-          }
-        }
-      }else{
-        this.login = true;
-      }
-    },
+   
 
     _updateCrawl: function (event){
         var crawl = this.crawl; 
@@ -609,7 +447,7 @@
               var uploadObj = {};
               uploadObj['user_id'] = this.user.uid;
               uploadObj[`organization/${placeId}`] = obj;
-
+              console.log(uploadObj)
               firebase.database(this.$.auth.app).ref(`/crawl/${crawlId}`)
                 .update(uploadObj)
                 .then(() =>{
@@ -619,7 +457,7 @@
                   that.crawl = {};
                   // that.toggle = false;
                   that.crawlMessage = `Added ${place.name} to ${crawl.name}`;
-                  that.toggle = false;
+                  // that.toggle = false;
                   that.addCrawlToggle=false;
                 })
                 .catch(error =>{
@@ -633,18 +471,18 @@
     },
 
     _openEditCrawl: function (){
-      this.toggle = !this.toggle;
+      // this.toggle = !this.toggle;
       this.addCrawlToggle=false;
     },
 
     _openCrawlAddEditor: function(){
-      this.toggle=false;
+      // this.toggle=false;
       this.addCrawlToggle=true;
     },
 
     
     _closeCrawlAddEditor: function(){
-      this.toggle=false;
+      // this.toggle=false;
       this.addCrawlToggle=false;
     },
     
@@ -676,8 +514,6 @@
 
     _filterCrawls: function (placeId){
 
-       
-
         if(!placeId){
           return null;
         }
@@ -706,27 +542,6 @@
       }
     },
 
-    // _renderOpened: function() {
-    //   this.cancelAnimation();
-    //   // this.modal=true;
-    //   this.playAnimation('entry');
-    // },
-
-    // _renderClosed: function() {
-    //   this.cancelAnimation();
-    //   this.playAnimation('exit');
-    // },
-
-    _onNeonAnimationFinish: function() {
-      if (this.opened) {
-        this._finishRenderOpened();
-      } else {
-        this._finishRenderClosed();
-      }
-    },
-    // _addOne: function (index){
-    //   return index+1;
-    // }
     _test(obj){
       console.log('test', obj)
     }

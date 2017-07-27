@@ -38,20 +38,10 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
 <link rel="import" href="beer-organization-data.html">
-<!-- <link rel="import" href="beer-location-data.html"> -->
-<!-- <link rel="import" href="beer-geo-data.html"> -->
-<!-- <link rel="import" href="beer-geo-location.html"> -->
-<!-- <link rel="import" href="beer-search-data.html"> -->
-<!-- <link rel="import" href="beer-cache-data.html"> -->
+
 <link rel="import" href="beer-analytics.html">
 
 <script src="https://js.stripe.com/v3/"></script>
-
-
-
-
-<!--<link rel="import" href="beer-pub.html">-->
-<!--<link rel="import" href="beer-test.html">-->
 
 <link rel="import" href="beer-home.html">
 <link rel="import" href="beer-icons.html">
@@ -78,6 +68,7 @@
         --app-accent-color: #172C50;
         --app-selected-color: #F07310;
         --app-shadow-color: #F8F8F8;
+        --app-line-color: #DBDBDB;
         --paper-button-ink-color: var(--app-accent-color);
         --paper-icon-button-ink-color: var(--app-accent-color);
         --paper-spinner-color: var(--app-accent-color);
@@ -322,27 +313,16 @@
       data="{{userData}}">
   </firebase-document>
 
-   <firebase-query
-        app-name="beer"
-        id="crawlData"
-        order-by-child="user_id"
-        equal-to="[[user.uid]]"
-        disabled
-        path="crawl"
-        data="{{crawlData}}">
-    </firebase-query>
+  <firebase-query
+    app-name="beer"
+    id="crawlData"
+    order-by-child="user_id"
+    equal-to="[[user.uid]]"
+    disabled
+    path="crawl"
+    data="{{crawlData}}">
+  </firebase-query>
 
-  <!-- <beer-geo-location
-      location = "{{location}}"
-      idle = "{{idle}}">
-  </beer-geo-location> -->
-
-  <!-- <beer-location-data
-      location="{{location}}"
-      location-history="{{locationHistory}}"
-      sorted-location-history="{{sortedLocationHistory}}"
-      search-string="[[searchString]]">
-  </beer-location-data> -->
 
   <beer-place-data
     place-id="[[orgId]]"
@@ -350,28 +330,7 @@
     data="{{place}}">
   </beer-place-data>
 
-   <!-- <beer-cache-data
-      location="[[location]]"
-      online="[[online]]"
-      all-object="{{allObject}}"
-      all-array="{{allArray}}">
-  </beer-cache-data> -->
-
-  <!-- <beer-geo-data
-    org-id="[[orgId]]"
-    location="[[location]]"
-    all-object="{{allObject}}"
-    all-array="{{allArray}}"
-    page="[[page]]">
-  </beer-geo-data> -->
-
-  <!-- <beer-search-data
-    org-id="[[orgId]]"
-    location="[[location]]"
-    all-object="{{allObject}}"
-    all-array="{{allArray}}"
-    page="[[page]]">
-  </beer-search-data> -->
+  
 
   <beer-organization-data
       org-id="[[orgId]]"
@@ -393,8 +352,6 @@
       </a>
    
       <div class="card">
-
-       
         
       <div class="card-title">[[_showOrgName(place.name)]]</div>
 
@@ -414,10 +371,10 @@
           <hr>
         </template>
         <a name="near" aria-label="Breweries near me" href$="/home[[locationParams]]"><iron-icon class="drawer-icon" icon="beer-icons:gps-fixed"></iron-icon>Near me</a>
-        <a name="search" aria-label="Search for breweries" href$="/home/search[[locationParams]]"><iron-icon class="drawer-icon" icon="beer-icons:search"></iron-icon>Search</a>
-        <a name="crawl" aria-label="My Beer Crawls" href$="/home/crawl[[locationParams]]"><iron-icon class="drawer-icon" icon="beer-icons:crawl"></iron-icon>Beer-Crawls</a>
-        <a name="favorite" aria-label="My favorites" href$="/[[nameUrl]]/favorite[[orgParam]]"><iron-icon class="drawer-icon" icon="beer-icons:favorite"></iron-icon>Favorites</a>
-        <a name="question" aria-label="Frequently asked questions" href="/home/question"><iron-icon class="drawer-icon" icon="beer-icons:question"></iron-icon>Questions</a>
+        <a name="search" aria-label="Search for breweries" href$="/[[nameUrl]]/search[[returnParam]]"><iron-icon class="drawer-icon" icon="beer-icons:search"></iron-icon>Search</a>
+        <a name="crawl" aria-label="My Beer Crawls" href$="/[[nameUrl]]/crawl[[returnParam]]"><iron-icon class="drawer-icon" icon="beer-icons:crawl"></iron-icon>Beer-Crawls</a>
+        <a name="favorite" aria-label="My favorites" href$="/[[nameUrl]]/favorite[[returnParam]]"><iron-icon class="drawer-icon" icon="beer-icons:favorite"></iron-icon>Favorites</a>
+        <a name="question" aria-label="Frequently asked questions" href$="/[[nameUrl]]/question[[returnParam]]"><iron-icon class="drawer-icon" icon="beer-icons:question"></iron-icon>Questions</a>
 
       </iron-selector>
 
@@ -440,13 +397,13 @@
           </div>
           <div class="left-bar-item" >
             <div id="backButton" hidden>
-                <a class="menu-btn"  href$="/[[nameUrl]]/[[returnPage]][[orgParam]]" tabindex="-1">
+                <a class="menu-btn"  href$="/[[nameUrl]]/[[returnPage]][[returnParam]]" tabindex="-1">
                   <paper-icon-button alt="Back to main page" icon="beer-icons:arrow-back" ></paper-icon-button>
                 </a>
             </div>
           </div>
         </div>
-        <div class="logo" main-title><a aria-label="Go to main page" href$="/[[nameUrl]]/main[[orgParam]]" aria-label$="[[_showOrgName(place.name)]]">[[_showOrgName(place.name)]]</a></div>
+        <div class="logo" main-title><a aria-label="Go to main page" href$="/[[nameUrl]]/main[[returnParam]]" aria-label$="[[_showOrgName(place.name)]]">[[_showOrgName(place.name)]]</a></div>
       
       </app-toolbar>
       </app-header>
@@ -455,18 +412,16 @@
         <div class="main">
         <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
           <beer-account name="account" organization="[[organization]]" small-screen="[[smallScreen]]"owner="[[owner]]"></beer-account>
-          <!--<beer-plan name="plan" organization="[[organization]]" small-screen="[[smallScreen]]"owner="[[owner]]"></beer-plan>-->
           <beer-question name="question" anchor="[[anchor]]" login="{{login}}" online="[[online]]"></beer-question>
-          <beer-crawl name="crawl" location={{location}} online="[[online]]" crawl-id="[[crawlId]]"></beer-crawl>
-          <beer-crawl-owner name="crawl-owner" online="[[online]]" crawl-id="[[crawlId]]" ></beer-crawl-owner>
+          <beer-crawl name="crawl" location={{location}} online="[[online]]" crawl-id="[[crawlId]]" name-url="[[nameUrl]]" return-param="[[returnParam]]"></beer-crawl>
 
           <beer-allbeers name="allbeers" owner="[[owner]]"></beer-allbeers>
-          <beer-pub name="pub" login="{{login}}" organization="{{organization}}" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" owner="[[owner]]" user-data="[[userData]]" online="[[online]]"></beer-pub>
+          <beer-pub name="pub" login="{{login}}" organization="{{organization}}" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" owner="[[owner]]" user-data="[[userData]]" crawl-data="[[crawlData]]" online="[[online]]" return-params="[[returnParam]]"></beer-pub>
           <beer-tap name="tap" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.TAP]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-tap>
           <beer-beer name="beer" login="{{login}}" organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" category=[[organization.category.BEER]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-beer>
           <beer-tv name="tv" organization="[[organization]]" place="[[place]]" org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-tv>
           <beer-favorite-beer name="favorite-beer" location="[[location]]" offline="[[offline]]"></beer-favorite-beer>
-          <beer-favorite-brewery name="favorite-brewery" offline="[[offline]]"></beer-favorite-brewery>
+          <beer-favorite-brewery name="favorite-brewery" user-data="[[userData]]" crawl-data="[[crawlData]]" offline="[[offline]]"></beer-favorite-brewery>
           <beer-favorite-pub name="favorite-pub" offline="[[offline]]"></beer-favorite-pub>
           <beer-favorite-crawl name="favorite-crawl" offline="[[offline]]"></beer-favorite-crawl>
 
@@ -660,7 +615,6 @@
           computed: '_computeLocationParamsUrl(location)'
         },
         
-
         login: {
           type: Boolean,
           value: false
@@ -687,7 +641,6 @@
 
         organization: {
           type: Object,
-          
         },
 
         orgId: {
@@ -708,6 +661,11 @@
         orgParam: {
           type: String,
           computed: '_computeOrgParam(orgId)'
+        },
+
+        returnParam:{
+          type: String,
+          computed: '_computeReturnParam(orgId, location)'
         },
 
         owner:{
@@ -799,8 +757,6 @@
         '_updatePageTitle(place.name, page)',
         '_scrollToTop(page)',
         '_watchUser(user)'
-
-        // '_setTimeoutForGeo(page)'
       ],
 
      
@@ -808,9 +764,9 @@
         Polymer.AppNetworkStatusBehavior,
        ],
 
-       ready: function (){
-         this.homeDialogOpened = false;
-       },
+      //  ready: function (){
+      //   //  this.homeDialogOpened = false;
+      //  },
 
       //  listeners: {
       //             'geo-error': '_geoError', 
@@ -818,7 +774,6 @@
 
       created: function () {
         window.performance && performance.mark && performance.mark('beer-app.created');
-        // Custom elements polyfill safe way to indicate an element has been upgraded.
         this.removeAttribute('unresolved');
       },
 
@@ -842,25 +797,6 @@
 
   
 
-      _setTimeoutForGeo: function (page) {
-        //if phone has location serves off and does not trigger error message
-        // if(page === 'home'){
-        //   if(this.firstTimeHomeHasLoaded){
-            
-        //     var that = this; 
-        //     this.timeout = setTimeout(function(){ 
-        //     console.log('sent error message');
-            
-        //     that.geoError = true; }, 7000);
-
-        //     this.firstTimeHomeHasLoaded = false;
-
-        //   }
-         
-
-        // }
-
-      },
  
       _scrollToTop: function (page){
         Polymer.AppLayout.scroll({ top: 0, behavior: 'silent' });
@@ -887,6 +823,7 @@
 
 
       _setBackArrowInHeader: function (page){
+        console.log('page', page)
         if(page === 'pub' || page==='home'){
           this.$.backButton.hidden = true;
           this.$.homeButton.hidden = false;
@@ -969,16 +906,7 @@
             }else if(subRoute==='question'){
                page = 'question';
             }else if(subRoute==='crawl'){
-               if(!thirdRoute){
-                 page = 'crawl';
-               }else{
-                 if(thirdRoute === 'mine'){
-                   page='crawl-owner';
-                   returnPage='crawl';
-                 }else{
-                   page = 'crawl';
-                 }
-               }
+               page = 'crawl';
             }else if(subRoute==='favorite'){
                
                if(!thirdRoute){
@@ -1046,6 +974,10 @@
                page = 'home';
             }else if(subRoute==='browse'){
                page = 'browse';
+            }else if(subRoute==='question'){
+               page = 'question';
+            }else if(subRoute==='crawl'){
+               page = 'crawl';
             }else if(subRoute==='beer-edit'){
                page = 'beer-edit';
                returnPage='beer';
@@ -1279,6 +1211,29 @@
         return null;
       },
 
+      _computeReturnParam: function (orgId, location){
+        var paramArray = [];
+
+        if(orgId){
+          if(orgId !='home'){
+            paramArray.push(`orgid=${orgId}`)
+          }
+        }
+        if(location){
+          if(location.address && location.latitude && location.longitude){
+            var address = encodeURIComponent(location.address); 
+            var geo = encodeURIComponent(`${location.latitude} ${location.longitude}`);
+            paramArray.push(`location=${geo}&locationAddress=${address}`)
+          }
+        }
+
+        if(paramArray.length > 0){
+          return '?'+ paramArray.join('&');
+        }
+          return ''
+        
+      },
+
 
       _computeCrawlId: function (queryParams) {
         if (queryParams) {
@@ -1424,6 +1379,7 @@
       },
 
      _showOrgName: function (name) {
+       console.log(name)
        if(name){
           if(name === 'home'){
             return 'Beer-Fly'

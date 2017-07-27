@@ -88,6 +88,9 @@
           "mainImage": {
               ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
           },
+          "menu": {
+            	".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
+          },
           "motto": {
             	".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
               ".validate": "newData.isString()"
@@ -246,6 +249,11 @@
           "crawl":{
             ".write": "$uid==auth.uid",
             ".read": "true"
+          },
+            
+          "location":{
+            ".write": "$uid==auth.uid",
+            ".read": "$uid==auth.uid"
           },
             
           "rating":{

@@ -79,10 +79,8 @@
                   console.log('local');
                   this.data = JSON.parse(data);
                   }
-                // console.log(this.data);
                 }catch (error){
-                console.error('Cannot parse data '+error);
-                // this._getGoogleDetails(placeId);
+                  console.error('Cannot parse data '+error);
               }
             }
 
@@ -108,14 +106,33 @@
             // console.log(parameter);
             var places = new google.maps.places.PlacesService(map);
               places.getDetails(parameter, function (result, status){
-                    that.data = result;
+                
+                
+                
 
-                    // console.log('google_place', result);
+                console.log('google_place', result);
 
-                    if(result){
-                      result.cacheTimestamp = Date.now()+86400000;
-                      window.localStorage.setItem('place_'+placeId, JSON.stringify(result));
+                if(result){
+                  if(result.opening_hours){
+                    if(result.opening_hours.open_now){
+                      result.open = 'open'
+                    }else{
+                      result.open='closed'
                     }
+                  }
+                  result.cacheTimestamp = Date.now();
+                  if(result.geometry){
+                    if(result.geometry.location){
+                      result.latitude = result.geometry.location.lat();
+                      result.longitude = result.geometry.location.lng();
+                    }
+                  }
+                  that.data = result;
+                  console.log('place-data', result)
+                  window.localStorage.setItem('place_'+placeId, JSON.stringify(result));
+                }else{
+                  that.data={};
+                }
               })
             }
         },

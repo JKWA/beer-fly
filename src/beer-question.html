@@ -121,7 +121,7 @@
         </div>
         <div>
           <div>
-            Beer-Fly is a progressive web application connecting beer-lovers with craft beers and food trucks.
+            Beer-Fly is a web application connecting beer-lovers with craft beers and food trucks.
           </div>
         </div>
        </div>
@@ -130,6 +130,28 @@
         </div>
       <div class="question-body">
         <ol>
+
+          <li>
+            <div>
+              <a href="#home_screen">
+              <iron-icon icon="beer-icons:exit-to-app"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#home_screen">Add Beer-Fly to your home screen.</a>
+            </div>
+          </li>
+
+          <li>
+            <div>
+              <a href="#beer_crawl">
+              <iron-icon icon="beer-icons:crawl"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#beer_crawl">Find and create Beer-Crawls.</a>
+            </div>
+          </li>
           
           <li>
             <div>
@@ -141,14 +163,18 @@
               <a href="#near_me">Find nearby pubs and breweries.</a>
             </div>
           </li>
-           <!--<li>
+
+          <li>
             <div>
-              <a href="/home/search">
-              <iron-icon icon="beer-icons:search"></iron-icon>
+              <a href="#share_information">
+              <iron-icon icon="beer-icons:send"></iron-icon>
               </a>
             </div>
-            <div>Search for pubs, breweries, and food trucks.</div>
-          </li>-->
+            <div>
+              <a href="#share_information">Share information with friends.</a>
+            </div>
+          </li>
+
           <li>
             <div>
               <a href="#find_beers">
@@ -180,31 +206,6 @@
             </div>
           </li>
           
-          <!--<li>
-            <div>
-              <iron-icon icon="beer-icons:beer"></iron-icon>
-            </div>
-            <div>View a pub's tapped beers.</div>
-          </li>
-          <li>
-            <div>
-              <iron-icon icon="beer-icons:beer"></iron-icon>
-            </div>
-            <div>View a brewery's beers.</div>
-          </li>
-          <li>
-            <div>
-              <iron-icon icon="beer-icons:menu"></iron-icon>
-            </div>
-            <div>View pub and food-truck menus.</div>
-          </li>
-          
-          <li>
-            <div>
-              <iron-icon icon="beer-icons:contact"></iron-icon>
-            </div>
-            <div>View location and contact information.</div>
-          </li>-->
           <li>
             <div>
               <a href="#cast_taplist"> 
@@ -240,6 +241,60 @@
                 Upgrade your brewery or pub's plan.
               </a>
             </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- exit-to-app -->
+
+    <div id="home_screen" class="question">
+      <div class="question-header">Add to your home screen</div>
+      <div class="question-body">
+        <ol>
+          <li>
+            <div>
+              <iron-icon icon="beer-icons:exit-to-app"></iron-icon>
+            </div>
+            <div>Beer-Fly is natively runs in the browser and does not need to be downloaded. See directions for your browser to quickly add Beer-Fly to your home screen.</div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <div id="beer_crawl" class="question">
+      <div class="question-header">Create Beer-Crawls</div>
+      <div class="question-body">
+        <ol>
+          <li>
+            <a href="/home/crawl">
+              <iron-icon icon="beer-icons:crawl"></iron-icon>
+              </a>
+            <div>
+            </div>
+            <div>Find Beer-Crawls close to you at <a href="/home/crawl">/home/crawl</a></div>
+          </li>
+          <li>
+            <a href="/home/crawl">
+              <iron-icon icon="beer-icons:edit"></iron-icon>
+              </a>
+            <div>
+            </div>
+            <div>Edit your Beer-Crawls at <a href="/home/crawl">/home/crawl</a></div>
+          </li>
+          <li>
+            <a href="/home">
+              <iron-icon icon="beer-icons:gps-fixed"></iron-icon>
+              </a>
+            <div>
+            </div>
+            <div>Create a Beer-Crawl and add pubs from Near-me at <a href="/home">/home</a></div>
+          </li>
+          <li>
+            <div>
+              <iron-icon icon="beer-icons:crawl"></iron-icon>
+            </div>
+            <div>Create a Beer-Crawl and add the pub from a pub's home page.</div>
           </li>
         </ol>
       </div>
@@ -288,6 +343,27 @@
         </ol>
       </div>
     </div>
+
+    <div id="share_information" class="question">
+      <div class="question-header">
+        Share beers, locations, pubs, and Beer-Crawls with others.
+      </div>
+        
+      <div class="question-body">
+        <ol>
+          <li>
+            <div>
+              <a href="/home/home">
+              <iron-icon icon="beer-icons:send"></iron-icon>
+              </a>
+            </div>
+            <div>Copy the url or use the browser's share button to send friends page you are viewing.</div>
+          </li>
+           
+        </ol>
+      </div>
+    </div>
+
 
     <div class="question">
       <div class="question-header">

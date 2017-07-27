@@ -9,9 +9,22 @@
   <template strip-whitespace>
     
     <style include="paper-material-styles">
-    
 
-      .hours-text{
+      .open-text{
+        color: var(--app-primary-color);
+        font-size: 1.25em;
+        line-height: 1.4em;
+        font-weight: 400;
+        margin:10px 0;
+        text-align: center;
+      }
+
+      .hour-wrapper{
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+      }
+
+       .hours-text{
         color: var(--app-primary-color);
         font-size: 1.12em;
         line-height: 1.4em;
@@ -22,11 +35,17 @@
 
     </style>
 
-    <div animated-shadow="false">
-       
-        <template is="dom-repeat" items="[[_toArray(organization.opening_hours.weekday_text)]]" as="hours">
-            <div class="hours-text">[[hours]]</div>
-        </template>
+    <div hidden$="[[!place]]">
+      
+        <!-- <div class="open-text">Currently [[place.open]]</div> -->
+
+        <div class="hour-wrapper">
+          <div>
+            <template is="dom-repeat" items="[[_toArray(place.opening_hours.weekday_text)]]" as="hours">
+              <div class="hours-text">[[hours]]</div>
+            </template>
+          </div>
+        </div>
     </div>
   </template>
 
@@ -38,7 +57,7 @@
       is: 'beer-hours-card',
 
       properties: {
-        organization:{
+        place:{
           type: Object
         }
       },

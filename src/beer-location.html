@@ -282,7 +282,8 @@
 
         toggle:{
           type:Boolean,
-          value:false
+          value:false,
+          notify:true
         },
 
         toggleClass:String,
@@ -374,7 +375,7 @@
             that.toggle = true;
             that.$.progress.disabled = true;
             }, 7000);
-          },
+      },
 
       _closeGeoError: function () {
         this.geoError=false;
@@ -469,7 +470,7 @@
         // if(!this.locationParams){
           
           if(this.location){
-            console.log('has location')
+            // console.log('has location')
             var address = encodeURIComponent(this.location.address);
             var geo = encodeURIComponent(`${this.location.latitude} ${this.location.longitude}`);
             this.set(`queryParams.locationAddress`, address);
@@ -546,7 +547,7 @@
               var state = '';
             
               for (let address of place.address_components){
-                console.log(address.long_name);
+                // console.log(address.long_name);
                 for (let type of address.types){
                   
                   if(type === 'locality'){

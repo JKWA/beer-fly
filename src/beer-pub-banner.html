@@ -1,0 +1,456 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+
+<dom-module id="beer-pub-banner">
+
+  <template>
+
+    <style include="paper-material-styles">
+
+      :host {
+        display: block;
+        max-width: 640px;
+      }
+      
+      a{
+        text-decoration: none;
+      }
+
+      .info-banner{
+        @apply --layout-horizontal; 
+        @apply --layout-justified;
+        @apply --layout-wrap;
+      }
+
+      .banner-item{
+        @apply --layout-flex-auto;
+        @apply --layout-horizontal; 
+        @apply --layout-justified;
+        border-top: 1px solid var(--app-line-color);
+        border-bottom: 1px solid var(--app-line-color);
+      }
+
+      .divider{
+        width:1px;
+        margin: 30px 0; 
+        background-color:var(--app-line-color);  
+        border-top: 1px solid var(--app-line-color);
+        border-bottom: 1px solid var(--app-line-color);
+      }   
+
+      .info-item-wrapper{
+        padding:10px;
+        height:80px;
+        @apply --layout-vertical;
+      }
+
+      .info-icon{
+        color: var(--app-accent-color);
+        text-align: center;
+      }
+
+      .info-nonicon{
+        color: var(--app-accent-color);
+        font-size: 1em;
+        font-weight: 500;
+        margin: 11px 0;
+        text-align: center;
+      }
+
+      .info-label{
+        color: var(--app-accent-color);
+        font-size: .8em;
+        font-weight: 300;
+        @apply --layout-flex-auto;
+        text-align: center;
+      }
+
+      .open{
+        text-transform: uppercase
+      }
+
+      .favorite-icon{
+        color: var(--app-secondary-color);
+        text-align: center;
+      }
+
+    </style>
+
+  <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+
+ 
+    <div class="info-banner" >
+      <template is="dom-if" if="[[place.rating]]">
+          <div class="banner-item">
+            <div></div>
+            <div class="info-item-wrapper">
+              <div class="info-nonicon"> [[place.rating]]/5</div>
+              <div class="info-label">Google users</div>
+            </div>
+            <div class="divider"></div>  
+        </div>
+      </template>
+
+      <!-- FAV:[[organization.favoriteTotal]] -->
+
+
+      <template is="dom-if" if="[[organization.favoritePercent]]">
+        <div class="banner-item">
+          <div></div>
+          <div class="info-item">
+            <div class="info-item-wrapper">
+              <div class="info-nonicon"> [[organization.favoritePercent]]%</div>
+              <div class="info-label">Beer-Fly</div>
+            </div>
+          </div>
+          <div class="divider"></div> 
+        </div>
+      </template>
+
+      
+     
+        <div class="banner-item">
+          <div></div>
+          <div class="info-item-wrapper">
+            <div class="favorite-icon"> 
+              <paper-icon-button id="favoriteButton" icon="beer-icons:thumb-up" on-tap="_toggleFavorite"></paper-icon-button>
+            </div>
+            <div class="info-label">Like</div>
+          </div>
+
+          <div class="info-item-wrapper">
+            <div class="favorite-icon"> 
+              <paper-icon-button id="notFavoriteButton" icon="beer-icons:thumb-down" on-tap="_toggleNotFavorite"></paper-icon-button>
+            </div>
+            <div class="info-label">Don't Like</div>
+          </div>
+          <div class="divider"></div> 
+        </div>
+      
+
+      <template is="dom-if" if="[[_showIcons]]">
+
+        <div class="banner-item">
+          <div></div>
+          <template is="dom-if" if="[[dogs]]">
+              <div class="info-item-wrapper">
+                <div class="info-icon"> 
+                  <paper-icon-button icon="beer-icons:dogs"></paper-icon-button>
+                </div>
+                <div class="info-label">Dog Friendly</div>
+              </div>
+            </template>
+
+            <template is="dom-if" if="[[patio]]">
+              <div class="info-item-wrapper" hidden$="[[!patio]]">
+                <div class="info-icon"> 
+                  <paper-icon-button icon="beer-icons:patio"></paper-icon-button>
+                </div>
+                <div class="info-label">Patio</div>
+              </div>
+            </template>
+
+            <template is="dom-if" if="[[over21]]">
+              <div class="info-item-wrapper" hidden$="[[!over21]]">
+                <div class="info-nonicon">+21</div>
+                <div class="info-label">Over 21</div>
+              </div>
+            </template>
+            <div class="divider"></div> 
+        </div>
+      </template>
+
+      <div class="banner-item">
+        <div></div>
+        <div class="info-item">
+          <div class="info-item-wrapper">
+            <div class="info-icon"> 
+              <paper-icon-button icon="beer-icons:crawl" on-tap="_openEditPubDialog"></paper-icon-button>
+            </div>
+            <div class="info-label">Beer-Crawl</div>
+          </div>
+        </div>
+
+        <template is="dom-if" if="[[_hasPlaceOpen]]">
+          <div class="divider"></div> 
+        </template>
+
+        <template is="dom-if" if="[[!_hasPlaceOpen]]">
+          <div></div>
+        </template> 
+      
+      </div>
+
+      <template is="dom-if" if="[[_hasPlaceOpen]]">
+        <div class="banner-item">
+          <div></div>
+          <div class="info-item">
+            <div class="info-item-wrapper">
+              <div class="info-nonicon open">[[place.open]]</div>
+              <div class="info-label">Currently Open/Closed</div>
+            </div>
+          </div>
+          <div></div> 
+        </div>
+      </template>
+
+    </div>
+    
+  </template>
+  
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-pub-banner',
+
+      properties: {
+
+        organization:{
+          type: Object,
+          // notify: true
+        },
+
+        edit:{
+          type:Boolean,
+          value:false,
+          reflectToAttribute: true,
+        },
+
+        dogs:{
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+          computed: '_computeIcon(organization.dogFriendly)',
+        },
+
+        patio:{
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+          computed: '_computeIcon(organization.patio)',
+        },
+        
+        over21:{
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+          computed: '_computeIcon(organization.over21)',
+        },
+
+        placeId:{
+          type: String
+        },
+
+
+        place:{
+          type: Object
+        },
+
+        favorite:{
+          type:String,
+        },
+
+        openCrawl:{
+          type:Boolean,
+          value:false,
+          notify:true
+        },
+
+        userFavorite:{
+          type:String
+        },
+
+        user:{
+          type: Object
+        },
+
+        userData:{
+          type: Object
+        },
+
+        _hasPlaceOpen:{
+          type:Boolean,
+          reflectToAttribute: true,
+          value:false,
+          computed: '_computeHasPlaceOpen(place)'
+        },
+
+        _showIcons:{
+          type:Boolean,
+          value:false,
+          computed:"_computeShowIcons(organization)"
+        }
+      },
+
+      observers:[
+                  '_watchFavorite(favorite)',
+                  '_watchFavoriteData(userData.favoriteOrganization, placeId)',  
+                  ],
+
+
+
+     
+      _watchFavoriteData:function (favorite, placeId){
+
+        if(favorite && placeId){
+          if(favorite[placeId]){
+            this.userFavorite = favorite[placeId].favorite;
+            if(this.userFavorite === 'yes'){
+              this.$.favoriteButton.style.color = 'green';
+              this.$.notFavoriteButton.style.color=null;
+            }else if (this.userFavorite === 'no'){
+              this.$.favoriteButton.style.color = null;
+              this.$.notFavoriteButton.style.color='red';
+            }
+            else{
+              this.$.favoriteButton.style.color = null;
+              this.$.notFavoriteButton.style.color=null;
+            }
+          }else{
+            this.userFavorite = null;
+            this.$.favoriteButton.style.color = null;
+            this.$.notFavoriteButton.style.color=null;
+          }
+           
+        }else{
+          this.userFavorite = null;
+          this.$.favoriteButton.style.color = null;
+          this.$.notFavoriteButton.style.color=null;
+        }
+
+      },
+
+      _watchFavorite:function (favorite){
+        console.log('favorite', favorite)
+        console.log('user', this.userFavorite);
+        var update = false;
+        if(favorite){
+          update = true;
+        }
+        if(favorite === this.userFavorite){
+          update = false;
+        }
+
+        if(this.user){
+          if(this.organization){
+            if(this.placeId){
+              
+              
+              if(update){
+                var obj={
+                  created: Math.round(Date.now()/1000),
+                  name:this.organization.name,
+                  place_id:this.placeId,
+                  favorite:this.favorite,
+                  vicinity:this.organization.vicinity,
+                  latitude:this.organization.latitude,
+                  longitude:this.organization.longitude
+                };
+
+                firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.placeId}`)
+                  .update(obj)
+                  .then(() =>{
+                    console.log('Updated Favorite');
+                  })
+                  .catch(error =>{
+                    console.log('FAVORITE_ERROR', error)
+                  })
+              
+          
+
+              }else{
+                firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.placeId}`)
+                  .remove()
+                  .then(() =>{
+                    console.log('Removed from favorite');
+                    
+                  })
+                  .catch(error =>{
+                    console.log('FAVORITE_DELETE_ERROR', error)
+                  })
+              }
+            }
+          }
+
+        }else{
+          this.login = true;
+        }
+      },
+
+      _toggleFavorite: function(){
+        if(this.user){
+          if (this.favorite === 'yes'){
+            this.favorite = null;
+          }else{
+            this.favorite = 'yes'
+          }
+        }else{
+          this.login = true;
+        }
+      },
+
+      _toggleNotFavorite: function(){
+        if(this.user){
+          if (this.favorite === 'no'){
+            this.favorite = null;
+          }else{
+            this.favorite = 'no'
+          }
+        }else{
+          this.login = true;
+        }
+      },
+
+      _openEditPubDialog: function (){
+        this.openCrawl = true;
+      },
+
+
+      _computeShowIcons: function (organization){
+        if(organization){
+          if(organization.dogFriendly){
+            return true;
+          }
+          if(organization.patio){
+            return true;
+          }
+          if(organization.over21){
+            return true;
+          }
+        }
+        return false;
+      },
+
+
+      _computeIcon: function (icon) {
+        if (icon){
+          return true;
+        }
+          return false;
+      },
+
+      _computeHasPlaceOpen: function (place){
+        if(place){
+          if(place.open){
+            return true;
+          }
+        }
+        return false;
+      },
+
+      _test: function(obj){
+        console.log('TEST', obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

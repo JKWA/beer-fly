@@ -13,7 +13,9 @@
 <link rel="import" href="beer-pub-card-favorite.html">
 
 <link rel="import" href="beer-pub-icons.html">
-<link rel="import" href="beer-pub-favorite.html">
+<!-- <link rel="import" href="beer-pub-favorite.html"> -->
+<link rel="import" href="beer-pub-banner.html">
+
 
 <dom-module id="beer-pub-card">
 
@@ -33,7 +35,7 @@
 
       .card{
          @apply --paper-material-elevation-1;
-        margin: 10px; 
+        margin: 15px 10px; 
       }
 
       .card-wrapper{
@@ -69,11 +71,7 @@
         bottom: 0;
       }
 
-      .toggle-button{
-        @apply --layout-horizontal;
-        @apply --layout-end-justified;
-        /*width: 100%;*/
-      }
+    
 
       .card-information{
         padding: 10px;
@@ -98,12 +96,14 @@
         font-size: 1.0em;
         font-weight: 400;
         color: var(--app-primary-color);
+        margin:10px 0
       }
 
       .address {
         font-size: 1.0em;
         font-weight: 300;
         color: var(--app-primary-color);
+        margin:10px 0 20px 0;
       }
       
       .distance{
@@ -136,20 +136,23 @@
 
 
     </style>
+
+    <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+
    
       <div class="card">
         
         <template is="dom-if" if="[[_isPremium]]">
-          <template is="dom-if" if="[[place.mainImage.banner.url]]">
+          <template is="dom-if" if="[[organization.mainImage.banner.url]]">
          
-          <a aria-label$="[[place.name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
+          <a aria-label$="[[organization.name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
             <iron-image 
                 style="width:100%; height:300px; background-color: #F8F8F8;"
                 sizing="cover" 
                 preload 
                 placeholder="[[_computedPlaceHolder]]"
                 fade
-                src="[[place.mainImage.banner.url]]">
+                src="[[organization.mainImage.banner.url]]">
             </iron-image>
           </a>
           </template>
@@ -157,52 +160,38 @@
             <div id="sponsor">Sponsoring Organization</div>
           </div>
         </template>
-   
+
         <div class="card-wrapper">
-          <!-- [[favorite]] -->
-          
+
           <div class="card-information">
+
        
               <div class="items">
-                <a aria-label$="[[place.name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
-                  <div class="name">[[place.name]]</div>
+                <a aria-label$="[[organization.name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
+                  <div class="name">[[organization.name]]</div>
                 </a>
 
-                <a aria-label$="[[place.name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
+                <a aria-label$="[[organization.name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
                 <template is="dom-if" if="[[_isPremium]]">
-                  <div class="motto">[[place.motto]]</div>
+                  <div class="motto">[[organization.motto]]</div>
                 </template>
-                <div class="address" hidden$="[[!place.vicinity]]">[[place.vicinity]]</div>
-                <div class="distance" hidden$="[[!place.distance]]">[[_computeDisplayDistance(place.distance)]] miles from you</div>
+                <div class="address" hidden$="[[!organization.vicinity]]">[[organization.vicinity]]</div>
+                <div class="distance" hidden$="[[!organization.distance]]">[[_computeDisplayDistance(organization.distance)]] miles from you</div>
                 </a>
               </div>
-
-              <div class="icons-wrapper">
-                <beer-pub-icons
-                  dogs="[[place.dogFriendly]]"
-                  patio="[[place.patio]]"
-                  over21="[[place.over21]]">
-                </beer-pub-icons>
-                
-                <div id="favoriteIcon" class="favorite-icon-message" hidden$="[[!_numberFavorite]]">
-                  <iron-label>
-                    <paper-icon-button no-ink icon="thumb-up" place="[[place]]" on-tap="_openEditPlaceDialog"></paper-icon-button>
-                    <span>([[_numberFavorite]])</span>
-                  </iron-label>
-                </div>
-               
-              </div>
-          </div>
-          
-          <div class="toggle-button">
-            <div hidden$="[[!edit]]">
-              <paper-icon-button no-ink icon="more-vert" place="[[place]]" on-tap="_openEditPlaceDialog"></paper-icon-button>
-            </div>
           </div>
         
       </div>
-    </div>
-   
+        
+        <beer-pub-banner
+          organization="[[organization]]"
+          user-data="[[userData]]"
+          place-id="[[placeId]]"
+          open-crawl="{{openCrawl}}"
+          edit="[[edit]]">
+        </beer-pub-banner>
+     
+      </div>
     
   </template>
 
@@ -217,7 +206,6 @@
         edit:{
           type:Boolean,
           value:false,
-          reflectToAttribute:true
         },
 
         favorite:{
@@ -232,16 +220,14 @@
         openEditPubCrawl:{
           type:Boolean,
           notify:true
-          // observer: '_watchOpenEditPubCrawl'
         },
 
-        place:{
+        organization:{
           type:Object
         },
 
-        toggle:{
-          type:Boolean,
-          value: false
+        openCrawl:{
+          type:Boolean
         },
 
         placeId:{
@@ -252,29 +238,7 @@
           type:Object,
           notify:true
         },
-
-        editFavorite:{
-          type:String,
-          notify:true
-        },
-
-        _computedImageUrl:{
-          type: String,
-          computed: '_computeImageUrl(place.mainImage.banner.url)'
-        },
-
-        _computedPlaceHolder:{
-          type: String,
-          computed: '_computePlaceHolder(place.mainImage.banner.thumbnail)'
-        },
-
-        _isPremium:{
-          type:Boolean,
-          value:false,
-          computed: '_computeIsPremium(place.plan)'
-        },
-
-
+      
         user: {
           type:Object
         },
@@ -282,129 +246,41 @@
         userData:{
           type:Object
         },
-
-        _isFavoriteCSS:{
-          type:String,
-          value:'not-selected'
-        },
-
-        _isNotFavoriteCSS:{
-          type:String,
-          value:'not-selected'
-        },
         
         urlName:{
             type: String,
-            computed: '_computeNameForUrl(place.name)'
+            computed: '_computeNameForUrl(organization.name)'
         },
 
-        _numberFavorite:{
-          type:Number,
-          value: 0
+        _computedImageUrl:{
+          type: String,
+          computed: '_computeImageUrl(organization.mainImage.banner.url)'
         },
 
-        _numberNotFavorite: Number,
-        _percentFavorite: Number,
-        _totalFavorite: Number,
-        _favoriteIcon:String
+        _computedPlaceHolder:{
+          type: String,
+          computed: '_computePlaceHolder(organization.mainImage.banner.thumbnail)'
+        },
+
+        _isPremium:{
+          type:Boolean,
+          value:false,
+          computed: '_computeIsPremium(organization.plan)'
+        }
         
       },
 
-      observers:['_watchFavorite(userData.favoriteOrganization)',
-                  '_watchPlaceFavorite(place.favorite)',
-                  '_watchFavoriteActivity(place.action)'],
-
+      observers:['_watchOpenEditPubCrawl(openCrawl)'],
     
-
-      _watchFavoriteActivity: function (action){
-        // console.log(action);
-        switch(action){
-          case 'ADD_FAVORITE':
-            this._watchPlaceFavorite(this.place.favorite)
-            this.$.favoriteIcon.hidden=false;
-            break;
-
-          case 'REMOVE_FAVORITE':
-            this._watchPlaceFavorite(this.place.favorite)
-            break;
-
-          case 'ADD_NOT_FAVORITE':
-            break;
-          case 'REMOVE_NOT_FAVORITE':
-            break;
-
-        }
-      },
-
-      _watchFavorite: function (favorite){
-        // console.log(favorite);
-        if(favorite){
-          
-          if(favorite[this.placeId]){
-            // console.log(favorite[this.placeId]);
-            
-            if(favorite[this.placeId].favorite === 'yes'){
-              this._isFavoriteCSS = 'favorite';
-              this._isNotFavoriteCSS = 'not-selected';
-              this.favorite = 'yes';
-            
-              
-            }else if(favorite[this.placeId].favorite === 'no'){
-              this._isFavoriteCSS = 'not-selected';
-              this._isNotFavoriteCSS = 'not-favorite';
-              this.favorite = 'no';
-            }else{
-              this._isFavoriteCSS = 'not-selected';
-              this._isNotFavoriteCSS = 'not-selected';
-              this.favorite = 'none';
-              
-            }
+      _watchOpenEditPubCrawl:function(openCrawl){
+        if(openCrawl){
+          if(this.user){
+            this.openEditPubCrawl = true;
+            this.editPlace = this.organization;
+          }else{
+            this.login = true;
           }
-        }
-        
-      },
-
-      _watchPlaceFavorite: function (favorite){
-        var numFav = 0;
-        var numNotFav = 0;
-        // console.log('noticed change', this.place.name)
-      
-
-        if(typeof favorite ==='object'){
-          // console.log(Object.keys(favorite).length)
-          for (let key of Object.keys(favorite)){
-            
-            var fav = favorite[key];
-            //  console.log(key);
-        
-            if (fav) {
-              
-                if(fav.favorite){
-                  if(fav.favorite === 'yes'){
-                    numFav++
-                  }else if(fav.favorite === 'no'){
-                    numNotFav++
-                  }
-                }
-              }
-            // }
-          }
-        }else{
-          this.set('place.favorite', {});
-        }
-
-        this._numberFavorite = numFav;
-        this._numberNotFavorite = numNotFav;
-        this._percentFavorite = (numFav/(numFav+numNotFav));
-        this._totalFavorite = numFav+numNotFav;
-        if(this._totalFavorite == 0 ){
-          this._favoriteIcon = 'favorite-border';
-        }
-
-        if(this._percentFavorite > 0){
-          this._favoriteIcon = 'favorite';
-        }else{
-          this._favoriteIcon = 'favorite-border';
+          this.openCrawl = false;
         }
       },
 
@@ -450,20 +326,6 @@
         }
       },
 
-
-      _openEditPlaceDialog: function (){
-        var target = event.currentTarget;
-        var place = target.place;
-        
-        if(this.user){
-          this.openEditPubCrawl = true;
-          this.editPlace = place;
-          this.editFavorite = (this.favorite) ? this.favorite : 'none';
-        }else{
-          this.login = true;
-        }
-      },
-
       _computeFavoriteStatus: function (favorite){
         console.log(favorite);
         if(!favorite){
@@ -479,11 +341,6 @@
         }
         return false;
 
-      },
-
-
-      _toggle:function (){
-        this.toggle = !this.toggle;
       },
 
       _test: function(obj){

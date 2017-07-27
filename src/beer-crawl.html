@@ -76,8 +76,8 @@
     }
 
     .card{
-      padding: 12px;
-      margin: 15px;
+      padding: 10px;
+      margin: 10px;
       @apply --paper-material-elevation-1;
     }
 
@@ -129,43 +129,70 @@
       margin: 15px;
     }
 
+     .toast-wrapper{
+      @apply --layout-vertical; 
+      
+    }
+    .toast-button-wrapper{
+      @apply --layout-horizontal; 
+      @apply --layout-justified; 
+      color: var(--app-selected-color);
+    }
+
   </style> 
 
   <firebase-auth id="auth" app-name="beer" status-known="[[statusKnown]]"user="{{user}}"></firebase-auth>
   
-    <div class="card" hidden="[[!user]]">
-      <div>
-        <a href="/home/crawl/mine">
-          <iron-label>
-            <paper-icon-button class="add-icon" icon="beer-icons:edit"></paper-icon-button>
-            <span class="edit-message">Edit my Beer-Crawls</span>
-          </iron-label>
-        </a>
-      </div>
+    
+
+
+    <div class="card" hidden$="[[!user]]">
+      <template is="dom-if" if="[[!crawlId]]">
+       <div hidden="[[!user]]">
+        <iron-label>
+          <paper-icon-button class="add-icon" icon="beer-icons:crawl" on-tap="_toggleOwnerData"></paper-icon-button>
+          <span class="edit-message">[[toggleMessage]]</span>
+        </iron-label>
+      </div> 
+      </template>
    
 
-      <template is="dom-if" if="[[crawlId]]">
+       <template is="dom-if" if="[[crawlId]]">
         <div>
-          <a href="/home/crawl">
+          <a href="/[[nameUrl]]/crawl[[returnParam]]">
             <iron-label>
               <paper-icon-button class="add-icon" icon="beer-icons:view-all" on-tap="_resetLocation"></paper-icon-button>
-              <span class="edit-message">Show all near-by Beer-Crawls</span>
+              <span class="edit-message">Show All Beer-Crawls</span>
             </iron-label>
           </a>
         </div>
-      </template>
+      </template> 
 
     </div>
+    <template is="dom-if" if="[[!crawlId]]">
+    <div hidden$="[[showOwnerData]]">
+      <!-- <div hidden$="[[crawlId]]"> -->
+      <beer-location
+        location={{location}}>
+      </beer-location>
+      <!-- </div> -->
+    </div>
+    </template>
+
 
     <template is="dom-if" if="[[crawlId]]">
       <div class="card">
-        
+        <template is="dom-if" if="[[crawl.deleted]]">
+        <div>Beer-Cawl has been deleted.</div>
+        </template>
         <div class="title-wrapper"> 
           <div class="name">[[crawl.name]]</div>
           <div class="icon-wrapper">
-             <div hidden$="[[!crawl.owner]]"> 
-                <paper-icon-button class="edit-icon" icon="beer-icons:edit" on-tap="_openEditor"></paper-icon-button>
-             </div> 
+            
+            <template is="dom-if" if="_isOwner">
+              <paper-icon-button class="edit-icon" crawl="[[crawl]]" icon="beer-icons:edit" on-tap="_openEditor"></paper-icon-button>
+            </template>
+            
             <div>
               <beer-crawl-favorite
                 crawl-id="[[crawl.crawl_id]]">
@@ -174,9 +201,8 @@
           </div>
         </div>
         <div>
-          CREATED[[crawl.created]]
           <moment-element
-              datetime="[[crawl.created]]"
+              datetime="[[_addMilliseconds(crawl.created)]]"
               output-format="MMM DD[,] YYYY">
           </moment-element>
         </div>
@@ -185,7 +211,7 @@
          </template>
         <ol>
         <template is="dom-repeat" items="[[_organizationArray(crawl.organization)]]" as="pub">
-          <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
+          <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]][[locationParams]]">
             <li> 
     
             <div class="organization-wrapper">
@@ -206,39 +232,26 @@
             <beer-crawl-url organizations="[[crawl.organization]]">
             </beer-crawl-url>
           </div>
-          <!-- <div class="distance">Begins [[crawl.distance]] miles from you.</div> -->
+           <div class="distance">Begins [[distance]] miles from you.</div> 
         </div>
       </div>
     
     </template>
-    
 
     <template is="dom-if" if="[[!crawlId]]">
-    
 
-    
-      <beer-location
-        location={{location}}>
-      </beer-location>
-  
-
-
-    <template is="dom-repeat" items="[[crawlData]]" as="crawl" sort="_sortByNew" observe="created">
+    <template is="dom-repeat" items="[[crawlData]]" as="crawl" sort="_sortByNew" filter="_filter" observe="created show">
+       <!-- SHOW: [[crawl.show]]  -->
       <div class="card">
-        
         <div class="title-wrapper"> 
+          <a href="/[[nameUrl]]/crawl[[returnParam]]&crawlId=[[crawl.crawl_id]]">
           <div class="name">[[crawl.name]]</div>
+          </a>
           <div class="icon-wrapper">
 
             <div hidden$="[[!crawl.owner]]"> 
               <paper-icon-button class="edit-icon" crawl="[[crawl]]" icon="beer-icons:edit" on-tap="_openEditor"></paper-icon-button>
             </div> 
-            
-            <div>
-              <a href="/home/crawl?crawlId=[[crawl.crawl_id]]">
-              <paper-icon-button class="link-icon" icon="beer-icons:link"></paper-icon-button>
-              </a>
-            </div>
             
             <div>
               <beer-crawl-favorite
@@ -260,7 +273,7 @@
          </template>
         <ol>
         <template is="dom-repeat" items="[[_organizationArray(crawl.organization)]]" as="pub">
-          <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
+          <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]][[locationParams]]">
             <li> 
     
             <div class="organization-wrapper">
@@ -294,10 +307,27 @@
       exit-animation="slide-down-animation"
       with-backdrop>
       <beer-crawl-edit
-        crawl-id="[[editCrawlId]]">
+        crawl-id="[[editCrawlId]]"
+        deleted-crawl="{{deletedCrawl}}">
       </beer-crawl-edit>
-
     </beer-dialog>
+
+     <paper-toast 
+        id="toast" 
+        duration="0"
+        horizontal-align="right"
+        horizontal-offset="50"
+        vertical-offset="100">
+        <div class="toast-wrapper">
+            <div>[[deletedCrawl.name]] was deleted.</div>
+            <div class="toast-button-wrapper">
+               <paper-button crawl="[[deletedCrawl]]" on-tap="_restoreCrawl" class="button">Restore</paper-button>
+               <paper-button crawl="[[deletedCrawl]]" on-tap="_closeToast" class="button">Close</paper-button>
+
+            </div>
+        </div>
+        
+      </paper-toast>
 
 </template>
   <script>
@@ -322,12 +352,20 @@
           }
         },
 
-        crawl:Object,
+        crawl:{
+          type:Object,
+          value: function () {return {};}
+        },
 
         crawlId:String,
         crawlUrl:String,
+        distance:{
+          type:Number,
+          computed: '_computeDistance(location, crawl)'
+        },
         editCrawl:Object,
         editCrawlId:String,
+        deletedCrawl:Object,
 
         location:{
           type:Object,
@@ -335,13 +373,29 @@
         },
         // latitude:Number,
         // longitude:Number,
+
+        nameUrl:String,
+        returnParam:String,
         
+        showOwnerData:{
+          type:Boolean,
+          value:false
+        },
 
         sortedLocationHistory:{
           type:Array
         },
 
+        toggleMessage:{
+          type:String,
+        },
+
         urlParameter:String,
+
+        locationParams:{
+          type:String,
+          // computed: '_computeLocationParamsUrl(location)'
+        },
        
         user:{
           type: Object
@@ -351,8 +405,10 @@
           type: Object
         },
 
-
-        
+        _isOwner: {
+          type: Boolean,
+          value:false
+        },
       },
 
       ready: function (){
@@ -361,8 +417,102 @@
           // this.$.crawlEditDialog.open();
       },
 
-      observers:['_getData(location)',
-                '_watchCrawlId(crawlId)'],
+      observers:[
+                //  '_setGeoData(location)',
+                //  '_setToOwnerData(showOwnerData)',
+                 '_watchShowOwnerData(showOwnerData)',
+                 '_watchCrawlId(crawlId)',
+                 '_watchIfOwner(user, crawl)',
+                 '_setData(location, showOwnerData, user)',
+                 '_setUrlPrams(location, crawlId)',
+                 '_watchForDeletedCrawl(deletedCrawl)',
+                 '_updateDocumentName(location, crawl)'
+                 ],
+
+      _watchShowOwnerData: function (showOwnerData){
+        if(showOwnerData){
+          this.toggleMessage='Show near-by Beer-Crawls'
+        }else{
+          this.toggleMessage='Show all my Beer-Crawls'
+        }
+      },
+
+      _watchForDeletedCrawl(crawl){
+        console.log('deleteCrawl', crawl);
+        var that = this;
+        that.$.toast.open();
+      },
+
+      _setData: function (location, showOwnerData, user){
+        //clear
+        this.splice('crawlData', 0, this.crawlData.length);
+        this.set(`crawlDataLocation`, {});
+
+        if(showOwnerData){
+          if(user){
+            if(user.uid){
+              this._setToOwnerData(user.uid)
+            }
+          }else{
+
+          }
+          
+        }else{
+          if(location){
+            if(location.latitude && location.longitude){
+              this._setGeoData(location)
+            }
+          }
+        }
+      },
+
+      _setUrlPrams: function (location){
+        // var params = [];
+          // if(location || crawlId){
+          //   param +='?'
+          // }
+
+        if(location){
+          if(location.latitude && location.longitude && location.address){
+            var address = encodeURIComponent(location.address); 
+            var geo = encodeURIComponent(`${location.latitude} ${location.longitude}`);
+            this.locationParams =`&location=${geo}&locationAddress=${address}`;
+          } 
+        }
+
+        // if(crawlId){
+        //    params.push(`crawlId=${crawlId}`)
+        // }
+
+        // if(params.length ===0){
+        //   this.locationParams='';
+        // }else{
+        //   this.locationParams = '?'+params.join('&');
+        // }
+         
+      },
+
+      _updateDocumentName: function (location, crawl){
+        let setCrawl = false;
+
+        if(crawl){
+          if(crawl.name){
+            setCrawl = true;
+          }
+        }
+
+        if(setCrawl){
+          document.title = `Beer-Crawl: ${crawl.name}`;
+
+        }else{
+          if(location){
+            // console.log('test this', location)
+            document.title = `Beer-Crawls: ${location.address}`;
+          }else{
+            document.title = `Beer-Crawls`
+          }
+        }
+      },
 
       _watchCrawlId: function (crawlId){
         if(crawlId){
@@ -373,39 +523,40 @@
               var obj = snapshot.val();
               obj.crawl_id = snapshot.key;
               that.crawl = obj
-              document.title = obj.name;
             }
           })
         }
+    
       },
 
 
-      _getData: function (location){
-        // if(!this.crawlId){
-        // this.splice("crawlData", 0, this.crawlData.length)
 
+
+      _setGeoData: function (location){
+   
         var that = this;
+        
         var app = this.$.auth.app;
         var firebaseRef = app.database().ref('GeoCrawl');
         var geoFire = new GeoFire(firebaseRef);
   
-
         var query = {};
         if(location.latitude && location.longitude){
         
-        document.title = `Beer-Crawls: ${location.address}`;
         query.center = [Number(location.latitude), Number(location.longitude)];
         query.radius = 30*1.609344;
 
         geoFire.query(query)
-          .on("key_entered", function(key, location, distance) {
-            // that.splice("crawlData", 0, that.crawlData.length)
-            app.database().ref('/crawl/'+key)
+          .on('key_entered', function(key, location, distance) {
+            
+            app.database().ref(`/crawl/${key}`)
               .on('value', snapshot => {
                 var crawl = snapshot.val();
+                
                 crawl.timestamp = snapshot.child('created').val()*1000;
                 crawl.distance = Math.round((distance*0.621371)*10)/10;
                 crawl.crawl_id = key;
+                crawl.show = false;
 
                 if(that.user){
                   if(snapshot.child('user_id').val() === that.user.uid){
@@ -413,38 +564,115 @@
                   }
                 }
                 
-                 if (snapshot.child('public').exists() || crawl.owner){
+                if (snapshot.child('public').exists()){
+                  crawl.show=true;
+                }
+
+                if (snapshot.child('deleted').exists()){
+                  crawl.show=false;
+                }
                   
-                  // console.log(`crawlData.${key}`)
                   if (!that.crawlDataLocation[key]){
+                    // console.log('push');
+                    // console.log(crawl);
                     var arrayLocation = that.push('crawlData', crawl);
-                    that.crawlDataLocation[key] = {location:arrayLocation}
+                    that.crawlDataLocation[key] = {arrayLocation:arrayLocation}
+                    crawl.arrayLocation = arrayLocation;
+                    that.set(`crawlDataLocation.${key}`, crawl);
                   }else{
-                    var existingLocation = that.crawlDataLocation[key].location -1;
+                    // console.log('set')
+                    var existingLocation = that.crawlDataLocation[key].arrayLocation-1;
                     that.set(`crawlData.${existingLocation}`, crawl);
+                    that.notifyPath(`crawlData.${existingLocation}.show`)
+
                   }
-                 }
+              
               })
           })
 
         geoFire.query(query)
           .on('key_exited', function(key){
-            var crawls = that.crawlData
-            if(Array.isArray(crawls)){
-              for(var i=0; i<crawls.length; i++){
-                var crawl = crawls[i];
-                if(crawl.crawl_id === key){
-                  that.splice('crawlData', i, 1);
-                }
-              }
+            if(that.crawlDataLocation[key]){
+              console.log(that.crawlDataLocation[key])
+              let location = that.crawlDataLocation[key].arrayLocation-1;
+              
+              that.set(`crawlDataLocation.${key}.${location}.show`, false)
             }
           })
-        
         }
       },
 
+      _setToOwnerData: function (userId){
+
+        var that = this;
+        firebase.database(this.$.auth.app).ref('/crawl')
+        .orderByChild('user_id').equalTo(userId)
+        .on('value', function(snapshot) {
+
+          snapshot.forEach(crawl => {
+            let data = crawl.val();
+              data.crawl_id = crawl.key;
+              data.show = true;
+              data.owner=false;
+              data.timestamp = crawl.child('created').val()*1000
+
+
+              if(crawl.child('deleted').exists()){
+                data.show=false;
+              }
+
+              if(crawl.child('user_id').val() === that.user.uid){
+                data.owner =true;
+              }
+
+              if(crawl.child('organization').exists()){
+
+                // console.log(that.location);
+                data.distance = that._computeDistance(that.location, data);
+              }
+              
+              if (!that.crawlDataLocation[crawl.key]){
+                let arrayLocation = that.push('crawlData', data);
+                data.arrayLocation = arrayLocation;
+
+                that.set(`crawlDataLocation.${crawl.key}`, data);
+                // console.log(that.crawlDataLocation)
+              }else{
+                console.log(that.crawlDataLocation[crawl.key])
+                let existingLocation = that.crawlDataLocation[crawl.key].arrayLocation-1;
+                that.set(`crawlData.${existingLocation}`, data);
+                that.notifyPath(`crawlData.${existingLocation}.show`)
+              }
+          })
+        })
+      },
+
       _resetLocation: function (){
-        this._getData(this.location);
+        this._setGeoData(this.location);
+      },
+
+      _restoreCrawl: function (event){
+        var crawl = event.currentTarget.crawl;
+        // console.log(crawl)
+
+        if(crawl.crawl_id){
+          
+          firebase.database(this.$.auth.app).ref(`/crawl/${crawl.crawl_id}`)
+          .update({deleted: null,
+                   user_id: this.user.uid})
+          .then(()=>{
+            console.log('Restored crawl');
+            this.$.toast.close()
+          })
+          .catch(error =>{
+            console.log('RESTORE_ERROR', error)
+          })
+        }
+  
+      },
+
+      _closeToast(){
+        this.$.toast.close()
       },
 
       _openEditor(event){
@@ -492,6 +720,11 @@
         return 0;
       },
       
+      _filter: function (item){
+       
+      return item.show == true 
+
+      },
 
       _addBreaks: function(str){
         'use strict';
@@ -500,6 +733,13 @@
         }else{
           return [];
         }
+      },
+
+      _showNearByCrawlMessage: function (crawlId, showOwnerData){
+        if(!showOwnerData){
+          return true;
+        }
+        return false;
       },
 
       _computeNameForUrl: function (name) {
@@ -512,10 +752,83 @@
         }
       },
 
-      
+      _computeDistance: function (location, crawl){
+        
+        if(location && crawl){
+          // console.log(crawl);
+          if(typeof crawl.organization ==='object'){
+            let orgArray = []
+            for (let org of Object.keys(crawl.organization)){
+              orgArray.push(crawl.organization[org]);
+            }
+            let earliestCreated = orgArray.sort(this._sortByCreated).shift();
+            console.log('earliestCreated', earliestCreated);
+
+            if(location.latitude && location.longitude && earliestCreated.latitude && earliestCreated.longitude){
+              return Math.round(this._distance (location.latitude, location.longitude, earliestCreated.latitude, earliestCreated.longitude)*10)/10
+            }
+          }
+        }
+      },
+
+       _distance: function (myLat, myLng, pubLat, pubLng){
+          var R = 3959; 
+          var dLat = this.deg2rad(pubLat-myLat);  
+          var dLon = this.deg2rad(pubLng-myLng); 
+          var a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(myLat)) * Math.cos(this.deg2rad(pubLat)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+
+          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+          var d = R * c; 
+          return d
+       },
+
+       deg2rad: function (deg) {
+              return deg * (Math.PI/180)
+       },
+
+      _addMilliseconds: function (timestamp){
+        if(timestamp){
+          return timestamp+1000
+        }
+        return false;
+      },
+
+      _watchIfOwner: function (owner, crawl){
+        if(!owner){
+          return false;
+        }
+        if(!crawl){
+          return false;
+        }
+        if(owner.uid === crawl.user_id){
+          return true
+        }
+        return false;
+
+      },
 
    
-      
+      _toggleOwnerData: function (){
+        this.showOwnerData = !this.showOwnerData
+        console.log(this.showOwnerData);
+      },
+
+      _computeLocationParamsUrl: function (location) {
+        // console.log(location)
+        if(!location){
+          return null
+        }
+        if(location.latitude && location.longitude && location.address){
+          var address = encodeURIComponent(location.address); 
+          var geo = encodeURIComponent(`${location.latitude} ${location.longitude}`);
+          return `?location=${geo}&locationAddress=${address}`;
+        }
+          
+        return null;
+      },
 
       _test: function(obj){
           console.log(obj);

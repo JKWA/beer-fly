@@ -9,6 +9,7 @@
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
@@ -39,7 +40,6 @@
       @apply --layout-vertical;
       height: 55vh;
       
-
     }
 
     .info{
@@ -63,8 +63,8 @@
     .button{
       width:100%;
       color: var(--app-accent-color);
-      @apply --layout-flex-12;
       @apply --layout-flex-auto;
+     
     }
 
     .description{
@@ -129,6 +129,19 @@
       color:red;
     }
 
+    .delete-wrapper{
+      height:100%;
+      @apply --layout-vertical;
+    }
+
+    .delete-message{
+      @apply --layout-flex-12;
+      margin: 40px 10px;
+      font-size: 1.5em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+    }
+
 
   </style>
 
@@ -139,7 +152,7 @@
     <paper-tabs selected="{{selected}}">
       <paper-tab>Basic</paper-tab>
       <paper-tab>Pubs</paper-tab>
-      <paper-tab>Delete</paper-tab>
+      <paper-tab>[[deleteTab]]</paper-tab>
     </paper-tabs>
 
     <iron-pages selected="{{selected}}">
@@ -193,17 +206,33 @@
         </template>
         </ol>
     </div>
+  
   <div>
-  <div class="info">
-    <div>Delete [[crawl.name]]?</div>
+    <div class="info">
+    <template is="dom-if" if="[[!crawl.deleted]]">
+      <div class="delete-wrapper" hidden$="[[crawl.deleted]]">
+        <div class="delete-message">Delete [[crawl.name]]?</div>
+        <paper-button dialog-dismiss crawl="[[crawl]]" on-tap="_deleteCrawl" class="button">Delete</paper-button>
+      </div>
+    </template>
+
+    <template is="dom-if" if="[[crawl.deleted]]">
+      <div class="delete-wrapper">
+        <div class="delete-message">Restore [[crawl.name]].</div>
+        <paper-button dialog-dismiss crawl="[[crawl]]" on-tap="_restoreCrawl" class="button">Restore</paper-button>
+      </div>
+    </template>
+    </div>
     
-    <paper-button dialog-dismiss class="button">Delete</paper-button>
     
+    <!-- dialog-dismiss  -->
   </div>
           
 </iron-pages>
 
   </div>
+
+ 
 
 
    
@@ -228,6 +257,16 @@
           type:String
         },
 
+        deletedCrawl:{
+          type:Object,
+          notify:true
+        },
+
+        deleteTab:{
+          type:String,
+          computed:'_watchDeleteStatus(crawl.deleted)'
+        },
+
         editCrawlPublicMessage: {
           type:String
         },
@@ -250,8 +289,8 @@
       // observers:['_watchUser(user)'],
 
       observers:['_watchPublicStatus(crawl.public)',
-                 '_watchCrawlId(crawlId)'],
-
+                 '_watchCrawlId(crawlId)'
+                 ],
       
 
       _watchPublicStatus: function (crawlPublic){
@@ -260,6 +299,14 @@
         }else{
           this.editCrawlPublicMessage = 'Private'
         }
+      },
+
+      _watchDeleteStatus: function (deleteStatus){
+        console.log('deleteStatus',deleteStatus)
+        if(deleteStatus){
+          return 'Restore'
+        }
+        return 'Delete'
       },
 
       _watchCrawlId: function (crawlId){
@@ -325,50 +372,44 @@
           })
       },
 
-      _openEditCrawlDialog: function (){
-        var target = event.currentTarget;
-        var crawl = target.crawl
-        this.editCrawlId = crawl.$key;
-        this.editCrawlDescription = crawl.description;
-        this.editCrawlName = crawl.name;
-        if(crawl.public){
-          this.editCrawlPublic = crawl.public
-        }else{
-          this.editCrawlPublic = null;
-        }
-        
-        var body = document.querySelector('body');
-        Polymer.dom(body).appendChild(this.$.editCrawlDialog);
-        this.$.editCrawlDialog.open();
-      },
+      _deleteCrawl: function (event){
+        var crawl = event.currentTarget.crawl;
+        console.log(crawl)
+        var that = this;
 
-      _openDeleteCrawlDialog: function (){
-        var target = event.currentTarget;
-        var crawl = target.crawl
-        this.deleteCrawlId = target.crawl.$key;
-        this.deleteDescription = target.crawl.description;
-        this.deleteName = target.crawl.name;
-        var body = document.querySelector('body');
-        Polymer.dom(body).appendChild(this.$.deleteCrawlDialog);
-        this.$.deleteCrawlDialog.open();
-      },
-
-      
-
-      _deleteCrawl: function (){
-        if(this.deleteCrawlId){
+        if(crawl.crawl_id){
           
-          firebase.database(this.$.auth.app).ref(`/crawl/${this.deleteCrawlId}`)
+          firebase.database(this.$.auth.app).ref(`/crawl/${crawl.crawl_id}`)
           .update({deleted: true,
                    user_id: this.user.uid})
           .then(()=>{
-            console.log('Deleted crawl')
+            console.log('Deleted crawl');
+            that.deletedCrawl = crawl;
+            // that.$.toast.open();
           })
           .catch(error =>{
             console.log('DELETE_ERROR', error)
           })
         }
-        this.$.deleteCrawlDialog.close();
+      },
+
+      _restoreCrawl: function (event){
+        var crawl = event.currentTarget.crawl;
+        console.log(crawl)
+
+        if(crawl.crawl_id){
+          
+          firebase.database(this.$.auth.app).ref(`/crawl/${crawl.crawl_id}`)
+          .update({deleted: null,
+                   user_id: this.user.uid})
+          .then(()=>{
+            console.log('Restored crawl')
+          })
+          .catch(error =>{
+            console.log('RESTORE_ERROR', error)
+          })
+        }
+  
       },
 
       _moveOrganization: function (){
@@ -463,37 +504,6 @@
 
         }
 
-
-        // for(var i=0; i<sorted.length; i++){
-        //   if(i===0){
-        //     earlier = null
-        //     later = ((i+2) >= sorted.length) ? Math.round(Date.now()/1000): Math.round((sorted[i].created + sorted[i+2].created)/2);
-        //   if(i===1){
-        //      earlier = sorted[0].created/2;
-        //   }
-        //   if(i === (sorted.length-1)){
-
-        //   }
-        //   if(sorted)
-          
-        //   if(i === (sorted.length-1)){
-        //      later = null  : Math.round((sorted[i].created + sorted[i+1].created)/2);
-        //   }
-
-        //   }
-
-
-        //   var later = (i === (sorted.length-1)) ? null : Math.round((sorted[i].created + sorted[i+1].created)/2);
-        //   var earlier = (i===0) ? null : (sorted[i-1].created + sorted[i].created)/2;
-          
-        //   sorted[i].later = later;
-        //   sorted[i].earlier = earlier;
-
-        // }
-        // for (let value of sorted){
-        //   value.previous = (earlier+value.created)/2;
-        //   earlier = value.created;
-        // }
         return sorted;
       },
 
