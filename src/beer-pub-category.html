@@ -11,11 +11,20 @@
   <template strip-whitespace>
     
     <style include="paper-material-styles">
-
-      .name {
+      
+      /* .name {
         font-size: 1.5em;
         font-weight: 300;
         margin: 10px 5px 0 20px;
+      } */
+      .wrapper{
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        @apply --layout-wrap;
+      }
+
+      paper-checkbox {
+        margin: 5px 10px;
       }
 
 
@@ -32,24 +41,25 @@
         data = "{{allCategory}}">
     </firebase-query>
 
-    <template 
-      is="dom-repeat" 
-      items="[[allCategory]]" 
-      as="category" 
-      >
-      
-      <template is="dom-if" if="[[_showCategory(_isTruck, _isPub, _isBrewery, category.$key)]]">
-      <iron-label>
-      <paper-checkbox 
-          checked="[[_isChecked(organization.category, category.$key)]]"
-          id="[[category.$key]]"
-          on-tap="_changeCategory">
-          
-      </paper-checkbox>
-      <span>[[category.title]]&nbsp</span>
-      </iron-label>
+    <div class="wrapper">
+      <template 
+        is="dom-repeat" 
+        items="[[allCategory]]" 
+        as="category">
+        
+        <template is="dom-if" if="[[_showCategory(_isTruck, _isPub, _isBrewery, category.$key)]]">
+        <iron-label>
+        <paper-checkbox 
+            checked="[[_isChecked(organization.category, category.$key)]]"
+            id="[[category.$key]]"
+            on-tap="_changeCategory">
+            
+        </paper-checkbox>
+        <span>[[category.title]]&nbsp</span>
+        </iron-label>
+        </template>
       </template>
-    </template>
+    </div>
 
   </template>
 

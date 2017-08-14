@@ -7,6 +7,7 @@
   "private": true,
   "dependencies": {
     "polymer": "Polymer/polymer#^1.9.2",
+    "paper-swatch-picker": "PolymerElements/paper-swatch-picker#^2.0.1",
     "app-layout": "PolymerElements/app-layout#^2.0.0",
     "app-route": "PolymerElements/app-route#^2.0.0",
     "app-storage": "PolymerElements/app-storage#^2.0.0",
@@ -29,7 +30,7 @@
     "paper-tabs": "PolymerElements/paper-tabs#^2.0.0",
     "paper-dialog": "PolymerElements/paper-dialog#^2.0.0",
     "paper-dialog-scrollable": "PolymerElements/paper-dialog-scrollable#^2.0.0",
-    "paper-input": "PolymerElements/paper-input#^2.0.0",
+    "paper-input": "PolymerElements/paper-input#^2.0.1",
     "paper-checkbox": "PolymerElements/paper-checkbox#^2.0.0",
     "paper-fab": "PolymerElements/paper-fab#^2.0.0",
     "paper-listbox": "PolymerElements/paper-listbox#^2.0.0",
@@ -53,8 +54,7 @@
     "iron-input": "PolymerElements/iron-input#^2.0.0",
     "iron-form-element-behavior": "PolymerElements/iron-form-element-behavior#^2.0.0",
     "stripe-elements": "bennypowers/stripe-elements#^0.1.1",
-    "moment-element": "abdonrd/moment-element#^2.0.0",
-    "paper-badge": "PolymerElements/paper-badge#^2.0.0"
+    "moment-element": "abdonrd/moment-element#^2.0.0"
   },
   "devDependencies": {
     "web-component-tester": "^6.0.0",

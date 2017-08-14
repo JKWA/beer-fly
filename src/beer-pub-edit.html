@@ -4,12 +4,20 @@
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+
+<!-- <link rel="import" href="../bower_components/polymerfire/firebase-document.html"> -->
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
 <link rel="import" href="../my_components/data/upload-image.html">
 <link rel="import" href="beer-pub-category.html">
@@ -20,72 +28,125 @@
     
     <style include="paper-material-styles">
       
-
-      .item {
-        display: block;
-        text-decoration: none;
-        text-align: center;
-        margin-bottom: 40px;
+      paper-checkbox{
+        margin: 5px 10px;
       }
 
-
-      @media (max-width: 767px) {
-      
-
-        h2 {
-          margin: 24px 0;
-        }
-
+      .header{
+        font-size: 1.2em;
+        font-weight: 400;
+        margin: 20px 0 10px 5px;
       }
+
+      .wrapper{
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        @apply --layout-wrap;
+      }
+
+      .description-wrapper{
+        @apply --layout-vertical;
+        @apply --layout-justified;
+        height: 50vh; 
+      }
+
+      .description{
+        @apply --layout-flex-auto; 
+        @apply --layout-flex-6; 
+      }
+
+      .motto{
+        @apply --layout-flex-auto; 
+        margin: 20px 0 0 0; 
+      }
+
+      /* .description-wrapper > div{
+         @apply --layout-flex-auto;  
+          margin: 20px 10px 0px 10px; 
+      } */
+
+      .save-button{
+        width:100%;
+         @apply --layout-flex-auto;  
+      }
+
 
     </style>
 
-    <firebase-document 
-        id="organization"
+    <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+
+     <firebase-document 
+        id="editOrganization"
         app-name="beer" 
         path="organization/[[orgId]]"
-        data="{{organization}}">
-    </firebase-document>
+        data="{{editOrganization}}">
+    </firebase-document> 
 
-    <h3>This is a ...</h3>
 
-    <div>
-          <paper-checkbox checked="{{organization.PUB}}">Pub</paper-checkbox>&nbsp
-          <paper-checkbox checked="{{organization.BREWERY}}">Brewery</paper-checkbox>&nbsp
-          <paper-checkbox checked="{{organization.TRUCK}}">Food Truck</paper-checkbox>&nbsp
-     </div>
+    <paper-tabs selected="{{selected}}">
+      <paper-tab>Category</paper-tab>
+      <paper-tab>Description</paper-tab>
+      <paper-tab>Image</paper-tab>
+    </paper-tabs>
 
-    <h3>Show Categories</h3>
-
-          <beer-pub-category
-            org-id="[[orgId]]"
-            organization="[[organization]]">
-          </beer-pub-category>
-
-     <h3>Tags</h3>
-        <div>
-          <paper-checkbox checked="{{organization.dogFriendly}}">Dogs allowed</paper-checkbox>&nbsp
-          <paper-checkbox checked="{{organization.patio}}">Outdoor patio</paper-checkbox>&nbsp
-          <paper-checkbox checked="{{organization.over21}}">Must be 21</paper-checkbox>&nbsp
+    <iron-pages selected="{{selected}}">
+      <div>
+        <div class="header">This is a ...</div>
+        <div class="wrapper">
+          <paper-checkbox checked="{{editOrganization.PUB}}">Pub</paper-checkbox>&nbsp
+          <paper-checkbox checked="{{editOrganization.BREWERY}}">Brewery</paper-checkbox>&nbsp
+          <paper-checkbox checked="{{editOrganization.TRUCK}}">Food Truck</paper-checkbox>&nbsp
         </div>
 
-        
+        <div class="header">Show Categories</div>
+        <beer-pub-category
+          org-id="[[orgId]]"
+          organization="[[editOrganization]]">
+        </beer-pub-category>
 
-        <h3>Upload Banner Image</h3>
+        <div class="header">Tags</div>
+        <div class="wrapper">
+          <paper-checkbox checked="{{editOrganization.dogFriendly}}">Dogs allowed</paper-checkbox>&nbsp
+          <paper-checkbox checked="{{editOrganization.patio}}">Outdoor patio</paper-checkbox>&nbsp
+          <paper-checkbox checked="{{editOrganization.over21}}">Must be 21</paper-checkbox>&nbsp
+        </div>
+
+      </div>
+      <div>
+        <div class="description-wrapper">
+
+          <paper-dropdown-menu no-label-float label="Currency">
+            <paper-listbox 
+              attr-for-selected="currency"
+              slot="dropdown-content" 
+              selected="{{editOrganization.currencyCode}}">
+              <paper-item currency="USD">US Dollar</paper-item>
+              <paper-item currency="EUR">Euro</paper-item>
+              <paper-item currency="GBP">Pound sterling</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+          <div class="motto">
+            <paper-input label="Motto" value="{{motto}}" maxlength=100 char-counter></paper-input>
+          </div>
+          <div class="description">
+            <paper-textarea label="Description" value="{{description}}" maxlength=2000 char-counter></paper-textarea>
+          </div>
+       
+            <paper-button on-tap="_save" class="save-button">Save</paper-button>
+        
+        </div>
+      </div>
+
+      <div>
+        <div class="header">Upload Banner Image</div>
         <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_MAIN_banner" key="mainImage"></upload-image>
+      </div>
         
-        <!--<iron-label>
-          <paper-checkbox checked="{{organization.crowdSource}}"></paper-checkbox>
-          <span>Allow crowd sourced data</span>
-        </iron-label>-->
-
-        <paper-input label="Motto" value="{{organization.motto}}" maxlength=100 char-counter></paper-input>
-        <paper-textarea label="Description" value="{{organization.description}}" maxlength=2000 char-counter></paper-textarea>
-        
+    </iron-pages>
        
        
         
-      </template>
+    </template>
 
    
 
@@ -105,18 +166,78 @@
           type:String
         },
 
-        organization:{
+        editOrganization:{
           type: Object,
           // notify: true
         },
 
+        description:{
+          type:String
+        },
+
+        motto:{
+          type:String
+        },
+
         orgId:{
           type: String
+        },
+
+        organization:{
+          type:Object
+        },
+
+        selected:{
+          type:Number,
+          value:0
+        },
+
+        user:{
+          type:Object
         }
         
       },
 
+      observers:['_watchDescription(editOrganization.description)',
+                  '_watchMotto(editOrganization.motto)'],
 
+      _watchDescription: function (description){
+        this.description = description;
+      },
+
+      _watchMotto: function (motto){
+        this.motto = motto;
+      },
+
+      _save: function(event){
+
+        var obj={};
+        if(this.description){
+          obj.descriptionEdit = this.description;
+        }else{
+          obj.descriptionEdit =null;
+        }
+        if(this.motto){
+          obj.mottoEdit = this.motto;
+        }else{
+          obj.mottoEdit = null;
+        }
+        if(this.user){
+          if(this.orgId){
+          if(Object.keys(obj).length > 0){
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}`)
+              .update(obj)
+              .then(() =>{
+                console.log('saved');
+              })
+              .catch(error =>{
+                console.log('error', error);
+              })
+            }
+          }
+        }
+      },
+      
       _test: function(obj){
         console.log('TEST', obj);
       }

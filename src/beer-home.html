@@ -49,6 +49,7 @@
     :host {
       display: block;
       max-width: 640px;
+      background-color: var(--app-background-color);
     }
 
      a{
@@ -71,7 +72,14 @@
       padding: 10px;
       margin: 15px 10px;
       @apply --paper-material-elevation-1;
+      background-color: white;
+    }
+
+    .pub-card{
       
+      margin: 15px 10px;
+      @apply --paper-material-elevation-1;
+     
     }
 
     .inital-card{
@@ -203,12 +211,14 @@
 
     <beer-home-geo-data
       location="[[location]]"
+      name="[[name]]"
       all-object="{{allObject}}"
       all-array="{{allArray}}">
     </beer-home-geo-data>     
 
     <beer-home-cache-data
       location="[[location]]"
+      name="[[name]]"
       all-object="{{allObject}}"
       all-array="{{allArray}}">
     </beer-home-cache-data>    
@@ -279,8 +289,8 @@
           items="{{allArray}}" as="pub" filter="_filter"
           initial-count="20"  sort="_sort" 
           observe="sort distance">
-
-         <beer-pub-card 
+        <div class="pub-card">
+          <beer-pub-card 
             open-edit-pub-crawl="{{homeDialogOpened}}"
             place-id="[[pub.place_id]]"
             user-data="[[userData]]"
@@ -288,7 +298,9 @@
             edit-place="{{editPlace}}"
             login="{{login}}"
             edit>
-        </beer-pub-card>
+          </beer-pub-card>
+        </div>
+
      
       </template>
       </div>
@@ -406,6 +418,9 @@
           type: Object,
           
         },
+
+        name:String,
+
         sortedLocationHistory: {
           type: Array
         },

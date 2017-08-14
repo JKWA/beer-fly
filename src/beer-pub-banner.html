@@ -37,7 +37,7 @@
 
       .divider{
         width:1px;
-        margin: 30px 0; 
+        margin: 30px 5px; 
         background-color:var(--app-line-color);  
         border-top: 1px solid var(--app-line-color);
         border-bottom: 1px solid var(--app-line-color);
@@ -74,7 +74,17 @@
         text-transform: uppercase
       }
 
+      .rating-icon{
+        color: var(--app-secondary-color);
+        text-align: center;
+      }
+
       .favorite-icon{
+        color: var(--app-selected-color);
+        text-align: center;
+      }
+
+      .not-favorite-icon{
         color: var(--app-secondary-color);
         text-align: center;
       }
@@ -82,7 +92,6 @@
     </style>
 
   <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
-
  
     <div class="info-banner" >
       <template is="dom-if" if="[[place.rating]]">
@@ -96,15 +105,12 @@
         </div>
       </template>
 
-      <!-- FAV:[[organization.favoriteTotal]] -->
-
-
-      <template is="dom-if" if="[[organization.favoritePercent]]">
+      <template is="dom-if" if="[[organization.ratingPercent]]">
         <div class="banner-item">
           <div></div>
           <div class="info-item">
             <div class="info-item-wrapper">
-              <div class="info-nonicon"> [[organization.favoritePercent]]%</div>
+              <div class="info-nonicon"> [[organization.ratingPercent]]%</div>
               <div class="info-label">Beer-Fly</div>
             </div>
           </div>
@@ -113,24 +119,51 @@
       </template>
 
       
-     
         <div class="banner-item">
           <div></div>
           <div class="info-item-wrapper">
-            <div class="favorite-icon"> 
-              <paper-icon-button id="favoriteButton" icon="beer-icons:thumb-up" on-tap="_toggleFavorite"></paper-icon-button>
+            <div class="rating-icon"> 
+              <paper-icon-button id="ratingButton" icon="beer-icons:thumb-up" on-tap="_toggleRating"></paper-icon-button>
             </div>
             <div class="info-label">Like</div>
           </div>
 
           <div class="info-item-wrapper">
-            <div class="favorite-icon"> 
-              <paper-icon-button id="notFavoriteButton" icon="beer-icons:thumb-down" on-tap="_toggleNotFavorite"></paper-icon-button>
+            <div class="rating-icon"> 
+              <paper-icon-button id="notRatingButton" icon="beer-icons:thumb-down" on-tap="_toggleNotRating"></paper-icon-button>
             </div>
             <div class="info-label">Don't Like</div>
           </div>
           <div class="divider"></div> 
         </div>
+
+        <div class="banner-item">
+          <div></div>
+          <div class="info-item">
+            <div class="info-item-wrapper">
+              <div class$="[[favoriteCSS]]"> 
+                <paper-icon-button icon$="[[favoriteIcon]]" on-tap="_toggleFavorite"></paper-icon-button>
+              </div>
+              <div class="info-label">Favorite</div>
+            </div>
+          </div>
+         <div class="divider"></div> 
+        </div>
+
+        <template is="dom-if" if="[[!organization.TRUCK]]">
+        <div class="banner-item">
+          <div></div>
+          <div class="info-item">
+            <div class="info-item-wrapper">
+              <div class="info-icon"> 
+                <paper-icon-button icon="beer-icons:crawl" on-tap="_openEditPubDialog"></paper-icon-button>
+              </div>
+              <div class="info-label">Beer-Crawl</div>
+            </div>
+          </div>
+          <div class="divider"></div> 
+        </div>
+        </template> 
       
 
       <template is="dom-if" if="[[_showIcons]]">
@@ -140,7 +173,7 @@
           <template is="dom-if" if="[[dogs]]">
               <div class="info-item-wrapper">
                 <div class="info-icon"> 
-                  <paper-icon-button icon="beer-icons:dogs"></paper-icon-button>
+                  <paper-icon-button disable icon="beer-icons:dogs"></paper-icon-button>
                 </div>
                 <div class="info-label">Dog Friendly</div>
               </div>
@@ -149,7 +182,7 @@
             <template is="dom-if" if="[[patio]]">
               <div class="info-item-wrapper" hidden$="[[!patio]]">
                 <div class="info-icon"> 
-                  <paper-icon-button icon="beer-icons:patio"></paper-icon-button>
+                  <paper-icon-button disable icon="beer-icons:patio"></paper-icon-button>
                 </div>
                 <div class="info-label">Patio</div>
               </div>
@@ -165,27 +198,9 @@
         </div>
       </template>
 
-      <div class="banner-item">
-        <div></div>
-        <div class="info-item">
-          <div class="info-item-wrapper">
-            <div class="info-icon"> 
-              <paper-icon-button icon="beer-icons:crawl" on-tap="_openEditPubDialog"></paper-icon-button>
-            </div>
-            <div class="info-label">Beer-Crawl</div>
-          </div>
-        </div>
-
-        <template is="dom-if" if="[[_hasPlaceOpen]]">
-          <div class="divider"></div> 
-        </template>
-
-        <template is="dom-if" if="[[!_hasPlaceOpen]]">
-          <div></div>
-        </template> 
       
-      </div>
-
+      
+   
       <template is="dom-if" if="[[_hasPlaceOpen]]">
         <div class="banner-item">
           <div></div>
@@ -254,6 +269,32 @@
         },
 
         favorite:{
+          type:Boolean,
+          // computed:'_computeFavorite(favorite)'
+          value:false
+        },
+
+        // favoriteLabel:{
+        //   type:String,
+        //   computed:'_computeFavoriteLabel(favorite)'
+        // },
+
+        favoriteCSS:{
+          type:String,
+          computed:'_computeFavoriteCSS(favorite)'
+        },
+
+        favoriteIcon:{
+          type:String,
+          computed:'_computeFavoriteIcon(favorite)'
+        },
+
+        // userFavorite:{
+        //   type:Boolean,
+        //   value:false
+        // },
+
+        rating:{
           type:String,
         },
 
@@ -263,12 +304,17 @@
           notify:true
         },
 
-        userFavorite:{
+        userRating:{
           type:String
         },
 
         user:{
           type: Object
+        },
+
+        uid:{
+          type:String,
+          computed:'computeUid(user)'
         },
 
         userData:{
@@ -279,7 +325,7 @@
           type:Boolean,
           reflectToAttribute: true,
           value:false,
-          computed: '_computeHasPlaceOpen(place)'
+          computed: '_computeHasPlaceOpen(place, organization)'
         },
 
         _showIcons:{
@@ -290,51 +336,55 @@
       },
 
       observers:[
-                  '_watchFavorite(favorite)',
-                  '_watchFavoriteData(userData.favoriteOrganization, placeId)',  
+                  '_watchRating(rating)',
+                  // '_watchFavorite(favorite)',
+                  '_watchRatingData(userData.favoriteOrganization, placeId)'
                   ],
-
-
-
      
-      _watchFavoriteData:function (favorite, placeId){
-
-        if(favorite && placeId){
-          if(favorite[placeId]){
-            this.userFavorite = favorite[placeId].favorite;
-            if(this.userFavorite === 'yes'){
-              this.$.favoriteButton.style.color = 'green';
-              this.$.notFavoriteButton.style.color=null;
-            }else if (this.userFavorite === 'no'){
-              this.$.favoriteButton.style.color = null;
-              this.$.notFavoriteButton.style.color='red';
+      _watchRatingData:function (rating, placeId){
+        // console.log('rating', rating)
+        if(rating && placeId){
+          if(rating[placeId]){
+            // this.userFavorite = 
+            if(rating[placeId].favorite){
+              this.favorite = rating[placeId].favorite;
+            }
+            // this.favorite = this.userFavorite;
+            this.userRating = rating[placeId].rating;
+            if(this.userRating === 'yes'){
+              this.$.ratingButton.style.color = 'green';
+              this.$.notRatingButton.style.color=null;
+            }else if (this.userRating === 'no'){
+              this.$.ratingButton.style.color = null;
+              this.$.notRatingButton.style.color='red';
             }
             else{
-              this.$.favoriteButton.style.color = null;
-              this.$.notFavoriteButton.style.color=null;
+              this.$.ratingButton.style.color = null;
+              this.$.notRatingButton.style.color=null;
             }
           }else{
-            this.userFavorite = null;
-            this.$.favoriteButton.style.color = null;
-            this.$.notFavoriteButton.style.color=null;
+            this.userRating = null;
+            this.$.ratingButton.style.color = null;
+            this.$.notRatingButton.style.color=null;
           }
            
         }else{
-          this.userFavorite = null;
-          this.$.favoriteButton.style.color = null;
-          this.$.notFavoriteButton.style.color=null;
+          this.userRating = null;
+          this.$.ratingButton.style.color = null;
+          this.$.notRatingButton.style.color=null;
         }
 
       },
 
-      _watchFavorite:function (favorite){
-        console.log('favorite', favorite)
-        console.log('user', this.userFavorite);
+      _watchRating:function (rating){
+        console.log('rating', rating)
+        console.log('user', this.userRating);
         var update = false;
-        if(favorite){
+        let that = this;
+        if(rating){
           update = true;
         }
-        if(favorite === this.userFavorite){
+        if(rating === this.userRating){
           update = false;
         }
 
@@ -344,10 +394,14 @@
               
               
               if(update){
+                if(this.rating === 'no'){
+                  this.favorite = null;
+                }
                 var obj={
                   created: Math.round(Date.now()/1000),
                   name:this.organization.name,
                   place_id:this.placeId,
+                  rating:this.rating,
                   favorite:this.favorite,
                   vicinity:this.organization.vicinity,
                   latitude:this.organization.latitude,
@@ -357,10 +411,10 @@
                 firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.placeId}`)
                   .update(obj)
                   .then(() =>{
-                    console.log('Updated Favorite');
+                    console.log('Updated rating');
                   })
                   .catch(error =>{
-                    console.log('FAVORITE_ERROR', error)
+                    console.log('Rating_ERROR', error)
                   })
               
           
@@ -369,11 +423,11 @@
                 firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.placeId}`)
                   .remove()
                   .then(() =>{
-                    console.log('Removed from favorite');
-                    
+                    console.log('Removed rating');
+                    that.favorite = false;
                   })
                   .catch(error =>{
-                    console.log('FAVORITE_DELETE_ERROR', error)
+                    console.log('RATING_DELETE_ERROR', error)
                   })
               }
             }
@@ -384,24 +438,122 @@
         }
       },
 
-      _toggleFavorite: function(){
+      _watchFavorite: function (favorite){
+        if(favorite === this.userFavorite){
+
+          console.log('favorite', favorite)
+
+        }
+
+        // console.log('user', this.userFavorite);
+        // var update = false;
+        // if(favorite){
+        //   update = true;
+        // }
+        // if(favorite === this.userFavorite){
+        //   update = false;
+        // }
+
+        // if(this.user){
+        //   if(this.organization){
+        //     if(this.placeId){
+                
+        //       if(update){
+        //         var obj={
+        //           created: Math.round(Date.now()/1000),
+        //           name:this.organization.name,
+        //           place_id:this.placeId,
+        //           favorite:this.favorite,
+        //           vicinity:this.organization.vicinity,
+        //           latitude:this.organization.latitude,
+        //           longitude:this.organization.longitude
+        //         };
+
+        //         firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.placeId}`)
+        //           .update(obj)
+        //           .then(() =>{
+        //             console.log('Updated favorite');
+        //           })
+        //           .catch(error =>{
+        //             console.log('FAVORITE_ERROR', error)
+        //           })
+
+        //       }else{
+        //         firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.placeId}/favorite`)
+        //           .remove()
+        //           .then(() =>{
+        //             console.log('Removed favorite');
+                    
+        //           })
+        //           .catch(error =>{
+        //             console.log('RATING_DELETE_ERROR', error)
+        //           })
+        //       }
+        //     }
+        //   }
+
+        // }else{
+        //   this.login = true;
+        // }
+        
+      },
+
+      _toggleFavorite: function (){
+        
+        //toggle value
+        let favorite = !this.favorite;
+        let that = this;
+        if(this.uid){
+          if(this.placeId){
+            
+            if(favorite){
+              firebase.database(this.$.auth.app).ref(`user/${this.uid}/favoriteOrganization/${this.placeId}`)
+                  .update({favorite:favorite, rating:'yes'})
+                  .then(() => {
+                    that.favorite = favorite;
+                    console.log('saved favorite');
+                  })
+                  .catch(error =>{
+                    console.log('SAVED_FAVORITE_ERROR', error)
+                  })
+
+            }else{
+               firebase.database(this.$.auth.app).ref(`user/${this.uid}/favoriteOrganization/${this.placeId}/favorite`)
+                  .remove()
+                  .then(() => {
+                    that.favorite = favorite;
+                    console.log('removed favorite');
+                  })
+                  .catch(error =>{
+                    console.log('REMOVED_FAVORITE_ERROR', error)
+                  })
+
+            }
+
+          }
+        }
+        
+      },
+
+      _toggleRating: function(){
+        console.log('toggle')
         if(this.user){
-          if (this.favorite === 'yes'){
-            this.favorite = null;
+          if (this.rating === 'yes'){
+            this.rating = null;
           }else{
-            this.favorite = 'yes'
+            this.rating = 'yes'
           }
         }else{
           this.login = true;
         }
       },
 
-      _toggleNotFavorite: function(){
+      _toggleNotRating: function(){
         if(this.user){
-          if (this.favorite === 'no'){
-            this.favorite = null;
+          if (this.rating === 'no'){
+            this.rating = null;
           }else{
-            this.favorite = 'no'
+            this.rating = 'no'
           }
         }else{
           this.login = true;
@@ -413,8 +565,47 @@
       },
 
 
+      computeUid: function (user){
+        if(user){
+          return user.uid;
+        }
+        return false;
+      },
+
+      _computeFavorite: function (favorite){
+        if(favorite){
+          return true;
+        }
+        return;
+      },
+
+      // _computeFavoriteLabel: function (favorite){
+      //   if(favorite){
+      //     return 'Favorite';
+      //   }
+      //   return 'Favorite';
+      // },
+
+      _computeFavoriteCSS: function (favorite){
+        if(favorite){
+          return 'favorite-icon';
+        }
+        return 'not-favorite-icon';
+      },
+
+      _computeFavoriteIcon: function (favorite){
+        if(favorite){
+          return 'beer-icons:favorite';
+        }
+        return 'beer-icons:favorite-border';
+      },
+
+
       _computeShowIcons: function (organization){
         if(organization){
+          if(organization.TRUCK){
+            return false;
+          }
           if(organization.dogFriendly){
             return true;
           }
@@ -436,7 +627,13 @@
           return false;
       },
 
-      _computeHasPlaceOpen: function (place){
+      _computeHasPlaceOpen: function (place, organization){
+        if(organization){
+          if(organization.TRUCK){
+            return false;
+          }
+        }
+
         if(place){
           if(place.open){
             return true;

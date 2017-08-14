@@ -1,4 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
@@ -20,6 +21,10 @@
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-banner.html">
+<link rel="import" href="beer-dialog.html">
+<link rel="import" href="beer-menu-category-delete.html">
+
+
 
 
 <dom-module id="beer-menu">
@@ -53,6 +58,7 @@
         margin: 10px;
         padding: 20px;
         @apply --paper-material-elevation-1;
+        background-color: white;
       }
 
       .description {
@@ -133,6 +139,7 @@
       }
 
 
+
     </style>
 
     <firebase-auth  
@@ -174,8 +181,9 @@
       </template>
 
 
-    <template is="dom-repeat" items="[[_toArray(organization.menu)]]" as="menu" sort="_categoryOrder">
-      <div class="card" elevation="1">
+    <template is="dom-repeat" items="[[_toCategoryArray(organization.menu)]]" as="menu" sort="_categoryOrder">
+      <div class="card">
+      
       <template is="dom-if" if="[[owner]]">
         <div class="edit-button-wrapper">
           <div>
@@ -187,7 +195,7 @@
           </div>
           <div>
             <iron-label class="remove">
-              <paper-icon-button icon="beer-icons:delete" menu="[[menu]]" on-tap="_openDeleteDialog"></paper-icon-button>
+              <paper-icon-button icon="beer-icons:delete" category="[[menu]]" on-tap="_openDeleteDialog"></paper-icon-button>
               Delete
             </iron-label>
           </div>
@@ -195,14 +203,11 @@
       </template>
     
         <div class="category">
-          <div class=" menu-category category-title">[[menu.name]]</div>
-          
+          <div class=" menu-category category-title">[[menu.name]]</div> 
           
             <template is="dom-repeat" items="[[_addBreaks(menu.description)]]" as="categoryDescription">
               <div class="category-description">[[categoryDescription]]</div>
             </template>
-          
-          
 
             <template is="dom-repeat" items="[[_toArray(menu.item)]]" as="menuItem">
               <!--[[menuItem.id]]-->
@@ -214,17 +219,16 @@
                   </template>
 
                   <div class="price-wrapper">
-                    <template is="dom-repeat" items="[[_toArray(menuItem.price)]]" as="price">
+                    <template is="dom-repeat" items="[[_toPriceArray(menuItem.price)]]" as="price">
                       <div class="price-wrapper">
                         <div hidden="[[!price.size]]" class="price-size">[[price.size]]:&nbsp</div> 
-                        <div class="price-cost">$[[price.cost]]</div> 
+                        <div class="price-cost">$[[price.price]]</div> 
                       </div>
                     </template>
                   </div>
 
                 </div>
             </template>
-          
           
         <div>
     </template>
@@ -252,20 +256,18 @@
       </div>
     </paper-dialog>
 
-    <paper-dialog 
+
+
+    <beer-dialog 
         id="deleteDialog"
         with-backdrop
         entry-animation="scale-up-animation"
         exit-animation="fade-out-animation">
-      
-        <div>
-          Delete category named <b>[[deleteCategoryName]]</b> and all of its menu items.
-        </div>
-      
-        <paper-button dialog-dismiss category="[[deleteId]]" on-tap="_deleteCategory">DELETE</paper-button>
-        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
-      
-    </paper-dialog>
+      <beer-menu-category-delete
+        org-id="[[orgId]]"
+        category="[[deleteCategory]]">
+      </beer-menu-category-delete>
+    </beer-dialog>
 
      <paper-toast 
         id="toast" 
@@ -292,18 +294,12 @@
       is: 'beer-menu',
       properties: {
 
-       
-
         category:{
           type: Object
         },
 
-        deleteCategoryName:{
-          type: String
-        },
-
-        deleteId:{
-          type:String
+        deleteCategory:{
+          type: Object
         },
 
         editLink:{
@@ -343,6 +339,11 @@
         }
       },
 
+      ready: function (){
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.deleteDialog);
+      },
+
       observers:['_watchMenuItemId(menuItemId, category.item)'],
 
 
@@ -357,7 +358,7 @@
          var key = database.push().key;
          var that = this;
          var obj = {};
-          obj.order = 99;
+          obj.order = 0;
           obj.id = key;
 
           database.child(key).update(obj)
@@ -379,28 +380,27 @@
 
       _openDeleteDialog: function (event){
         var target = event.currentTarget;
-        var menu = target.menu;
-        if(menu.name){
-          this.deleteCategoryName = menu.name;
-        }else{
-          this.deleteCategoryName = 'No name assigned';
-        }
-        
+        var category = target.category;
+       
+        this.deleteCategory = category;
+       
         this.$.deleteDialog.open();
-        this.deleteId = menu.$key;
+        
 
       },
 
       _deleteCategory: function (){
 
         console.log('delete', this.deleteId);
+        var that = this;
         if(this.deleteId){
           if(this.orgId){
+            console.log(`/organization/${this.orgId}/menu/${this.deleteId}`)
 
-            firebase.database(this.$.auth.app).ref('organization')
-              .child(this.orgId).child('menu').child(this.deleteId)
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/menu/${this.deleteId}`)
               .remove()
               .then(function (){
+                // that.$.deleteDialog.close();
                 console.log('DELETED_CATEGORY')
               })
               .catch(function(error){
@@ -424,6 +424,49 @@
           }
         }
         return returnArray;
+      },
+
+      _toCategoryArray: function (obj) {
+        var returnArray = [];
+        if(obj){
+          var key = Object.keys(obj);
+          
+          for (var i=0; i<key.length; i++){
+            obj[key[i]].category_id = key[i];
+            if(!obj[key[i]].name){
+              obj[key[i]].name = 'New Menu Category'
+            }
+            returnArray.push(obj[key[i]]);
+          }
+        }
+        return returnArray;
+      },
+
+       _toPriceArray: function (obj){
+        const returnArray=[];
+        if(typeof obj ==='object'){
+          for(let key of Object.keys(obj)){
+            let item = obj[key];
+            let units = '';
+            let nanos = '';
+
+            if(item.units){
+              units = item.units.toString();
+            }
+            item.price = item.price
+            if(item.nanos){
+               nanos = item.nanos/10000000;
+              if(nanos < 10){
+                nanos = `.0${nanos}`
+              }else{
+                nanos = `.${nanos}`
+              }
+            }
+            item.price = units+nanos;
+            returnArray.push(item);
+          }
+        } 
+       return returnArray;
       },
 
       _categoryOrder: function(a,b){  
@@ -465,6 +508,7 @@
           return [];
         }
       },
+
 
       _test: function (obj){
         console.log(obj);

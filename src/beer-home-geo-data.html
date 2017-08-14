@@ -37,10 +37,11 @@
                     notify: true
                 },
 
-
                 location: {
                     type: Object
                 },
+
+                name:String,
 
                 radius: {
                     type: Number,
@@ -63,11 +64,13 @@
 
             },
 
-            observers: ['_getLocation(location, statusKnown)'],
+            observers: ['_getLocation(location, statusKnown, name)'],
 
-            _getLocation: function (location, statusKnown) {
-                if(statusKnown){
-                    console.log(this.user.uid)
+            _getLocation: function (location, statusKnown, name) {
+            if(name === 'home'){
+                console.log('triggered home')
+            if(statusKnown){
+                    // console.log(this.user.uid)
               if(location){
                 var latitude = location.latitude;
                 var longitude = location.longitude;
@@ -183,19 +186,19 @@
                             }
                             var pub = snapshot.val();
 
-                            pub.favoriteTotal = 0;
-                            pub.favoriteYes = 0;
-                            pub.favoriteNo = 0;
-                            pub.favoritePercent=null;
+                            pub.ratingTotal = 0;
+                            pub.ratingYes = 0;
+                            pub.ratingNo = 0;
+                            pub.ratingPercent=null;
                             let dislike = false;
 
                             if(snapshot.child('favorite').exists()){
                               snapshot.child('favorite').forEach(favorite =>{
-                                pub.favoriteTotal ++
-                                if(favorite.child('favorite').val() === 'yes'){
-                                  pub.favoriteYes++
-                                }else if(favorite.child('favorite').val() === 'no'){
-                                  pub.favoriteNo++
+                                pub.ratingTotal ++
+                                if(favorite.child('rating').val() === 'yes'){
+                                  pub.ratingYes++
+                                }else if(favorite.child('rating').val() === 'no'){
+                                  pub.ratingNo++
                                   if(that.user){
                                     if(that.user.uid){
                                         if(favorite.key === that.user.uid){
@@ -206,8 +209,8 @@
                                 }
                               })
                             }
-                        if(pub.favoriteTotal >0){
-                        pub.favoritePercent = Math.round((pub.favoriteYes/pub.favoriteTotal)*1000)/10;
+                        if(pub.ratingTotal >0){
+                            pub.ratingPercent = Math.round((pub.ratingYes/pub.ratingTotal)*1000)/10;
                         }
 
                         var pubDistance = distance * 0.621371;
@@ -272,9 +275,9 @@
                             if (pub) {
                                 if (pub.place_id) {
                                     // pub.cacheTimestamp = Date.now()+604800000;
-                                    pub.cacheTimestamp = Date.now()
+                                    pub.cacheTimestamp = Date.now();
                                     pub.organization = true;
-                                    // window.localStorage.setItem('organization_'+pub.place_id, JSON.stringify(pub));
+                                    window.localStorage.setItem('organization_'+pub.place_id, JSON.stringify(pub));
                                     // console.log('cached');
                                 }
                             }
@@ -285,6 +288,7 @@
                 }
               }
                 }
+            }
 
             },
 

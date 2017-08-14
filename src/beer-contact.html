@@ -26,9 +26,11 @@
 
       :host {
         display: block;
-        width: 640px;
-        /*border: 1px solid red;*/
+        max-width: 640px;
+        background-color: white;
       }
+
+      
       
       .wrapper{
         @apply --layout-vertical;
@@ -66,22 +68,23 @@
     </beer-banner>
     
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
-
-    <div class="motto">
-        [[organization.siteName]]
-    </div>
-    <div class="wrapper">
-      <div class="item">
-      <beer-hours-card 
-          class=" category-item"
-          organization="[[place]]">
-      </beer-hours-card>
+    <div class="card">
+      <div class="motto">
+          [[organization.siteName]]
       </div>
-      <div class="item">
+      <div class="wrapper">
+        <div class="item">
+        <beer-hours-card 
+            class=" category-item"
+            organization="[[place]]">
+        </beer-hours-card>
+        </div>
+        <div class="item">
 
-       <beer-contact-card 
-           place="[[place]]">
-       </beer-contact-card>
+        <beer-contact-card 
+            place="[[place]]">
+        </beer-contact-card>
+        </div>
       </div>
     </div>
 

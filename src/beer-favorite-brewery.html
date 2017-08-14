@@ -21,6 +21,14 @@
       :host {
         display: block;
         max-width: 640px;
+        background-color: var(--app-background-color);
+      }
+
+      .card{
+        padding: 10px;
+        margin: 15px 10px;
+        @apply --paper-material-elevation-1;
+        background-color: white;
       }
 
     </style>
@@ -33,9 +41,10 @@
 
     <template is="dom-repeat" items=[[allData]] as="pub" observe="distance" sort="_sortByDistance">
 
-      <beer-pub-card 
+      <beer-pub-card class="card"
         place-id="[[pub.$key]]"
         organization="[[pub]]"
+        permen
         user-data="[[userData]]"
         open-edit-pub-crawl="{{crawlDialogOpened}}"
         edit-place="{{editPlace}}">
@@ -117,27 +126,25 @@
         if(typeof userData.favoriteOrganization === 'object'){
           for (let key of Object.keys(userData.favoriteOrganization)){
             let pub = userData.favoriteOrganization[key];
-            if(pub.favorite === 'yes'){
+            if(pub.favorite){
               firebase.database(this.$.auth.app).ref(`/organization/${key}`)
                 .once('value')
                 .then(snapshot => {
+                  let obj = snapshot.val();
+                  obj.$key = snapshot.key;
+                  obj.favoriteTotal = 0;
+                  obj.favoriteYes = 0;
+                  obj.favoriteNo = 0;
+                  obj.favoritePercent=null;
 
                   if(snapshot.exists()){
                     if(!snapshot.child('permanently_closed').exists()){
-                      let obj = snapshot.val();
-                      obj.$key = snapshot.key;
-
+                    
                       if(this.location){
                         if(this.location.latitude && this.location.longitude && obj.latitude && obj.longitude){
                           obj.distance = this._distance(this.location.latitude, this.location.longitude, obj.latitude, obj.longitude)
                         }
                       }
-
-                      obj.favoriteTotal = 0;
-                      obj.favoriteYes = 0;
-                      obj.favoriteNo = 0;
-                      obj.favoritePercent=null;
-                      
 
                       if(snapshot.child('favorite').exists()){
                         snapshot.child('favorite').forEach(favorite =>{
@@ -151,7 +158,7 @@
                       }
 
                       if(obj.favoriteTotal >0){
-                      obj.favoritePercent = Math.round((obj.favoriteYes/obj.favoriteTotal)*1000)/10;
+                        obj.favoritePercent = Math.round((obj.favoriteYes/obj.favoriteTotal)*1000)/10;
                       }
                       
                       that.push(`allData`, obj)

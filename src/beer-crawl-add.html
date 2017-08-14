@@ -3,6 +3,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
 
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
@@ -25,24 +26,24 @@
 
       .crawl-add-buttons{
          @apply --layout-horizontal;
-         @apply --layout-justified;
+         @apply --layout-center-justified;
          color: var(--app-accent-color);
+         width:100%;
       }
 
         
     </style>
       <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
       
-      <iron-collapse opened="[[opened]]">
-        <div>
-          <paper-input id="crawlNameInput" label="Crawl Name" required maxlength="100" char-counter value="{{addCrawlName}}"></paper-input>
-          <paper-textarea id="crawlDescriptionInput" label="Crawl Description" required maxlength="500" char-counter value="{{addCrawlDescription}}"></paper-textarea>
-          <div class="crawl-add-buttons">
-            <paper-button id="addNewCrawlButton" on-tap="_addNewCrawl">Add New Crawl</paper-button>
-            <paper-button on-tap="_closeCrawlAddEditor">Cancel</paper-button>
-          </div>
+      <div>
+        <paper-toggle-button checked="{{publicStatus}}">[[publicMessage]]</paper-toggle-button>
+        
+        <paper-input id="crawlNameInput" label="Crawl Name" required maxlength="100" char-counter value="{{addCrawlName}}"></paper-input>
+        <paper-textarea id="crawlDescriptionInput" label="Crawl Description" required maxlength="500" char-counter value="{{addCrawlDescription}}"></paper-textarea>
+        <div class="crawl-add-buttons">
+          <paper-button id="addNewCrawlButton" on-tap="_addNewCrawl">Add New Crawl</paper-button>
         </div>
-      </iron-collapse>
+      </div>
      
   </template>
 </dom-module>
@@ -68,16 +69,20 @@
         value:''
       },
 
+      publicStatus:{
+        type:Boolean,
+        value:false
+      },
+
+      publicMessage:{
+        type:String,
+        value:'Private',
+        computed: '_computePublicMessage(publicStatus)'
+      },
+
       message:{
         type:String,
         notify:true
-      },
-
-
-
-      opened:{
-        type:Boolean,
-        value:true
       },
 
       place:{
@@ -92,6 +97,7 @@
     _addNewCrawl(){
       var error = false
       var place = this.place;
+      var that = this;
 
       if(this.addCrawlName.length === 0){
         this.$.crawlNameInput.invalid = true;
@@ -114,8 +120,9 @@
 
       var obj = {
           user_id: this.user.uid,
-          name: this.addCrawlName,
-          description: this.addCrawlDescription,
+          editName: this.addCrawlName,
+          editDescription: this.addCrawlDescription,
+          public: (this.publicStatus)  ? this.publicStatus : null,
           created: Math.round(Date.now()/1000)
         }
         if(place){
@@ -135,15 +142,14 @@
       firebase.database(this.$.auth.app).ref(`crawl`)
           .push(obj)
           .then(() =>{
-            
             if(obj.organization){
-              this.message = `${this.addCrawlName} was created with ${place.name}.`
+              that.message = `${this.addCrawlName} was created with ${place.name}.`
             }else{
-              this.message = `${this.addCrawlName} was created.`
+              that.message = `${this.addCrawlName} was created.`
             }
-
-            this.opened = false;
-
+            that.addCrawlName = '';
+            that.addCrawlDescription = '';
+            that.publicStatus = false;
             console.log('Added New Beer Crawl')
           })
           .catch(error =>{
@@ -152,10 +158,12 @@
       }
     },
 
-    _closeCrawlAddEditor: function(){
-      this.opened=false;
+    _computePublicMessage: function (publicStatus){
+      if(publicStatus){
+        return 'Public';
+      }
+      return 'Private';
     },
-
    
 
   })

@@ -53,7 +53,7 @@
 
       },
       
-      observers:[' _getInitialCache(location)'],
+      observers:[' _getInitialCache(location, name)'],
 
       ready: function (){
         // this.initialLoad = true;
@@ -64,10 +64,11 @@
       },
 
 
-      _getInitialCache: function (location){
+      _getInitialCache: function (location, name){
+        
         try{
           console.log('location', location)
-
+          if(name === 'home'){
           if(location){
             if(location.latitude && location.longitude){
 
@@ -102,10 +103,11 @@
               }
             }
           }
+          }
         }catch(error){
           console.log(error);
         }
-        console.log(this.allArray);
+        // console.log(this.allArray);
         this._removeOldCacheData()
       },
               

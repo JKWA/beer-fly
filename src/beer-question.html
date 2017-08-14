@@ -57,6 +57,7 @@
       padding: 12px;
       margin: 15px;
       @apply --paper-material-elevation-1;
+      background-color: white;
     }
 
     .question-header{
@@ -208,18 +209,6 @@
           
           <li>
             <div>
-              <a href="#cast_taplist"> 
-              <iron-icon icon="beer-icons:tv"></iron-icon>
-              </a>
-            </div>
-            <div>
-              <a href="#cast_taplist">
-                <div>Display a tap list on televisions or large monitors.</div>
-              </a>
-            </div>
-          </li>
-          <li>
-            <div>
               <a href="#edit_organization">
                 <iron-icon icon="beer-icons:edit"></iron-icon>
               </a>
@@ -230,6 +219,35 @@
               </a>
             </div>
           </li>
+
+          <li>
+            <div>
+              <a href="#cast_taplist"> 
+              <iron-icon icon="beer-icons:tv"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#cast_taplist">
+                <div>Display a tap list on televisions or large monitors.</div>
+              </a>
+            </div>
+          </li>
+
+          <li>
+            <div>
+              <a href="#export_data">
+                <iron-icon icon="beer-icons:open-in-browser"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#export_data">
+                Display Beer-Fly's beer and tap lists on your website.
+              </a>
+            </div>
+          </li>
+
+
+          
           <li>
             <div>
               <a href="#upgrade_plan">
@@ -700,6 +718,65 @@
         </ol>
       </div>
     </div>
+
+    <div id="export_data" class="question">
+      <div class="question-header">
+      Display Beer-Fly beer and tap data to your site
+      </div>
+      <div class="question-body">
+        <ol>
+          <template is="dom-if" if="[[!user]]">
+            <li>
+              <div>
+                <a href="/home/account">
+                <iron-icon icon="beer-icons:account"></iron-icon>
+                </a>
+              </div>
+              <div>Sign in at&nbsp<a href="/home/account">/home/account</a></div>
+            </li>
+          </template>
+          <template is="dom-if" if="[[!user.emailVerified]]">
+            <li>
+              <div>
+                <a href="/home/account">
+                <iron-icon icon="beer-icons:email"></iron-icon>
+                </a>
+              </div>
+              <div>Verify your email at&nbsp<a href="/home/account">/home/account</a></div>
+            </li>
+          </template>
+         <li>
+            <div>
+              <a href="/home/account">
+              <iron-icon icon="beer-icons:account"></iron-icon>
+              </a>
+            </div>
+            <div class="question-body-list">
+              <div>Upgrade the location to the standard plan <a href="/home/account">/home/account</a></div>
+              <div>Tap - <i>Add Beer-Fly's taplist and beer information to your site.</i></div>
+            </div>
+          </li>
+          <li>
+            <div>
+              <iron-icon icon="beer-icons:settings"></iron-icon>
+            </div>
+            <div class="question-body-list">
+              <div>Select HTML or JSON.</div>
+              <div>HTML is the quickest solution, match your site's colors and size and copy the iframe snippet to your site.</div>
+              <div>JSON is is used to incorporate the data into your site using javascript.</div>
+            </div>
+          </li>
+
+            
+        </ol>
+      </div>
+    </div>
+
+
+
+
+
+
 
     <div id="upgrade_plan" class="question">
       <div class="question-header">

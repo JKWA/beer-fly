@@ -2,6 +2,7 @@
   "entrypoint": "index.html",
   "shell": "src/beer-app.html",
   "fragments": [
+    "src/beer-account.html",
     "src/beer-beer.html",
     "src/beer-beer-edit.html",
     "src/beer-contact.html",

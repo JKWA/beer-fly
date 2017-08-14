@@ -6,7 +6,8 @@ const functions = require('firebase-functions'),
       exec = require('child-process-promise').exec,
       spawn = require('child-process-promise').spawn,
       logging = require('@google-cloud/logging')(),
-      fs = require('fs');
+      fs = require('fs'),
+      swearjar = require('swearjar');
 
 const stripe = require('stripe')(functions.config().stripe.token),
       currency = functions.config().stripe.currency || 'USD';
@@ -1091,7 +1092,7 @@ exports.setGeoForCrawl = functions.database.ref('/crawl/{crawl_id}')
 })
 
 exports.setPlaceForCrawl = functions.database.ref('/crawl/{crawl_id}/organization/{place_id}')
-.onCreate(event =>{
+  .onCreate(event =>{
   const val = event.data.val(),
         created = val.created,
         metadata = event.params,
@@ -1109,7 +1110,7 @@ exports.setPlaceForCrawl = functions.database.ref('/crawl/{crawl_id}/organizatio
 })
 
 exports.deletePlaceForCrawl = functions.database.ref('/crawl/{crawl_id}/organization/{place_id}')
-.onDelete(event =>{
+  .onDelete(event =>{
   const val = event.data.val(),
         metadata = event.params,
         crawl_id = metadata.crawl_id,
@@ -1125,6 +1126,280 @@ exports.deletePlaceForCrawl = functions.database.ref('/crawl/{crawl_id}/organiza
     })
 })
 
+exports.sanitizeDescription  = functions.database.ref('/organization/{place_id}/descriptionEdit')
+  .onWrite(event => {
+    const val = event.data.val(),
+          metadata = event.params,
+          place_id = metadata.place_id,
+          profane = swearjar.profane(val),
+          censor = swearjar.censor(val)
+
+    if(!event.data.exists()){
+      return admin.database().ref(`/organization/${place_id}/description`)
+        .remove()
+        .then(() =>{
+          console.log('removed description')
+        })
+        .catch(error =>{
+          console.error('ERROR', error)
+        })
+    }
+
+    return admin.database().ref(`/organization/${place_id}/description`)
+      .set(censor)
+      .then(() =>{
+        console.log('saved description')
+      })
+      .catch(error =>{
+        console.error('ERROR', error)
+      })
+  })
+
+exports.sanitizeMotto  = functions.database.ref('/organization/{place_id}/mottoEdit')
+  .onWrite(event => {
+    const val = event.data.val(),
+          metadata = event.params,
+          place_id = metadata.place_id,
+          profane = swearjar.profane(val),
+          censor = swearjar.censor(val)
+
+    if(!event.data.exists()){
+      return admin.database().ref(`/organization/${place_id}/motto`)
+        .remove()
+        .then(() =>{
+          console.log('removed motto')
+        })
+        .catch(error =>{
+          console.error('ERROR', error)
+        })
+   }
+
+    return admin.database().ref(`/organization/${place_id}/motto`)
+      .set(censor)
+      .then(() =>{
+        console.log('saved motto')
+      })
+      .catch(error =>{
+        console.error('ERROR', error)
+      })
+  })
+  
+exports.sanitizeCrawlName  = functions.database.ref('/crawl/{crawl_id}/editName')
+  .onWrite(event => {
+    const val = event.data.val(),
+          metadata = event.params,
+          crawl_id = metadata.crawl_id,
+          profane = swearjar.profane(val),
+          censor = swearjar.censor(val)
+   
+    if(!event.data.exists()){
+      return admin.database().ref(`/crawl/${crawl_id}/name`)
+        .remove()
+        .then(() =>{
+          console.log('removed name')
+        })
+        .catch(error =>{
+          console.error('ERROR', error)
+        })
+    }
+
+    return admin.database().ref(`/crawl/${crawl_id}/name`)
+      .set(censor)
+      .then(() =>{
+        console.log('saved name')
+      })
+      .catch(error =>{
+        console.error('ERROR', error)
+      })
+  })
+
+exports.sanitizeCrawlDescription  = functions.database.ref('/crawl/{crawl_id}/editDescription')
+  .onWrite(event => {
+    const val = event.data.val(),
+          metadata = event.params,
+          crawl_id = metadata.crawl_id,
+          profane = swearjar.profane(val),
+          censor = swearjar.censor(val)
+
+    if(!event.data.exists()){
+      return admin.database().ref(`/crawl/${crawl_id}/description`)
+        .remove()
+        .then(() =>{
+          console.log('removed description')
+        })
+        .catch(error =>{
+          console.error('ERROR', error)
+        })
+    }
+
+    return admin.database().ref(`/crawl/${crawl_id}/description`)
+      .set(censor)
+      .then(() =>{
+        console.log('saved description')
+      })
+      .catch(error =>{
+        console.error('ERROR', error)
+      })
+  })
+
+exports.sanitizeMenuName  = functions.database.ref('/organization/{place_id}/menu/{category_id}/editName')
+  .onWrite(event => {
+    const val = event.data.val(),
+          metadata = event.params,
+          place_id = metadata.place_id,
+          category_id = metadata.category_id,
+          profane = swearjar.profane(val),
+          censor = swearjar.censor(val)
+
+
+    if(!event.data.exists()){
+      return admin.database().ref(`/organization/${place_id}/menu/${category_id}/name`)
+        .remove()
+        .then(() =>{
+          console.log('removed name')
+        })
+        .catch(error =>{
+          console.error('ERROR', error)
+        })
+    }
+
+    return admin.database().ref(`/organization/${place_id}/menu/${category_id}/name`)
+      .set(censor)
+      .then(() =>{
+        console.log('saved name')
+      })
+      .catch(error =>{
+        console.error('ERROR', error)
+      })
+  })
+
+exports.sanitizeMenuDescription  = functions.database.ref('/organization/{place_id}/menu/{category_id}/editDescription')
+  .onWrite(event => {
+    const val = event.data.val(),
+          metadata = event.params,
+          place_id = metadata.place_id,
+          category_id = metadata.category_id,
+          profane = swearjar.profane(val),
+          censor = swearjar.censor(val)
+
+
+    if(!event.data.exists()){
+      return admin.database().ref(`/organization/${place_id}/menu/${category_id}/description`)
+        .remove()
+        .then(() =>{
+          console.log('removed description')
+        })
+        .catch(error =>{
+          console.error('ERROR', error)
+        })
+    }
+
+    return admin.database().ref(`/organization/${place_id}/menu/${category_id}/description`)
+      .set(censor)
+      .then(() =>{
+        console.log('saved description')
+      })
+      .catch(error =>{
+        console.error('ERROR', error)
+      })
+  })
+
+exports.sanitizeMenuItemName  = functions.database.ref('/organization/{place_id}/menu/{category_id}/item/{item_id}/editName')
+  .onWrite(event => {
+    const val = event.data.val(),
+          metadata = event.params,
+          place_id = metadata.place_id,
+          category_id = metadata.category_id,
+          item_id = metadata.item_id,
+          profane = swearjar.profane(val),
+          censor = swearjar.censor(val)
+
+
+    if(!event.data.exists()){
+      return admin.database().ref(`/organization/${place_id}/menu/${category_id}/item/${item_id}/name`)
+        .remove()
+        .then(() =>{
+          console.log('removed name')
+        })
+        .catch(error =>{
+          console.error('ERROR', error)
+        })
+    }
+
+    return admin.database().ref(`/organization/${place_id}/menu/${category_id}/item/${item_id}/name`)
+      .set(censor)
+      .then(() =>{
+        console.log('saved name')
+      })
+      .catch(error =>{
+        console.error('ERROR', error)
+      })
+  })
+
+exports.sanitizeMenuItemDescription = functions.database.ref('/organization/{place_id}/menu/{category_id}/item/{item_id}/editDescription')
+  .onWrite(event => {
+    const val = event.data.val(),
+          metadata = event.params,
+          place_id = metadata.place_id,
+          category_id = metadata.category_id,
+          item_id = metadata.item_id,
+          profane = swearjar.profane(val),
+          censor = swearjar.censor(val)
+
+
+    if(!event.data.exists()){
+      return admin.database().ref(`/organization/${place_id}/menu/${category_id}/item/${item_id}/description`)
+        .remove()
+        .then(() =>{
+          console.log('removed description')
+        })
+        .catch(error =>{
+          console.error('ERROR', error)
+        })
+    }
+
+    return admin.database().ref(`/organization/${place_id}/menu/${category_id}/item/${item_id}/description`)
+      .set(censor)
+      .then(() =>{
+        console.log('saved description')
+      })
+      .catch(error =>{
+        console.error('ERROR', error)
+      })
+  })
+
+exports.sanitizeMenuPriceItem  = functions.database.ref('/organization/{place_id}/menu/{category_id}/item/{item_id}/price/{price_id}/editSize')
+  .onWrite(event => {
+    const val = event.data.val(),
+          metadata = event.params,
+          place_id = metadata.place_id,
+          category_id = metadata.category_id,
+          item_id = metadata.item_id,
+          price_id = metadata.price_id,
+          profane = swearjar.profane(val),
+          censor = swearjar.censor(val)
+
+
+    if(!event.data.exists()){
+      return admin.database().ref(`/organization/${place_id}/menu/${category_id}/item/${item_id}/price/${price_id}/size`)
+        .remove()
+        .then(() =>{
+          console.log('removed size')
+        })
+        .catch(error =>{
+          console.error('ERROR', error)
+        })
+    }
+
+    return admin.database().ref(`/organization/${place_id}/menu/${category_id}/item/${item_id}/price/${price_id}/size`)
+      .set(censor)
+      .then(() =>{
+        console.log('saved size')
+      })
+      .catch(error =>{
+        console.error('ERROR', error)
+      })
+  })
 
 
 
@@ -1195,14 +1470,15 @@ exports.updateFavorite = functions.database.ref('/user/{user_id}/favoriteOrganiz
   }
 
   return admin.database().ref(`/organization/${place_id}/favorite/${user_id}`)
-    .update({created:snapshot.child('created').val(), favorite:snapshot.child('favorite').val()})
+    .update({created:snapshot.child('created').val(), rating:snapshot.child('rating').val()})
     .then(()=>{
       console.log('Updated Favorite')
     })
     .catch(error =>{
       console.error('ERROR_UPDATE', error)
     })
-  })
+})
+
 
 exports.stripeSubscriptionUpdated = functions.https.onRequest((request, response) => {
   // Grab the text parameter.
@@ -1233,6 +1509,155 @@ exports.stripeSubscriptionUpdated = functions.https.onRequest((request, response
         })
     })
 });
+
+
+exports.getOnTap = functions.https.onRequest((request, response) => {
+
+  if (request.method === 'PUT') {
+    response.status(403).send('Forbidden!')
+  }
+
+  const query = request.query,
+        place_id = query.orgid,
+        backgroundColor = (query.backgroundColor) ? query.backgroundColor : 'white',
+        primaryColor = (query.primaryColor) ? query.primaryColor : '#303030',
+        accentColor = (query.accentColor) ? query.accentColor : '#F07310',
+        size = (query.size) ? query.size : 100,
+        description = (query.description) ? true : false,
+        abv = (query.abv) ? true : false,
+        json = (query.json) ? true : false,
+        logo = `<div style="display:flex;justify-content:center;text-decoration:none;margin:20px 0"><a href="https://www.beer-fly.com/brewery/main?orgid=${place_id}"><div style="margin-top:3px;float:left;font-size:${size*.01}em;font-weight:500;color:${primaryColor}">Powered by Beer-Fly</div><img style="margin-left:5px" src="https://www.beer-fly.com/images/beer-icon-22.png"></a></div>`
+
+
+  let html = ''
+
+  admin.database().ref(`/organization/${place_id}/plan/current_period_end`)
+    .once('value')
+    .then(snapshot =>{
+      if(!snapshot.exists()){
+        return response.status(401).send('Unauthorized: Must have a current plan')
+      }
+      if(snapshot.val()*1000 < Date.now()){
+        return response.status(401).send('Unauthorized: Must have a current plan')
+      }
+      return place_id
+    })
+    .then(place_id =>{
+      admin.database().ref(`/organization/${place_id}/onTap`).orderByChild('order')
+        .once('value')
+        .then(snapshot =>{
+          if(!snapshot.exists()){
+            return response.status(200).send('No data')
+          }
+
+          if(json){
+            return response.status(200).send(JSON.stringify(snapshot.val()))
+          }
+
+          snapshot.forEach(beer =>{
+            // console.log(beer.val());
+            if(beer.child('name').exists() && beer.child('tapped').val() ==='TAPPED'){
+
+              html += `<div style="margin-top:${size*.3}px;font-size:${size*.015}em;font-weight:300;color:${primaryColor}"'>${beer.child('name').val()}</div>`
+
+              if(beer.child('styleName').exists()){
+                html += `<div style="margin-top:${size*.1}px;font-size:${size*.012}em;font-weight:500;color:${accentColor}">${beer.child('styleName').val()}</div>`
+              }
+
+              if(beer.child('breweryName').exists()){
+                html += `<div style="margin-top:${size*.1}px;font-size:${size*.01}em;font-weight:300;color:${primaryColor}">${beer.child('breweryName').val()}</div>`
+              }
+
+              if(beer.child('city').exists() && beer.child('state').exists()){
+                html += `<div style="margin-top:${size*.025}px;font-size:${size*.008}em;font-weight:300;color:${primaryColor}">${beer.child('city').val()}, ${beer.child('state').val()}</div>`
+              }
+
+              if(beer.child('description').exists() && description){
+                html += `<div style="margin-top:${size*.125}px;font-size:${size*.01}em;font-weight:300;color:${primaryColor}">${beer.child('description').val()}</div>`
+              }
+
+              if(beer.child('abv').exists() && abv){
+                html += `<div style="margin-top:${size*.1}px;font-size:${size*.01}em;font-weight:300;color:${primaryColor}">ABV: ${beer.child('abv').val()}</div>`
+              }
+            }
+          })
+          
+          return response.status(200).send(`<!DOCTYPE html><html><body style="font-family:'Roboto','Noto',sans-serif;background-color:${backgroundColor}">${html}${logo}</body></html>`)
+
+          })
+
+        })
+       
+
+})
+
+exports.getBeers = functions.https.onRequest((request, response) => {
+
+  if (request.method === 'PUT') {
+    response.status(403).send('Forbidden!')
+  }
+
+  const query = request.query,
+        place_id = query.orgid,
+        backgroundColor = (query.backgroundColor) ? query.backgroundColor : 'white',
+        primaryColor = (query.primaryColor) ? query.primaryColor : '#303030',
+        accentColor = (query.accentColor) ? query.accentColor : '#F07310',
+        size = (query.size) ? query.size : 100,
+        description = (query.description) ? true : false,
+        abv = (query.abv) ? true : false,
+        json = (query.json) ? true : false,
+        logo = `<div style="display:flex;justify-content:center;text-decoration:none;margin:20px 0"><a href="https://www.beer-fly.com/brewery/main?orgid=${place_id}"><div style="margin-top:3px;float:left;font-size:${size*.01}em;font-weight:500;color:${primaryColor}">Powered by Beer-Fly</div><img style="margin-left:5px" src="https://www.beer-fly.com/images/beer-icon-22.png"></a></div>`
+
+
+  let html = ''
+
+  admin.database().ref(`/organization/${place_id}/plan/current_period_end`)
+    .once('value')
+    .then(snapshot =>{
+      if(!snapshot.exists()){
+        return response.status(401).send('Unauthorized: Must have a current plan')
+      }
+      if(snapshot.val()*1000 < Date.now()){
+        return response.status(401).send('Unauthorized: Must have a current plan')
+      }
+      return place_id
+    })
+    .then(place_id =>{
+      admin.database().ref(`/organization/${place_id}/brewBeer`).orderByChild('order')
+        .once('value')
+        .then(snapshot =>{
+          if(!snapshot.exists()){
+            return response.status(200).send('No data')
+          }
+
+          if(json){
+            return response.status(200).send(JSON.stringify(snapshot.val()))
+          }
+
+          snapshot.forEach(beer =>{
+            // console.log(beer.val());
+            if(beer.child('name').exists() && beer.child('status').val() ==='verified'){
+              html += `<div style="margin-top:${size*.3}px;font-size:${size*.015}em;font-weight:300;color:${primaryColor}"'>${beer.child('name').val()}</div>`
+              if(beer.child('styleName').exists()){
+                html += `<div style="margin-top:${size*.1}px;font-size:${size*.012}em;font-weight:500;color:${accentColor}">${beer.child('styleName').val()}</div>`
+              }
+              if(beer.child('description').exists() && description){
+                html += `<div style="margin-top:${size*.1}px;font-size:${size*.01}em;font-weight:300;color:${primaryColor}">${beer.child('description').val()}</div>`
+              }
+              if(beer.child('abv').exists() && abv){
+                html += `<div style="margin-top:${size*.1}px;font-size:${size*.01}em;font-weight:300;color:${primaryColor}">ABV: ${beer.child('abv').val()}</div>`
+              }
+            }
+          })
+          
+          return response.status(200).send(`<!DOCTYPE html><html><body style="font-family:'Roboto','Noto',sans-serif;background-color:${backgroundColor}">${html}${logo}</body></html>`)
+
+          })
+
+        })
+       
+
+})
 
 
 

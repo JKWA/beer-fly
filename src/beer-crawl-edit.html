@@ -113,8 +113,7 @@
 
     .org-icon-wrapper{
       @apply --layout-horizontal;
-
-       @apply --layout-end-justified; 
+      @apply --layout-end-justified; 
     }
 
     .move-icon-wrapper{
@@ -125,22 +124,6 @@
       color: var(--app-accent-color);
     }
 
-    .delete{
-      color:red;
-    }
-
-    .delete-wrapper{
-      height:100%;
-      @apply --layout-vertical;
-    }
-
-    .delete-message{
-      @apply --layout-flex-12;
-      margin: 40px 10px;
-      font-size: 1.5em;
-      color: var(--app-primary-color);
-      font-weight: 400;
-    }
 
 
   </style>
@@ -181,8 +164,6 @@
             
            <div class="organization-wrapper">
               <div>
-                <!-- <div>[[pub.earlier]]</div>
-                <div>[[pub.later]]</div> -->
                 <div>[[pub.name]]</div>
                 <div>[[pub.formatted_address]]</div>
               </div>
@@ -232,13 +213,6 @@
 
   </div>
 
- 
-
-
-   
-
-      
-      
 
 </template>
   <script>
@@ -289,15 +263,25 @@
       // observers:['_watchUser(user)'],
 
       observers:['_watchPublicStatus(crawl.public)',
-                 '_watchCrawlId(crawlId)'
+                 '_watchCrawlId(crawlId)',
+                //  '_watchCrawlName(crawl.name)',
+                //  '_watchCrawlDescription(crawl.description)'
                  ],
       
 
       _watchPublicStatus: function (crawlPublic){
-        if(crawlPublic){
-          this.editCrawlPublicMessage = 'Public'
-        }else{
-          this.editCrawlPublicMessage = 'Private'
+        if(this.crawl){
+          if(this.crawl.crawl_id){
+            if(crawlPublic){
+              this.editCrawlPublicMessage = 'Public';
+              firebase.database(this.$.auth.app).ref(`crawl/${this.crawl.crawl_id}/public`)
+               .set(true);
+            }else{
+              this.editCrawlPublicMessage = 'Private'
+              firebase.database(this.$.auth.app).ref(`crawl/${this.crawl.crawl_id}/public`)
+               .remove()
+            }
+          }
         }
       },
 
@@ -329,8 +313,8 @@
         }
         var obj = {
           user_id: this.user.uid,
-          name: this.crawl.name,
-          description: this.crawl.description,
+          editName: this.crawl.name,
+          editDescription: this.crawl.description,
           created: Math.round(Date.now()/1000),
           public: this.crawl.public
         }

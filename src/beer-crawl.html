@@ -79,6 +79,7 @@
       padding: 10px;
       margin: 10px;
       @apply --paper-material-elevation-1;
+      background-color: white;
     }
 
     .title-wrapper{
@@ -142,9 +143,6 @@
   </style> 
 
   <firebase-auth id="auth" app-name="beer" status-known="[[statusKnown]]"user="{{user}}"></firebase-auth>
-  
-    
-
 
     <div class="card" hidden$="[[!user]]">
       <template is="dom-if" if="[[!crawlId]]">
@@ -692,12 +690,15 @@
         return false;
       },
 
-        _organizationArray: function (obj){
+      _organizationArray: function (obj){
+
         var returnArray = [];
         if(typeof obj ==='object'){
-          var key = Object.keys(obj);
-          for (let value of key){
-           returnArray.push(obj[value])
+  
+          for (let key of Object.keys(obj)){
+            if(!obj[key].permanently_closed){
+              returnArray.push(obj[key])
+            }
           }
         }
         return returnArray.sort(this._sortByCreated);

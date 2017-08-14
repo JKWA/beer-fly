@@ -19,18 +19,23 @@
 
     <style include="beer-button">
 
+      :host {
+        display: block;
+        max-width: 640px;
+        background-color: white;
+      }
 
       wrapper{
          @apply --layout-horizontal;
          @apply --layout-wrap;
       }
 
-        .item {
+      .item {
         margin: 20px;
         padding: 10px;
-        height: 200px
+        height: 200px;
         @apply --layout-horizontal;
-        @apply --layout-center-justified;
+        @apply --layout-center-justified; 
       }
 
       .message {

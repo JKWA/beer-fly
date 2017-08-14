@@ -1,5 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
@@ -9,7 +11,7 @@
 <link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
 <link rel="import" href="beer-menu-edit-item.html">
 <link rel="import" href="beer-icons.html">
@@ -34,6 +36,7 @@
         padding: 10px;
         margin: 10px;
         @apply --paper-material-elevation-0;
+        background-color: white;
       }
       
       .category-titleA{
@@ -58,47 +61,43 @@
       
     </style>
 
-    
-
-    <firebase-document
-        id="menu"
-        app-name="beer"
-        path="organization/[[orgId]]/menu/[[menuCategoryId]]"
-        data="{{category}}">
-    </firebase-document>
+    <firebase-auth id="auth" app-name="beer"></firebase-auth>
 
 
     <div class="card">
 
-        <paper-input 
-            id="categorySortOrder" 
-            class="order"
-            label="Sort Order" 
-            maxlength="2"
-            error-message="1-99"
-            value="{{categorySortOrder}}">
-          <div prefix>#</div>
-        </paper-input>
+      <paper-input 
+          id="categorySortOrder" 
+          class="order"
+          label="Sort Order" 
+          maxlength="2"
+          error-message="1-99"
+          value="{{category.order}}">
+        <div prefix>#</div>
+      </paper-input>
 
-        <paper-input 
-            label="Category Name" 
-            value="{{category.name}}">
-        </paper-input>
+      <paper-input 
+          id="name"
+          label="Category Name" 
+          value="{{categoryName}}">
+      </paper-input>
 
-        <paper-textarea 
-            label="Category Description" 
-            value="{{category.description}}">
-        </paper-textarea>
+      <paper-textarea 
+          id="description"
+          label="Category Description" 
+          always-float-label
+          value="{{description}}">
+      </paper-textarea>
+      
 
-        </div>
+    </div>
 
          <template is="dom-repeat" items="[[_toArray(category.item)]]">
-
-           <beer-menu-edit-item
-            category-id="[[menuCategoryId]]"
+          <beer-menu-edit-item
             org-id="[[orgId]]"
-            menu-id="[[item.id]]">
-           </beer-menu-edit-item>
+            category-id="[[menuCategoryId]]"
+            menu-item = "[[item]]">
+          </beer-menu-edit-item>
          </template>
 
          <iron-label  class="add">
@@ -119,23 +118,41 @@
 
       is: 'beer-menu-edit',
       properties:{
+
         orgId:{
           type: String
         },
+
         category:{
-          type: Object
+          type: Object,
+          computed: '_computeCategory(menu, menuCategoryId)'
         },
 
-        categoryId:{
-          type: String
+        categoryName:{
+          type:String,
         },
+
+        savedCategoryName:String,
+        
+        description:{
+          type:String,
+        },
+
+        savedDescription:String,
 
          categorySortOrder:{
           type: Number
         },
 
+        menu:{
+          type:Object,
+          value: function (){return {};}
+        },
+
         menuCategoryId:{
-          type: String
+          type: String,
+          observer:'_categoryIdChanged'
+          // computed: '_computeCategoryId(category)'
         },
 
         menuId:{
@@ -144,15 +161,115 @@
 
         orgId:{
           type: String
+        },
+
+        _firstLoad:{
+          type:Boolean,
+          value:false
         }
+        
         
       },
 
       observers:[
-                '_watchSortOrderEdit(categorySortOrder)',
-                '_initialSortOrderValue(category.order)'
+                // '_getData(menuCategoryId, orgId)',
+                // '_initialSet(category)'
                 ],
 
+       ready: function (){
+
+        this.$.name.addEventListener('blur', event =>{
+          if(this.savedCategoryName !== this.categoryName){
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/menu/${this.menuCategoryId}`)
+              .update({editName: this.categoryName})
+              .then(()=>{
+                console.log('name save');
+                this.savedCategoryName = this.categoryName;
+              })
+              .catch(error =>{
+                console.log('ERROR', error);
+              })
+          }
+        })
+        
+        this.$.description.addEventListener('blur', event =>{
+          if(this.savedDescription !== this.description){
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/menu/${this.menuCategoryId}`)
+              .update({editDescription: this.description})
+              .then(()=>{
+                console.log('description save');
+                this.savedDescription = this.description;
+              })
+              .catch(error =>{
+                console.log('ERROR', error);
+              })
+          }
+        })
+
+        this.$.categorySortOrder.addEventListener('blur', event =>{
+          var order = parseInt(this.category.order);
+          console.log(order);
+          if(Number.isInteger(order)){
+          firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/menu/${this.menuCategoryId}`)
+            .update({order: order})
+            .then(()=>{
+              console.log('order save');
+            })
+            .catch(error =>{
+              console.log('ERROR', error);
+            })
+          }
+        })
+        
+      },
+
+      _categoryIdChanged: function (newId, oldId){
+        console.log(newId, oldId);
+        if(newId !== oldId){
+          if(this.category){
+            this.categoryName = this.category.name;
+            this.savedCategoryName = this.categoryName;
+            this.description = this.category.description;
+            this.savedDescription = this.description;
+          }
+        }
+      },
+
+      _initialSet: function (category){
+      
+      },
+
+      _computeItem: function (item){
+        if(item){
+          return item
+        }
+        return 
+      },
+
+      _computeCategory: function (menu, menuCategoryId){
+        return menu[menuCategoryId]
+      },
+
+      _getData: function (menuCategoryId, orgId){
+
+      },
+
+      // _getData: function (menuCategoryId, orgId){
+      //   // use once to prevent overwriting of primary value when the edit value changes.
+      
+      //   if(orgId){
+      //     if(menuCategoryId){
+      //       firebase.database(this.$.auth.app).ref(`/organization/${orgId}/menu/${menuCategoryId}`)
+      //         .once('value')
+      //         .then(snap => {
+      //           this.category = snap.val();
+      //           this.categoryName = snap.child('name').val();
+      //           this.description = snap.child('description').val();
+      //         })
+      //     }
+      //   }
+      // },
+      
       _initialSortOrderValue: function (order){
         console.log(order);
           if(order){
@@ -181,20 +298,23 @@
       },
 
       _addMenuItem: function (){
-          var key = this.$.menu.ref.child('item').push().key;
-          var obj = {};
-          obj.id = key;
-          obj.sort = 1;
-          this.$.menu.ref.child('item').child(key).update(obj)
+        var that = this;
+        // console.log(`/organization/${this.orgId}/menu`)
+        var database = firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/menu/${this.menuCategoryId}/item`)
+        var key = database.push().key;
+
+        // console.log(`/organization/${this.orgId}/menu/${key}/item`);
+        var newItem = {id:key, sort:0};
+        
+        database.child(key)
+          .update(newItem)
           .then(function (){
+            that.category.item[key] = newItem;
             console.log('SAVED_NEW_MENU_ITEM');
           }).catch(function (error){
             console.log('SAVED_NEW_MENU_ITEM_ERROR', error);
           })
-
       },
-
- 
 
      _sortOrder: function(a,b){  
       'use strict';

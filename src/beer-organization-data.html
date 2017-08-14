@@ -60,25 +60,25 @@
 
               organization.cacheTimestamp = Date.now()+604800000;
               organization.organization = true;
-              organization.favoriteTotal = 0;
-              organization.favoriteYes = 0;
-              organization.favoriteNo = 0;
-              organization.favoritePercent=null;
+              organization.ratingTotal = 0;
+              organization.ratingYes = 0;
+              organization.ratingNo = 0;
+              organization.ratingPercent=null;
 
             if(snapshot.child('favorite').exists()){
-              snapshot.child('favorite').forEach(favorite =>{
-                organization.favoriteTotal ++
-                // console.log(favorite);
-                if(favorite.child('favorite').val() === 'yes'){
-                  organization.favoriteYes++
-                }else if(favorite.child('favorite').val() === 'no'){
-                  organization.favoriteNo++
+              snapshot.child('favorite').forEach(rating =>{
+                organization.ratingTotal ++
+                // console.log(rating);
+                if(rating.child('rating').val() === 'yes'){
+                  organization.ratingYes++
+                }else if(rating.child('rating').val() === 'no'){
+                  organization.ratingNo++
                 }
 
               })
             }
-            if(organization.favoriteTotal >0){
-              organization.favoritePercent = Math.round((organization.favoriteYes/organization.favoriteTotal)*1000)/10;
+            if(organization.ratingTotal > 0){
+              organization.ratingPercent = Math.round((organization.ratingYes/organization.ratingTotal)*1000)/10;
             }
 
             this.organization = organization;

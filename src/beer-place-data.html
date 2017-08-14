@@ -120,6 +120,10 @@
                       result.open='closed'
                     }
                   }
+                  if(result.permanently_closed){
+                    result.open="permanently closed"
+                  }
+                  
                   result.cacheTimestamp = Date.now();
                   if(result.geometry){
                     if(result.geometry.location){

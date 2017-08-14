@@ -1,0 +1,429 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html"> 
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">  
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html"> 
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-slider/paper-slider.html"> 
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/paper-swatch-picker/paper-swatch-picker.html"> 
+
+
+
+<link rel="import" href="beer-icons.html">
+
+
+
+<dom-module id="beer-account-frame">
+
+<template strip-whitespace>
+
+   <style include="paper-material-styles">
+
+    a{
+      text-decoration: none;
+    }
+
+   .flip{
+      -webkit-transform: scale(1, -1);
+      transform: scale(1, -1);
+    }
+
+    .frame{
+      margin: 20px 0;
+    }
+
+    .card {
+      padding: 12px;
+      margin: 10px;
+      @apply --paper-material-elevation-1;
+      background-color: white;
+    }
+    
+    .directions{
+      font-size: 1em;
+      font-weight: 300;
+      color: var(--app-primary-color);
+
+    }  
+
+    .wrapper{
+      @apply --layout-horizontal;
+      @apply --layout-justified;
+      @apply --layout-wrap;
+      /* border-top: 1px solid var(--app-line-color); */
+      border-bottom: 1px solid var(--app-line-color);
+      margin: 10px;
+      padding: 10px 5px;
+    }
+
+    .color-wrapper{
+      @apply --layout-horizontal;
+      @apply --layout-justified;
+      /* @apply --layout-wrap; */
+      width: 150px;
+    }
+
+    .frame-directions{
+      font-size: 1em;
+      font-weight: 500;
+      color: var(--app-primary-color);
+      margin: 10px 0;
+    }
+
+    .frame-link{
+      font-size: .8em;
+      font-weight: 300;
+      color: var(--app-secondary-color);
+      background-color: var(--app-shadow-color);
+      margin: 10px 0;
+      padding: 10px;
+      word-wrap:break-word;
+    }
+
+    .header{
+      font-size: 1em;
+      font-weight: 300;
+      color: var(--app-primary-color);
+      cursor:pointer;
+    }
+
+    .label{
+      font-size: .8em;
+      font-weight: 300;
+      color: var(--app-secondary-color);
+    }
+
+
+  </style> 
+
+    <app-localstorage-document 
+        key="frameBackgroundColor" 
+        data="{{backgroundColor}}">
+    </app-localstorage-document>
+
+    <app-localstorage-document 
+        key="framePrimaryColor" 
+        data="{{primaryColor}}">
+    </app-localstorage-document>
+
+    <app-localstorage-document 
+        key="frameAccentColor" 
+        data="{{accentColor}}">
+    </app-localstorage-document>
+
+    <app-localstorage-document 
+        key="frameAbv" 
+        data="{{abv}}">
+    </app-localstorage-document>
+
+    <app-localstorage-document 
+        key="frameDescription" 
+        data="{{description}}">
+    </app-localstorage-document>
+
+    <app-localstorage-document 
+        key="frameSize" 
+        data="{{size}}">
+    </app-localstorage-document>
+
+    <app-localstorage-document 
+        key="frameHeight" 
+        data="{{height}}">
+    </app-localstorage-document>
+
+    <app-localstorage-document 
+        key="frameReturnType" 
+        data="{{returnType}}">
+    </app-localstorage-document>
+
+    <app-localstorage-document 
+        key="frameReturnQuery" 
+        data="{{returnQuery}}">
+    </app-localstorage-document>  
+
+    
+
+   <div class="frame"> 
+ 
+    <iron-label>
+      <paper-icon-button class$="[[toggleClass]]" icon="beer-icons:expand-more" on-tap="_toggle"></paper-icon-button>
+      <span class="header">Add Beer-Fly's taplist and beer information to your site.</span>
+    </iron-label>
+    
+    <iron-collapse opened="[[toggle]]">
+
+      <div class="card">
+
+        
+        <div class="wrapper">
+          <paper-dropdown-menu no-label-float dynamic-align label="Select a Beer-Crawl">
+            <paper-listbox 
+              attr-for-selected="query"
+              slot="dropdown-content" 
+              selected="{{returnQuery}}">
+              <paper-item query="getBeers">Beer List</paper-item>
+              <paper-item query="getOnTap">Tap List</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+
+          <paper-dropdown-menu no-label-float dynamic-align label="Select a Beer-Crawl">
+            <paper-listbox 
+              attr-for-selected="type"
+              slot="dropdown-content" 
+              selected="{{returnType}}">
+              <paper-item type="HTML">Return HTML</paper-item>
+              <paper-item type="JSON">Return JSON</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+
+        </div>
+
+        <div hidden$="[[json]]">
+          <div class="directions">Change settings to match your site</div>
+
+         <div class="wrapper">
+          <div class="color-wrapper">
+            <paper-swatch-picker color="{{backgroundColor}}"></paper-swatch-picker>
+            <paper-input label="Background Color" value="{{backgroundColor}}"></paper-input>
+          </div>
+          <div class="color-wrapper">
+            <paper-swatch-picker color="{{primaryColor}}"></paper-swatch-picker>
+            <paper-input label="Primary Color" value="{{primaryColor}}"></paper-input>
+          </div>
+          <div class="color-wrapper">
+            <paper-swatch-picker color="{{accentColor}}"></paper-swatch-picker>
+            <paper-input label="Accent Color" value="{{accentColor}}"></paper-input>
+          </div>
+        </div> 
+
+        <div class="wrapper">
+          <iron-label>
+            <span class="label">Text size</span>
+            <paper-slider min="10" max="200" value="{{size}}"></paper-slider>
+          </iron-label>
+          <iron-label>
+            <span class="label">Height</span>
+            <paper-slider min="200" max="1200" value="{{height}}"></paper-slider>
+          </iron-label>
+        </div>
+        <div class="wrapper">
+          <iron-label>
+            <paper-checkbox checked={{abv}}></paper-checkbox>
+            <span class="label">Include ABV</span>
+          </iron-label>
+          <iron-label>
+            <paper-checkbox checked={{description}}></paper-checkbox>
+            <span class="label">Include Description</span>
+          </iron-label>
+        </div>
+      </div>
+        
+          
+        <div class="frame-link">
+          <div hidden$="[[json]]">
+          &lt<span>iframe width="100%" 
+                  frameBorder="0" height="[[height]] px"
+                  src="[[sourceUrl]]"</span>&gt
+          &lt<span>/iframe</span>&gt 
+          </div>
+          <div hidden$="[[!json]]">[[sourceUrl]]</div>
+
+        </div>
+        <div class="frame-directions">[[typeMessage]]</div>
+
+        <iframe width="100%" frameBorder="0" height="[[height]] px" src="[[sourceUrl]]">
+
+        </iframe>
+
+      </div>
+    
+    </iron-collapse>
+   <div>  
+   
+        
+      
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-account-frame',
+
+      properties: {
+
+        backgroundColor:{
+          type:String,
+          value:'',
+          notify:true
+        },
+
+        primaryColor:{
+          type:String,
+          value:'',
+          notify:true
+        },
+
+        accentColor:{
+          type:String,
+          value:'',
+          notify:true
+        },
+
+        size:{
+          type:Number,
+          value:100,
+          notify:true
+        },
+
+        height:{
+          type:Number,
+          value:200,
+          notify:true
+        },
+
+        json:{
+          type:Boolean,
+          value:false
+        },
+
+        placeId:String,
+
+        abv:{
+          type:Boolean,
+          value:false
+        },
+
+        description:{
+          type:Boolean,
+          value:false
+        },
+
+        typeMessage:{
+          type:String,
+          computed: '_computeTypeMessage(json)'
+        },
+
+        returnType:{
+          type:String,
+          value:'HTML'
+        },
+
+        returnQuery:{
+          type:String,
+          value:'getBeers'
+        },
+
+        toggle:{
+          type:Boolean,
+          value:false
+        },
+
+        toggleClass:{
+          type:String
+        },
+
+        sourceUrl:{
+          type:String,
+          computed:'_computeSourceUrl(backgroundColor, primaryColor, accentColor, size, placeId, abv, description, json, returnQuery)'
+        },
+
+        frameHtml:{
+          type:String,
+          computed: '_computeFrameHtml(sourceUrl)'
+        }
+        
+      },
+
+      observers:[
+                '_watchReturnType(returnType)'
+              ],
+      
+      
+      _watchReturnType: function (returnType){
+        if(returnType){
+          if(returnType === 'JSON'){
+            return this.json = true;
+          }
+        }
+        return this.json = false;
+      },
+
+      _computeSourceUrl: function (backgroundColor, primaryColor, accentColor, size, placeId, abv, description, json, returnQuery){
+        let params = [`orgid=${placeId}`];
+
+        if(json){
+          params.push(`json=true`);
+        }else{
+
+          if(abv){
+            params.push(`abv=true`);
+          }
+          
+          if(description){
+            params.push(`description=true`);
+          }
+
+          if(backgroundColor){
+            params.push(`backgroundColor=${encodeURIComponent(backgroundColor)}`);
+          }
+          if(primaryColor){
+            params.push(`primaryColor=${encodeURIComponent(primaryColor)}`);
+          }
+          if(accentColor){
+            params.push(`accentColor=${encodeURIComponent(accentColor)}`);
+          }
+          if(backgroundColor){
+            params.push(`size=${size}`);
+          }
+        }
+
+        if(params.length >0){
+          return `https://us-central1-beer-fly.cloudfunctions.net/${returnQuery}?${params.join('&')}`
+        }
+
+        return null;
+        
+      },
+
+
+      _computeFrameHtml: function (sourceUrl){
+        if(sourceUrl){
+          return `<iframe width="100%" frameBorder="0" src="${sourceUrl}"></iframe>`
+        }
+      },
+
+      _computeTypeMessage: function (json){
+        if(json){
+          return 'This url will return the json file below.'
+        }
+        return 'This html snippet will display the taplist below'
+      },
+
+      _toggle: function (){
+        this.toggle = !this.toggle;
+        if(this.toggle){
+          this.toggleClass = 'flip'
+        }else{
+          this.toggleClass = '';
+        }
+      },
+
+     
+      
+
+      _test: function(obj){
+          console.log(obj);
+
+      }
+
+    });
+
+  </script>
+
+</dom-module>

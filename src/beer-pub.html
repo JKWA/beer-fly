@@ -1,4 +1,4 @@
-
+<!-- TODO update crawl with public status changes -->
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
@@ -25,14 +25,10 @@
 <link rel="import" href="beer-contact-card.html">
 <link rel="import" href="beer-hours-card.html">
 <link rel="import" href="beer-review-card-mini.html">
-<!-- <link rel="import" href="beer-rating-card.html"> -->
 <link rel="import" href="beer-beer-card-mini.html">
-<!-- <link rel="import" href="beer-pub-favorite.html"> -->
-<!-- <link rel="import" href="beer-pub-rating.html"> -->
 <link rel="import" href="beer-foodtruck-schedule.html">
 <link rel="import" href="beer-banner.html">
-
-
+ <link rel="import" href="beer-pub-banner.html"> 
 
 
 <link rel="import" href="beer-button.html">
@@ -46,77 +42,13 @@
       :host {
         display: block;
         max-width: 640px;
+        background-color: white;
+
       }
       
       a{
         text-decoration: none;
       }
-
-      .info-banner{
-        @apply --layout-horizontal; 
-        @apply --layout-justified;
-        @apply --layout-wrap;
-      }
-
-      .banner-item{
-        @apply --layout-flex-auto;
-        @apply --layout-horizontal; 
-        @apply --layout-justified;
-        border-top: 1px solid var(--app-line-color);
-        border-bottom: 1px solid var(--app-line-color);
-      }
-
-      .divider{
-        width:1px;
-        margin: 30px 0; 
-        background-color:var(--app-line-color);  
-        border-top: 1px solid var(--app-line-color);
-        border-bottom: 1px solid var(--app-line-color);
-      }   
-
-      .info-item-wrapper{
-        padding:10px;
-        height:80px;
-        @apply --layout-vertical;
-      }
-
-      .info-icon{
-        color: var(--app-accent-color);
-        text-align: center;
-      }
-
-      .info-nonicon{
-        color: var(--app-accent-color);
-        font-size: 1em;
-        font-weight: 500;
-        margin: 11px 0;
-        text-align: center;
-      }
-
-      .info-label{
-        color: var(--app-accent-color);
-        font-size: .8em;
-        font-weight: 300;
-        @apply --layout-flex-auto;
-        text-align: center;
-      }
-
-      .open{
-        text-transform: uppercase
-      }
-
-      /* .favorite{
-         @apply --layout-horizontal; 
-         @apply --layout-center-justified;
-         @apply --layout-flex-auto;
-         min-width: 100px;
-      } */
-
-       .favorite-icon{
-        color: var(--app-secondary-color);
-        text-align: center;
-      }
-
 
       .icon{
         @apply --layout-horizontal;
@@ -139,12 +71,8 @@
          @apply --layout-vertical;         
       }
 
-      
-
       .category-wrapper{
-
         @apply --layout-vertical; 
-         
       }
 
       .category{
@@ -152,7 +80,6 @@
         @apply --layout-center-justified;
         border-top: 1px solid var(--app-line-color);        
         padding:20px 0;
-
       }
 
       .category-item{
@@ -161,7 +88,6 @@
         @apply --layout-center-justified;
         display: block;
         text-decoration: none;
-        /*text-align: center;*/
         margin-bottom: 40px;
       }
 
@@ -169,9 +95,7 @@
         @apply --layout-horizontal;
         @apply --layout-wrap;
         @apply --layout-center-justified;
-        
         text-decoration: none;
-        /*text-align: center;*/
         margin: 20px 0 0 0;
       }
 
@@ -248,119 +172,29 @@
 
  
     <div hidden="[[!online]]">
+
       <beer-banner
         google-photo="[[place.photos]]"
         photo-index="0"
         photo="[[organization.mainImage]]"
         org-id="[[orgId]]">
       </beer-banner>
+
     </div>
 
 
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
     
-    <div class="info-banner" >
-      <template is="dom-if" if="[[place.rating]]">
-          <div class="banner-item">
-            <div></div>
-            <div class="info-item-wrapper">
-              <div class="info-nonicon"> [[place.rating]]/5</div>
-              <div class="info-label">Google users</div>
-            </div>
-            <div class="divider"></div>  
-        </div>
-      </template>
+     <beer-pub-banner
+      organization="[[organization]]"
+      place="[[place]]"
+      user-data="[[userData]]"
+      place-id="[[orgId]]"
+      open-crawl="{{pubDialogOpened}}"
+      edit>
+    </beer-pub-banner> 
 
-      <template is="dom-if" if="[[organization.favoritePercent]]">
-        <div class="banner-item">
-          <div></div>
-          <div class="info-item">
-            <div class="info-item-wrapper">
-              <div class="info-nonicon"> [[organization.favoritePercent]]%</div>
-              <div class="info-label">Beer-Fly</div>
-            </div>
-          </div>
-          <div class="divider"></div> 
-        </div>
-      </template>
-
-      <div class="banner-item">
-        <div></div>
-        <div class="info-item-wrapper">
-          <div class="favorite-icon"> 
-            <paper-icon-button id="favoriteButton" icon="beer-icons:thumb-up" on-tap="_toggleFavorite"></paper-icon-button>
-          </div>
-          <div class="info-label">Like</div>
-        </div>
-
-        <div class="info-item-wrapper">
-          <div class="favorite-icon"> 
-            <paper-icon-button id="notFavoriteButton" icon="beer-icons:thumb-down" on-tap="_toggleNotFavorite"></paper-icon-button>
-          </div>
-          <div class="info-label">Don't Like</div>
-        </div>
-        <div class="divider"></div> 
-      </div>
-
-      <template is="dom-if" if="[[_showIcons]]">
-
-        <div class="banner-item">
-          <div></div>
-          <template is="dom-if" if="[[dogs]]">
-              <div class="info-item-wrapper">
-                <div class="info-icon"> 
-                  <paper-icon-button icon="beer-icons:dogs"></paper-icon-button>
-                </div>
-                <div class="info-label">Dog Friendly</div>
-              </div>
-            </template>
-
-            <template is="dom-if" if="[[patio]]">
-              <div class="info-item-wrapper" hidden$="[[!patio]]">
-                <div class="info-icon"> 
-                  <paper-icon-button icon="beer-icons:patio"></paper-icon-button>
-                </div>
-                <div class="info-label">Patio</div>
-              </div>
-            </template>
-
-            <template is="dom-if" if="[[over21]]">
-              <div class="info-item-wrapper" hidden$="[[!over21]]">
-                <div class="info-nonicon">+21</div>
-                <div class="info-label">Over 21</div>
-              </div>
-            </template>
-            <div class="divider"></div> 
-        </div>
-      </template>
-
-      <div class="banner-item">
-        <div></div>
-        <div class="info-item">
-          <div class="info-item-wrapper">
-            <div class="info-icon"> 
-              <paper-icon-button icon="beer-icons:crawl" on-tap="_openEditPubDialog"></paper-icon-button>
-            </div>
-            <div class="info-label">Beer-Crawl</div>
-          </div>
-        </div>
-        <div class="divider"></div> 
-      </div>
-
-      <div class="banner-item">
-        <div></div>
-        <div class="info-item">
-          <div class="info-item-wrapper">
-            <div class="info-nonicon open">[[place.open]]</div>
-            <div class="info-label">Currently Open/Closed</div>
-          </div>
-        </div>
-        <div></div> 
-      </div>
-
-
-
-    </div>
+    
 
     <div class="motto">[[organization.motto]]</div>
 
@@ -372,15 +206,17 @@
 
       <div class="category-item-wrapper">
 
-        <div class="hours-wrapper">
-          <div>
-            <div class="category-title">Hours</div>
-            <beer-hours-card 
-                class=" category-item"
-                place="[[place]]">
-            </beer-hours-card>
+        <template is="dom-if" if="[[place.opening_hours]]">
+          <div class="hours-wrapper">
+            <div>
+              <div class="category-title">Hours</div>
+              <beer-hours-card 
+                  class=" category-item"
+                  place="[[place]]">
+              </beer-hours-card>
+            </div>
           </div>
-        </div>
+        </template>
 
         <template is="dom-repeat" items="[[categories]]" strip-whitespace>
           
@@ -480,17 +316,20 @@
           
         </template>
 
-        <div class="crawl-wrapper">
-          <div class="category-title">Beer-Crawls</div>
-          <template is="dom-repeat" items="[[allCrawls]]" as="crawl">
-            <a href="/[[nameUrl]]/crawl[[returnParams]]&crawlId=[[crawl.crawl_id]]">
-            <div class="crawl-item">
-              <div class="crawl-name">[[crawl.name]]</div>
-              <div class="crawl-description">[[crawl.description]]</div>
-            </div>
-            </a>
-          </template>
-        </div>
+        <template is="dom-if" if="[[organization.crawl]]">
+          <div class="crawl-wrapper">
+            <div class="category-title">Beer-Crawls</div>
+            <template is="dom-repeat" items="[[allCrawls]]" as="crawl" observe="public" filter="_filterCrawl">
+              <a href="/[[nameUrl]]/crawl[[returnParams]]&crawlId=[[crawl.crawl_id]]">
+              <div class="crawl-item">
+                <div>[[crawl.public]]</div>
+                <div class="crawl-name">[[crawl.name]]</div>
+                <div class="crawl-description">[[crawl.description]]</div>
+              </div>
+              </a>
+            </template>
+          </div>
+        </template>
         
       </div>
 
@@ -508,30 +347,20 @@
 
     </beer-dialog>
 
-
-     <paper-dialog 
-        id="editDialog"
-        with-backdrop
-        style="width: 90vw;"
-        entry-animation="slide-from-right-animation"
-        exit-animation="slide-right-animation">
+    <beer-dialog 
+      id="editDialog"
+      entry-animation="slide-from-bottom-animation"
+      exit-animation="slide-down-animation"
+      with-backdrop>
             
-      <div> 
-          <h3>[[organization.name]]</h3>
-      </div>
-      <paper-dialog-scrollable>
         <beer-pub-edit 
           org-id="[[orgId]]"
           name-url="[[nameUrl]]" 
-          owner="[[owner]]">
+          owner="[[owner]]"
+          organization="[[organization]]">
         </beer-pub-edit>
-      </paper-dialog-scrollable>
+    </beer-dialog>
      
-
-      <div>
-        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
-      </div>
-    </paper-dialog>
 
   </template>
   
@@ -555,7 +384,8 @@
         },
 
         organization:{
-          type: Object
+          type: Object,
+          value: function (){return {};}
         },
 
         categoryKey:{
@@ -580,30 +410,6 @@
           notify: true
         },
 
-        dogs:{
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,
-          computed: '_computeIcon(organization.dogFriendly)',
-        },
-
-        patio:{
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,
-          computed: '_computeIcon(organization.patio)',
-        },
-        
-        over21:{
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,
-          computed: '_computeIcon(organization.over21)',
-        },
-
-        favorite:{
-          type:String,
-        },
 
         returnParams:{
           type:String
@@ -657,204 +463,63 @@
           type: Object
         },
 
+        // _hasCrawls:{
+        //   type:Boolean,
+        //   value:false,
+        //   computed:'_computeHasCrawls(organization.crawls)'
+        // }
 
-        _showIcons:{
-          type:Boolean,
-          value:false,
-          computed:"_computeShowIcons(organization)"
-        }
+
+        // _showIcons:{
+        //   type:Boolean,
+        //   value:false,
+        //   computed:"_computeShowIcons(organization)"
+        // }
       },
 
       observers:['_addNewOrg(place, user)',
                   '_closeLocation(permenentlyClosed)',
-                  '_watchFavorite(favorite)',
-                  '_watchFavoriteData(userData.favoriteOrganization, place.place_id)',
-                  '_watchForCrawls(organization.crawl)'          
+                  // '_watchForCrawls(organization.crawl)'          
                   ],
 
       ready: function (){
         var body = document.querySelector('body');
           Polymer.dom(body).appendChild(this.$.pubDialogEditor);
-       
+          Polymer.dom(body).appendChild(this.$.editDialog);
         // this.$.pubDialogEditor.open()
       },
 
-      _watchForCrawls: function (crawl){
-        var that = this;
-        console.log(crawl);
-        this.splice('allCrawls', 0, this.allCrawls.length);
-        this.set('crawlObj', {});
+      // _watchForCrawls: function (crawl){
+      //   var that = this;
+      //   console.log(crawl);
+      //   this.splice('allCrawls', 0, this.allCrawls.length);
+      //   this.set('crawlObj', {});
         
-        // if(placeId){
-        if(typeof crawl === 'object'){
-          for (let key of Object.keys(crawl)){
-            firebase.database(this.$.auth.app).ref(`/crawl/${key}`)
-              .on('value', snapshot =>{
+      //   // if(placeId){
+      //   if(typeof crawl === 'object'){
+      //     for (let key of Object.keys(crawl)){
+      //       firebase.database(this.$.auth.app).ref(`/crawl/${key}`)
+      //         .on('value', snapshot =>{
                 
-                if(snapshot.child('public').exists() && !snapshot.child('deleted').exists()){
-                  var crawlObj = snapshot.val();
-                  crawlObj.crawl_id = snapshot.key;
-                  if(!that.crawlObj[snapshot.key]){
-                    console.log('push',crawlObj);
-                    var position = that.push('allCrawls', crawlObj);
-                    that.set(`crawlObj.${snapshot.key}`, {position:position});
-                  }else{
-                    that.set(`allCrawls.${that.crawlObj[snapshot.key].position-1}`, crawlObj);
-                    console.log('set',crawlObj);
-                  }
-                }
-              })
-          }
-        }
-        //   firebase.database(this.$.auth.app).ref(`/crawl`)
-        //     .orderByChild('organization').equalTo(placeId)
-        //     .on('value', snapshot =>{
-        //       if(!snapshot.exists()){
-        //         return that.splice("allCrawls", 0, that.allCrawls.length);
-        //       }
+      //           if(snapshot.child('public').exists() && !snapshot.child('deleted').exists()){
+      //             var crawlObj = snapshot.val();
+      //             crawlObj.crawl_id = snapshot.key;
+      //             if(!that.crawlObj[snapshot.key]){
+      //               console.log('push',crawlObj);
+      //               var position = that.push('allCrawls', crawlObj);
+      //               that.set(`crawlObj.${snapshot.key}`, {position:position});
+      //             }else{
+      //               that.set(`allCrawls.${that.crawlObj[snapshot.key].position-1}`, crawlObj);
+      //               console.log('set',crawlObj);
+      //             }
+      //           }
+      //         })
+      //     }
+      //   }
+ 
+      // },
 
-        //       snapshot.forEach(crawl =>{
-        //         var crawlObj = crawl.val();
-        //         crawlObj.crawl_id = crawl.key;
-                
-        //         that.push('allCrawls', crawlObj);
-        //       })
-        //     })
-        // }
-      },
-
-      _watchFavoriteData:function (favorite, placeId){
-
-        if(favorite && placeId){
-          if(favorite[placeId]){
-            this.userFavorite = favorite[placeId].favorite;
-            if(this.userFavorite === 'yes'){
-              this.$.favoriteButton.style.color = 'green';
-              this.$.notFavoriteButton.style.color=null;
-            }else if (this.userFavorite === 'no'){
-              this.$.favoriteButton.style.color = null;
-              this.$.notFavoriteButton.style.color='red';
-            }
-            else{
-              this.$.favoriteButton.style.color = null;
-              this.$.notFavoriteButton.style.color=null;
-            }
-          }else{
-            this.userFavorite = null;
-            this.$.favoriteButton.style.color = null;
-            this.$.notFavoriteButton.style.color=null;
-          }
-           
-        }else{
-          this.userFavorite = null;
-          this.$.favoriteButton.style.color = null;
-          this.$.notFavoriteButton.style.color=null;
-        }
-        
-
-          // console.log(this.userFavorite);
-          // this.favorite = this.userFavorite
-
-      },
-
-      _watchFavorite:function (favorite){
-        console.log('favorite', favorite)
-        console.log('user', this.userFavorite);
-        var update = false;
-        if(favorite){
-          update = true;
-        }
-        if(favorite === this.userFavorite){
-          update = false;
-        }
-
-        if(this.user){
-          if(this.place){
-            if(this.place.place_id){
-              
-              
-              if(update){
-                var obj={
-                  created: Math.round(Date.now()/1000),
-                  name:this.place.name,
-                  place_id:this.place.place_id,
-                  favorite:this.favorite,
-                  vicinity:this.place.vicinity,
-                  latitude:this.place.latitude,
-                  longitude:this.place.longitude
-                };
-
-                firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.place.place_id}`)
-                  .update(obj)
-                  .then(() =>{
-                    console.log('Updated Favorite');
-                  })
-                  .catch(error =>{
-                    console.log('FAVORITE_ERROR', error)
-                  })
-              
-          
-
-              }else{
-                firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.place.place_id}`)
-                  .remove()
-                  .then(() =>{
-                    console.log('Removed from favorite');
-                    
-                  })
-                  .catch(error =>{
-                    console.log('FAVORITE_DELETE_ERROR', error)
-                  })
-              }
-            }
-          }
-
-        }else{
-          this.login = true;
-        }
-      },
-
-      _toggleFavorite: function(){
-        if(this.user){
-          if (this.favorite === 'yes'){
-            this.favorite = null;
-          }else{
-            this.favorite = 'yes'
-          }
-        }else{
-          this.login = true;
-        }
-      },
-
-      _toggleNotFavorite: function(){
-        if(this.user){
-          if (this.favorite === 'no'){
-            this.favorite = null;
-          }else{
-            this.favorite = 'no'
-          }
-        }else{
-          this.login = true;
-        }
-      },
-
-
-      _computeShowIcons: function (organization){
-        // console.log('show test', organization)
-        if(organization){
-          if(organization.dogFriendly){
-            return true;
-          }
-          if(organization.patio){
-            return true;
-          }
-          if(organization.over21){
-            return true;
-          }
-        }
-        return false;
-      },
-
+     
       _addNewOrg: function (place, user){
         if(user){
           if(user.emailVerified){
@@ -939,8 +604,8 @@
         'use strict';
         // console.log('tapped');
         if(this.user){
-          var body = document.querySelector('body');
-          Polymer.dom(body).appendChild(this.$.editDialog);
+         
+          
           this.$.editDialog.open();
         }
       },
@@ -1031,6 +696,13 @@
           return false;
         }
 
+      },
+
+      _filterCrawl: function (crawl){
+        if(crawl.public){
+          return true
+        }
+        return false;
       },
 
       _sortOrder: function(a,b){

@@ -46,8 +46,8 @@
 <link rel="import" href="beer-home.html">
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-place-data.html">
-<link rel="import" href="beer-tabs.html">
-<link rel="import" href="beer-tab.html">
+<!-- <link rel="import" href="beer-tabs.html">
+<link rel="import" href="beer-tab.html"> -->
 
 <!--lazyload-->
 <!--<link rel="import" href="beer-login.html">-->
@@ -60,8 +60,9 @@
       :host {
         display: block;
         position: relative;
-        /*padding-top: 64px;*/
+        /* padding-top: 64px; */
         /*padding-bottom: 64px;*/
+        /* margin-top: 64px; */
         min-height: 90vh;
         --app-primary-color: #303030;
         --app-secondary-color: #757575;
@@ -69,13 +70,19 @@
         --app-selected-color: #F07310;
         --app-shadow-color: #F8F8F8;
         --app-line-color: #DBDBDB;
+        --app-background-color: #fafafa;
         --paper-button-ink-color: var(--app-accent-color);
+        --paper-checkbox-checked-color: var(--app-accent-color);
         --paper-icon-button-ink-color: var(--app-accent-color);
+        --paper-slider-active-color: var(--app-accent-color);
+        --paper-slider-knob-color: var(--app-accent-color);
         --paper-spinner-color: var(--app-accent-color);
+
         --paper-tab-ink: var(--app-secondary-color);
         --paper-tabs-selection-bar-color: var(--app-accent-color);
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         color: var(--app-primary-color);
+        background-color: var(--app-background-color);;
         
       }
 
@@ -152,8 +159,9 @@
 
       app-drawer{
         --app-drawer-content-container: {
-          border: 1px solid var(--app-secondary-color);
-          background-color: #F8F8F8;
+          border: 1px solid var(--app-shadow-color);
+          background-color: var(--app-background-color);
+          @apply --paper-material-elevation-1;
         };
       }
 
@@ -195,7 +203,8 @@
         @apply --layout-horizontal;
         @apply --layout-start-justified;
         padding: 7px;
-        background-color: #F8F8F8;
+        /* background-color: #F8F8F8; */
+        background-color:white;
       }
 
       .login-box{
@@ -217,11 +226,16 @@
         font-weight: 300;
         color: var(--app-primary-color);
         margin: 0 10px;
+        
       }
 
-      app-drawer {
+      /* app-drawer {
         z-index: 3;
-      }
+        --app-drawer-content-container: {
+          border: none;
+          background-color: white;
+        }
+      } */
 
       iron-pages {
         max-width: 640px;
@@ -230,6 +244,7 @@
 
       .main-content{
         min-height: 75vh;
+        /* margin-top: 200px; */
       }
 
       .footer {
@@ -261,14 +276,20 @@
         }
 
         app-drawer{
+
         --app-drawer-content-container: {
           border: none;
           background-color: white;
+          
         };
       }
 
         :host([page=detail]) .menu-btn {
           display: none;
+        }
+
+        .login-wrapper{
+          background-color:var(--app-shadow-color);
         }
       }
 
@@ -313,7 +334,7 @@
       data="{{userData}}">
   </firebase-document>
 
-  <firebase-query
+   <firebase-query
     app-name="beer"
     id="crawlData"
     order-by-child="user_id"
@@ -321,16 +342,13 @@
     disabled
     path="crawl"
     data="{{crawlData}}">
-  </firebase-query>
-
+  </firebase-query> 
 
   <beer-place-data
     place-id="[[orgId]]"
     online="[[online]]"
     data="{{place}}">
   </beer-place-data>
-
-  
 
   <beer-organization-data
       org-id="[[orgId]]"
@@ -389,7 +407,7 @@
 
   <app-header-layout>
     <app-header fixed slot="header">
-      <app-toolbar>
+      <app-toolbar >
         <div class="left-bar-item">
           <div id="homeButton">
             <paper-icon-button class="menu-btn" icon="beer-icons:menu" drawer-toggle alt="Toggle drawer">
@@ -422,13 +440,12 @@
           <beer-tv name="tv" organization="[[organization]]" place="[[place]]" org-id="[[orgId]]" offline="[[offline]]" owner="[[owner]]"></beer-tv>
           <beer-favorite-beer name="favorite-beer" location="[[location]]" offline="[[offline]]"></beer-favorite-beer>
           <beer-favorite-brewery name="favorite-brewery" user-data="[[userData]]" crawl-data="[[crawlData]]" offline="[[offline]]"></beer-favorite-brewery>
-          <beer-favorite-pub name="favorite-pub" offline="[[offline]]"></beer-favorite-pub>
           <beer-favorite-crawl name="favorite-crawl" offline="[[offline]]"></beer-favorite-crawl>
 
           <beer-review name="review" organization="[[organization]]" place="[[place]]" category=[[organization.category.REVIEW]] org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-review>
           
           <beer-menu name="menu" category=[[organization.category.MENU]] organization="[[organization]]" menu-item-id="[[menuItemId]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-menu>
-          <beer-menu-edit name="menu-edit" org-id="[[orgId]]" menu-category-id="[[menuCategoryId]]" online="[[online]]" owner="[[owner]]"></beer-menu-edit>
+          <beer-menu-edit name="menu-edit" org-id="[[orgId]]" menu-category-id="[[menuCategoryId]]" menu="[[organization.menu]]" organization = "[[organization]]" online="[[online]]" owner="[[owner]]"></beer-menu-edit>
           <beer-foodtruck name="foodtruck" truck-id="[[truckId]]" category=[[organization.category.FOOD_TRUCK]] organization="[[organization]]" place="[[place]]" name-url="[[nameUrl]]" org-id="[[orgId]]" online="[[online]]" owner="[[owner]]"></beer-foodtruck>
           <beer-foodtruck-edit name="foodtruck-edit" org-id="[[orgId]]" name-url="[[nameUrl]]" organization="[[organization]]" online="[[online]]" owner="[[owner]]"></beer-foodtruck-edit>
 
@@ -474,13 +491,13 @@
             <div>Verification sent to [[user.email]]</div>
             <div>Please refresh the app after verifying.</div>
         </paper-toast>
-
       </div>
-          <div class="footer">
-            <div class= "footer-item">
-              <iron-image src="/images/powered_by_google_on_non_white.png"></iron-image>
-            </div>
-          </div>
+
+      <div class="footer">
+        <div class= "footer-item">
+          <iron-image src="/images/powered_by_google_on_non_white.png"></iron-image>
+        </div>
+      </div>
       
 
     </app-header-layout>
@@ -553,7 +570,8 @@
         },
 
         crawlData:{
-          type:Array
+          type:Array,
+          value: function (){return [];}
         },
 
         drawerOpened:{
@@ -757,6 +775,7 @@
         '_updatePageTitle(place.name, page)',
         '_scrollToTop(page)',
         '_watchUser(user)'
+        // '_getCrawlData(user)'
       ],
 
      
@@ -795,8 +814,26 @@
         }
       },
 
-  
-
+      _getCrawlData: function (user){
+        let that = this;
+        if(user){
+          if(user.uid){
+            firebase.database(this.$.auth.app).ref(`/crawl`)
+              .orderByChild(user_id).equalTo(user.uid)
+              .on('value', snapshot =>{
+                if(!shapshot.exists()){
+                  this.crawlData = [];
+                }else{
+                  if(!snapshot.child('deleted').exists){
+                    let obj = snapshot.val();
+                    obj.$key = snashot.key;
+                    that.push(`crawlData`, obj)
+                  }
+                }
+              })
+          }
+        }
+      },
  
       _scrollToTop: function (page){
         Polymer.AppLayout.scroll({ top: 0, behavior: 'silent' });
@@ -918,9 +955,6 @@
                  }else if(thirdRoute === 'brewery'){
                    page='favorite-brewery';
                    returnPage='favorite';
-                 }else if(thirdRoute === 'pub'){
-                   page='favorite-pub';
-                   returnPage='favorite';
                   }else if(thirdRoute === 'crawl'){
                    page='favorite-crawl';
                    returnPage='favorite';
@@ -994,9 +1028,6 @@
                    returnPage='favorite';
                  }else if(thirdRoute === 'brewery'){
                    page='favorite-brewery';
-                   returnPage='favorite';
-                 }else if(thirdRoute === 'pub'){
-                   page='favorite-pub';
                    returnPage='favorite';
                  }else{
                    page = 'favorite';

@@ -1,0 +1,115 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+<dom-module id="beer-menu-category-delete">
+
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
+
+      :host {
+        display: block;
+      }
+      
+      .delete-wrapper{
+        margin:10px;
+        height: 50vh;
+        @apply --layout-vertical;
+        @apply --layout-justified;
+
+      }
+
+      .delete-name{
+        font-size: 1.5em;
+        font-weight: 500;
+        color: var(--app-accent-color);
+      }
+
+      .delete-message{
+        font-size: 1em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+        margin: 20px 0;
+        @apply --layout-flex-10;
+      }
+
+      .delete-message-button{
+        width:100%;
+        color: white;
+        background-color: red;
+      }
+
+
+    </style>
+
+    <firebase-auth  
+        app-name="beer" 
+        id="auth"
+        user="{{user}}">
+    </firebase-auth>
+
+
+    <div class="delete-wrapper">
+      <div class="delete-name">[[category.name]]</div>
+      <div class="delete-message">
+        Delete category and all of its menu items.
+      </div>
+      <paper-button class="delete-message-button" dialog-dismiss on-tap="_deleteCategory">DELETE ALL</paper-button>
+    </div>
+   
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-menu-category-delete',
+      properties: {
+
+        category:{
+          type:String
+        },
+
+        orgId:{
+          type:String
+        },
+
+        user:{
+          type: Object
+        }
+      },
+
+   
+
+
+      _deleteCategory: function (){
+
+        console.log('delete', this.category.id);
+        var that = this;
+        if(this.category.id){
+          if(this.orgId){
+
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/menu/${this.category.id}`)
+              .remove()
+              .then(function (){
+                // that.$.deleteDialog.close();
+                console.log('DELETED_CATEGORY')
+              })
+              .catch(function(error){
+                console.log('DELETED_CATEGORY_ERROR', error)
+              })
+
+          }
+        }
+        
+      }
+
+
+    });
+
+  </script>
+
+</dom-module>
