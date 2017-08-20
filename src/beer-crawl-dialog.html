@@ -30,15 +30,20 @@
     
     <style include="paper-material-styles">
       
-    :host {
-        /* width: 100vw; 
-        height: 100vh; */
-      }
+    :host{
+      --paper-tab-ink: #172C50;
+      --paper-tabs-selection-bar-color: #172C50;
+    }
 
     a{
       text-decoration: none;
       color: var(--app-accent-color);
     }
+
+    /* paper-tabs{
+      --paper-tab-ink: var(--app-secondary-color);
+      --paper-tabs-selection-bar-color: var(--app-accent-color);
+    } */
 
     li{
       @apply --layout-horizontal;
@@ -90,6 +95,7 @@
       /* @apply --layout-vertical; 
       @apply --layout-justified;  */
       height: 30vh;
+      margin: 20px 0 0 0;
     }
 
     /* .page > div{
@@ -159,7 +165,7 @@
         color: var(--app-secondary-color);
       }
 
-      .add-beer-crawl-button:{
+      .add-beer-crawl-button {
         color: var(--app-accent-color);
       }
 

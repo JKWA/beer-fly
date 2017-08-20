@@ -12,10 +12,7 @@
 <link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-database-behavior.html">
 
 
 
@@ -75,11 +72,8 @@
 
     </style>
 
-      <firebase-document
-        app-name="beer"
-        id="orgData"
-        path="organization/[[placeId]]">
-     </firebase-document>
+        <firebase-auth id="auth" app-name="beer"></firebase-auth>
+
    
 
       <div id="statusMessage" >
@@ -137,6 +131,8 @@
           type: String,
           computed: '_computeIcon(status)'
         },
+
+        placeId:String,
 
         status:{
           type: String
@@ -212,26 +208,25 @@
 
       _updateStatus: function (statusData){
        
-         var obj = {};
+        //  var obj = {};
 
-         if(statusData === 'deleted'){
-           obj['onTap/'+this.beerId] = null;
+        //  if(statusData === 'deleted'){
+        //    obj['onTap/'+this.beerId] = null;
 
-         }
+        //  }
 
-          obj['brewBeer/'+this.beerId+'/status'] = statusData;
-          obj['beerLastUpdated'] = Date.now();
-         
-          
-          this.$.orgData.ref.update(obj, function (error){
-            if(error){
+          // obj['brewBeer/'+this.beerId+'/status'] = statusData;
+          // obj['beerLastUpdated'] = Date.now();
+         if(this.placeId && this.beerId){
+          firebase.database(this.$.auth.app).ref(`/organization/${this.placeId}/brewBeer/${this.beerId}`)
+            .update({status:statusData})
+            .then(()=>{
+              console.log('SAVED_STATUS');
+            })
+            .catch(error =>{
               console.error('VERIFY_ERROR', error)
-            }else{
-              console.log('SAVED');
-            }
-          })
-
-
+            })
+         }
 
       },
 

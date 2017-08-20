@@ -4,7 +4,7 @@
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="beer-icons.html">
 
 <dom-module id="beer-style-select">
@@ -62,8 +62,12 @@
             validator="_validateStyle"
             on-keydown="_resetStyleData"
             error-message="Choose a style from below">
-             <iron-icon icon="beer-icons:search" prefix></iron-icon>
-             <paper-icon-button class="clear" suffix on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
+              <div slot="prefix">
+                <iron-icon icon="beer-icons:search" prefix></iron-icon>
+              </div>
+              <div slot="suffix">
+                <paper-icon-button class="clear" suffix on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
+              </div>
         </paper-input>
 
         <div id="options" class="option">

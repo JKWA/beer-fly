@@ -23,10 +23,10 @@
           ".validate": "newData.isNumber()"      
         },
         "brewBeer": {
- 					".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
           "$orgBeerId": {
             "abv": {
-              ".validate": "newData.isNumber()"
+              ".validate": "newData.isNumber()",
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
             },
             "category": {
               ".validate": "newData.isString() "
@@ -38,19 +38,27 @@
               ".validate": "newData.isString()"
             },
             "description": {
-              ".validate": "newData.isString() && newData.val().length >= 1 && !newData.val().matches(/shit/i) && !newData.val().matches(/fuck/i)"
+              ".validate": "newData.isString() && newData.val().length >= 1",
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
             },
+
             "id": {
               ".validate": "newData.isString()"
             },
             "name": {
-              ".validate": "newData.isString() && newData.val().length >= 1 && !newData.val().matches(/shit/i) && !newData.val().matches(/fuck/i)"
+              ".validate": "newData.isString() && newData.val().length >= 1",
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
             },
             "order": {
               ".validate": "newData.isNumber()"
             },
+            "status": {
+              ".validate": "newData.isString()",
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
+            },
             "styleId": {
-              ".validate": "newData.isNumber()"
+              ".validate": "newData.isNumber()",
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
             },
             "styleName": {
               ".validate": "newData.isString()"
@@ -74,6 +82,12 @@
              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
 						 ".validate": "newData.isBoolean()"
           },
+          
+          "currencyCode": {
+            	".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+              ".validate": "newData.isString()"
+          },
+            
           "descriptionEdit": {
             	".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
               ".validate": "newData.isString()"
@@ -272,6 +286,7 @@
     "user": {
         "$uid":{
           ".read": "$uid==auth.uid",
+          ".indexOn": "location",
           "displayName" :{
               ".write": "$uid==auth.uid"
           },
@@ -288,15 +303,26 @@
              	"$other": { ".validate": false }
           	}
           },
+          "favoriteBeer":{
+            "$beerId":{
+              ".write": "$uid==auth.uid",
+              "created":{".validate": "newData.isNumber()"},
+              "favorite":{".validate": "newData.isBoolean()"},
+              "beer_id":{".validate": "newData.isString()"},
+              "rating":{".validate": "newData.isString()"},
+              "$other": { ".validate": false }
+            }
+          },
           "favoriteOrganization":{
             "$placeId":{
               ".write": "$uid==auth.uid",
               "created":{".validate": "newData.isNumber()"},
-              "favorite":{".validate": "newData.isString()"},
+              "favorite":{".validate": "newData.isBoolean()"},
               "latitude":{".validate": "newData.isNumber()"},
               "longitude":{".validate": "newData.isNumber()"},
               "name":{".validate": "newData.isString()"},
               "place_id":{".validate": "newData.isString()"},
+              "rating":{".validate": "newData.isString()"},
               "vicinity":{".validate": "newData.isString()"},
               "$other": { ".validate": false }
             }

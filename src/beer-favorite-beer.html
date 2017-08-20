@@ -1,3 +1,5 @@
+<!-- TODO removing favorite de-selects other favorite icons -->
+
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
@@ -5,13 +7,11 @@
 <link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 
 <link rel="import" href="beer-icons.html">
-<!--<link rel="import" href="beer-allbeers-card.html">-->
 <link rel="import" href="beer-favorite-beer-card.html">
+<link rel="import" href="beer-location.html">
+
 
 <dom-module id="beer-favorite-beer">
-
-
-  
   
 
   <template strip-whitespace>
@@ -23,54 +23,35 @@
         max-width: 640px;
       }
       
-    .location-card{
-          padding: 10px;
-          margin: 10px;
-          @apply --paper-material-elevation-0;
-        }
+
 
     .card{
-          padding: 10px;
-          margin: 10px;
-          @apply --paper-material-elevation-1;
-        }
+        padding: 10px;
+        margin: 10px;
+        @apply --paper-material-elevation-1;
+        background-color:white;
+    }
 
     </style>
 
-    <firebase-auth 
-        id="auth" 
-        app-name="beer"
-        user="{{user}}">
-    </firebase-auth>
-
-    <firebase-query
-        id="rating"
-        app-name="beer"
-        path="user/[[user.uid]]/rating"
-        data="{{ratings}}">
-    </firebase-query>
-
-    <div class="location-card">
-      <div class="your-location">Your location: [[location.address]]</div>
+    <div>
+      <beer-location
+        location="{{location}}">
+      </beer-location>
     </div>
     
-     <template 
-        is="dom-repeat" 
-        items=[[ratings]] 
-        sort="_sortByRating" 
-        filter="_filterAboveThree"
-        observe="rating">
-        <div class="card">
+     <template is="dom-repeat" items=[[_toArray(userData)]] as="beer" sort="_sort" filter="_filter" observe="favorite">
+
+        <div>
           <beer-favorite-beer-card 
-            beer-id="[[item.$key]]" 
-            location="[[location]]">
-          </beer-favorite-beer-card>
+            beer-id="[[beer.$key]]"
+            name-url="[[nameUrl]]" 
+            location="[[location]]"
+            user-data="[[userData]]">
+          </beer-favorite-beer-card>  
         </div>
 
     </template>
-
-
-
 
   </template>
   <script>
@@ -79,43 +60,42 @@
 
     is: 'beer-favorite-beer',
 
-    //  properties: {
-    //     user:{
-    //       type: Object
-    //     },
-    //   },
+     properties: {
+        user:{
+          type: Object
+        },
+        userData:Object,
+        location:Object,
+        nameUrl:String
+      },
 
  
 
-  // _toArray: function (obj){
-    
-  //   if(obj){
-  //     console.log(obj);
-  //     var returnArray=[];
-  //     var key = Object.keys(obj);
-  //     for (var i=0; i<key.length; i++){
-  //       var beer = {};
-  //       beer.id = key[i];
-  //       beer.rating = obj[key[i]].rating;
-  //       if(beer.rating >=4){
-  //        returnArray.push(beer);
-  //       }
-  //     }
-  //     return returnArray;
-  //   }
-  // },
+  _toArray: function (obj){
+    let returnArray=[];
+    if(typeof obj === 'object'){
 
-  _sortByRating: function(a,b){
-      'use strict';
-      if (a.rating > b.rating)
+      for(let key of Object.keys(obj)){
+        var beer = {};
+        beer.$key = key;
+        beer.rating = obj[key].rating;
+        beer.favorite = obj[key].favorite;
+        returnArray.push(beer);
+      }
+    }
+    return returnArray;
+  },
+
+  _sort: function(a,b){
+      if (a.name > b.name)
         return -1;
-      if (a.rating < b.rating)
+      if (a.name < b.name)
         return 1;
       return 0;
     },
 
-    _filterAboveThree: function(obj){
-        if(obj.rating >3){
+    _filter: function(item){
+        if(item.favorite){
           return true;
         }else{
           return false;

@@ -316,9 +316,7 @@
 
       ready:function (){
         if(this.locationParams){
-          // console.log('ready')
          this.location = this.locationParams;
-         
          
         }else{
           try{
@@ -327,7 +325,6 @@
             console.error(error);
           }
 
-          // this._saveLocation(this.location);
         }
 
         this._ready=true;
@@ -357,12 +354,10 @@
       },
 
       _syncLocationHistoryToLocal: function (locationArray){
-        // console.log(locationArray);
         window.localStorage.setItem('locationHistory', JSON.stringify(locationArray));
       },
 
       _resetToLocal: function (){
-        // this.$.spinner.active = true;
         this.gpsIcon = 'gps-searching'
         this.$.progress.disabled = false;
         this.toggle = false;
@@ -390,7 +385,6 @@
           locationObj.location.lng = longitude;
 
           this.geocode(locationObj, function (location, placeId) {
-            // console.log('geo', location);
             that.location = location;
             
             that.$.progress.disabled = true;
@@ -403,7 +397,6 @@
 
 
       _watchUser: function (user){
-        // console.log(user);
         if(user){
           
           if(user.uid){
@@ -413,9 +406,7 @@
               .orderByChild('created').limitToLast(5)
               .on('value', snapshot => {
                 that.splice("locationArray", 0, that.locationArray.length);
-                // console.log(snapshot.val())
                 snapshot.forEach(location =>{
-                  // console.log(location)
                   if(location.child('address').exists()){
                     that.push('locationArray', location.val());
                     that.set(`locationHistory.${location.child('address').val()}`, location.val());
@@ -431,30 +422,26 @@
 
 
       _saveLocation: function (location){
-        // console.log(location)
 
         this.toggle = false;
         this.toggleSearch = false;
         this.toggleClass = '';
         if(location){
           this.editLocationAddress = location.address;
-          //  console.log('location', location);
           location.created = Math.round(Date.now()/1000);
 
           window.localStorage.setItem('location', JSON.stringify(location));
        
           if(this.user){
             if(this.user.uid){
-              // console.log(location)
               firebase.database(this.$.auth.app).ref(`/user/${this.user.uid}/location/${location.address}`)
               .update(location)
               .then(() =>{
-                console.log('updated location');
+                // console.log('updated location');
                 
               })
             }
           }
-          // console.log('has location')
             var address = encodeURIComponent(this.location.address);
             var geo = encodeURIComponent(`${this.location.latitude} ${this.location.longitude}`);
             this.set(`queryParams.locationAddress`, address);
@@ -671,7 +658,6 @@
         if(this.locationHistory){
             for (let key of Object.keys(this.locationHistory)){
               var location = this.locationHistory[key];
-              // console.log('location', location)
               this.push('locationArray', location);
             }
           }

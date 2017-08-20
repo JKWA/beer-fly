@@ -44,12 +44,14 @@
         color: var(--app-primary-color); 
       }
 
-    .card{
-        margin: 10px;
-        padding: 20px;
+      .card{
         @apply --paper-material-elevation-1;
         background-color: white;
+        margin: 10px;
+      }
 
+      .info-section{
+        padding: 20px;
       }
 
       .checkbox-wrapper{
@@ -88,8 +90,8 @@
       }
 
       .style {
-        font-size: 1.0em;
-        font-weight: 500;
+        font-size: 1.2em;
+        font-weight: 300;
         color: var(--app-primary-color);
        
       }
@@ -105,7 +107,7 @@
         @apply --layout-start-justified;
         @apply --layout-wrap;
         font-size: 1em;
-        font-weight: 400;
+        font-weight: 500;
         color: var(--app-primary-color);
       }
 
@@ -114,9 +116,10 @@
       }
 
       .footer-abv{
-        text-align: right;
         margin: 0 20px 0 0;
-        font-weight: 500;
+        font-weight: 300;
+        font-size: 1em;
+        color: var(--app-secondary-color);
       }
 
     </style>
@@ -168,66 +171,68 @@
 
     <template is="dom-repeat" items="[[_getArray(organization.onTap)]]" sort="_sortOrder" as="beer">
       <div class="card" elevation="1">
+        <div class="info-section">
+          <div>
+              <beer-beer-tap
+                org-id="[[orgId]]"
+                beer-id="[[beer.id]]"
+                owner="[[owner]]">
+              </beer-beer-tap>
+            </div>
+            
+            <a aria-label$="TEST" href$="/[[nameUrl]]/description?orgid=[[organization.place_id]]&beerId=[[beer.id]]">
+              <div class="wrapper">
+                <div class="name">[[beer.name]]
+                  <i>
+                    <span hidden$="[[!beer.nitro]]"> - Nitro</span>
+                    <span hidden$="[[!beer.cask]]"> - Cask-Conditioned</span>
+                    <span hidden$="[[!beer.barrel]]"> - Barrel-Aged</span>
+                  </i>
+                </div>
+                <div class="style">[[beer.styleName]]</div>
+                <div class="location">
+                  <div>[[beer.breweryName]] - </div>
+                  <div>[[beer.city]],</div>
+                  <div>[[beer.stateAbbreviation]]</div>
+                </div>
+                <div class="beer-description">[[beer.description]]</div>       
 
-        <template is="dom-if" if="[[!owner]]">
+                <div class="footer-abv" hidden$="[[!beer.abv]]">ABV: [[beer.abv]]</div>
+              </div>
+            </a>
+            <template is="dom-if" if="[[owner]]">
+              <div class="checkbox-wrapper">
+                <div>
+                  <iron-label>
+                      <paper-checkbox beer-id="[[beer.$key]]" checked={{beer.nitro}} on-change="_updateNitro"></paper-checkbox>
+                      <span>Nitro</span>
+                  </iron-label>
+                </div>
+                <div>
+                  <iron-label>
+                      <paper-checkbox beer-id="[[beer.$key]]" checked={{beer.cask}} on-change="_updateCask"></paper-checkbox>
+                      <span>Cask-Conditioned</span>
+                  </iron-label>
+                </div>
+                <div>
+                  <iron-label>
+                      <paper-checkbox beer-id="[[beer.$key]]" checked={{beer.barrel}} on-change="_updateBarrel"></paper-checkbox>
+                      <span>Barrel-Aged</span>
+                  </iron-label>
+                </div>
+              </div>
+            </template>
+          </div>
+          <template is="dom-if" if="[[!owner]]">   
             <div>
               <beer-beer-rating 
                   beer-id="[[beer.id]]"
-                  login="{{login}}">
+                  login="{{login}}"
+                  user-data="[[userData]]">
               </beer-beer-rating>
             </div>
         </template>
-       
 
-        <div>
-            <beer-beer-tap
-              org-id="[[orgId]]"
-              beer-id="[[beer.id]]"
-              owner="[[owner]]">
-            </beer-beer-tap>
-          </div>
-           
-
-          <div class="wrapper">
-            <div class="name">[[beer.name]]
-              <i>
-                <span hidden$="[[!beer.nitro]]"> - Nitro</span>
-                <span hidden$="[[!beer.cask]]"> - Cask-Conditioned</span>
-                <span hidden$="[[!beer.barrel]]"> - Barrel-Aged</span>
-              </i>
-            </div>
-            <div class="style">[[beer.styleName]]</div>
-            <div class="beer-description">[[beer.description]]</div>       
-            <div class="location">
-              <div>[[beer.breweryName]] - </div>
-              <div>[[beer.city]],</div>
-              <div>[[beer.stateAbbreviation]]</div>
-            </div>
-            <div class="footer-abv" hidden$="[[!beer.abv]]">ABV: [[beer.abv]]</div>
-              
-          </div>
-           <template is="dom-if" if="[[owner]]">
-            <div class="checkbox-wrapper">
-              <div>
-                <iron-label>
-                    <paper-checkbox beer-id="[[beer.$key]]" checked={{beer.nitro}} on-change="_updateNitro"></paper-checkbox>
-                    <span>Nitro</span>
-                </iron-label>
-              </div>
-              <div>
-                <iron-label>
-                    <paper-checkbox beer-id="[[beer.$key]]" checked={{beer.cask}} on-change="_updateCask"></paper-checkbox>
-                    <span>Cask-Conditioned</span>
-                </iron-label>
-              </div>
-              <div>
-                <iron-label>
-                    <paper-checkbox beer-id="[[beer.$key]]" checked={{beer.barrel}} on-change="_updateBarrel"></paper-checkbox>
-                    <span>Barrel-Aged</span>
-                </iron-label>
-              </div>
-            </div>
-          </template>
       </div>
     </template>
 
@@ -276,7 +281,7 @@
 
         category:{
          type: Object
-       },
+        },
 
         editBeerId:{
           type: String
@@ -285,32 +290,29 @@
         login: {
          type: Boolean,
          notify: true
-       },
+        },
 
-       nameUrl:{
-         type: String
-       },
+        nameUrl:{
+          type: String
+        },
 
-       organization:{
-         type: Object
-       },
+        organization:{
+          type: Object
+        },
 
-       orgId:{
-         type: String
-       },
+        orgId:{
+          type: String
+        },
 
-       owner:{
-         type: Boolean
-       },
-       
-       place:{
-         type:Object
-       },
-       
-        // photoUrl: {
-        //   type: String,
-        //   computed: '_computePhotoUrl(category, place)'
-        // }
+        owner:{
+          type: Boolean
+        },
+        
+        place:{
+          type:Object
+        },
+
+        userData:Object
      
     },
 

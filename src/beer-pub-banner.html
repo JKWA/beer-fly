@@ -5,6 +5,7 @@
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="beer-icons.html">
 
 <dom-module id="beer-pub-banner">
 
@@ -263,21 +264,14 @@
           type: String
         },
 
-
         place:{
           type: Object
         },
 
         favorite:{
           type:Boolean,
-          // computed:'_computeFavorite(favorite)'
           value:false
         },
-
-        // favoriteLabel:{
-        //   type:String,
-        //   computed:'_computeFavoriteLabel(favorite)'
-        // },
 
         favoriteCSS:{
           type:String,
@@ -345,11 +339,11 @@
         // console.log('rating', rating)
         if(rating && placeId){
           if(rating[placeId]){
-            // this.userFavorite = 
+
             if(rating[placeId].favorite){
               this.favorite = rating[placeId].favorite;
             }
-            // this.favorite = this.userFavorite;
+ 
             this.userRating = rating[placeId].rating;
             if(this.userRating === 'yes'){
               this.$.ratingButton.style.color = 'green';

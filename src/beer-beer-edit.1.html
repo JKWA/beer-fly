@@ -39,13 +39,18 @@
         /* required for IE 11, so this <a> can receive pointer events */
         display: inline-block;
         pointer-events: auto;
+        }
+
+      paper-spinner-lite{
+        position: absolute;
+        top: 40%;
+        left: 50%;
       }
 
       .card{
         margin: 10px;
         padding: 20px;
         @apply --paper-material-elevation-0;
-        background-color:white;
       }
 
       .abv {
@@ -114,12 +119,25 @@
         user="{{user}}">
     </firebase-auth>
 
+     <firebase-document 
+        id="pub"
+        app-name="beer" 
+        path="organization/[[place.place_id]]">
+    </firebase-document>
+
+
+     <firebase-document
+        app-name="beer"
+        id="beer"
+        disabled
+        path="beer/[[beerId]]"
+        data="{{beer}}">
+    </firebase-document>
 
     <div class="card">
 
     <div class="beer-name" hidden$="[[!beerId]]">[[beerName]]</div>
         <paper-input 
-          always-float-label
           hidden$="[[beerId]]"
           id="beerName"
           label="Beer Name" 
@@ -130,7 +148,6 @@
         </paper-input>
 
         <paper-textarea 
-          always-float-label
           id="description"
           label="Beer Description" 
           char-counter 
@@ -139,14 +156,12 @@
         </paper-textarea>
 
         <paper-input 
-            always-float-label
             id="abv" 
             class="abv" 
             label="ABV" 
             error-message="Invalid"
             value="{{abv}}">
-          <div slot="suffix">%</div>
-         
+          <div suffix>%</div>
         </paper-input>
 
         <beer-style-select
@@ -240,6 +255,7 @@
           value: 'test'
         },
 
+
         selectedStyle:{
           type: Object,
           value: function (){return {};}
@@ -248,6 +264,7 @@
         styleId:{
           type: Number
         },
+
 
         valid:{
           type: Boolean,
@@ -261,7 +278,7 @@
       },
 
       ready: function (){
-        // this.$.beerName.invalid = true;
+        this.$.beerName.invalid = true;
       },
 
       observers:[
@@ -269,7 +286,7 @@
         '_validateName(beerName)',
         '_validateAll(name, abv)',
         // '_ifBeerId(beerId)',
-        '_prefillData(beerId)'
+        '_prefillData(beer)'
       ],
 
 
@@ -278,10 +295,10 @@
       //   console.log('getting beer id', beerId);
         
       //   if(beerId){
-      //     // this.$.beer.disabled = false;
+      //     this.$.beer.disabled = false;
       //     this.buttonName = "SAVE";
       //   }else{
-      //     // this.$.beer.disabled = true;
+      //     this.$.beer.disabled = true;
       //     this.beerName = null;
       //     this.description = null;
       //     this.searchString = null;
@@ -293,41 +310,27 @@
       //   }
       // },
 
-      _prefillData: function (beerId) {
-        console.log('prefill')
+      _prefillData: function (beer) {
       
-        if(beerId){
-          const that = this;
-          this.buttonName = "SAVE";
- 
-          firebase.database(this.$.auth.app).ref(`/beer/${beerId}`)
-            .once('value')
-            .then(snapshot =>{
-                if(snapshot.exists()){
-                  that.beerName = (snapshot.child('name').exists()) ? snapshot.child('name').val() : '';
-                  that.description = (snapshot.child('description').exists()) ? snapshot.child('description').val() : '';
-                  that.abv = (snapshot.child('abv').exists()) ? snapshot.child('abv').val() : '';
-                  that.presetStyleName = (snapshot.child('styleName').exists()) ? snapshot.child('styleName').val() : '';
+        if(beer){
 
-              }else{
-                that.beerName = '';
-                that.description = '';
-                that.abv = null;
-                that.presetStyleName = '';
-              }
-            })
- 
+            this.beerName = beer.name;
+            this.description = beer.description;
+            if(beer.abv){
+              this.abv = beer.abv;
+            }
+
+            this.presetStyleName = beer.styleName;
+            this._validateAll();
+            
         }else{
-            this.beerName = null;
-            this.description = null;
-            this.searchString = null;
-            this.styleName = null;
-            this.styleId = null;
-            this.abv = null;
-            this.buttonName = "ADD BEER";
-  
+           
+        
         }
-      },
+        // if(Object.keys(beer).length >0){
+        // this.$.editCard.hidden = false;
+        // this.$.spinner.active = false;
+        },
 
 
 
@@ -379,128 +382,107 @@
 
         // },
         
-      _addNewBeer: function (){
 
-        let obj = {
-                    name: (this.beerName) ? this.beerName : null,
-                    description: (this.description) ? this.description : null,
-                    abv: (Number(this.abv)) ? Number(this.abv) : null,
-                    styleId: Number(this.selectedStyle.styleId)
-                  }
+     _addNewBeer: function (){
+        this._validateAll();
+        if(this.valid){
 
-        if(this.orgId){
-          if(this.beerId){
-            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/brewBeer/${this.beerId}`)
-              .update(obj);
-          }else{
-            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/brewBeer/${this.beerId}`)
-              .push(obj);
-          }
-        }
-          
-      },
+          var beer = {};
+          var org = {};
+          var obj = {};
+          var category = this.selectedStyle
+          var pub = this.organization;
 
-
-    //  _addNewBeer: function (){
-    //     this._validateAll();
-    //     if(this.valid){
-
-    //       var beer = {};
-    //       var org = {};
-    //       var obj = {};
-    //       var category = this.selectedStyle
-    //       var pub = this.organization;
-
-    //       var pre = 'brewBeer/';
+          var pre = 'brewBeer/';
          
-    //       obj['beerLastUpdated'] = Date.now();
+          obj['beerLastUpdated'] = Date.now();
           
-    //       if(this.beerId){
-    //         var id = this.beerId
-    //         obj[pre+id+'/lastEdited'] = Date.now();
-    //         obj[pre+id+'/edited'] = true;
+          if(this.beerId){
+            var id = this.beerId
+            obj[pre+id+'/lastEdited'] = Date.now();
+            obj[pre+id+'/edited'] = true;
             
-    //       }else{
-    //         var id = firebase.database(this.$.auth.app).ref('beer').push().key;
-    //         obj[pre+id+'/createDate'] = Date.now();
-    //         obj[pre+id+'/new'] = true
-    //       }
-    //       var orgPre = pre+id;
+          }else{
+            var id = firebase.database(this.$.auth.app).ref('beer').push().key;
+            obj[pre+id+'/createDate'] = Date.now();
+            obj[pre+id+'/new'] = true
+          }
+          var orgPre = pre+id;
 
           
-    //       if(this.abv){
-    //         obj[orgPre+'/abv'] = Number(this.abv);
-    //       }
-    //       if(category.category){
-    //         obj[orgPre+'/category'] = category.category;
-    //       }
-    //       if(category.categoryName){
-    //         obj[orgPre+'/categoryName'] = category.categoryName;
-    //       }
-    //       if(category.categoryTitle){
-    //         obj[orgPre+'/categoryTitle'] = category.categoryTitle;
-    //       }
-    //       if(category.order){
-    //         obj[orgPre+'/order'] = Number(category.order);
-    //       }
+          if(this.abv){
+            obj[orgPre+'/abv'] = Number(this.abv);
+          }
+          if(category.category){
+            obj[orgPre+'/category'] = category.category;
+          }
+          if(category.categoryName){
+            obj[orgPre+'/categoryName'] = category.categoryName;
+          }
+          if(category.categoryTitle){
+            obj[orgPre+'/categoryTitle'] = category.categoryTitle;
+          }
+          if(category.order){
+            obj[orgPre+'/order'] = Number(category.order);
+          }
 
-    //       if(category.styleId){
-    //         obj[orgPre+'/styleId'] = Number(category.styleId);
-    //       }
+          if(category.styleId){
+            obj[orgPre+'/styleId'] = Number(category.styleId);
+          }
 
-    //       if(category.styleName){
-    //         obj[orgPre+'/styleName'] = category.styleName; 
-    //       }
+          if(category.styleName){
+            obj[orgPre+'/styleName'] = category.styleName; 
+          }
 
-    //       if(this.description){
-    //         obj[orgPre+'/description'] = this.description;
-    //       }
-    //       if(id){
-    //         obj[orgPre+'/id'] = id;
-    //       }
-    //       //only replace name if new, not editing
-    //       if(this.beerName){
-    //         if(!this.beerId){
-    //           obj[orgPre+'/name'] = this.beerName;
-    //         }
-    //       }
+          if(this.description){
+            obj[orgPre+'/description'] = this.description;
+          }
+          if(id){
+            obj[orgPre+'/id'] = id;
+          }
+          //only replace name if new, not editing
+          if(this.beerName){
+            if(!this.beerId){
+              obj[orgPre+'/name'] = this.beerName;
+            }
+          }
         
 
-    //       var that = this;
+          var that = this;
          
-    //       if(this.owner){
-    //         obj[orgPre+'/status'] = 'verified';
-    //       }else{
-    //         obj[orgPre+'/status'] = 'not_verified';
-    //       }
-    //       // console.log('save', JSON.stringify(obj));
+          if(this.owner){
+            obj[orgPre+'/status'] = 'verified';
+          }else{
+            obj[orgPre+'/status'] = 'not_verified';
+          }
+          // console.log('save', JSON.stringify(obj));
             
              
-    //       this.$.pub.ref.update(obj)
-    //         .then(function(){
+          this.$.pub.ref.update(obj)
+            .then(function(){
 
-    //           console.log("Saved");
-    //           that.$.savedToast.open();
-    //           that.savedMessage = that.beerName;
-    //           if(!that.beerId){
-    //             that.abv = '';
-    //             that.beerName = '';
-    //             that.description = '';
-    //             that.valid = false;
-    //             that.searchString = '';
-    //             that.selectedStyle={};
-    //             // that._resetFormStyleData();
-    //           }
-    //         })
-    //         .catch(function (error) {
-    //           console.log("Error" + error);
-    //         })
+              console.log("Saved");
+              that.$.savedToast.open();
+              that.savedMessage = that.beerName;
+              if(!that.beerId){
+                that.abv = '';
+                that.beerName = '';
+                that.description = '';
+                that.valid = false;
+                that.searchString = '';
+                that.selectedStyle={};
+                // that._resetFormStyleData();
+              }
+            })
+            .catch(function (error) {
+              console.log("Error" + error);
+            })
     
-    //     }else{
-    //       console.log('not valid');
-    //     }
+        }else{
+          console.log('not valid');
+        }
 
-    //   },
+      },
 
 
       _computeNameForUrl: function (name) {

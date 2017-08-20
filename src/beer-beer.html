@@ -73,13 +73,15 @@
     
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
 
+    <!-- OWNER:[[owner]] -->
+
    <template is="dom-repeat" items="[[_addBreaks(category.description)]]" as="description">
       <div class="description">
           [[description]]
       </div>
    </template>
 
-   
+   <template is="dom-if" if="[[owner]]">
     <div class="card" elevation="1">
       <iron-label>
         <a aria-label$="TEST" href$="/[[nameUrl]]/beer-edit?orgid=[[orgId]]">
@@ -87,26 +89,17 @@
           Add a beer</a>
       </iron-label>
     </div>
-  
+   </template>
 
     
     <template is="dom-repeat" items="[[_getArray(organization.brewBeer)]]" sort="_sortOrder" as="beer" filter="[[_filterBeers(owner)]]">
       <beer-beer-card 
-          beer-id="[[beer.id]]"
-          beer-name="[[beer.name]]"
-          beer-description="[[beer.description]]"
-          status="[[beer.status]]"
-          brewery-name="[[place.name]]"
-          brewery-city="[[organization.city]]"
-          brewery-state="[[organization.stateAbbreviation]]"
-          style-name="[[beer.styleName]]"
-          abv="[[beer.abv]]"
-          place-id="[[place.place_id]]"
-          crowd-source="[[organization.crowdSource]]"
-          owner="[[owner]]" 
-          uid="[[user.uid]]"
-          edit-beer-id="{{editBeerId}}"
+          beer="[[beer]]"
+          organization="[[organization]]"
+          place="[[place]]"
+          owner="[[owner]]"
           name-url="[[nameUrl]]"
+          user-data="[[userData]]"
           login="{{login}}">
       </beer-beer-card>
     </template>
@@ -192,9 +185,9 @@
           }
         },
 
-        editBeerId:{
-          type: String
-        }
+        userData:{
+          type:Object
+        },
         
       },
     
