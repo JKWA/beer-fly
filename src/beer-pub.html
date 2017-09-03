@@ -28,7 +28,10 @@
 <link rel="import" href="beer-beer-card-mini.html">
 <link rel="import" href="beer-foodtruck-schedule.html">
 <link rel="import" href="beer-banner.html">
- <link rel="import" href="beer-pub-banner.html"> 
+<link rel="import" href="beer-pub-banner.html"> 
+<link rel="import" href="beer-button.html"> 
+<link rel="import" href="beer-crawl-card.html">
+
 
 
 <link rel="import" href="beer-button.html">
@@ -120,22 +123,7 @@
         margin: 10px
       }
 
-      .crawl-item{
-        padding:10px;
-        margin: 10px 0;
-      }
-
-      .crawl-name{
-        color: var(--app-primary-color);
-        font-size: 1.5em;
-        font-weight: 300;
-      }
-
-      .crawl-description{
-        font-size: 1em;
-        font-weight: 300;
-        color: var(--app-primary-color);
-      }
+      
 
 
       .title {
@@ -170,30 +158,26 @@
 
   <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
 
- 
-    <div hidden="[[!online]]">
+  <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
+  
+    <div>
 
       <beer-banner
-        google-photo="[[place.photos]]"
-        photo-index="0"
-        photo="[[organization.mainImage]]"
+        google-photo-url="[[organization.googlePhoto.MAIN.url]]"
+        photo="[[organization.mainImage.banner]]"
         org-id="[[orgId]]">
       </beer-banner>
+
 
     </div>
 
 
-    <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
-    
      <beer-pub-banner
       organization="[[organization]]"
-      place="[[place]]"
-      user-data="[[userData]]"
       place-id="[[orgId]]"
       open-crawl="{{pubDialogOpened}}"
       edit>
     </beer-pub-banner> 
-
     
 
     <div class="motto">[[organization.motto]]</div>
@@ -206,13 +190,13 @@
 
       <div class="category-item-wrapper">
 
-        <template is="dom-if" if="[[place.opening_hours]]">
+        <template is="dom-if" if="[[organization.opening_hours]]">
           <div class="hours-wrapper">
             <div>
               <div class="category-title">Hours</div>
               <beer-hours-card 
                   class=" category-item"
-                  place="[[place]]">
+                  organization="[[organization]]">
               </beer-hours-card>
             </div>
           </div>
@@ -240,7 +224,7 @@
                           brewery-state="[[tap.stateAbbreviation]]"
                           abv="[[tap.abv]]"
                           owner="[[owner]]"
-                          beer-id="[[tap.id]]"
+                          beer-id="[[tap.$key]]"
                           name-url="[[nameUrl]]">
                       </beer-beer-card-mini>
                     </template>
@@ -254,7 +238,7 @@
                           style-name="[[beer.styleName]]"
                           abv="[[beer.abv]]"
                           owner="[[owner]]"
-                          beer-id="[[beer.id]]"
+                          beer-id="[[beer.$key]]"
                           name-url="[[nameUrl]]">
                       </beer-beer-card-mini>
                     </template>
@@ -292,13 +276,13 @@
 
                   <template is="dom-if" if="[[_isContact(item.$key)]]"> 
                     <beer-contact-card 
-                        place="[[place]]">
+                    organization="[[organization]]">
                     </beer-contact-card>
                   </template>
 
                   <template is="dom-if" if="[[_isReview(item.$key)]]"> 
                     <beer-review-card-mini
-                       organization="[[place]]">
+                       organization="[[organization]]">
                      </beer-review-card-mini>
                   </template>
 
@@ -319,14 +303,14 @@
         <template is="dom-if" if="[[organization.crawl]]">
           <div class="crawl-wrapper">
             <div class="category-title">Beer-Crawls</div>
-            <template is="dom-repeat" items="[[allCrawls]]" as="crawl" observe="public" filter="_filterCrawl">
-              <a href="/[[nameUrl]]/crawl[[returnParams]]&crawlId=[[crawl.crawl_id]]">
-              <div class="crawl-item">
-                <div>[[crawl.public]]</div>
-                <div class="crawl-name">[[crawl.name]]</div>
-                <div class="crawl-description">[[crawl.description]]</div>
-              </div>
-              </a>
+            <template is="dom-repeat" items="[[_getArray(organization.crawl)]]" as="crawl" observe="public" sort="_sortCrawlCreated">
+             
+              <beer-crawl-card
+                crawl-id="[[crawl.$key]]"
+                name-url="[[nameUrl]]"
+                return-params="[[returnParams]]">
+              </beer-crawl-card>
+
             </template>
           </div>
         </template>
@@ -341,7 +325,7 @@
       opened="{{pubDialogOpened}}">
       
       <beer-crawl-dialog
-        edit-place="[[place]]"
+        edit-place="[[organization]]"
         crawl-data="{{crawlData}}">
       </beer-crawl-dialog>
 
@@ -410,7 +394,6 @@
           notify: true
         },
 
-
         returnParams:{
           type:String
         },
@@ -440,14 +423,10 @@
          type: Boolean
        }, 
 
-        place:{
-          type: Object
-        },
-
         permenentlyClosed:{
           type:Boolean,
           value:false,
-          computed: '_computePermanentlyClosed(place)'
+          computed: '_computePermanentlyClosed(organization)'
         },
 
         pubDialogOpened:{
@@ -463,22 +442,10 @@
           type: Object
         },
 
-        // _hasCrawls:{
-        //   type:Boolean,
-        //   value:false,
-        //   computed:'_computeHasCrawls(organization.crawls)'
-        // }
-
-
-        // _showIcons:{
-        //   type:Boolean,
-        //   value:false,
-        //   computed:"_computeShowIcons(organization)"
-        // }
       },
 
-      observers:['_addNewOrg(place, user)',
-                  '_closeLocation(permenentlyClosed)',
+      observers:['_addNewOrg(organization, user)',
+                  '_closeLocation(permenentlyClosed, user)',
                   // '_watchForCrawls(organization.crawl)'          
                   ],
 
@@ -486,50 +453,19 @@
         var body = document.querySelector('body');
           Polymer.dom(body).appendChild(this.$.pubDialogEditor);
           Polymer.dom(body).appendChild(this.$.editDialog);
-        // this.$.pubDialogEditor.open()
       },
 
-      // _watchForCrawls: function (crawl){
-      //   var that = this;
-      //   console.log(crawl);
-      //   this.splice('allCrawls', 0, this.allCrawls.length);
-      //   this.set('crawlObj', {});
-        
-      //   // if(placeId){
-      //   if(typeof crawl === 'object'){
-      //     for (let key of Object.keys(crawl)){
-      //       firebase.database(this.$.auth.app).ref(`/crawl/${key}`)
-      //         .on('value', snapshot =>{
-                
-      //           if(snapshot.child('public').exists() && !snapshot.child('deleted').exists()){
-      //             var crawlObj = snapshot.val();
-      //             crawlObj.crawl_id = snapshot.key;
-      //             if(!that.crawlObj[snapshot.key]){
-      //               console.log('push',crawlObj);
-      //               var position = that.push('allCrawls', crawlObj);
-      //               that.set(`crawlObj.${snapshot.key}`, {position:position});
-      //             }else{
-      //               that.set(`allCrawls.${that.crawlObj[snapshot.key].position-1}`, crawlObj);
-      //               console.log('set',crawlObj);
-      //             }
-      //           }
-      //         })
-      //     }
-      //   }
- 
-      // },
-
      
-      _addNewOrg: function (place, user){
+      _addNewOrg: function (organization, user){
         if(user){
           if(user.emailVerified){
-            if(place){
-              if(place.place_id){
-                var domain = this._getDomain(place.website);
+            if(organization){
+              if(organization.place_id){
+                var domain = this._getDomain(organization.website);
                 if(domain){
                   
                   
-                  firebase.database(this.$.auth.app).ref(`/newOrg/${place.place_id}`)
+                  firebase.database(this.$.auth.app).ref(`/newOrg/${organization.place_id}`)
                     .update({domain:domain})
                     .then(function (){
                       console.log('SAVED_NEW_PUB')
@@ -545,17 +481,20 @@
         
       },
 
-      _closeLocation: function (closed){
+      _closeLocation: function (closed, user){
+        
         if(closed){
-          firebase.database(this.$.auth.app).ref(`/newOrg/${this.place.place_id}`)
-            .update({domain:'permenently_closed'})
-            .then(function (){
-              console.log('SUBMIT_CLOSED')
-            })
-            .catch(function (error){
-              console.log('SUBMIT_CLOSED_ERROR', error);
-            })
-          
+          if(user){
+            console.log('closed', `/newOrg/${this.organization.place_id}`)
+            firebase.database(this.$.auth.app).ref(`/newOrg/${this.organization.place_id}`)
+              .update({domain:'permenently_closed'})
+              .then(function (){
+                console.log('SUBMIT_CLOSED')
+              })
+              .catch(function (error){
+                console.log('SUBMIT_CLOSED_ERROR', error);
+              })
+            }
         }
       },
 
@@ -699,6 +638,7 @@
       },
 
       _filterCrawl: function (crawl){
+        console.log('crawl', crawl)
         if(crawl.public){
           return true
         }
@@ -706,10 +646,19 @@
       },
 
       _sortOrder: function(a,b){
-        'use strict';
+     
         if (a.order < b.order)
           return -1;
         if (a.order > b.order)
+          return 1;
+        return 0;
+      },
+
+      _sortCrawlCreated: function(a,b){
+      
+        if (a.created < b.created)
+          return -1;
+        if (a.created > b.created)
           return 1;
         return 0;
       },
@@ -725,9 +674,9 @@
 
     
 
-      _computePermanentlyClosed: function (place){
-      if(place){
-        if(place.permanently_closed){
+      _computePermanentlyClosed: function (organization){
+      if(organization){
+        if(organization.permanently_closed){
           return true;
         }
       }

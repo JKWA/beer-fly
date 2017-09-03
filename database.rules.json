@@ -88,7 +88,7 @@
               ".validate": "newData.isString()"
           },
             
-          "descriptionEdit": {
+          "description": {
             	".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
               ".validate": "newData.isString()"
           },
@@ -175,7 +175,7 @@
               }
             }
           },
-          "mottoEdit": {
+          "motto": {
             	".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
               ".validate": "newData.isString()"
           },
@@ -238,7 +238,11 @@
       ".read": "true"
     },
     "newOrg":{
-      ".write": "auth.email_verified == true"
+      "$orgId":{
+        "domain":{
+      		".write": "auth != null"
+        }
+      }
     },
 
     "rating": {

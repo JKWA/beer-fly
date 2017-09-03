@@ -1,0 +1,615 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+<link rel="import" href="../bower_components/geo-query/geofire-import.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+
+
+<dom-module id="beer-data-home">
+
+  <template>
+    <firebase-auth id="auth" app-name="beer"  user="{{user}}"></firebase-auth>  
+    <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-data-home',
+
+      properties: {
+
+        allObject:{
+          type:Object,
+          notify: true,
+          value: function (){return {}}
+        },
+
+        allArray:{
+          type:Array,
+          notify: true,
+          value: function (){return []}
+        },
+
+        lazyLoaded:{
+          type:Boolean
+        },
+
+        location:{
+          type:Object,
+          observer: '_locationChanged'
+        },
+
+        locationChanged:{
+          type:Boolean,
+          value:false
+        },
+
+        online:{
+          type: Boolean,
+          value:true
+        },
+
+        mapLoaded: {
+          type: Boolean,
+          value:false
+        },
+
+        page:String,
+
+        initialDataLoaded:{
+          type:Boolean,
+          value:false
+        },
+
+        cacheLoaded:{
+          type:Boolean,
+          value:false
+        },
+
+        radius:{
+          type: Number,
+          value: 10
+        },
+
+        user:Object,
+        userData:{
+          type:Object,
+          value: function (){return {}}
+        }
+
+      },
+      
+      observers:[
+                  '_setInitialCached(location, page)',
+                  '_setInitialData(location, page, mapLoaded)',
+                  '_setUserFavoriteData(userData.favoriteOrganization)',
+                  '_getData(location, page)',
+                  '_lazyLoadCache(lazyLoaded)'
+                ],
+
+      listeners: {'api-load':'_mapHasLoaded'},
+
+      _mapHasLoaded: function (){
+          this.mapLoaded = true;
+      },
+
+      _lazyLoadCache: function(lazyLoaded){
+        if(lazyLoaded){
+          if(this.location){
+            if(this.location.latitude && this.location.longitude){
+              if(!this.cacheLoaded){
+                  this._setCachedData(location)
+                  .then(() =>{
+                    this.cacheLoaded = true;
+                    console.log('cache is lazy loaded');
+                    this._removeOldCacheData();
+                  })
+              }
+            }
+          }
+        }
+      },
+
+
+      _setInitialCached: function (location, page){
+        // console.log(location)
+        if(location){
+          if(location.latitude && location.longitude){
+            if(!this.cacheLoaded){
+              if(page === 'home'){
+              let cache = this._setCachedData(location);
+              this._setFromDatabase(location);
+
+              cache.then(result =>{
+                  console.log(result)
+                  this.cacheLoaded = true;
+                  console.log('cache loaded')
+                  this._removeOldCacheData();
+                })
+                
+              }
+            }
+          }
+        }
+      },
+
+
+      _setInitialData: function (location, page, mapLoaded){
+        if(location){
+          if(location.latitude && location.longitude){
+            if(page === 'home'){
+              if(mapLoaded){
+                if(!this.initialDataLoaded){
+                  this._setGoogleData(location);
+                  this.initialDataLoaded = true;
+                }
+              }
+            }
+          }
+        }
+      },
+
+      _setUserFavoriteData: function (organizations){
+        if(typeof organizations === 'object'){
+          for (let key of Object.keys(organizations)){
+            this._setData({userData:organizations[key]}, key, 'USER_DATA');
+            
+          }
+        }
+      },
+
+
+      _locationChanged(newLocation, oldLocation){
+   
+        if(newLocation && oldLocation){
+          if(newLocation !== oldLocation){
+            this.locationChanged = true;
+
+          }else{
+            this.locationChanged = false;
+          }
+        }
+
+      },
+
+      
+      _getData: function (location, page){
+        if(location){
+          if(location.latitude && location.longitude){
+            if(page === 'home'){
+              if(this.locationChanged){
+                console.log('locationchanged')
+
+                this._resetDistance(location)
+                .then(() =>{
+                  
+                  console.log('distance updated')
+                })
+               
+
+                this._setFromDatabase(location);
+                this._setGoogleData(location);
+                this.cacheLoaded = true;
+                this.locationChanged = false;
+
+              }
+             
+            }
+          }
+        }
+      },
+
+
+    _setCachedData: function (location){
+          
+        const that = this;
+        return  new Promise(function(resolve, reject) {
+
+        for (let i=0; i<window.localStorage.length; i++) {
+          
+          let storedItem = JSON.parse(window.localStorage.getItem(window.localStorage.key(i)));  
+                        
+          if(storedItem.place_id){
+            storedItem.distance = that._distance (that.location.latitude, that.location.longitude, storedItem.latitude, storedItem.longitude);
+            storedItem.sort = storedItem.distance;
+
+            if (that._isPremium(storedItem.plan)) {
+              if (storedItem.distance <= 5) {
+                  storedItem.sort = storedItem.sort - 5;
+              }
+            }
+                
+            if(storedItem.distance <= 10){
+
+              that._setData(storedItem, storedItem.place_id, 'CACHE')
+            }
+          }
+        }
+
+        if ('a' === 'a') {
+            resolve("SUCCESS");
+          }
+          else {
+            reject(Error("FAIL"));
+          }
+        });
+
+      },
+
+      _resetDistance:  function (location){
+
+        const that = this;
+        return  new Promise(function(resolve, reject) {
+
+          for (let i=0; i<that.allArray.length; i++){
+            let pub = that.allArray[i]
+            let distance = that._distance (location.latitude, location.longitude, pub.latitude, pub.longitude);
+            let sort = distance;
+            if (that._isPremium(pub.plan)) {
+              if (pub.distance <= 5) {
+                  sort = sort - 5;
+              }
+            }
+            that.set(`allArray.${i}.sort`, sort)
+            that.set(`allArray.${i}.distance`, distance)
+            
+          }
+          
+        
+
+        if ('a' === 'a') {
+            resolve("SUCCESS");
+          }
+          else {
+            reject(Error("FAIL"));
+          }
+        });
+
+      },
+
+
+      _setGoogleData: function(location){
+      
+          if(location){
+            const latitude = location.latitude,
+                  longitude = location.longitude,
+                  address = location.address;
+
+            if(latitude && longitude && address){
+          
+              var searchLocation = {};
+              searchLocation.lat = latitude;
+              searchLocation.lng = longitude;
+
+              var that = this;
+              var request = {};
+              request.location = searchLocation;
+              request.radius = 10000
+              request.query = 'Brewery in '+address+' Craft Beer';
+              
+              const places = new google.maps.places.PlacesService(this.$.map);
+              places.textSearch(request, function (result){
+                that.initialDataLoaded = true;
+                if(result){ 
+                  for (let place of result){
+                    let typeOK = 0;
+                    
+                    if(place.types){
+                      for (let type of place.types){
+                        if(type === 'bar'){
+                          typeOK ++;
+                        }
+                      }
+                    }
+
+                    if(place.name){
+                      if(place.name.toLowerCase().indexOf('brewery')>-1){
+                        typeOK ++
+                      }
+                      if(place.name.toLowerCase().indexOf('brewing')>-1){
+                        typeOK ++
+                      }
+                    }
+
+                    if(typeOK > 0){
+                      
+                      
+                    if(place.formatted_address){
+                      let addressArray = place.formatted_address.split(', ').slice(0,2);
+                      place.vicinity = addressArray.join(', ');
+                    }
+
+                      let resultLocation = place.geometry.location,
+                            distance = that._distance (latitude, longitude, resultLocation.lat(), resultLocation.lng())
+                      
+                      place.latitude = resultLocation.lat();
+                      place.longitude = resultLocation.lng();
+                      place.distance = distance;
+                      place.sort = distance;
+                      place.cacheTimestamp = Date.now();
+                      place.favorite = {};
+                      place.organization = true;
+                      delete place.adr_address;
+                      delete place.address_components;
+                      delete place.geometry;
+                      delete place.icon;
+                      delete place.id;
+                      delete place.photos;
+                      delete place.reference;
+                      delete place.scope;
+                      delete place.types;
+                      delete place.utc_offset;
+                    
+                      
+                      if(distance <= 10){
+
+                        that._setData(place, place.place_id, 'GOOGLE');
+                        
+                       
+                      }
+                    }
+      
+                  }
+                }
+              }) 
+          }
+          
+        }
+      
+    },
+
+   _setFromDatabase: function (location) {
+    
+    if(location){
+      const latitude = location.latitude,
+            longitude = location.longitude,
+            radius = 10;
+
+      if (latitude && longitude) {
+
+          const allObject = this.allObject,
+                that = this,
+                app = this.$.auth.app,
+                firebaseRef = app.database().ref('GeoFire'),
+                geoFire = new GeoFire(firebaseRef),
+                query = {center: [latitude, longitude], radius: radius * 1.609344};
+          let number = 0;
+
+            geoFire.query(query).on("key_entered", function (key, location, distance) {
+              app.database().ref(`/organization/${key}`)
+                .once('value').then(function (snapshot) {
+                  if (!snapshot.exists()) {
+                      console.log('null')
+                      return null;
+                  }
+                  const pub = snapshot.val();
+                  const place_id = snapshot.key;
+
+                  pub.ratingTotal = 0;
+                  pub.ratingYes = 0;
+                  pub.ratingNo = 0;
+                  pub.ratingPercent=null;
+                  let dislike = false;
+
+                  pub.vicinity = (pub.vicinity) ? pub.vicinity : pub.formatted_address.split(', ').slice(0,2).join(', ');
+
+                  if(snapshot.child('favorite').exists()){
+                    snapshot.child('favorite').forEach(favorite =>{
+                      pub.ratingTotal ++
+                      if(favorite.child('rating').val() === 'yes'){
+                        pub.ratingYes++
+                      }else if(favorite.child('rating').val() === 'no'){
+                        pub.ratingNo++
+                        if(that.user){
+                          if(that.user.uid){
+                              if(favorite.key === that.user.uid){
+                                  dislike = true;
+                              }
+                          }
+                        }
+                      }
+                    })
+                  }
+              if(pub.ratingTotal >0){
+                  pub.ratingPercent = Math.round((pub.ratingYes/pub.ratingTotal)*1000)/10;
+              }
+
+              var pubDistance = distance * 0.621371;
+              pub.distance = pubDistance;
+
+              if (location) {
+                  pub.latitude = location[0];
+                  pub.longitude = location[1];
+              }
+
+              if (that._isPremium(pub.plan)) {
+                  if (pubDistance <= 5) {
+                      pub.sort = pubDistance - 5;
+
+                  } else {
+                      pub.sort = pubDistance;
+                  }
+              } else {
+                  if(dislike){   
+                      pub.sort = pubDistance+10
+                  }else{
+                      pub.sort = pubDistance;
+                  }
+              }
+
+              return pub;
+
+
+              })
+              .then(pub => {
+                  if (!pub) {
+                      return null;
+                  }
+                  that._setData(pub, pub.place_id, 'DATABASE');
+
+                
+
+                  return pub;
+
+              })
+            
+          })
+          
+
+      }
+    }
+
+  },
+  
+
+  _setData: function(pub, place_id, type){
+
+    if(pub && place_id){
+
+      
+
+      let currentPub = this.allObject[place_id];
+      let merged = Object.assign({}, (currentPub) ? currentPub : {}, pub );
+      let index;
+
+      merged.place_id = place_id;
+      
+
+      if (currentPub) {
+        
+        //data exists so overwrite array with merged data
+        //to avoid null issues, arrayPosition is +1 more than index
+        index = currentPub.arrayPosition-1;
+
+        this.set(`allArray.${index}`, merged);
+        // console.log(currentPub.name, pub.name, type);
+       
+      }else{
+        //no data exists so push data to array
+
+        let position = this.push('allArray', merged);
+        merged.arrayPosition = position;
+
+        index = position-1;
+      }
+
+      
+      
+      this.set(`allObject.${place_id}`, merged);
+      
+
+      this.notifyPath(`allArray.${index}.sort`);
+        
+      //set copy of merged data to cache
+      let saveObj = Object.assign({}, merged);
+
+      //so not save array-position or user-data to cache;
+      delete saveObj.arrayPosition;
+      delete saveObj.userData;
+
+      //set timestamp and identify as organization
+      saveObj.cacheTimestamp = Date.now();
+      saveObj.organization = true;
+      
+      //do not cache user_data
+      if(type !== 'USER_DATA'){
+        window.localStorage.setItem(`organization_${place_id}`, JSON.stringify(saveObj));
+      }
+    }
+  
+
+  },
+
+   _distance: function (myLat, myLng, pubLat, pubLng){
+          var R = 3959; 
+          var dLat = this.deg2rad(pubLat-myLat);  
+          var dLon = this.deg2rad(pubLng-myLng); 
+          var a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(myLat)) * Math.cos(this.deg2rad(pubLat)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+
+          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+          var d = R * c; 
+          return d
+       },
+
+       deg2rad: function (deg) {
+              return deg * (Math.PI/180)
+       },
+
+
+
+    _removeOldCacheData: function (){
+      if(this.online){
+
+        for ( var i = 0; i<window.localStorage.length; i++ ) { 
+          try{
+            if(window.localStorage.getItem(window.localStorage.key(i)) !== undefined){
+            var storedItem = JSON.parse(window.localStorage.getItem(window.localStorage.key(i)));
+            var timestamp = storedItem.cacheTimestamp+(1000*60);
+            if(storedItem.organization){
+              if(timestamp){
+                if(timestamp < Date.now()){
+                  window.localStorage.removeItem(window.localStorage.key(i));
+                  console.log('removed cache item');
+                }
+              }
+              }else{
+                // window.localStorage.removeItem(window.localStorage.key(i));
+              }
+            }
+          }catch (error) {
+            console.log('CACHE CLEANUP ERROR: '+error);
+            window.localStorage.removeItem(window.localStorage.key(i));
+          }
+        }
+      }
+
+    },
+
+      _distance: function (myLat, myLng, pubLat, pubLng){
+          var R = 3959; 
+          var dLat = this.deg2rad(pubLat-myLat);  
+          var dLon = this.deg2rad(pubLng-myLng); 
+          var a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(myLat)) * Math.cos(this.deg2rad(pubLat)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+
+          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+          var d = R * c; 
+          return d
+       },
+
+
+       deg2rad: function (deg) {
+              return deg * (Math.PI/180)
+       },
+
+        _isPremium: function (plan){
+        var today = Date.now()/1000;
+        if(plan){
+          if(plan.current_period_end){
+            if(plan.current_period_end > today){
+              return true;
+            }
+          }
+        }
+        return false;
+       },
+
+
+      _test: function (obj){
+        console.log('TEST', obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

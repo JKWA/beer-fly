@@ -133,9 +133,8 @@
     </firebase-auth>
 
     <beer-banner
-      google-photo="[[place.photos]]"
-      photo-index="4"
-      photo="[[category.image]]"
+      google-photo-url="[[organization.googlePhoto.FOOD_TRUCK.url]]"
+      photo="[[category.image.banner]]"
       org-id="[[orgId]]">
     </beer-banner>
 
@@ -240,9 +239,6 @@
           type: Boolean
         },
 
-        place:{
-          type:Object
-        },
 
         truckId:{
           type:String

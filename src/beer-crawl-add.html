@@ -39,7 +39,7 @@
         <paper-toggle-button checked="{{publicStatus}}">[[publicMessage]]</paper-toggle-button>
         
         <paper-input id="crawlNameInput" label="Crawl Name" required maxlength="100" char-counter value="{{addCrawlName}}"></paper-input>
-        <paper-textarea id="crawlDescriptionInput" label="Crawl Description" required maxlength="500" char-counter value="{{addCrawlDescription}}"></paper-textarea>
+        <paper-textarea always-float-label id="crawlDescriptionInput" label="Crawl Description" required maxlength="500" char-counter value="{{addCrawlDescription}}"></paper-textarea>
         <div class="crawl-add-buttons">
           <paper-button id="addNewCrawlButton" on-tap="_addNewCrawl">Add New Crawl</paper-button>
         </div>
@@ -85,9 +85,7 @@
         notify:true
       },
 
-      place:{
-        type:Object
-      },
+      organization:Object,
 
       user:Object
 
@@ -96,7 +94,7 @@
     
     _addNewCrawl(){
       var error = false
-      var place = this.place;
+      var organization = this.organization;
       var that = this;
 
       if(this.addCrawlName.length === 0){
@@ -125,15 +123,15 @@
           public: (this.publicStatus)  ? this.publicStatus : null,
           created: Math.round(Date.now()/1000)
         }
-        if(place){
-          if(place.name && place.place_id && place.latitude && place.longitude && place.formatted_address){
+        if(organization){
+          if(organization.name && organization.place_id && organization.latitude && organization.longitude && organization.formatted_address){
             obj.organization = {}
-            obj.organization[place.place_id] = {
-              name:place.name,
-              place_id:place.place_id,
-              latitude:place.latitude,
-              longitude:place.longitude,
-              formatted_address:place.formatted_address,
+            obj.organization[organization.place_id] = {
+              name:organization.name,
+              place_id:organization.place_id,
+              latitude:organization.latitude,
+              longitude:organization.longitude,
+              formatted_address:organization.formatted_address,
               created: Math.round(Date.now()/1000)
             }
           }
@@ -143,7 +141,7 @@
           .push(obj)
           .then(() =>{
             if(obj.organization){
-              that.message = `${this.addCrawlName} was created with ${place.name}.`
+              that.message = `${this.addCrawlName} was created with ${organization.name}.`
             }else{
               that.message = `${this.addCrawlName} was created.`
             }

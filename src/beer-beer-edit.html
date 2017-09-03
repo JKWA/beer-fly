@@ -1,6 +1,8 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 
@@ -8,12 +10,9 @@
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
-<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
-<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
-
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-style-select.html">
 
@@ -48,8 +47,20 @@
         background-color:white;
       }
 
+      section{
+        height: 40vh;
+        /* background-color:red; */
+        
+        overflow-y: scroll;
+      }
+
       .abv {
-        width: 100px;
+        width: 75px;
+      }
+
+      description{
+        height: 200px;
+        overflow-y: scroll;
       }
 
       .beer-name{
@@ -66,6 +77,10 @@
         font-size: 1em;
         font-weight: 600;
         color: var(--app-primary-color);
+      }
+
+      .submit-button{
+        width: 95%;
       }
 
       .saved-message{
@@ -106,6 +121,22 @@
          @apply --layout-end-justified;
       }
 
+      .style-select{
+        height:225px;
+      }
+
+      .style-header{
+        font-size: 1.2em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .style-wrapper{
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
+        cursor:pointer;
+      }
+
     </style>
 
     <firebase-auth  
@@ -114,70 +145,60 @@
         user="{{user}}">
     </firebase-auth>
 
-
-    <div class="card">
-
     <div class="beer-name" hidden$="[[!beerId]]">[[beerName]]</div>
-        <paper-input 
-          always-float-label
-          hidden$="[[beerId]]"
-          id="beerName"
-          label="Beer Name" 
-          char-counter 
-          maxlength="100" 
-          error-message="Required"
-          value="{{beerName}}">
-        </paper-input>
 
-        <paper-textarea 
-          always-float-label
-          id="description"
-          label="Beer Description" 
-          char-counter 
-          maxlength="500" 
-          value="{{description}}">
-        </paper-textarea>
+    <paper-tabs selected="{{selectedTab}}">
+      <paper-tab>Style</paper-tab>
+      <paper-tab>Description</paper-tab>
+    </paper-tabs>
 
-        <paper-input 
-            always-float-label
-            id="abv" 
-            class="abv" 
-            label="ABV" 
-            error-message="Invalid"
-            value="{{abv}}">
-          <div slot="suffix">%</div>
-         
-        </paper-input>
+    
+    <iron-pages selected="{{selectedTab}}">
 
-        <beer-style-select
-            preset-style-name="{{presetStyleName}}"
-            selected-style="{{selectedStyle}}">
-        </beer-style-select>
+      <section>
+          <div class="card">
+          <beer-style-select
+            org-id="[[orgId]]"
+            beer-id="[[beerId]]"
+            saved-style-id="[[styleId]]">
+          </beer-style-select>
+          </div>
+      </section>
 
+      <section>
+        <div class="card">
 
-    </div>
+          <paper-input 
+              always-float-label
+              id="abv" 
+              class="abv" 
+              label="ABV" 
+              error-message="Invalid"
+              value="{{abv}}">
+            <div slot="suffix">%</div>
+          </paper-input>
 
-    <div class="card">
-        <paper-button 
-            id="submitButton" 
-            on-tap="_addNewBeer" 
-            raised
-            class="button">[[buttonName]]</paper-button>
-    </div>
+          <div class="description">
+            <paper-textarea 
+              always-float-label
+              id="description"
+              label="Description" 
+              char-counter 
+              maxlength="500" 
+              value="{{description}}">
+            </paper-textarea>
+          </div>
+
+          
 
 
-   <paper-toast 
-      class="toast" 
-      id="savedToast" 
-      horizontal-align="right"
-      horizontal-offset="50"
-      vertical-offset="100"
-      duration="5000">
-      <div> 
-        Saved [[savedMessage]]
-        <br>
-      </div>
-    </paper-toast>
+        </div>
+      </section>
+
+      
+    </iron-pages>
+
+
 
    
   </template>
@@ -195,6 +216,8 @@
           type: Number
         },
 
+        savedAbv:Number,
+
         beer: {
           type: Object
         },
@@ -202,12 +225,13 @@
         buttonName:{
           type:String,
           value: 'Add Beer'
-
         },
 
         description:{
           type: String
         },
+
+        savedDescription:String,
         
         beerId:{
           type: String,
@@ -221,11 +245,12 @@
           type: Object
         },
 
-        place:{
-          type: Object
+        orgId:{
+          type:String
         },
 
         presetStyleName:String,
+        styleName:String,
 
         returnOrgId:{
             type: String
@@ -245,6 +270,11 @@
           value: function (){return {};}
         },
 
+        selectedTab:{
+          type:Number,
+          value:0
+        },
+
         styleId:{
           type: Number
         },
@@ -262,58 +292,81 @@
 
       ready: function (){
         // this.$.beerName.invalid = true;
+          this.$.description.addEventListener('blur', event =>{
+          if(this.savedDescription !== this.description){
+            if(this.beerId && this.orgId){
+              firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/brewBeer/${this.beerId}`)
+                .update({description: this.description})
+                .then(()=>{
+                  console.log('description save');
+                  this.savedDescription = this.description;
+                })
+                .catch(error =>{
+                  console.log('ERROR', error);
+                })
+              }
+            }
+          })
+
+          this.$.abv.addEventListener('blur', event =>{
+          if(this.savedAbv !== this.abv){
+            if(this.beerId && this.orgId){
+              firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/brewBeer/${this.beerId}`)
+                .update({abv: Number(this.abv)})
+                .then(()=>{
+                  console.log('abv save');
+                  this.savedAbv = this.abv;
+                })
+                .catch(error =>{
+                  console.log('ERROR', error);
+                })
+              }
+            }
+          })
+
       },
 
       observers:[
         '_validateABV(abv)',
-        '_validateName(beerName)',
-        '_validateAll(name, abv)',
-        // '_ifBeerId(beerId)',
         '_prefillData(beerId)'
       ],
 
+      _changeToStyleMenu: function (){
+        this.selectedTab = 1;
+      },
 
-
-      // _ifBeerId: function (beerId) {
-      //   console.log('getting beer id', beerId);
-        
-      //   if(beerId){
-      //     // this.$.beer.disabled = false;
-      //     this.buttonName = "SAVE";
-      //   }else{
-      //     // this.$.beer.disabled = true;
-      //     this.beerName = null;
-      //     this.description = null;
-      //     this.searchString = null;
-      //     this.styleName = null;
-      //     this.styleId = null;
-      //     this.abv = null;
-      //     this.buttonName = "ADD BEER";
-
-      //   }
-      // },
+  
 
       _prefillData: function (beerId) {
-        console.log('prefill')
+        console.log('prefill', beerId)
+        
       
         if(beerId){
           const that = this;
-          this.buttonName = "SAVE";
+          // this.buttonName = "SAVE";
  
           firebase.database(this.$.auth.app).ref(`/beer/${beerId}`)
             .once('value')
             .then(snapshot =>{
+              console.log(snapshot.val())
                 if(snapshot.exists()){
                   that.beerName = (snapshot.child('name').exists()) ? snapshot.child('name').val() : '';
                   that.description = (snapshot.child('description').exists()) ? snapshot.child('description').val() : '';
                   that.abv = (snapshot.child('abv').exists()) ? snapshot.child('abv').val() : '';
-                  that.presetStyleName = (snapshot.child('styleName').exists()) ? snapshot.child('styleName').val() : '';
+                  that.styleName = (snapshot.child('styleName').exists()) ? snapshot.child('styleName').val() : '';
+                  that.styleId = (snapshot.child('styleId').exists()) ? snapshot.child('styleId').val() : null;
+                  that.savedAbv = that.abv;
+                  that.savedDescription = that.description;
+
 
               }else{
-                that.beerName = '';
+                // that.beerName = '';
                 that.description = '';
                 that.abv = null;
                 that.presetStyleName = '';
+                that.styleId = null;
+                that.savedAbv = that.abv;
+                that.savedDescription = that.description;
               }
             })
  
@@ -325,7 +378,8 @@
             this.styleId = null;
             this.abv = null;
             this.buttonName = "ADD BEER";
-  
+            this.savedAbv = this.abv;
+            this.savedDescription = this.description;
         }
       },
 
@@ -372,146 +426,6 @@
       },
 
    
-        // _resetFormStyleData: function (){
-        //   this.styleName = ''
-        //   this.styleId = ''
-        //   this.$.options.hidden = false;
-
-        // },
-        
-      _addNewBeer: function (){
-
-        let obj = {
-                    name: (this.beerName) ? this.beerName : null,
-                    description: (this.description) ? this.description : null,
-                    abv: (Number(this.abv)) ? Number(this.abv) : null,
-                    styleId: Number(this.selectedStyle.styleId)
-                  }
-
-        if(this.orgId){
-          if(this.beerId){
-            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/brewBeer/${this.beerId}`)
-              .update(obj);
-          }else{
-            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/brewBeer/${this.beerId}`)
-              .push(obj);
-          }
-        }
-          
-      },
-
-
-    //  _addNewBeer: function (){
-    //     this._validateAll();
-    //     if(this.valid){
-
-    //       var beer = {};
-    //       var org = {};
-    //       var obj = {};
-    //       var category = this.selectedStyle
-    //       var pub = this.organization;
-
-    //       var pre = 'brewBeer/';
-         
-    //       obj['beerLastUpdated'] = Date.now();
-          
-    //       if(this.beerId){
-    //         var id = this.beerId
-    //         obj[pre+id+'/lastEdited'] = Date.now();
-    //         obj[pre+id+'/edited'] = true;
-            
-    //       }else{
-    //         var id = firebase.database(this.$.auth.app).ref('beer').push().key;
-    //         obj[pre+id+'/createDate'] = Date.now();
-    //         obj[pre+id+'/new'] = true
-    //       }
-    //       var orgPre = pre+id;
-
-          
-    //       if(this.abv){
-    //         obj[orgPre+'/abv'] = Number(this.abv);
-    //       }
-    //       if(category.category){
-    //         obj[orgPre+'/category'] = category.category;
-    //       }
-    //       if(category.categoryName){
-    //         obj[orgPre+'/categoryName'] = category.categoryName;
-    //       }
-    //       if(category.categoryTitle){
-    //         obj[orgPre+'/categoryTitle'] = category.categoryTitle;
-    //       }
-    //       if(category.order){
-    //         obj[orgPre+'/order'] = Number(category.order);
-    //       }
-
-    //       if(category.styleId){
-    //         obj[orgPre+'/styleId'] = Number(category.styleId);
-    //       }
-
-    //       if(category.styleName){
-    //         obj[orgPre+'/styleName'] = category.styleName; 
-    //       }
-
-    //       if(this.description){
-    //         obj[orgPre+'/description'] = this.description;
-    //       }
-    //       if(id){
-    //         obj[orgPre+'/id'] = id;
-    //       }
-    //       //only replace name if new, not editing
-    //       if(this.beerName){
-    //         if(!this.beerId){
-    //           obj[orgPre+'/name'] = this.beerName;
-    //         }
-    //       }
-        
-
-    //       var that = this;
-         
-    //       if(this.owner){
-    //         obj[orgPre+'/status'] = 'verified';
-    //       }else{
-    //         obj[orgPre+'/status'] = 'not_verified';
-    //       }
-    //       // console.log('save', JSON.stringify(obj));
-            
-             
-    //       this.$.pub.ref.update(obj)
-    //         .then(function(){
-
-    //           console.log("Saved");
-    //           that.$.savedToast.open();
-    //           that.savedMessage = that.beerName;
-    //           if(!that.beerId){
-    //             that.abv = '';
-    //             that.beerName = '';
-    //             that.description = '';
-    //             that.valid = false;
-    //             that.searchString = '';
-    //             that.selectedStyle={};
-    //             // that._resetFormStyleData();
-    //           }
-    //         })
-    //         .catch(function (error) {
-    //           console.log("Error" + error);
-    //         })
-    
-    //     }else{
-    //       console.log('not valid');
-    //     }
-
-    //   },
-
-
-      _computeNameForUrl: function (name) {
-        'use strict';
-        if (name) {
-          name = name.replace(/\s/g, '-')
-          return name.replace(/[^a-zA-Z\d\s:]/g, '');
-        } else {
-          return 'unknown-name'
-        }
-      },
 
       _test(obj){
         console.log('test', obj);

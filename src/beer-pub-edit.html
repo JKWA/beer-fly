@@ -32,6 +32,10 @@
         margin: 5px 10px;
       }
 
+      paper-dropdown-menu{
+        margin: 20px 0 0 0;
+      }
+
       .header{
         font-size: 1.2em;
         font-weight: 400;
@@ -90,69 +94,70 @@
     </paper-tabs>
 
     <iron-pages selected="{{selected}}">
-      <div>
-        <div class="header">This is a ...</div>
-        <div class="wrapper">
-          <paper-checkbox checked="{{editOrganization.PUB}}">Pub</paper-checkbox>&nbsp
-          <paper-checkbox checked="{{editOrganization.BREWERY}}">Brewery</paper-checkbox>&nbsp
-          <paper-checkbox checked="{{editOrganization.TRUCK}}">Food Truck</paper-checkbox>&nbsp
-        </div>
-
-        <div class="header">Show Categories</div>
-        <beer-pub-category
-          org-id="[[orgId]]"
-          organization="[[editOrganization]]">
-        </beer-pub-category>
-
-        <div class="header">Tags</div>
-        <div class="wrapper">
-          <paper-checkbox checked="{{editOrganization.dogFriendly}}">Dogs allowed</paper-checkbox>&nbsp
-          <paper-checkbox checked="{{editOrganization.patio}}">Outdoor patio</paper-checkbox>&nbsp
-          <paper-checkbox checked="{{editOrganization.over21}}">Must be 21</paper-checkbox>&nbsp
-        </div>
-
-      </div>
-      <div>
-        <div class="description-wrapper">
-
-          <paper-dropdown-menu no-label-float label="Currency">
-            <paper-listbox 
-              attr-for-selected="currency"
-              slot="dropdown-content" 
-              selected="{{editOrganization.currencyCode}}">
-              <paper-item currency="USD">US Dollar</paper-item>
-              <paper-item currency="EUR">Euro</paper-item>
-              <paper-item currency="GBP">Pound sterling</paper-item>
-            </paper-listbox>
-          </paper-dropdown-menu>
-          <div class="motto">
-            <paper-input label="Motto" value="{{motto}}" maxlength=100 char-counter></paper-input>
+      <section>
+        <div>
+          <div class="header">This is a ...</div>
+          <div class="wrapper">
+            <paper-checkbox checked="{{editOrganization.PUB}}">Pub</paper-checkbox>&nbsp
+            <paper-checkbox checked="{{editOrganization.BREWERY}}">Brewery</paper-checkbox>&nbsp
+            <paper-checkbox checked="{{editOrganization.TRUCK}}">Food Truck</paper-checkbox>&nbsp
           </div>
-          <div class="description">
-            <paper-textarea label="Description" value="{{description}}" maxlength=2000 char-counter></paper-textarea>
+
+          <div class="header">Show Categories</div>
+          <beer-pub-category
+            org-id="[[orgId]]"
+            organization="[[editOrganization]]">
+          </beer-pub-category>
+
+          <div class="header">Tags</div>
+          <div class="wrapper">
+            <paper-checkbox checked="{{editOrganization.dogFriendly}}">Dogs allowed</paper-checkbox>&nbsp
+            <paper-checkbox checked="{{editOrganization.patio}}">Outdoor patio</paper-checkbox>&nbsp
+            <paper-checkbox checked="{{editOrganization.over21}}">Must be 21</paper-checkbox>&nbsp
           </div>
-       
-            <paper-button on-tap="_save" class="save-button">Save</paper-button>
+
+        </div>
+      </section>
+      <section>
+        <div>
+
+          <div class="description-wrapper">
+
+            <paper-dropdown-menu no-label-float label="Currency">
+              <paper-listbox 
+                attr-for-selected="currency"
+                slot="dropdown-content" 
+                selected="{{editOrganization.currencyCode}}">
+                <paper-item currency="USD">US Dollar</paper-item>
+                <paper-item currency="EUR">Euro</paper-item>
+                <paper-item currency="GBP">Pound sterling</paper-item>
+              </paper-listbox>
+            </paper-dropdown-menu>
+            <div class="motto">
+              <paper-input id="motto" label="Motto" value="{{motto}}" maxlength=100 char-counter></paper-input>
+            </div>
+            <div class="description">
+              <paper-textarea always-float-label id="description" label="Description" value="{{description}}" maxlength=2000 char-counter></paper-textarea>
+            </div>
         
+              <!-- <paper-button on-tap="_save" class="save-button">Save</paper-button> -->
+          
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div>
-        <div class="header">Upload Banner Image</div>
-        <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_MAIN_banner" key="mainImage"></upload-image>
-      </div>
+      <section>
+        <div>
+          <div class="header">Upload Banner Image</div>
+          <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_MAIN_banner" key="mainImage"></upload-image>
+        </div>
+      </section>
         
     </iron-pages>
        
-       
-        
     </template>
 
    
-
- 
-  
-
   <script>
 
     Polymer({
@@ -175,7 +180,15 @@
           type:String
         },
 
+        savedDescription:{
+          type:String
+        },
+
         motto:{
+          type:String
+        },
+
+        savedMotto:{
           type:String
         },
 
@@ -201,12 +214,46 @@
       observers:['_watchDescription(editOrganization.description)',
                   '_watchMotto(editOrganization.motto)'],
 
+      ready: function(){
+        this.$.motto.addEventListener('blur', event =>{
+          if(this.savedMotto !== this.motto){
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}`)
+              .update({motto: this.motto})
+              .then(()=>{
+                console.log('motto save');
+                this.savedMotto = this.motto;
+              })
+              .catch(error =>{
+                console.log('ERROR', error);
+              })
+          }
+        })
+
+        this.$.description.addEventListener('blur', event =>{
+          if(this.savedDescription !== this.description){
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}`)
+              .update({description: this.description})
+              .then(()=>{
+                console.log('description save');
+                this.savedDescription = this.description;
+              })
+              .catch(error =>{
+                console.log('ERROR', error);
+              })
+          }
+        })
+
+      },
+
       _watchDescription: function (description){
         this.description = description;
+        this.savedDescription = description
+        
       },
 
       _watchMotto: function (motto){
         this.motto = motto;
+        this.savedMotto = motto;
       },
 
       _save: function(event){

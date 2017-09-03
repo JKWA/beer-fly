@@ -35,13 +35,12 @@
 
     </style>
 
-    <div hidden$="[[!place]]">
+    <div hidden$="[[!organization]]">
       
-        <!-- <div class="open-text">Currently [[place.open]]</div> -->
 
         <div class="hour-wrapper">
           <div>
-            <template is="dom-repeat" items="[[_toArray(place.opening_hours.weekday_text)]]" as="hours">
+            <template is="dom-repeat" items="[[_toArray(organization.opening_hours.weekday_text)]]" as="hours">
               <div class="hours-text">[[hours]]</div>
             </template>
           </div>
@@ -57,7 +56,7 @@
       is: 'beer-hours-card',
 
       properties: {
-        place:{
+        organization:{
           type: Object
         }
       },

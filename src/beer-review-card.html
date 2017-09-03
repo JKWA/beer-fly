@@ -112,7 +112,7 @@
     <div>
         <div animated-shadow="false">
 
-            <template is="dom-repeat" items="[[_toArray(place.reviews)]]" as="review">
+            <template is="dom-repeat" items="[[_toArray(organization.reviews)]]" as="review">
                 <div class="review" animated-shadow="false">
                   <div>
                     <beer-rating-card rating="[[review.rating]]">
@@ -138,7 +138,7 @@
 
       properties:{
 
-        place: {
+        organization: {
           type:Object
         }
 

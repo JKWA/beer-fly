@@ -159,8 +159,7 @@
                 attr-for-selected="locationitem"
                 selected-class="location-list" 
                 class="location-list"
-                selected="{{selectLocation}}"
-                on-tap="_testOnTap">
+                selected="{{selectLocation}}">
 
             <template is="dom-repeat" items="[[searchLocationArray]]" as="location">
               <paper-item locationitem="[[location]]">[[location.address]]</paper-item>

@@ -9,11 +9,8 @@
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
-<link rel="import" href="beer-crawl-select.html">
-<link rel="import" href="beer-pub-card-favorite.html">
 
 <link rel="import" href="beer-pub-icons.html">
-<!-- <link rel="import" href="beer-pub-favorite.html"> -->
 <link rel="import" href="beer-pub-banner.html">
 
 
@@ -59,17 +56,6 @@
         margin: 10px 20px;
       }
 
-      .favorite-rating{
-        overflow: hidden;
-        color: var(--app-accent-color);
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-      }
-
-    
 
       .card-information{
         padding: 10px;
@@ -110,21 +96,6 @@
         color: var(--app-secondary-color);
       }
 
-      .swipe{
-        overflow:hidden;
-      }
-
-      .favorite-icon-message{
-        font-size: 1.0em;
-        font-weight: 300;
-        margin: 7px 0 0 0;
-        color: var(--app-accent-color);
-      }
-
-      .icons-wrapper{
-        @apply --layout-horizontal;
-        @apply --layout-wrap;
-      }
 
       .sponsor-wrapper{
         font-size: .8em;
@@ -162,14 +133,11 @@
         <div class="card-wrapper">
 
           <div class="card-information">
-
        
               <div class="items">
-                <a aria-label$="[[organization.name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
+                <a aria-label$="[[organization.name]]" href$="/[[urlName]]/main?orgid=[[placeId]]&[[locationParams]]">
                   <div class="name">[[organization.name]]</div>
-                </a>
-
-                <a aria-label$="[[organization.name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
+               
                 <template is="dom-if" if="[[_isPremium]]">
                   <div class="motto">[[organization.motto]]</div>
                 </template>
@@ -180,11 +148,12 @@
           </div>
         
       </div>
+      <!-- FAVORITE:[[organization.userData.favorite]] -->
         
         <beer-pub-banner
           organization="[[organization]]"
-          user-data="[[userData]]"
           place-id="[[placeId]]"
+          page="[[page]]"
           open-crawl="{{openCrawl}}"
           edit="[[edit]]">
         </beer-pub-banner>
@@ -204,10 +173,6 @@
         edit:{
           type:Boolean,
           value:false,
-        },
-
-        favorite:{
-          type:Boolean
         },
 
         login: {
@@ -236,6 +201,10 @@
           type:Object,
           notify:true
         },
+
+        locationParams:String,
+
+        page:String,
       
         user: {
           type:Object
@@ -248,11 +217,6 @@
         urlName:{
             type: String,
             computed: '_computeNameForUrl(organization.name)'
-        },
-
-        _computedImageUrl:{
-          type: String,
-          computed: '_computeImageUrl(organization.mainImage.banner.url)'
         },
 
         _computedPlaceHolder:{
@@ -300,14 +264,6 @@
         return Math.round(distance*10)/10
       },
 
-
-      _computeImageUrl: function (url){
-        if(url){
-          return url
-        }
-        return false
-      },
-
       _computeNameForUrl: function (name) {
           'use strict';
           if (name) {
@@ -322,23 +278,6 @@
         if(thumbnail){
           return 'data:image/png;base64, '+thumbnail;
         }
-      },
-
-      _computeFavoriteStatus: function (favorite){
-        console.log(favorite);
-        if(!favorite){
-          return false;
-        }
-        if(!favorite[this.user.uid]){
-          return false;
-        }
-        if(favorite[this.user.uid].favorite){
-          if(favorite[this.user.uid].favorite === 'yes'){
-            return true;
-          }
-        }
-        return false;
-
       },
 
       _test: function(obj){

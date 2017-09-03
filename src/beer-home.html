@@ -23,9 +23,11 @@
 <link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-bottom-animation.html">
 
-<link rel="import" href="beer-home-search-data.html">
+<!-- <link rel="import" href="beer-home-search-data.html">
 <link rel="import" href="beer-home-geo-data.html">
-<link rel="import" href="beer-home-cache-data.html">
+<link rel="import" href="beer-home-cache-data.html"> -->
+<link rel="import" href="beer-data-home.html">
+
 
 
 <link rel="import" href="beer-icons.html">
@@ -87,6 +89,7 @@
       padding: 10px;
       @apply --paper-material-elevation-1;
       min-height: 150px;
+      background-color: white;
       @apply --layout-vertical;
     }
 
@@ -209,25 +212,16 @@
 
     <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
 
-    <beer-home-geo-data
+    <beer-data-home
       location="[[location]]"
-      name="[[name]]"
+      page="[[page]]"
+      online="[[online]]"
+      lazy-loaded="[[lazyLoaded]]"
+      user-data="[[userData]]"
       all-object="{{allObject}}"
       all-array="{{allArray}}">
-    </beer-home-geo-data>     
+    </beer-data-home> 
 
-    <beer-home-cache-data
-      location="[[location]]"
-      name="[[name]]"
-      all-object="{{allObject}}"
-      all-array="{{allArray}}">
-    </beer-home-cache-data>    
-
-    <beer-home-search-data
-      location="[[location]]"
-      all-object="{{allObject}}"  
-      all-array="{{allArray}}">
-    </beer-home-search-data> 
 
     <template is="dom-if" if="[[_isNewUser]]">
       <div class="card">
@@ -292,10 +286,11 @@
         <div class="pub-card">
           <beer-pub-card 
             open-edit-pub-crawl="{{homeDialogOpened}}"
-            place-id="[[pub.place_id]]"
-            user-data="[[userData]]"
+            place-id="[[pub.place_id]]" 
+            page="home"
             organization="[[pub]]"
             edit-place="{{editPlace}}"
+            location-params="[[locationParams]]"
             login="{{login}}"
             edit>
           </beer-pub-card>
@@ -357,13 +352,13 @@
 
         allObject:{
           type: Object,
-          value: function (){return {}},
+          
           notify: true,
         },
 
         allArray: {
           type: Array,
-          value: function (){return []},
+        
           notify: true
         },
 
@@ -407,6 +402,7 @@
         latitude:Number,
         longitude:Number,
 
+        lazyLoaded:Boolean,
 
         location: {
           type: Object,
@@ -419,7 +415,9 @@
           
         },
 
-        name:String,
+        online:Boolean,
+
+        page:String,
 
         sortedLocationHistory: {
           type: Array
@@ -452,6 +450,8 @@
             type: Number,
             value: 10
         },
+
+        locationParams:String,
 
         searchString:{
           type: 'String',
@@ -545,32 +545,32 @@
       },
 
       _locationChanged: function (location){
-        if(location){
-        // this.set('allArray', []);
-        // this.set('allObject', {});
-          if(location.latitude && location.longitude){
-            if(Array.isArray(this.allArray)){
-                  // for (var i=0; i<this.allArray.length; i++){
-              for(i=this.allArray.length-1; i>=0; i--){
-                var pub = this.allArray[i];
+        // if(location){
+        // // this.set('allArray', []);
+        // // this.set('allObject', {});
+        //   if(location.latitude && location.longitude){
+        //     if(Array.isArray(this.allArray)){
+        //           // for (var i=0; i<this.allArray.length; i++){
+        //       for(i=this.allArray.length-1; i>=0; i--){
+        //         var pub = this.allArray[i];
                 
-                var distance = this._distance (location.latitude, location.longitude, pub.latitude, pub.longitude);
-                // console.log('ARRAY', distance);
-                var sort = distance;
-                if (this._isPremium(pub.plan)) {
-                    if(distance <= 10){
-                        sort = sort-10;
-                    }
-                }
-                this.set('allArray.'+[i]+'.distance', distance)
-                this.set('allArray.'+[i]+'.sort', sort)
-                this.set('allArray.'+[i]+'.distance', distance)
-                this.set('allObject.'+pub.place_id+'.sort', sort)
-                this.set('allObject.'+pub.place_id+'.arrayPosition', i+1);
-              }
-            }
-          }
-        }
+        //         var distance = this._distance (location.latitude, location.longitude, pub.latitude, pub.longitude);
+        //         // console.log('ARRAY', distance);
+        //         var sort = distance;
+        //         if (this._isPremium(pub.plan)) {
+        //             if(distance <= 10){
+        //                 sort = sort-10;
+        //             }
+        //         }
+        //         this.set('allArray.'+[i]+'.distance', distance)
+        //         this.set('allArray.'+[i]+'.sort', sort)
+        //         this.set('allArray.'+[i]+'.distance', distance)
+        //         this.set('allObject.'+pub.place_id+'.sort', sort)
+        //         this.set('allObject.'+pub.place_id+'.arrayPosition', i+1);
+        //       }
+        //     }
+        //   }
+        // }
       },
 
 
@@ -617,60 +617,60 @@
       //   }
       // },
     
-    _orderData: function (latitude, longitude){
-      if(latitude && longitude){
+    // _orderData: function (latitude, longitude){
+    //   if(latitude && longitude){
 
-        var data = this.allArray;
-        for (let pub of data){
-          console.log(pub);
-          pub.distance = this._distance(latitude, longitude, pub.latitude, pub.longitude)//*0.621371;
+    //     var data = this.allArray;
+    //     for (let pub of data){
+    //       console.log(pub);
+    //       pub.distance = this._distance(latitude, longitude, pub.latitude, pub.longitude)//*0.621371;
 
-          if(this._isPremium(pub.plan)){
-            if(pub.distance  <= 5){
-                pub.sort = pub.distance -5;
-            }else{
-                pub.sort = pub.distance;
-            }
-          }else{
-              pub.sort = pub.distance;
-          }
+    //       if(this._isPremium(pub.plan)){
+    //         if(pub.distance  <= 5){
+    //             pub.sort = pub.distance -5;
+    //         }else{
+    //             pub.sort = pub.distance;
+    //         }
+    //       }else{
+    //           pub.sort = pub.distance;
+    //       }
 
-            this.set(`allArray.${pub.arrayPosition}`, pub );
-            // this.set(`allArray.${pub.arrayPosition}`, pub.distance);
-        }
-      }
-    },
+    //         this.set(`allArray.${pub.arrayPosition}`, pub );
+    //         // this.set(`allArray.${pub.arrayPosition}`, pub.distance);
+    //     }
+    //   }
+    // },
 
-    _setData: function (latitude, longitude){
-      if(latitude && longitude){
+    // _setData: function (latitude, longitude){
+    //   if(latitude && longitude){
 
-        if(Array.isArray(this.allArray)){
+    //     if(Array.isArray(this.allArray)){
 
-            for (var i=0; i<this.allArray.length; i++){
+    //         for (var i=0; i<this.allArray.length; i++){
 
-                var pub = this.allArray[i];
+    //             var pub = this.allArray[i];
 
-                // if(pub.place_id ==='ChIJJ_dUL-pBkFQRD3uY_y1errw'){
-                  console.log(pub);
-                // }
+    //             // if(pub.place_id ==='ChIJJ_dUL-pBkFQRD3uY_y1errw'){
+    //               console.log(pub);
+    //             // }
                 
-                var distance = this._distance (latitude, longitude, pub.latitude, pub.longitude);
+    //             var distance = this._distance (latitude, longitude, pub.latitude, pub.longitude);
 
-                var sort = distance;
+    //             var sort = distance;
                 
-                if(this._isPremium(pub.plan)){
-                    if(distance <= 5){
-                        sort = sort-5;
-                    }
-                }
-                this.set('allArray.'+[i]+'.distance', distance)
-                this.set('allArray.'+[i]+'.sort', sort)
-                // this.set('allArray.'+[i]+'.distance', distance)
-                this.set('allObject.'+pub.place_id+'.sort', sort)
-                this.set('allObject.'+pub.place_id+'.arrayPosition', i+1);
+    //             if(this._isPremium(pub.plan)){
+    //                 if(distance <= 5){
+    //                     sort = sort-5;
+    //                 }
+    //             }
+    //             this.set('allArray.'+[i]+'.distance', distance)
+    //             this.set('allArray.'+[i]+'.sort', sort)
+    //             // this.set('allArray.'+[i]+'.distance', distance)
+    //             this.set('allObject.'+pub.place_id+'.sort', sort)
+    //             this.set('allObject.'+pub.place_id+'.arrayPosition', i+1);
 
-            }
-        }
+    //         }
+    //     }
 
                 
 
@@ -678,97 +678,97 @@
         
 
 
-        var allObject = this.allObject
-        var that = this;
-        var app = this.$.auth.app;
-        var firebaseRef = app.database().ref('GeoFire');
-        var geoFire = new GeoFire(firebaseRef);
-        var query = {};
+    //     var allObject = this.allObject
+    //     var that = this;
+    //     var app = this.$.auth.app;
+    //     var firebaseRef = app.database().ref('GeoFire');
+    //     var geoFire = new GeoFire(firebaseRef);
+    //     var query = {};
         
-        // document.title = `Beer-Crawls: ${location.address}`;
-        query.center = [Number(latitude), Number(longitude)];
-        query.radius = 10*1.609344;
+    //     // document.title = `Beer-Crawls: ${location.address}`;
+    //     query.center = [Number(latitude), Number(longitude)];
+    //     query.radius = 10*1.609344;
 
-        geoFire.query(query)
-          .on("key_entered", function(key, location, distance) {
-            // that.splice("crawlData", 0, that.crawlData.length)
-            app.database().ref(`/organization/${key}`)
-              .once('value')
-              .then( snapshot => {
+    //     geoFire.query(query)
+    //       .on("key_entered", function(key, location, distance) {
+    //         // that.splice("crawlData", 0, that.crawlData.length)
+    //         app.database().ref(`/organization/${key}`)
+    //           .once('value')
+    //           .then( snapshot => {
                
-                if(!snapshot.exists){
-                  return null;
-                }
-                var pub = snapshot.val();
+    //             if(!snapshot.exists){
+    //               return null;
+    //             }
+    //             var pub = snapshot.val();
 
-                if(!pub.place_id){
-                  return null;
-                }
+    //             if(!pub.place_id){
+    //               return null;
+    //             }
 
-                      // pub.cacheTimestamp = Date.now()+604800000;
-                pub.cacheTimestamp = Date.now()
-                pub.organization=true;
-                window.localStorage.setItem('organization_'+pub.place_id, JSON.stringify(pub));
+    //                   // pub.cacheTimestamp = Date.now()+604800000;
+    //             pub.cacheTimestamp = Date.now()
+    //             pub.organization=true;
+    //             window.localStorage.setItem('organization_'+pub.place_id, JSON.stringify(pub));
 
                 
-              return pub
+    //           return pub
               
-            })
+    //         })
 
-            .then(pub => {
-              if(!pub){
-                return null;
-              }
+    //         .then(pub => {
+    //           if(!pub){
+    //             return null;
+    //           }
 
-              pub.distance = distance*0.621371;;
+    //           pub.distance = distance*0.621371;;
 
-              if(location){
-                pub.latitude = location[0];
-                pub.longitude = location[1];
-              }
+    //           if(location){
+    //             pub.latitude = location[0];
+    //             pub.longitude = location[1];
+    //           }
 
-              if(that._isPremium(pub.plan)){
-                if(pub.distance  <= 5){
-                    pub.sort = pub.distance -5;
-                }else{
-                    pub.sort = pub.distance;
-                }
-              }else{
-                  pub.sort = pub.distance;
-              }
+    //           if(that._isPremium(pub.plan)){
+    //             if(pub.distance  <= 5){
+    //                 pub.sort = pub.distance -5;
+    //             }else{
+    //                 pub.sort = pub.distance;
+    //             }
+    //           }else{
+    //               pub.sort = pub.distance;
+    //           }
 
-              pub.beerfly = true;
-              pub.organization = true;
-              if(!pub.favorite){
-                  pub.favorite = {};
-              }
-              return pub;
-            })
-            .then(pub =>{
-              if(!pub){
-                return null;
-              }
-              // console.log(pub)
+    //           pub.beerfly = true;
+    //           pub.organization = true;
+    //           if(!pub.favorite){
+    //               pub.favorite = {};
+    //           }
+    //           return pub;
+    //         })
+    //         .then(pub =>{
+    //           if(!pub){
+    //             return null;
+    //           }
+    //           // console.log(pub)
 
-              if(allObject[pub.place_id]){
-                  pub.arrayPosition = allObject[pub.place_id].arrayPosition -1;
-                  that.set('allArray.'+pub.arrayPosition, pub);
-                  that.set('allObject.'+pub.place_id, pub);
+    //           if(allObject[pub.place_id]){
+    //               pub.arrayPosition = allObject[pub.place_id].arrayPosition -1;
+    //               that.set('allArray.'+pub.arrayPosition, pub);
+    //               that.set('allObject.'+pub.place_id, pub);
                   
-              }else{
-                  var position =  that.push('allArray', pub);
-                  // console.log('push', position);
-                  pub.arrayPosition = position;
-                  that.set('allObject.'+pub.place_id, pub);
-              }
+    //           }else{
+    //               var position =  that.push('allArray', pub);
+    //               // console.log('push', position);
+    //               pub.arrayPosition = position;
+    //               that.set('allObject.'+pub.place_id, pub);
+    //           }
 
               
               
-              return pub;
+    //           return pub;
 
-              })
+    //           })
               
-          })
+    //       })
 
             //  }
             // }
@@ -813,23 +813,23 @@
         //     }
         //   })
         
-        }
-      },
+      //   }
+      // },
 
 
-      _resetToLocal: function (){
-        this.$.spinner.active = true;
-        // this.$.pubCards.hidden = true;
-        // this.geoFireReady = false;
-        // this.allObject = {};
-        // this.allArray = [];
-        // this.latitude = null;
-        // this.longitude = null;
-        this.gpsIcon = 'gps-searching'
-        this.toggle = false;
-        this.idle = false;
+      // _resetToLocal: function (){
+      //   this.$.spinner.active = true;
+      //   // this.$.pubCards.hidden = true;
+      //   // this.geoFireReady = false;
+      //   // this.allObject = {};
+      //   // this.allArray = [];
+      //   // this.latitude = null;
+      //   // this.longitude = null;
+      //   this.gpsIcon = 'gps-searching'
+      //   this.toggle = false;
+      //   this.idle = false;
        
-      },
+      // },
   
 
       // _watchForSubmit: function (event){
@@ -854,33 +854,33 @@
         return parseFloat(a.sort) - parseFloat(b.sort) ;
       },
 
-      _sortLocation: function(a,b){
-        'use strict';
-        if (a.address < b.address)
-          return -1;
-        if (a.address > b.address)
-          return 1;
-        return 0;
-      },
+      // _sortLocation: function(a,b){
+      //   'use strict';
+      //   if (a.address < b.address)
+      //     return -1;
+      //   if (a.address > b.address)
+      //     return 1;
+      //   return 0;
+      // },
 
 
-      _defaultIcon: function (icon){
-        if(icon){
-          true;
-        }else{
-          false
-        }
-      },
+      // _defaultIcon: function (icon){
+      //   if(icon){
+      //     true;
+      //   }else{
+      //     false
+      //   }
+      // },
 
-      _computeFilter: function (radius){
-        return function(pub) {
-          if(pub){
-          return pub.distance <=radius;
-          }else{
-            return false
-          }
-        };
-      },
+      // _computeFilter: function (radius){
+      //   return function(pub) {
+      //     if(pub){
+      //     return pub.distance <=radius;
+      //     }else{
+      //       return false
+      //     }
+      //   };
+      // },
 
       _filter: function (item){
         if(item.distance <= 10){
@@ -889,14 +889,14 @@
         return false;
       },
 
-      _toggle: function (){
-        this.toggle = !this.toggle
-        if(this.toggle){
-          this.toggleClass = 'flip'
-        }else{
-          this.toggleClass = '';
-        }
-      },
+      // _toggle: function (){
+      //   this.toggle = !this.toggle
+      //   if(this.toggle){
+      //     this.toggleClass = 'flip'
+      //   }else{
+      //     this.toggleClass = '';
+      //   }
+      // },
 
       _isPremium: function (plan){
         var today = Date.now()/1000;

@@ -144,9 +144,9 @@
 
   <firebase-auth id="auth" app-name="beer" status-known="[[statusKnown]]"user="{{user}}"></firebase-auth>
 
-    <div class="card" hidden$="[[!user]]">
+    <!-- <div class="card" hidden$="[[!user]]"> -->
       <template is="dom-if" if="[[!crawlId]]">
-       <div hidden="[[!user]]">
+       <div class="card" hidden="[[!user]]">
         <iron-label>
           <paper-icon-button class="add-icon" icon="beer-icons:crawl" on-tap="_toggleOwnerData"></paper-icon-button>
           <span class="edit-message">[[toggleMessage]]</span>
@@ -154,9 +154,9 @@
       </div> 
       </template>
    
-
+      
        <template is="dom-if" if="[[crawlId]]">
-        <div>
+        <div class="card">
           <a href="/[[nameUrl]]/crawl[[returnParam]]">
             <iron-label>
               <paper-icon-button class="add-icon" icon="beer-icons:view-all" on-tap="_resetLocation"></paper-icon-button>
@@ -166,28 +166,30 @@
         </div>
       </template> 
 
-    </div>
+    <!-- </div> -->
+
     <template is="dom-if" if="[[!crawlId]]">
-    <div hidden$="[[showOwnerData]]">
-      <!-- <div hidden$="[[crawlId]]"> -->
-      <beer-location
-        location={{location}}>
-      </beer-location>
-      <!-- </div> -->
-    </div>
+      <div hidden$="[[showOwnerData]]">
+    
+        <beer-location
+          location={{location}}>
+        </beer-location>
+    
+      </div>
     </template>
 
 
     <template is="dom-if" if="[[crawlId]]">
       <div class="card">
         <template is="dom-if" if="[[crawl.deleted]]">
-        <div>Beer-Cawl has been deleted.</div>
+          <div>Beer-Cawl has been deleted.</div>
         </template>
         <div class="title-wrapper"> 
           <div class="name">[[crawl.name]]</div>
           <div class="icon-wrapper">
+
             
-            <template is="dom-if" if="_isOwner">
+            <template is="dom-if" if="[[_isOwner]]">
               <paper-icon-button class="edit-icon" crawl="[[crawl]]" icon="beer-icons:edit" on-tap="_openEditor"></paper-icon-button>
             </template>
             
@@ -199,10 +201,13 @@
           </div>
         </div>
         <div>
-          <moment-element
-              datetime="[[_addMilliseconds(crawl.created)]]"
-              output-format="MMM DD[,] YYYY">
-          </moment-element>
+          <template is="dom-if" if="[[crawl.created]]">
+            Created:
+            <moment-element
+                datetime="[[_addMilliseconds(crawl.created)]]"
+                output-format="MMM DD[,] YYYY">
+            </moment-element>
+          </template>
         </div>
          <template is="dom-repeat" items="[[_addBreaks(crawl.description)]]" as="description">
             <div class="description">[[description]]</div>
@@ -317,12 +322,11 @@
         horizontal-offset="50"
         vertical-offset="100">
         <div class="toast-wrapper">
-            <div>[[deletedCrawl.name]] was deleted.</div>
-            <div class="toast-button-wrapper">
-               <paper-button crawl="[[deletedCrawl]]" on-tap="_restoreCrawl" class="button">Restore</paper-button>
-               <paper-button crawl="[[deletedCrawl]]" on-tap="_closeToast" class="button">Close</paper-button>
-
-            </div>
+          <div>[[deletedCrawl.name]] was deleted.</div>
+          <div class="toast-button-wrapper">
+            <paper-button crawl="[[deletedCrawl]]" on-tap="_restoreCrawl" class="button">Restore</paper-button>
+            <paper-button crawl="[[deletedCrawl]]" on-tap="_closeToast" class="button">Close</paper-button>
+          </div>
         </div>
         
       </paper-toast>
@@ -398,6 +402,11 @@
         user:{
           type: Object
         },
+
+        userId:{
+          type:String,
+          computed: '_computeUserId(user)'
+        },
         
         userData:{
           type: Object
@@ -405,6 +414,7 @@
 
         _isOwner: {
           type: Boolean,
+          computed: '_computeIsOwner(crawl.user_id, userId)',
           value:false
         },
       },
@@ -680,11 +690,21 @@
         this.$.crawlEditDialog.open();
       },
 
-      _isOwner: function (user_id, user){
-        if(!user){
+
+      _computeUserId(user){
+        if(user){
+          return user.uid
+        }
+        return false
+      },
+
+    
+
+      _computeIsOwner: function (crawlUserId, userId){
+        if(!userId){
           return false;
         }
-        if(user_id === user.uid){
+        if(crawlUserId === userId){
           return true;
         }
         return false;
@@ -792,7 +812,7 @@
 
       _addMilliseconds: function (timestamp){
         if(timestamp){
-          return timestamp+1000
+          return timestamp*1000
         }
         return false;
       },

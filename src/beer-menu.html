@@ -150,9 +150,8 @@
 
 
     <beer-banner
-      google-photo="[[place.photos]]"
-      photo-index="2"
-      photo="[[category.image]]"
+      google-photo-url="[[organization.googlePhoto.MENU.url]]"
+      photo="[[category.image.banner]]"
       org-id="[[orgId]]">
     </beer-banner>
 
@@ -248,7 +247,7 @@
 
         <paper-dialog-scrollable>
             <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_MENU_banner" key="category/MENU/image"></upload-image>   
-            <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
+            <paper-textarea always-float-label label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
           </paper-dialog-scrollable>
 
       <div>
@@ -316,10 +315,6 @@
 
         nameUrl:{
           type: String
-        },
-
-        place:{
-          type:Object
         },
 
         organization:{

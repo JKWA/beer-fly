@@ -32,26 +32,26 @@
 
   <div animated-shadow="false">
     <div class="contact">
-      <div>[[place.name]]</div>
+      <div>[[organization.name]]</div>
       <div>
-        <a href="[[place.url]]">
-            [[place.formatted_address]]
+        <a href="[[organization.url]]">
+            [[organization.formatted_address]]
         </a>
         </div>
       <div>
-          <a href="tel:[[place.formatted_phone_number]]">
-            [[place.formatted_phone_number]]
+          <a href="tel:[[organization.formatted_phone_number]]">
+            [[organization.formatted_phone_number]]
           </a>
       </div>
       
       <div>
-        <a href="[[place.website]]">
-          [[place.website]]
+        <a href="[[organization.website]]">
+          [[organization.website]]
         </a>
       </div>
 
       <div>
-        <a href="[[place.url]]">
+        <a href="[[organization.url]]">
           Map
         </a>
       </div>
@@ -69,7 +69,7 @@
       is: 'beer-contact-card',
       properties:{
 
-        place:{
+        organization:{
           type: Object
         }
       },

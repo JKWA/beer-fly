@@ -19,7 +19,6 @@
 
 <link rel="import" href="beer-beer-rating.html">
 <link rel="import" href="beer-beer-tap.html">
-<link rel="import" href="beer-beer-admin.html">
 
 
 
@@ -34,28 +33,9 @@
         text-decoration: none;
         }
 
-      .card{
-        @apply --paper-material-elevation-1;
-        background-color: white;
-        margin: 10px;
-      } 
-
-      .info-section{
-        padding: 20px;
-      }
+     
       
-      .title{
-        @apply --layout-horizontal;
-        @apply --layout-justified;
-        @apply --layout-wrap;
-        font-size: 1em;
-        font-weight: 400;
-        color: var(--app-primary-color);
-      }
-
-       .title > div{
-        padding: 0 5px 0 0;
-      }
+      
      
       .wrapper{
          @apply --layout-vertical;        
@@ -117,23 +97,7 @@
 
       <div class='card' elevation="1" animated-shadow="false">
           <div class="info-section">
-          <template is="dom-if"  if="[[owner]]">
-            <div class="title">
-              <div>
-                <beer-beer-admin
-                    place-id="[[placeId]]"
-                    beer-id="[[beerId]]"
-                    status="[[status]]">
-                </beer-beer-admin>
-              </div>
-              <div>
-                <a aria-label$="TEST" href$="/[[nameUrl]]/beer-edit?orgid=[[placeId]]&beerId=[[beerId]]">
-                  <paper-icon-button icon="beer-icons:edit"></paper-icon-button>
-                  Edit
-                </a>
-              </div>
-            </div>
-          </template>
+         
           
           <!--BeerId: [[beerId]]-->
           <div>
@@ -210,7 +174,7 @@
 
         breweryName:{
           type: String,
-          computed: '_computeItem(place.name)'
+          computed: '_computeItem(organization.name)'
         },
 
         breweryState:{
@@ -245,13 +209,11 @@
           type: Boolean
         },
         
-        place:{
-          type:Object
-        },
+    
 
         placeId:{
           type: String,
-          computed: '_computeItem(place.place_id)'
+          computed: '_computeItem(organization.place_id)'
         },
 
         status:{
@@ -266,6 +228,11 @@
 
         nameUrl:String,
 
+        userBeerData:{
+          type:Object,
+          computed: '_computeUserBeerData(userData.favoriteBeer, beerId)'
+        },
+
         userData:Object
        
       },
@@ -275,6 +242,15 @@
           return item
         }
         return null;
+      },
+
+      _computeUserBeerData: function (userBeers, beerId){
+        if(userBeers, beerId) {
+          if (userBeers[beerId]){
+            return userBeers[beerId]
+          }
+        }
+        return {};
       },
 
 

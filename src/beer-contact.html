@@ -61,9 +61,8 @@
     <firebase-auth app-name="beer" user="{{user}}"></firebase-auth>
 
     <beer-banner
-      google-photo="[[place.photos]]"
-      photo-index="5"
-      photo="[[category.image]]"
+      google-photo-url="[[organization.googlePhoto.CONTACT.url]]"
+      photo="[[category.image.banner]]"
       org-id="[[orgId]]">
     </beer-banner>
     
@@ -76,13 +75,13 @@
         <div class="item">
         <beer-hours-card 
             class=" category-item"
-            organization="[[place]]">
+            organization="[[organization]]">
         </beer-hours-card>
         </div>
         <div class="item">
 
         <beer-contact-card 
-            place="[[place]]">
+          organization="[[organization]]">
         </beer-contact-card>
         </div>
       </div>
@@ -103,7 +102,7 @@
       </div>
       <paper-dialog-scrollable>
           <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_CONTACT_banner" key="category/CONTACT/image"></upload-image>   
-          <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
+          <paper-textarea always-float-label label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
         </paper-dialog-scrollable>
 
       <div class="">
@@ -139,10 +138,6 @@
 
         owner:{
           type: Boolean
-        },
-
-        place:{
-          type: Object
         },
 
         user:{

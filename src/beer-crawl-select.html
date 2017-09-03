@@ -126,13 +126,13 @@
           type:Object
         },
 
-        place:{
+        organization:{
           type:Object
         },
 
         placeId:{
           type:String,
-          computed: '_computePlaceId(place)'
+          computed: '_computePlaceId(organization)'
         },
 
         latitude:Number,
@@ -198,7 +198,7 @@
         if(crawlId){
           if(this.placeId){
             var that = this;
-            var org = this.place;
+            var org = this.organization;
             
             var obj = {
                         name: org.name,
@@ -253,10 +253,10 @@
         return true;
       },
 
-      _computePlaceId:function (place){
-        if(place){
-          console.log(place);
-        return place.place_id;
+      _computePlaceId:function (organization){
+        if(organization){
+          console.log(organization);
+        return organization.place_id;
         }
       },
 

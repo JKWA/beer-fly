@@ -20,6 +20,7 @@
 
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-banner.html">
 
 <dom-module id="beer-schedule">
 
@@ -94,14 +95,11 @@
 
 
 
-     <iron-image 
-        style="width:100%; height:300px; background-color: #F8F8F8;"
-        sizing="cover" 
-        preload 
-        placeholder="[[placeholder]]"
-        fade
-        src="[[photoUrl]]">
-    </iron-image>
+    <beer-banner
+      google-photo-url="[[organization.googlePhoto.TAP.url]]"
+      photo="[[category.image.banner]]"
+      org-id="[[orgId]]">
+    </beer-banner>
 
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
 
@@ -178,7 +176,7 @@
 
           <paper-dialog-scrollable>
               <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_BEER_banner" key="category/BEER/image"></upload-image>   
-              <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
+              <paper-textarea always-float-label label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
           </paper-dialog-scrollable>
 
         <div>

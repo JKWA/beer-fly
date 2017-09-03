@@ -1,5 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
@@ -9,13 +11,18 @@
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
 
 <link rel="import" href="beer-beer-card.html">
 
 <link rel="import" href="../my_components/data/upload-image.html">
 <link rel="import" href="beer-fab.html">
+<link rel="import" href="beer-dialog.html">
+<link rel="import" href="beer-beer-edit.html">
+<link rel="import" href="beer-beer-admin.html">
+
+
+
 <link rel="import" href="beer-banner.html">
 
 
@@ -48,10 +55,23 @@
 
       .card{
         margin: 10px;
-        padding: 20px;
+        padding: 20px; 
         @apply --paper-material-elevation-1;
         background-color: white;
 
+      }
+
+      .title{
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        @apply --layout-wrap;
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
+
+       .title > div{
+        padding: 0 5px 0 0;
       }
 
       .description {
@@ -62,12 +82,18 @@
 
     </style>
 
-    <firebase-auth  app-name="beer" user="{{user}}"></firebase-auth>
+    <firebase-auth  id="auth" app-name="beer" user="{{user}}"></firebase-auth>
 
-    <beer-banner
+    <!-- <beer-banner
       google-photo="[[place.photos]]"
       photo-index="2"
       photo="[[category.image]]"
+      org-id="[[orgId]]">
+    </beer-banner> -->
+
+    <beer-banner
+      google-photo-url="[[organization.googlePhoto.BEER.url]]"
+      photo="[[category.image.banner]]"
       org-id="[[orgId]]">
     </beer-banner>
     
@@ -84,26 +110,82 @@
    <template is="dom-if" if="[[owner]]">
     <div class="card" elevation="1">
       <iron-label>
-        <a aria-label$="TEST" href$="/[[nameUrl]]/beer-edit?orgid=[[orgId]]">
-          <paper-icon-button icon="beer-icons:add"></paper-icon-button>
-          Add a beer</a>
+          <paper-icon-button icon="beer-icons:add" on-tap="_toggleAddBeer"></paper-icon-button>
+          Add a beer
       </iron-label>
+      
+      <iron-collapse id="collapse" opened="[[toggleAddBeer]]">
+         <paper-input 
+            always-float-label
+            id="beerName"
+            label="Beer Name" 
+            char-counter 
+            maxlength="100" 
+            error-message="Required"
+            value="{{addBeerName}}">
+          </paper-input> 
+          
+          <paper-button raised on-tap="_addNewBeer">Add Beer</paper-button>
+          
+      </iron-collapse>
+      
     </div>
    </template>
 
+   <!-- EDIT-ID: [[editBeerId]] -->
     
     <template is="dom-repeat" items="[[_getArray(organization.brewBeer)]]" sort="_sortOrder" as="beer" filter="[[_filterBeers(owner)]]">
-      <beer-beer-card 
-          beer="[[beer]]"
-          organization="[[organization]]"
-          place="[[place]]"
-          owner="[[owner]]"
-          name-url="[[nameUrl]]"
-          user-data="[[userData]]"
-          login="{{login}}">
-      </beer-beer-card>
+      
+      <div class="card">
+
+
+        <template is="dom-if"  if="[[owner]]">
+          <div class="title">
+            <div>
+               <beer-beer-admin
+                  place-id="[[orgId]]"
+                  beer-id="[[beer.$key]]"
+                  status="[[beer.status]]">
+              </beer-beer-admin> 
+            </div>
+            <div>
+              <paper-icon-button icon="beer-icons:edit" beer="[[beer]]" on-tap="_changeBeerEditId"></paper-icon-button>
+
+              <!-- <a aria-label$="TEST" href$="/[[nameUrl]]/beer-edit?orgid=[[placeId]]&beerId=[[beerId]]">
+                <paper-icon-button icon="beer-icons:edit"></paper-icon-button>
+                Edit
+              </a> -->
+            </div>
+          </div>
+        </template> 
+
+
+        
+        <beer-beer-card 
+            beer="[[beer]]"
+            organization="[[organization]]"
+            owner="[[owner]]"
+            name-url="[[nameUrl]]"
+            user-data="[[userData]]"
+            login="{{login}}">
+        </beer-beer-card>
+      </div>
+
     </template>
 
+
+
+    <beer-dialog 
+        id="beerEditDialog"
+        with-backdrop
+        entry-animation="scale-up-animation"
+        exit-animation="fade-out-animation">
+      <beer-beer-edit
+        org-id="[[orgId]]"
+        beer-id="[[editBeerId]]"
+        beer-name="[[editBeerName]]">
+      </beer-beer-edit>
+    </beer-dialog>
 
     <paper-dialog 
         id="editDialog"
@@ -118,7 +200,7 @@
     
         <paper-dialog-scrollable>
           <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_BEER_banner" key="category/BEER/image"></upload-image>   
-          <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
+          <paper-textarea always-float-label label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
         </paper-dialog-scrollable>
     
       <div>
@@ -138,44 +220,54 @@
 
       properties:{
 
-       dialogOpen:{
+        addBeerName:String,
+
+        dialogOpen:{
           type:Boolean
-       },
-       nameUrl:{
-         type: String
-       },
-       
-       orgId:{
-         type:String
-       },
+        },
+        nameUrl:{
+          type: String
+        },
+        
+        orgId:{
+          type:String
+        },
 
-       owner:{
-         type: Boolean
-       },
-       organization:{
-         type: Object
-       },
+        owner:{
+          type: Boolean
+        },
+        organization:{
+          type: Object
+        },
 
-       place:{
-         type:Object
-       },
 
-       crowdSource:{
-         type: Boolean
-       },
-   
-       beer:{
-         type: Object
-       },
+        crowdSource:{
+          type: Boolean
+        },
+    
+        beer:{
+          type: Object
+        },
 
-       login: {
-         type: Boolean,
-         notify: true
-       },
+        editBeerId:{
+          type:String
+        },
+
+        editBeerName:String,
+
+        login: {
+          type: Boolean,
+          notify: true
+        },
 
         owner:{
           type: Boolean,
           value: false
+        },
+
+        toggleAddBeer:{
+          type:Boolean,
+          value:false
         },
 
         user: {
@@ -190,6 +282,13 @@
         },
         
       },
+
+      ready: function(){
+
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.beerEditDialog);
+
+      },
     
 
 
@@ -199,6 +298,46 @@
           Polymer.dom(body).appendChild(this.$.editDialog);
           this.$.editDialog.open()
        
+      },
+
+      _changeBeerEditId(event){
+        let target = event.currentTarget;
+        let beer = target.beer;
+        // console.log(beer);
+        this.editBeerId = beer.$key;
+        this.editBeerName = beer.name;
+        
+        this.$.beerEditDialog.open();
+      },
+
+      _addNewBeer(){
+        if(this.addBeerName){
+          if(this.orgId){
+            
+            const db = firebase.database(this.$.auth.app);
+            const that = this;
+
+            console.log(this.addBeerName);
+            console.log(this.orgId);
+
+            var id = firebase.database(this.$.auth.app).ref('beer').push().key;
+            console.log(id);
+
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/brewBeer/${id}`)
+              .update({name:this.addBeerName})
+              .then(() =>{
+                console.log('added new beer')
+                that.addBeerName = '';
+                that.$.beerEditDialog.open();
+                that.editBeerId = id;
+                that.toggleAddBeer = false;
+              })
+              .catch(error =>{
+                console.error(error);
+              })
+          }
+      
+        }
       },
       
       _addBreaks: function(str){
@@ -250,6 +389,10 @@
           }
           return true;
         };
+      },
+
+      _toggleAddBeer: function (){
+        this.toggleAddBeer = !this.toggleAddBeer
       },
 
       _test: function (obj) {

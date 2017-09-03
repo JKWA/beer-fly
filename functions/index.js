@@ -63,7 +63,7 @@ exports.createNewUser = functions.auth.user().onCreate(function(event) {
           return reportError(error, {user: uid});
         })
     })
-});
+  });
 
 
 exports.cleanupUser = functions.auth.user()
@@ -86,7 +86,7 @@ exports.cleanupUser = functions.auth.user()
            return reportError(error, {user: event.data.uid});
          })
       });
-});
+  });
 
 
 exports.createNewOrganization = functions.database.ref('/organization/{place_id}')
@@ -186,7 +186,7 @@ exports.updateDomainData = functions.database.ref('/newOrg/{place_id}/{domain}')
 
     const data = event.data,
           place_id = event.params.place_id,
-          domain = event.params.place_id
+          domain = event.params.domain
 
     if (!data.exists()) {
       console.log('item deleted')
@@ -201,7 +201,7 @@ exports.updateDomainData = functions.database.ref('/newOrg/{place_id}/{domain}')
           .update(place)
           .then(() =>{
             console.log('PLACE_SAVED', place)
-            admin.database().ref(`/newOrg/${place_id}`).update({domain:place.domain})
+            admin.database().ref(`/newOrg/${place_id}`).update({domain:(place.domain)?place.domain:null})
             .then(() =>{
               console.log('domain saved back to google')
             })
@@ -452,46 +452,77 @@ exports.updateTapGeoData = functions.database.ref('organization/{placeId}/onTap/
 
   })
 
+exports.newBeerAdded = functions.database.ref('organization/{place_id}/brewBeer/{beer_id}')
+  .onCreate(event => {
 
+    const snapshot = event.data,
+          root = snapshot.ref.root,
+          place_id = event.params.place_id,
+          beer_id = event.params.beer_id,
+          user_id = event.auth.variable.user_id,
+          userData = admin.database().ref(`user/${user_id}`).once('value'),
+          data = snapshot.val(),
+          name = data.name,
+          saveObj = {},
+          orgData = root.child(`organization/${place_id}`).once('value'),
+          beerDB = admin.database().ref(`beer/${beer_id}`),
+          setLocation = admin.database().ref(`beer/${beer_id}/location/${place_id}`).set(true),
+          setBeerId = admin.database().ref(`organization/${place_id}/brewBeer/${beer_id}/id`).set(beer_id),
+          orgItems = ['city', 'domain', 'latitude', 'location',
+                      'longitude', 'state', 'stateAbbreviation','place_id']
 
-exports.beerDataChanged = functions.database.ref('organization/{place_id}/brewBeer/{beer_id}')
+      console.log('triggered beer added')
+      
+      return Promise.all([orgData, userData, setLocation, setBeerId])
+
+        .then(results =>{
+          const orgResults = results[0].val(),
+                userResults = results[1].val(),
+                owner = (userResults.ADMIN || userResults.domain === orgResults.domain) ? true : false,
+                status = (owner) ? 'verified' : 'not_verified',
+                updateStatus = admin.database().ref(`organization/${place_id}/brewBeer/${beer_id}/status`).set(status)
+
+          for (let item of orgItems){
+            saveObj[item] = (orgResults[item]) ? orgResults[item] : null
+          }
+          saveObj.status = status
+
+          const updateBeer = beerDB.update(saveObj)
+
+          return Promise.all([updateStatus, updateBeer])
+
+        .then(results => {
+          console.log('updated beer data')
+        })
+        .catch(error =>{
+          console.error(error)
+        })
+      })
+                 
+  })
+
+exports.beerStyleChanged = functions.database.ref('organization/{place_id}/brewBeer/{beer_id}/styleId')
   .onWrite(event => {
     const snapshot = event.data,
           root = snapshot.ref.root,
           place_id = event.params.place_id,
           beer_id = event.params.beer_id,
-          data = snapshot.val(),
-          name = data.name,
-          description = data.description,
+          styleId = snapshot.val(),
           saveObj = {},
-          styleData = root.child(`category/STYLE/${snapshot.child('styleId').val()}`).once('value'),
           orgData = root.child(`organization/${place_id}`).once('value'),
+          styleData = root.child(`category/STYLE/${styleId}`).once('value'),
           beerDB = root.child(`beer/${beer_id}`),
-          location = root.child(`beer/${beer_id}/location/${place_id}`),
-          styleItems = ['category', 'categoryName', 'categoryTitle', 'styleName', 'order'],
-          beerItems = ['abv', 'beerId', 'breweryName', 
-                      'createDate', 'description', 'id', 'name', 
-                      'status', 'styleId', 'updateDate'],
-          orgItems = ['city', 'domain', 'latitude', 'location',
-                      'longitude', 'state', 'stateAbbreviation','place_id']
+          styleDB = admin.database().ref(`organization/${place_id}/brewBeer/${beer_id}`),
+          styleItems = ['category', 'categoryName', 'categoryTitle', 'styleName', 'order']
 
 
       if(!snapshot.exists()){
-        console.log('beer data deleted');
+        console.log('beer style deleted');
         return 
       }
 
-      if(snapshot.child('name').changed() || snapshot.child('description').changed() || snapshot.child('styleId').changed()){
 
-        if(swearjar.profane(name)){
-          saveObj.name = swearjar.censor(name)
-        }
-
-        if(swearjar.profane(description)){
-          saveObj.description = swearjar.censor(description)
-        }
-
-        return Promise.all([styleData, orgData])
+      return Promise.all([styleData, orgData])
 
         .then(results =>{
           const styleValue = results[0].val(),
@@ -501,32 +532,25 @@ exports.beerDataChanged = functions.database.ref('organization/{place_id}/brewBe
             saveObj[item] = (styleValue[item]) ? styleValue[item] : null
           }
           
-          snapshot.adminRef.update(Object.assign({}, saveObj))
+          styleDB.update(Object.assign({}, saveObj))
           return orgValue
         })
+
+        
         .then(orgValue =>{
 
-          for (let item of orgItems){
-            saveObj[item] = (orgValue[item]) ? orgValue[item] : null
+          saveObj.styleId = styleId
+
+          if(orgValue.stateAbbreviation && saveObj.category){
+            saveObj['stateAndCategory'] = `${orgValue.stateAbbreviation}_${saveObj.category}`
           }
 
-          for (let item of beerItems){
-            saveObj[item] = (data[item]) ? data[item] : null
-          }
-
-          if(saveObj.stateAbbreviation && saveObj.category){
-            saveObj['stateAndCategory'] = `${saveObj.stateAbbreviation}_${saveObj.category}`
-          }
-
-          if(saveObj.stateAbbreviation && saveObj.styleId){
-            saveObj['stateAndStyleId'] = `${saveObj.stateAbbreviation}_${saveObj.styleId}`
+          if(orgValue.stateAbbreviation && saveObj.styleId){
+            saveObj['stateAndStyleId'] = `${orgValue.stateAbbreviation}_${saveObj.styleId}`
           }
 
         return beerDB.update(saveObj)
                 
-        })
-        .then(()=>{
-          return  location.set(true)
         })
         .then(()=>{
           console.log('updated beer data')
@@ -534,14 +558,86 @@ exports.beerDataChanged = functions.database.ref('organization/{place_id}/brewBe
         .catch(error =>{
           console.error(error)
         })
-                 
-      }
-    
-      console.log('user beer data unchanged')
-      return;
-        
 
   });
+
+exports.beerNameChanged = functions.database.ref('organization/{place_id}/brewBeer/{beer_id}/name')
+  .onWrite(event => {
+    const snapshot = event.data,
+          root = snapshot.ref.root,
+          place_id = event.params.place_id,
+          beer_id = event.params.beer_id,
+          name = (snapshot.exists()) ? snapshot.val() : null
+
+    if(swearjar.profane(name)){
+      return snapshot.adminRef.set(swearjar.censor(name))
+        .then(() =>{
+          console.log('censored name')
+        })
+    }
+
+    return root.child(`beer/${beer_id}/name`).set(name)
+        .then(() => {
+          console.log('updated name in beer file')
+        })
+
+  });
+exports.beerDescriptionChanged = functions.database.ref('organization/{place_id}/brewBeer/{beer_id}/description')
+  .onWrite(event => {
+    const snapshot = event.data,
+          root = snapshot.ref.root,
+          place_id = event.params.place_id,
+          beer_id = event.params.beer_id,
+          description = (snapshot.exists()) ? snapshot.val() : null
+
+    if(swearjar.profane(description)){
+      return snapshot.adminRef.set(swearjar.censor(description))
+        .then(() =>{
+          console.log('censored description')
+        })
+    }
+
+    return root.child(`beer/${beer_id}/description`).set(description)
+        .then(() => {
+          console.log('updated description in beer file')
+        })
+
+  });
+
+exports.beerABVChanged = functions.database.ref('organization/{place_id}/brewBeer/{beer_id}/abv')
+  .onWrite(event => {
+    const snapshot = event.data,
+          root = snapshot.ref.root,
+          place_id = event.params.place_id,
+          beer_id = event.params.beer_id,
+          abv = (snapshot.exists()) ? snapshot.val() : null
+
+    return root.child(`beer/${beer_id}/abv`).set(abv)
+        .then(() => {
+          console.log('updated abv in beer file')
+        })
+
+  });
+
+exports.beerStatusChanged = functions.database.ref('organization/{place_id}/brewBeer/{beer_id}/status') 
+  .onWrite(event => {
+    const snapshot = event.data,
+          root = snapshot.ref.root,
+          place_id = event.params.place_id,
+          beer_id = event.params.beer_id,
+          status = (snapshot.exists()) ? snapshot.val() : null
+
+    return root.child(`beer/${beer_id}/status`).set(status)
+        .then(() => {
+          console.log('updated status in beer file')
+        })
+
+  });
+
+
+
+
+
 
 
 exports.updateFoodTruckScheduleFromPub = functions.database.ref('/organization/{placeId}/foodTruck/{truckId}/period/{day}')
@@ -933,7 +1029,7 @@ exports.deletePlaceForCrawl = functions.database.ref('/crawl/{crawl_id}/organiza
       console.error('ERROR', error)
     })})
 
-exports.sanitizeDescription  = functions.database.ref('/organization/{place_id}/descriptionEdit')
+exports.sanitizeDescription  = functions.database.ref('/organization/{place_id}/description')
   .onWrite(event => {
     const val = event.data.val(),
           metadata = event.params,
@@ -962,7 +1058,7 @@ exports.sanitizeDescription  = functions.database.ref('/organization/{place_id}/
       })
   })
 
-exports.sanitizeMotto  = functions.database.ref('/organization/{place_id}/mottoEdit')
+exports.sanitizeMotto  = functions.database.ref('/organization/{place_id}/motto')
   .onWrite(event => {
     const val = event.data.val(),
           metadata = event.params,
@@ -1208,93 +1304,34 @@ exports.sanitizeMenuPriceItem  = functions.database.ref('/organization/{place_id
       })
   })
 
-// exports.sanitizeBeerName  = functions.database.ref('/organization/{place_id}/brewBeer/{beer_id}/editName')
-//   .onWrite(event => {
-//     const val = event.data.val(),
-//           metadata = event.params,
-//           place_id = metadata.place_id,
-//           beer_id = metadata.beer_id
-//     let   censor = swearjar.censor(val),
-//           obj = {}
-
-//       if(!censor){
-//         censor = null;
-//       }
-//       obj[`/organization/${place_id}/brewBeer/${beer_id}/name`] = censor
-//       obj[`/beer/${beer_id}/name`] = censor
-    
-
-//     return admin.database().ref()
-//       .update(obj)
-//       .then(() =>{
-//         console.log('saved name')
-//       })
-//       .catch(error =>{
-//         console.error('ERROR', error)
-//       })
-// })
-
-// exports.sanitizeBeerDescription  = functions.database.ref('/organization/{place_id}/brewBeer/{beer_id}/editDescription')
-//   .onWrite(event => {
-//     const val = event.data.val(),
-//           metadata = event.params,
-//           place_id = metadata.place_id,
-//           beer_id = metadata.beer_id,
-//           censor = swearjar.censor(val)
-
-//     if(!event.data.exists()){
-
-//       return admin.database().ref(`/organization/${place_id}/brewBeer/${beer_id}/description`)
-//         .remove()
-//         .then(() =>{
-//           console.log('removed description')
-//         })
-//         .catch(error =>{
-//           console.error('ERROR', error)
-//         })
-//     }
-
-//     return admin.database().ref(`/organization/${place_id}/brewBeer/${beer_id}/description`)
-//       .set(censor)
-//       .then(() =>{
-//         console.log('saved description')
-//       })
-//       .catch(error =>{
-//         console.error('ERROR', error)
-//       })
-// })
-
-
-
-
-
 
 
 exports.updateFavorite = functions.database.ref('/user/{user_id}/favoriteOrganization/{place_id}')
   .onWrite(event => {
-      const snapshot = event.data;
-      const user_id = event.params.user_id;
-      const place_id = event.params.place_id;
+      const snapshot = event.data,
+            user_id = event.params.user_id,
+            place_id = event.params.place_id;
   
-  if(!snapshot.exists()){
-    return admin.database().ref(`/organization/${place_id}/favorite/${user_id}`)
-    .remove()
-    .then(()=>{
-      console.log('Removed Favorite')
-    })
-    .catch(error =>{
-      console.error('ERROR_REMOVE', error)
-    })
-  }
+      if(!snapshot.exists()){
+        return admin.database().ref(`/organization/${place_id}/favorite/${user_id}`)
+        .remove()
+        .then(()=>{
+          console.log('Removed Favorite')
+        })
+        .catch(error =>{
+          console.error('ERROR_REMOVE', error)
+        })
+      }
 
-  return admin.database().ref(`/organization/${place_id}/favorite/${user_id}`)
-    .update({created:snapshot.child('created').val(), rating:snapshot.child('rating').val()})
-    .then(()=>{
-      console.log('Updated Favorite')
-    })
-    .catch(error =>{
-      console.error('ERROR_UPDATE', error)
-    })})
+    return admin.database().ref(`/organization/${place_id}/favorite/${user_id}`)
+      .update({created:snapshot.child('created').val(), rating:snapshot.child('rating').val()})
+      .then(()=>{
+        console.log('Updated Favorite')
+      })
+      .catch(error =>{
+        console.error('ERROR_UPDATE', error)
+      })
+  })
 
 exports.stripeSubscriptionUpdated = functions.https.onRequest((request, response) => {
   // Grab the text parameter.
@@ -1469,7 +1506,7 @@ exports.getBeers = functions.https.onRequest((request, response) => {
         })
        
 
-})
+  })
     
 exports.updateFavoriteBeer = functions.database.ref('/user/{user_id}/favoriteBeer/{beer_id}')
   .onWrite(event => {
@@ -1548,55 +1585,55 @@ function _updateGeoFire(placeId){
       })
 }
 
-function updateBeer (beerId, beerData, pubData) {
-  let saveObj = {};
-  let beerItems = ['abv', 'beerId', 'breweryName', 
-                   'category', 'categoryName', 'categoryTitle', 
-                   'createDate', 'description', 'id', 'name', 
-                   'order', 'status', 'styleId', 'styleName', 'updateDate']
+// function updateBeer (beerId, beerData, pubData) {
+//   let saveObj = {};
+//   let beerItems = ['abv', 'beerId', 'breweryName', 
+//                    'category', 'categoryName', 'categoryTitle', 
+//                    'createDate', 'description', 'id', 'name', 
+//                    'order', 'status', 'styleId', 'styleName', 'updateDate']
 
-  for (var i=0; i<beerItems.length; i++){
-    let item = beerItems[i];
-    if(beerData[item]){
-      saveObj[item] = beerData[item];
-    }
-  }
+//   for (var i=0; i<beerItems.length; i++){
+//     let item = beerItems[i];
+//     if(beerData[item]){
+//       saveObj[item] = beerData[item];
+//     }
+//   }
 
-  let pubItems = ['city', 'domain', 'latitude', 'location',
-                  'longitude', 'state', 'stateAbbreviation']
+//   let pubItems = ['city', 'domain', 'latitude', 'location',
+//                   'longitude', 'state', 'stateAbbreviation']
 
-  for (var i=0; i<pubItems.length; i++){
-    let pubItem = pubItems[i];
-    if(pubData[pubItem]){
-      saveObj[pubItem] = pubData[pubItem];
-    }
-  }
+//   for (var i=0; i<pubItems.length; i++){
+//     let pubItem = pubItems[i];
+//     if(pubData[pubItem]){
+//       saveObj[pubItem] = pubData[pubItem];
+//     }
+//   }
 
-  if(pubData.stateAbbreviation && beerData.category){
-    saveObj['stateAndCategory'] = pubData.stateAbbreviation+'_'+beerData.category
-  }
+//   if(pubData.stateAbbreviation && beerData.category){
+//     saveObj['stateAndCategory'] = pubData.stateAbbreviation+'_'+beerData.category
+//   }
 
-  if(pubData.stateAbbreviation && beerData.styleId){
-    saveObj['stateAndStyleId'] = pubData.stateAbbreviation+'_'+beerData.styleId
-  }
+//   if(pubData.stateAbbreviation && beerData.styleId){
+//     saveObj['stateAndStyleId'] = pubData.stateAbbreviation+'_'+beerData.styleId
+//   }
 
-  if(pubData.place_id){
-    saveObj['location/'+pubData.place_id] = true;
-  }
+//   if(pubData.place_id){
+//     saveObj['location/'+pubData.place_id] = true;
+//   }
 
-  if(pubData.place_id){
-    saveObj['place_id'] = pubData.place_id;
-  }
+//   if(pubData.place_id){
+//     saveObj['place_id'] = pubData.place_id;
+//   }
 
-  // console.log('saving beer', saveObj);
-  admin.database().ref('beer').child(beerId)
-    .update(saveObj)
-    .catch( function (error){
-      console.log('SAVE_ERROR', error)
-    }).then(function (){
-      console.log('SAVED_BEER');
-    })
-  }
+//   // console.log('saving beer', saveObj);
+//   admin.database().ref('beer').child(beerId)
+//     .update(saveObj)
+//     .catch( function (error){
+//       console.log('SAVE_ERROR', error)
+//     }).then(function (){
+//       console.log('SAVED_BEER');
+//     })
+//   }
 
  
 function parseGooglePlaceData (place){
@@ -1645,57 +1682,57 @@ function parseGooglePlaceData (place){
 
   
 
-  function updateAllBeerData(beerId, placeId, beerData){
-    admin.database().ref('organization').child(placeId)
-      .once('value').then(function (snapshot){
-        return snapshot.val();
-      }).then(function (pub){
-        if(pub.domain){
-          var returnObj = {};
+  // function updateAllBeerData(beerId, placeId, beerData){
+  //   admin.database().ref('organization').child(placeId)
+  //     .once('value').then(function (snapshot){
+  //       return snapshot.val();
+  //     }).then(function (pub){
+  //       if(pub.domain){
+  //         var returnObj = {};
 
-           updateBeer(beerId, beerData, pub);
+  //          updateBeer(beerId, beerData, pub);
 
-              admin.database().ref('organization')
-                .orderByChild('domain').equalTo(pub.domain).limitToFirst(100)  
-                  .once("value")
-                    .then(function(snapshot) {
-                      snapshot.forEach(function(childSnapshot) {
-                        var place_id = childSnapshot.key;
-                        var changePub = childSnapshot.val();
-                        if(!changePub.beerLastUpdated){
-                          changePub.beerLastUpdated = 0;
-                        }
-                        if(place_id === placeId){
-                          console.log('already changed', changePub);
-                          return 
-                        }else{
-                          if(changePub.beerLastUpdated >= pub.beerLastUpdated){
-                            console.log('already updated');
+  //             admin.database().ref('organization')
+  //               .orderByChild('domain').equalTo(pub.domain).limitToFirst(100)  
+  //                 .once("value")
+  //                   .then(function(snapshot) {
+  //                     snapshot.forEach(function(childSnapshot) {
+  //                       var place_id = childSnapshot.key;
+  //                       var changePub = childSnapshot.val();
+  //                       if(!changePub.beerLastUpdated){
+  //                         changePub.beerLastUpdated = 0;
+  //                       }
+  //                       if(place_id === placeId){
+  //                         console.log('already changed', changePub);
+  //                         return 
+  //                       }else{
+  //                         if(changePub.beerLastUpdated >= pub.beerLastUpdated){
+  //                           console.log('already updated');
 
-                          }else{
-                            console.log('needs to be updated');
-                            returnObj[changePub.place_id+'/beerLastUpdated'] = pub.beerLastUpdated;
-                            returnObj[changePub.place_id+'/brewBeer'] = pub.brewBeer;
-                          }      
-                        }
-                      })
+  //                         }else{
+  //                           console.log('needs to be updated');
+  //                           returnObj[changePub.place_id+'/beerLastUpdated'] = pub.beerLastUpdated;
+  //                           returnObj[changePub.place_id+'/brewBeer'] = pub.brewBeer;
+  //                         }      
+  //                       }
+  //                     })
                       
-                      return returnObj;
-                  }).then(function (saveObj){
-                    console.log('save beer at other locations', saveObj)
-                    if(Object.keys(saveObj).length >0){
-                      admin.database().ref('organization').update(saveObj)
-                      .catch( function (error){
-                        console.log('SAVE_ERROR', error)
-                      }).then(function (){
-                        console.log('SAVED');
-                      })
-                    }
-                  })
+  //                     return returnObj;
+  //                 }).then(function (saveObj){
+  //                   console.log('save beer at other locations', saveObj)
+  //                   if(Object.keys(saveObj).length >0){
+  //                     admin.database().ref('organization').update(saveObj)
+  //                     .catch( function (error){
+  //                       console.log('SAVE_ERROR', error)
+  //                     }).then(function (){
+  //                       console.log('SAVED');
+  //                     })
+  //                   }
+  //                 })
                  
-        }
-      })
-  }
+  //       }
+  //     })
+  // }
 
 
   function setGeoData(data, placeId, beerId){
@@ -1821,4 +1858,94 @@ function userFacingMessage(error) {
   return error.type ? error.message : 'An error occurred, developers have been alerted';
 }
 
+
+// exports.beerDataChanged = functions.database.ref('organization/{place_id}/brewBeer/{beer_id}')
+//   .onWrite(event => {
+//     const snapshot = event.data,
+//           root = snapshot.ref.root,
+//           place_id = event.params.place_id,
+//           beer_id = event.params.beer_id,
+//           data = snapshot.val(),
+//           name = data.name,
+//           description = data.description,
+//           saveObj = {},
+//           styleData = root.child(`category/STYLE/${snapshot.child('styleId').val()}`).once('value'),
+//           orgData = root.child(`organization/${place_id}`).once('value'),
+//           beerDB = root.child(`beer/${beer_id}`),
+//           location = root.child(`beer/${beer_id}/location/${place_id}`),
+//           styleItems = ['category', 'categoryName', 'categoryTitle', 'styleName', 'order']
+//           beerItems = ['abv', 'beerId', 'breweryName', 
+//                       'createDate', 'description', 'id', 'name', 
+//                       'status', 'styleId', 'updateDate'],
+//           orgItems = ['city', 'domain', 'latitude', 'location',
+//                       'longitude', 'state', 'stateAbbreviation','place_id']
+
+
+//       if(!snapshot.exists()){
+//         console.log('beer data deleted');
+//         return 
+//       }
+
+//       if(snapshot.child('name').changed() || snapshot.child('description').changed() || snapshot.child('styleId').changed()){
+
+//         if(swearjar.profane(name)){
+//           saveObj.name = swearjar.censor(name)
+//         }
+
+//         if(swearjar.profane(description)){
+//           saveObj.description = swearjar.censor(description)
+//         }
+
+//         return Promise.all([styleData, orgData])
+
+//         .then(results =>{
+//           const styleValue = results[0].val(),
+//                 orgValue = results[1].val()
+
+//           for (let item of styleItems){
+//             saveObj[item] = (styleValue[item]) ? styleValue[item] : null
+//           }
+          
+//           snapshot.adminRef.update(Object.assign({}, saveObj))
+//           return orgValue
+//         })
+//         .then(orgValue =>{
+
+//           for (let item of orgItems){
+//             saveObj[item] = (orgValue[item]) ? orgValue[item] : null
+//           }
+
+//           for (let item of beerItems){
+//             saveObj[item] = (data[item]) ? data[item] : null
+//           }
+
+//           if(saveObj.stateAbbreviation && saveObj.category){
+//             saveObj['stateAndCategory'] = `${saveObj.stateAbbreviation}_${saveObj.category}`
+//           }
+
+//           if(saveObj.stateAbbreviation && saveObj.styleId){
+//             saveObj['stateAndStyleId'] = `${saveObj.stateAbbreviation}_${saveObj.styleId}`
+//           }
+
+//         return beerDB.update(saveObj)
+                
+//         })
+//         .then(()=>{
+//           return  location.set(true)
+//         })
+//         .then(()=>{
+//           console.log('updated beer data')
+//           return;
+//         })
+//         .catch(error =>{
+//           console.error(error)
+//         })
+                 
+//       }
+    
+   
+        
+
+//   });
+  
 

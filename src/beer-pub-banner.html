@@ -93,17 +93,24 @@
     </style>
 
   <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
- 
-    <div class="info-banner" >
-      <template is="dom-if" if="[[place.rating]]">
+ <!-- FAVORITE [[favorite]]
+ RATING [[rating]] -->
+
+    <div class="info-banner">
+
+      
+
+      <template is="dom-if" if="[[organization.rating]]">
+        <template is="dom-if" if="[[!_hideGoogleData]]">
           <div class="banner-item">
             <div></div>
             <div class="info-item-wrapper">
-              <div class="info-nonicon"> [[place.rating]]/5</div>
+              <div class="info-nonicon"> [[organization.rating]]/5</div>
               <div class="info-label">Google users</div>
             </div>
             <div class="divider"></div>  
         </div>
+        </template>
       </template>
 
       <template is="dom-if" if="[[organization.ratingPercent]]">
@@ -198,21 +205,20 @@
             <div class="divider"></div> 
         </div>
       </template>
-
-      
-      
    
       <template is="dom-if" if="[[_hasPlaceOpen]]">
-        <div class="banner-item">
-          <div></div>
-          <div class="info-item">
-            <div class="info-item-wrapper">
-              <div class="info-nonicon open">[[place.open]]</div>
-              <div class="info-label">Currently Open/Closed</div>
+        <template is="dom-if" if="[[!_hideGoogleData]]">
+          <div class="banner-item">
+            <div></div>
+            <div class="info-item">
+              <div class="info-item-wrapper">
+                <div class="info-nonicon open">[[organization.open]]</div>
+                <div class="info-label">Currently Open/Closed</div>
+              </div>
             </div>
+            <div></div> 
           </div>
-          <div></div> 
-        </div>
+        </template>
       </template>
 
     </div>
@@ -264,13 +270,10 @@
           type: String
         },
 
-        place:{
-          type: Object
-        },
-
         favorite:{
           type:Boolean,
-          value:false
+          value:false,
+          computed:'_computeFavorite(organization.userData.favorite)'
         },
 
         favoriteCSS:{
@@ -283,13 +286,20 @@
           computed:'_computeFavoriteIcon(favorite)'
         },
 
-        // userFavorite:{
-        //   type:Boolean,
-        //   value:false
-        // },
+        page:{
+          type:String,
+          value:''
+        },
+
+        _hideGoogleData:{
+          type:Boolean,
+          value:false,
+          computed: '_computeHideGoogleData(page)'
+        },
 
         rating:{
           type:String,
+          computed: '_computeRating(organization.userData.rating)'
         },
 
         openCrawl:{
@@ -319,7 +329,7 @@
           type:Boolean,
           reflectToAttribute: true,
           value:false,
-          computed: '_computeHasPlaceOpen(place, organization)'
+          computed: '_computeHasPlaceOpen(organization)'
         },
 
         _showIcons:{
@@ -330,40 +340,21 @@
       },
 
       observers:[
-                  '_watchRating(rating)',
-                  // '_watchFavorite(favorite)',
-                  '_watchRatingData(userData.favoriteOrganization, placeId)'
+                  // '_watchRating(rating)',
+                  '_setRatingCSS(rating)'
                   ],
      
-      _watchRatingData:function (rating, placeId){
-        // console.log('rating', rating)
-        if(rating && placeId){
-          if(rating[placeId]){
-
-            if(rating[placeId].favorite){
-              this.favorite = rating[placeId].favorite;
-            }
+      _setRatingCSS:function (rating){
  
-            this.userRating = rating[placeId].rating;
-            if(this.userRating === 'yes'){
-              this.$.ratingButton.style.color = 'green';
-              this.$.notRatingButton.style.color=null;
-            }else if (this.userRating === 'no'){
-              this.$.ratingButton.style.color = null;
-              this.$.notRatingButton.style.color='red';
-            }
-            else{
-              this.$.ratingButton.style.color = null;
-              this.$.notRatingButton.style.color=null;
-            }
-          }else{
-            this.userRating = null;
-            this.$.ratingButton.style.color = null;
-            this.$.notRatingButton.style.color=null;
-          }
-           
-        }else{
-          this.userRating = null;
+        this.userRating = rating;
+        if(this.userRating === 'yes'){
+          this.$.ratingButton.style.color = 'green';
+          this.$.notRatingButton.style.color=null;
+        }else if (this.userRating === 'no'){
+          this.$.ratingButton.style.color = null;
+          this.$.notRatingButton.style.color='red';
+        }
+        else{
           this.$.ratingButton.style.color = null;
           this.$.notRatingButton.style.color=null;
         }
@@ -371,9 +362,9 @@
       },
 
       _watchRating:function (rating){
-        console.log('rating', rating)
-        console.log('user', this.userRating);
-        var update = false;
+        // console.log('rating', rating)
+        // console.log('user', this.userRating);
+        let update = false;
         let that = this;
         if(rating){
           update = true;
@@ -397,32 +388,34 @@
                   place_id:this.placeId,
                   rating:this.rating,
                   favorite:this.favorite,
-                  vicinity:this.organization.vicinity,
+                  vicinity:(this.organization.vicinity) ? this.organization.vicinity : this.organization.formatted_address.split(', ').slice(0,2).join(', '),
                   latitude:this.organization.latitude,
                   longitude:this.organization.longitude
                 };
 
-                firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.placeId}`)
-                  .update(obj)
-                  .then(() =>{
-                    console.log('Updated rating');
-                  })
-                  .catch(error =>{
-                    console.log('Rating_ERROR', error)
-                  })
+                console.log(`user/${this.user.uid}/favoriteOrganization/${this.placeId}`)
+                console.log(obj);
+                // firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.placeId}`)
+                //   .update(obj)
+                //   .then(() =>{
+                //     console.log('Updated rating');
+                //   })
+                //   .catch(error =>{
+                //     console.log('Rating_ERROR', error)
+                //   })
               
           
 
               }else{
-                firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.placeId}`)
-                  .remove()
-                  .then(() =>{
-                    console.log('Removed rating');
-                    that.favorite = false;
-                  })
-                  .catch(error =>{
-                    console.log('RATING_DELETE_ERROR', error)
-                  })
+                // firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.placeId}`)
+                //   .remove()
+                //   .then(() =>{
+                //     console.log('Removed rating');
+                //     that.favorite = false;
+                //   })
+                //   .catch(error =>{
+                //     console.log('RATING_DELETE_ERROR', error)
+                //   })
               }
             }
           }
@@ -438,58 +431,23 @@
           console.log('favorite', favorite)
 
         }
-
-        // console.log('user', this.userFavorite);
-        // var update = false;
-        // if(favorite){
-        //   update = true;
-        // }
-        // if(favorite === this.userFavorite){
-        //   update = false;
-        // }
-
-        // if(this.user){
-        //   if(this.organization){
-        //     if(this.placeId){
-                
-        //       if(update){
-        //         var obj={
-        //           created: Math.round(Date.now()/1000),
-        //           name:this.organization.name,
-        //           place_id:this.placeId,
-        //           favorite:this.favorite,
-        //           vicinity:this.organization.vicinity,
-        //           latitude:this.organization.latitude,
-        //           longitude:this.organization.longitude
-        //         };
-
-        //         firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.placeId}`)
-        //           .update(obj)
-        //           .then(() =>{
-        //             console.log('Updated favorite');
-        //           })
-        //           .catch(error =>{
-        //             console.log('FAVORITE_ERROR', error)
-        //           })
-
-        //       }else{
-        //         firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.placeId}/favorite`)
-        //           .remove()
-        //           .then(() =>{
-        //             console.log('Removed favorite');
-                    
-        //           })
-        //           .catch(error =>{
-        //             console.log('RATING_DELETE_ERROR', error)
-        //           })
-        //       }
-        //     }
-        //   }
-
-        // }else{
-        //   this.login = true;
-        // }
         
+      },
+
+      _computeFavorite: function (favorite){
+        // console.log('favorite', favorite)
+        if(favorite){
+          return true;
+        }
+        return false;
+      },
+
+      _computeRating: function (rating){
+        // console.log('rating', rating)
+        if(rating){
+          return rating;
+        }
+        return false;
       },
 
       _toggleFavorite: function (){
@@ -534,8 +492,12 @@
         if(this.user){
           if (this.rating === 'yes'){
             this.rating = null;
+            this._removeRating();
+            console.log('remove')
           }else{
-            this.rating = 'yes'
+            this.rating = 'yes';
+            this._addRating('yes');
+            console.log('add yes')
           }
         }else{
           this.login = true;
@@ -546,12 +508,66 @@
         if(this.user){
           if (this.rating === 'no'){
             this.rating = null;
+            this._removeRating()
           }else{
-            this.rating = 'no'
+            this.rating = 'no';
+            this._addRating('no')
           }
         }else{
           this.login = true;
         }
+      },
+
+      _addRating(rating){
+        console.log('trigger add')
+        
+          if(this.uid){
+            if(this.placeId){
+              console.log('made it through')
+              let favorite = this.favorite;
+              if(rating === 'no'){
+                favorite = null;
+              }
+
+              firebase.database(this.$.auth.app).ref(`user/${this.uid}/favoriteOrganization/${this.placeId}`)
+                  .update({favorite:favorite, rating:rating})
+                  .then(() => {
+                    this.favorite = favorite;
+                    console.log('saved rating');
+                  })
+                  .catch(error =>{
+                    console.log('SAVED_RATING_ERROR', error)
+                  })
+            }
+
+          }else{
+            this.login = true;
+          }
+        
+      },
+
+      _removeRating(){
+        
+          if(this.uid){
+            if(this.placeId){
+              
+
+              firebase.database(this.$.auth.app).ref(`user/${this.uid}/favoriteOrganization/${this.placeId}`)
+                  .update({favorite:null, rating:null})
+                  .then(() => {
+                    this.favorite = false;
+                    this.rating = null;
+                    console.log('removed rating');
+                  })
+                  .catch(error =>{
+                    console.log('REMOVED_RATING_ERROR', error)
+                  })
+            }
+
+          }else{
+            this.login = true;
+          }
+        
       },
 
       _openEditPubDialog: function (){
@@ -566,19 +582,15 @@
         return false;
       },
 
-      _computeFavorite: function (favorite){
-        if(favorite){
-          return true;
+      _computeHideGoogleData: function (page){
+        if(page){
+          if(page === 'home'){
+            
+            return true;
+          }
         }
-        return;
+        return false;
       },
-
-      // _computeFavoriteLabel: function (favorite){
-      //   if(favorite){
-      //     return 'Favorite';
-      //   }
-      //   return 'Favorite';
-      // },
 
       _computeFavoriteCSS: function (favorite){
         if(favorite){
@@ -593,7 +605,6 @@
         }
         return 'beer-icons:favorite-border';
       },
-
 
       _computeShowIcons: function (organization){
         if(organization){
@@ -613,7 +624,6 @@
         return false;
       },
 
-
       _computeIcon: function (icon) {
         if (icon){
           return true;
@@ -621,15 +631,15 @@
           return false;
       },
 
-      _computeHasPlaceOpen: function (place, organization){
+      _computeHasPlaceOpen: function (organization){
         if(organization){
           if(organization.TRUCK){
             return false;
           }
         }
 
-        if(place){
-          if(place.open){
+        if(organization){
+          if(organization.open){
             return true;
           }
         }

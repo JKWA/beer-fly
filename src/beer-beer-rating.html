@@ -94,7 +94,8 @@
 		app-name="beer"
 		user="{{user}}">
 	</firebase-auth>
-  <!-- RATING: [[rating]] -->
+  <!-- RATING: [[rating]]
+  BEERID: [[beerId]] -->
 	<div class="info-banner" >
 		<template is="dom-if" if="[[ratingPercent]]">
 			<div class="banner-item">
@@ -163,7 +164,7 @@ Polymer({
 
 		favorite:{
 			type:Boolean,
-			computed:'_computeFavorite(userData, beerId)',
+			computed:'_computeFavorite(userBeerData.favorite)',
 			value:false
 		},
 
@@ -179,7 +180,7 @@ Polymer({
 
 		rating:{
 			type:String,
-			computed:'_computeRating(userData, beerId)'
+			computed:'_computeRating(userBeerData.rating)'
 		},
 			
 		ratingPercent:{
@@ -198,6 +199,11 @@ Polymer({
 			type:String,
 			computed: '_computeUid(user)'
 		},
+
+		userBeerData:{
+			type:Object,
+			computed: '_computeUserBeerData(userData, beerId)'
+		  },
 
 		userData:{
 			type:Object
@@ -372,18 +378,29 @@ Polymer({
 			}else{
 				this.login = true;
 			}
-    },
+	},
+	
+	_computeUserBeerData: function (userBeers, beerId){
+		console.log(userBeers);
+        if(userBeers, beerId) {
+          if (userBeers[beerId]){
+            return userBeers[beerId]
+          }
+        }
+        return {};
+      },
 
-		_computeFavorite: function (beer, userId){
-			if(beer[userId]){
-				return beer[userId].favorite;
+		_computeFavorite: function (favorite){
+			if(favorite){
+				return favorite;
 			}
 			return false;
 		},
 
-		_computeRating: function (beer, userId){
-			if(beer[userId]){
-				return beer[userId].rating;
+		_computeRating: function (rating){
+			console.log('rating', rating)
+			if(rating){
+				return rating
 			}
 			return false;
 		},

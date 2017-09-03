@@ -4,7 +4,7 @@
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="beer-icons.html">
 
 <dom-module id="beer-style-select">
@@ -20,9 +20,8 @@
       }
 
       .option {
-        height:100px;
-        overflow-y: scroll;
-        
+         max-height:18vh;
+         overflow-y: scroll; 
       }
 
       .style-option {
@@ -44,15 +43,22 @@
       }
 
 
-    </style>
+</style>
 
-    <firebase-query
+    <firebase-auth  
+        app-name="beer" 
+        id="auth">
+    </firebase-auth>
+
+    <!-- <firebase-query
         app-name="beer"
         id="styles"
         order-by-child="styleName"
         path="category/STYLE"
         data="{{styles}}">
-    </firebase-query>
+    </firebase-query> -->
+
+     <!-- STYLEID[[styleId]]  -->
 
         <paper-input 
             id="search"
@@ -74,16 +80,16 @@
 
         <paper-listbox
             id="listBox"
-            attr-for-selected="styleobj"
+            attr-for-selected="styleid"
             items="[[listItems]]"
-            selected="{{selectedStyle}}">
+            selected="{{styleId}}">
           
-         <template is="dom-repeat" 
+          <template is="dom-repeat" 
                    items="[[styles]]" 
                    filter="{{_filterByName(searchString)}}" 
                    as="style">
 
-            <paper-item styleobj="[[style]]">
+            <paper-item styleid="[[style.styleId]]">
                 <div class="style-option">[[style.styleName]]</div>
             </paper-item>
 
@@ -102,24 +108,37 @@
 
       properties:{
 
+        beerId:{
+          type:String,
+        },
+
+        styles:{
+          type:Array,
+          value: function (){return [];}
+        },
+
         listItems:{
           type:Array
         },
+
        searchString:{
          type:String
        },
 
-        styles:{
-          type: Array
-        },
+        orgId:String,
 
         presetStyleName:{
           type: Number
         },
 
-
         styleId:{
-          type: Number
+          type: Number,
+          notify:true
+        },
+
+        savedStyleId:{
+          type:Number,
+          observer:'_updateStyleId'
         },
 
         styleName:{
@@ -133,11 +152,87 @@
         }
       },
 
+      ready: function(){
+        // const styles = this.styles;
+        const that = this;
+        firebase.database(this.$.auth.app).ref(`category/STYLE`)
+          .once('value')
+          .then(snap =>{
+            snap.forEach(style =>{
+              // console.log(style.val())
+              that.push('styles', style.val())
+            })
+            
+            
+          })
+          // console.log(this.styles);
+      },
+
       observers:[
-        '_validateStyleData(searchString)',
-        '_watchselectedStyle(selectedStyle)',
-        '_watchForPreset(presetStyleName)'
+        // '_validateStyleData(searchString)',
+        // '_watchselectedStyle(selectedStyle)',
+        // '_watchForPreset(presetStyleName)',
+        '_setSearchBox(styleId, styles)',
+        '_saveNewStyleId(savedStyleId, styleId)',
+        '_watchForBeerChanged(beerId)'
       ],
+
+      _watchForBeerChanged:function (beerId){
+        if(beerId){
+          console.log('beer changed')
+        }
+      },
+
+      _setSearchBox: function (styleId, styles){
+        // console.log('test style', styles)
+        if(typeof styles === 'object'){
+          if(styleId){
+            for(let key of Object.keys(styles)){
+              // console.log('testing')
+              let style = styles[key];
+              // console.log( styles[key]);
+              if(style.styleId === styleId){
+                this.searchString = style.styleName;
+                this.styleName = style.styleName;
+              }
+            }
+          }
+        }
+      },
+
+      _saveNewStyleId: function (savedStyleId, styleId){
+        console.log('triggered save style')
+        if(styleId){
+          if(savedStyleId !== styleId){
+            if(this.beerId){
+              if(this.orgId){
+                console.log('saving')
+                firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/brewBeer/${this.beerId}`)
+                  .update({styleId:styleId})
+                  .then(()=>{
+                    console.log('Saved',styleId);
+                  })
+              }
+            }
+            
+          }
+        }
+      },
+
+      _updateStyleId: function (newId, oldId){
+        if(newId !== oldId){
+          this.styleId = newId
+        }else{
+          if(!newId){
+            this.styleId = null;
+          }
+        }
+          
+        
+        console.log(oldId, newId)
+      },
+
+      
 
       _watchForPreset: function (presetStyleName){
         // console.log(presetStyleName);
