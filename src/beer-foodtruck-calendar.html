@@ -9,10 +9,10 @@
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
-<link rel="import" href="../bower_components/paper-time-input/paper-time-input.html">
+
+<link rel="import" href="beer-foodtruck-calendar-input.html">
 
 
 <link rel="import" href="beer-icons.html">
@@ -20,9 +20,9 @@
 
 <dom-module id="beer-foodtruck-calendar">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
     .add{
       color: var(--app-accent-color);
     }
@@ -30,27 +30,27 @@
       color: red;
     }
     .calendar-wrapper{
-         @apply(--layout-vertical);
-         @apply(--layout-justified);
+         @apply --layout-vertical;
+         @apply --layout-justified;
       }
 
     .schedule-wrapper{
-      @apply(--layout-horizontal);
+      @apply --layout-horizontal;
       margin: 12px 0 0 0;
     }
 
     .schedule-title{
-      @apply(--layout-horizontal);
-      @apply(--layout-justified);
+      @apply --layout-horizontal;
+      @apply --layout-justified;
       
     }
       .time-input{
-         @apply(--layout-horizontal);
+         @apply --layout-horizontal;
       }
 
       .time-input >div{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
+        @apply --layout-horizontal;
+        @apply --layout-justified;
         padding: 10px;
       }
 
@@ -63,6 +63,11 @@
       .day {
         font-size: 1.2em;
         font-weight: 400;
+      }
+
+      .flip{
+        -webkit-transform: scale(1, -1);
+        transform: scale(1, -1);
       }
 
 
@@ -91,18 +96,13 @@
             </template>
 
            <iron-label class="add">
-              <toggle-icon
-                    animation="flip-vertical" 
-                    icon="beer-icons:expand-more"
-                    checked="{{toggle}}"
-                    noink>
-              </toggle-icon>
-            <span class="day add">[[selectedDayLabel]]</span>
+              <paper-icon-button class$="[[toggleClass]]" icon="beer-icons:expand-more" on-tap="_toggle"></paper-icon-button>
+              <span class="day add">[[selectedDayLabel]]</span>
            </iron-label>
           
           <div>
             <iron-collapse no-animation opened="{{toggle}}"> 
-            <paper-material elevation="0" >
+            <div>
               <paper-listbox 
                   attr-for-selected="day" 
                   selected="{{selectedDay}}"
@@ -111,33 +111,33 @@
                   <paper-item day="[[day]]">[[day.label]]</paper-item>
                 </template>
               </paper-listbox>
-            </paper-material>
+            </div>
             </iron-collapse>
           </div>
           <div>
-            <paper-material elevation="0">
+            <div>
               <div id="scheduleInput" hidden>
                 <div class="time-input">
                 
 
                   <div>
-                    <paper-time-input
+                    <beer-foodtruck-calendar-input
                         label="Opening"
                         hour="{{openHour}}"
                         min="{{openMinute}}"
                         am-pm="{{openAmPm}}"
                         hideLabel>
-                    </paper-time-input>
+                    </beer-foodtruck-calendar-input>
                   </div>
 
                   <div> 
-                    <paper-time-input
+                    <beer-foodtruck-calendar-input
                         label="Closing"
                         hour="{{closeHour}}"
                         min="{{closeMinute}}"
                         am-pm="{{closeAmPm}}"
                         hideLabel>
-                    </paper-time-input>
+                    </beer-foodtruck-calendar-input>
                   </div>
 
                  
@@ -149,7 +149,7 @@
 
               </div>
 
-            </paper-material>
+            </div>
           </div>
         </div>
 
@@ -216,6 +216,10 @@
        toggle:{
          type: Boolean
        },
+
+       toggleClass:{
+          type: String
+        },
 
        truckId:{
          type:String
@@ -367,8 +371,6 @@
 
           period.OPEN = openTime;
           period.CLOSE = closeTime;
-
-        // console.log(this.selectedDay.key, period)
         
         if(this.orgId){
           if(this.truckId){
@@ -453,7 +455,12 @@
           
           if(hour === 0){     
             hour = 12;
-            amPm = "AM"
+            amPm = "AM";
+
+          }else if (hour === 12) {
+            hour = 12;
+            amPm = "PM";
+          
           }else if(hour > 12){
             hour = hour-12;
             amPm = 'PM';
@@ -469,6 +476,15 @@
 
       _close: function (){
         this.toggle = false;
+      },
+
+       _toggle: function (){
+        this.toggle = !this.toggle
+        if(this.toggle){
+          this.toggleClass = 'flip'
+        }else{
+          this.toggleClass = '';
+        }
       },
 
       _sortDay: function(a,b){

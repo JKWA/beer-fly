@@ -1,11 +1,12 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
 
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
-<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="beer-allbeers-card.html">
 
@@ -13,9 +14,9 @@
 
 <dom-module id="beer-allbeers">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       paper-spinner-lite{
         position: absolute;
@@ -24,7 +25,7 @@
       }
 
       .category-wrapper{
-        @apply(--layout-horizontal);
+        @apply --layout-horizontal;
         color: var(--app-accent-color);
       }
 
@@ -42,30 +43,23 @@
         height: 10px;
       }
 
-
-
-
-      @media (max-width: 767px) {
-        .logo{
-          visibility: hidden
-        }
-
-        h3 {
-          margin: 24px 0;
-        }
-
+      .flip{
+        -webkit-transform: scale(1, -1);
+        transform: scale(1, -1);
       }
+
+
+
+
 
     </style>
 
-     <firebase-query
-        app-name="beer"
-        id="beers">
-    </firebase-query>
+
 
 
     <firebase-query
         app-name="beer"
+        id="beers"
         path="category/STYLECATEGORY"
         data="{{categories}}">
     </firebase-query>
@@ -74,12 +68,7 @@
         <div hidden=[[!showCategory]]>
           
           <iron-label class="category-wrapper">
-            <toggle-icon
-                  animation="flip-vertical" 
-                  icon="beer-icons:expand-more"
-                  checked="{{toggle}}"
-                  noink>
-            </toggle-icon>
+            <paper-icon-button class$="[[toggleClass]]" icon="beer-icons:expand-more" on-tap="_toggle"></paper-icon-button>
             <span class="category-shown">[[selectedCategoryDisplay]]</span>
            </iron-label>
         </div>
@@ -150,7 +139,11 @@
 
         toggle:{
           type: Boolean
-        }
+        },
+
+        toggleClass:{
+          type: String
+        },
         
        },
        
@@ -251,6 +244,15 @@
        close: function (){
         this.toggle = false;
         // console.log(this.selectedCategory);
+      },
+
+      _toggle: function (){
+        this.toggle = !this.toggle
+        if(this.toggle){
+          this.toggleClass = 'flip'
+        }else{
+          this.toggleClass = '';
+        }
       },
 
     

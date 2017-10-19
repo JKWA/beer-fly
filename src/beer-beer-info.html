@@ -2,28 +2,30 @@
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-
-
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/geo-query/geo-query.html">
+<link rel="import" href="../bower_components/geo-query/geofire-import.html">
 
 <link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-location.html">
 <link rel="import" href="beer-beer-rating.html">
-<!--<link rel="import" href="beer-near-breweries.html">-->
 <link rel="import" href="beer-pub-card.html">
 
 
 
 <dom-module id="beer-beer-info">
 
-  <template>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
-    <style>
-
-
+    :host {
+        display: block;
+        max-width: 640px;
+      }
+      
      a{
       color: var(--app-primary-color);
       text-decoration: none;
@@ -34,19 +36,23 @@
       top: 5%;
       right: 5%;
       font-size: .4em;
-
     }
 
 
     .card{
-      padding: 10px;
       margin: 10px;
+      @apply --paper-material-elevation-1;
+      background-color: white;
+    }
+
+    .info-section{
+        padding: 20px;
     }
 
     .title{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        @apply --layout-wrap;
         font-size: 1em;
         font-weight: 400;
         color: var(--app-primary-color);
@@ -57,7 +63,7 @@
       }
      
       .wrapper{
-         @apply(--layout-vertical);        
+         @apply --layout-vertical;        
       }
 
       .wrapper > div{
@@ -71,10 +77,9 @@
       }
 
       .style {
-        font-size: 1.0em;
-        font-weight: 500;
+        font-size: 1.2em;
+        font-weight: 300;
         color: var(--app-primary-color);
-       
       }
 
       .description {
@@ -84,22 +89,23 @@
       }
 
       .location{
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
+        @apply --layout-wrap;
         font-size: 1em;
         font-weight: 400;
         color: var(--app-primary-color);
       }
 
-       .location > div{
+      .location > div{
         padding: 0 5px 0 0;
       }
 
       .footer-abv{
-        text-align: right;
         margin: 0 20px 0 0;
-        font-weight: 500;
+        font-weight: 300;
+        font-size: 1em;
+        color: var(--app-secondary-color);
       }
 
       .tap-title {
@@ -125,21 +131,15 @@
       data="{{beer}}">
     </firebase-document>
 
-    <paper-material class='card' elevation="0" animated-shadow="false">
-      <div class="your-location">Your location: [[location.address]]</div>
-    </paper-material>
+      <div>
+        <beer-location
+          location={{location}}>
+        </beer-location>    
+      </div>
     
-     <paper-material class='card' elevation="0" animated-shadow="false">
+      <div class="card">
           
-          <div class="title">
-            <div>
-              <beer-beer-rating 
-                  beer-id="[[beerId]]"
-                  login="{{login}}">
-              </beer-beer-rating>
-            </div> 
-          </div>
-
+        <div class="info-section">
           <div class="wrapper">
             <div class="name">[[beer.name]]</div>
             <div class="style">[[beer.styleName]]</div>
@@ -149,11 +149,18 @@
               <div>[[beer.city]],</div>
               <div>[[beer.state]]</div>
             </div>
-            <div class="footer-abv" hidden$="[[!abv]]">ABV: [[beer.abv]]</div>
+            <div class="footer-abv" hidden$="[[!beer.abv]]">ABV: [[beer.abv]]</div>
               
           </div>
-
-      </paper-material>
+        </div>
+        <div>
+          <beer-beer-rating 
+              beer-id="[[beerId]]"
+              user-data="[[userData]]"
+              login="{{login}}">
+          </beer-beer-rating>
+        </div> 
+      </div>
     
     <!--<paper-input label="beerId" value></paper-input>-->
     
@@ -163,20 +170,12 @@
           initial-count="20"  sort="_sort" 
           observe="sort distance">
 
-         <beer-pub-card 
+        <div class="card">
+          <beer-pub-card 
             place-id="[[pub.place_id]]"
-            name="[[pub.name]]"
-            address="[[pub.vicinity]]"
-            motto="[[pub.motto]]"
-            distance="[[pub.distance]]"  
-            photo-url="[[pub.mainImage.banner.url]]"
-            thumbnail="[[pub.mainImage.banner.thumbnail]]"
-   
-            dog-friendly="[[!pub.dogFriendly]]"
-            patio="[[!pub.patio]]"
-            over21="[[!pub.over21]]"
-            login="{{login}}">
-        </beer-pub-card>
+            organization="[[pub]]">
+          </beer-pub-card>
+        </div>
 
       </template>
       </div>
@@ -192,23 +191,25 @@
 
       properties: {
 
-       beerId:{
-         type: String
-       },
-      
-       location: {
-         type:Object
-       },
+        beerId:{
+          type: String
+        },
+        
+        location: {
+          type:Object
+        },
 
-       login:{
-         type: Boolean,
-         notify: true
-       },
+        login:{
+          type: Boolean,
+          notify: true
+        },
 
-       pubArray:{
-         type: Array,
-         value: function (){return [];}
-       }
+        pubArray:{
+          type: Array,
+          value: function (){return [];}
+        },
+
+        userData:Object
 
       },
       observers:['_getPubs(beerId, location)'],
@@ -227,7 +228,7 @@
         var number = 0;
         var radius = 100;
 
-        query.center = [location.location.latitude, location.location.longitude];
+        query.center = [location.latitude, location.longitude];
         query.radius = radius*1.609344;
 
 

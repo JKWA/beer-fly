@@ -6,7 +6,7 @@
 
 
 
-<dom-module id="beer-location-data">
+<dom-module id="beer-location-data"> 
 
   <template>
 
@@ -14,10 +14,10 @@
 
     <app-localstorage-document 
         id="locationHistory"
-        zero-value="{{zero}}"
         key="locationHistory" 
         data="{{locationHistory}}">
     </app-localstorage-document>
+      
   </template>
 
   <script>
@@ -59,14 +59,9 @@
         sortedLocationHistory: {
           type: Array,
           notify: true
-        },
-
-        zero: {
-          type: Object,
-          value: function (){
-            return {};
-          }
         }
+
+     
 
        
       },
@@ -83,7 +78,7 @@
 
       _watchLocationHistory: function (locationHistory){
        
-        //  console.log('noticed history change');
+         console.log('noticed history change', locationHistory);
           
         try{
           if(typeof locationHistory === 'object'){
@@ -97,6 +92,8 @@
               locationArray.push(locationHistory[key[i]]);
 
             }
+            console.log('locationArray', locationArray)
+
           
             if(locationArray.length >0){
               var sortedLocations = locationArray.sort(this._sortTimestamp);
@@ -116,7 +113,7 @@
               var location = sortedLocations.shift();
            
               location.first = this._firstTimeSession(location);
-              // console.log('location', location);
+              console.log('location', location);
               this.location = location;
             }
           }

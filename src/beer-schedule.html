@@ -1,0 +1,386 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../my_components/data/upload-image.html">
+
+<link rel="import" href="beer-fab.html">
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-banner.html">
+
+<dom-module id="beer-schedule">
+
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
+
+     a{
+      text-decoration: none;
+      color: var(--app-accent-color);
+    }
+
+    .card{
+        margin: 10px;
+        padding: 10px;
+        text-align: center;
+        @apply --paper-material-elevation-0;
+      }
+
+    .add-card{
+        margin: 10px;
+        padding: 10px;
+        text-align: right;
+        color: var(--app-accent-color);
+        @apply --paper-material-elevation-0;
+      }
+
+      .add-button{
+        color: var(--app-accent-color);
+      }
+
+      .description {
+        font-size: 1.2em;
+        font-weight: 300;
+        margin: 10px 5px 0 20px;
+      }
+
+      .pub-card{
+        margin: 10px;
+        padding: 10px;
+        text-align: center;
+        @apply --paper-material-elevation-1;
+      }
+
+      .day {
+        font-size: 1.5em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+        margin: 10px 0 0 0;
+      }
+
+      .name{
+        font-size: 1.2em;
+        font-weight: 400;
+        color: var(--app-accent-color);
+        margin: 10px 0 0 0;
+      }
+
+      .vicinity {
+        font-size: 1.0em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .time {
+        font-size: 1.0em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+    </style>
+
+
+
+    <beer-banner
+      google-photo-url="[[organization.googlePhoto.TAP.url]]"
+      photo="[[category.image.banner]]"
+      org-id="[[orgId]]">
+    </beer-banner>
+
+    <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
+
+
+    <template is="dom-repeat" items="[[_addBreaks(category.description)]]" as="description">
+      <div class="description">
+          [[description]]
+      </div>
+   </template>
+
+    <template is="dom-if" if="[[owner]]">
+      <div class="add-card" >
+        <div class="add-button">
+          <a href$="/[[nameUrl]]/schedule-edit?orgid=[[orgId]]">
+          <iron-label>
+            <iron-icon icon="beer-icons:add"></iron-icon>
+            <span>Add location</span>
+          </iron-label>
+        </div>
+      </div>
+    </template>
+
+     <template 
+          is="dom-repeat" 
+          items="[[_createArray(organization.schedule)]]" 
+          as="day"
+          order="_dayOrder">
+        
+        <div class="card" hidden$="[[!day.organization]]">
+          <div class="day">[[day.label]]</div>
+
+          <template 
+              is="dom-repeat" 
+              items="[[_createArray(day.organization)]]" 
+              as="pub">
+             
+
+            <div class="pub-card">
+
+              <template is="dom-if" if="[[owner]]">
+                <div class="edit-card" >
+                  <div class="edit-button">
+                    <a href$="/[[nameUrl]]/schedule-edit?orgid=[[orgId]]&locationId=[[pub.$key]]">
+                    <iron-label>
+                      <iron-icon icon="beer-icons:add"></iron-icon>
+                      <span>Edit location</span>
+                    </iron-label>
+                  </div>
+                </div>
+              </template>
+
+              <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.$key]]">
+                <div class="name">[[pub.name]]</div>
+                <div class="vicinity">[[pub.vicinity]]</div>
+                <div class="time">[[_formatTimeStamp(pub.OPEN)]]-[[_formatTimeStamp(pub.CLOSE)]]</div>
+              </a>
+            </div>
+            
+          </template>
+        </div>
+
+      </template>
+
+       <paper-dialog 
+          id="editDialog"
+          with-backdrop
+          style="width: 90vw;"
+          entry-animation="slide-from-right-animation"
+          exit-animation="slide-right-animation">
+              
+        <div> 
+            <h3>[[category.title]]</h3>
+        </div>
+
+          <paper-dialog-scrollable>
+              <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_BEER_banner" key="category/BEER/image"></upload-image>   
+              <paper-textarea always-float-label label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
+          </paper-dialog-scrollable>
+
+        <div>
+          <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+        </div>
+      </paper-dialog>
+        
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-schedule',
+
+      properties: {
+
+       nameUrl:{
+          type: String
+       },
+
+       orgId:{
+         type: String
+       },
+
+       organization:{
+         type: Object
+       },
+
+       orgId:{
+         type:String
+       },
+
+       owner:{
+         type: Boolean
+       },
+
+       photoUrl: {
+          type: String,
+          computed: '_computePhotoUrl(category, place)'
+        },
+
+       placeholder:{
+          type: String
+        },
+       
+
+      },
+
+
+       
+       _createArray : function (obj){
+        console.log('obj', obj)
+        var returnArray = [];
+        if(typeof obj ==='object'){
+          var key = Object.keys(obj);
+          for (var i=0; i<key.length; i++){
+            obj[key[i]]['$key'] = key[i];
+            returnArray.push(obj[key[i]]);
+          }
+        }
+        return returnArray
+      },
+
+      _formatTimeStamp: function (time){
+        var timeString = ''
+        if(time){
+          var hour = time.substring(0, 2);
+          var minute = time.substring(2, 4);
+          var amPm = 'AM';
+
+          hour = parseInt(hour);
+          
+          if(hour === 0){     
+            hour = 12;
+            amPm = "AM"
+          
+          }else if(hour === 12){
+            hour = 12;
+            amPm = 'PM';
+
+          }else if(hour > 12){
+            hour = hour-12;
+            amPm = 'PM';
+          }
+
+          timeString += hour.toString()+':';
+          timeString += minute.toString()+' ';
+          timeString += amPm;
+
+          return timeString
+        }
+      },
+
+      
+      _sortOpenTime: function(a,b){
+        if (a.open < b.open)
+          return -1;
+        if (a.open > b.open)
+          return 1;
+        return 0;
+      },
+
+      _computeNameForUrl: function (name) {
+        if (name) {
+          name = name.replace(/\s/g, '-')
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'home'
+        }
+      },
+
+      _computePhotoUrl: function (category, place) {
+         try{
+          if(category.image){
+            if(category.image.banner){
+              if(category.image.banner.url){
+                return category.image.banner.url;
+              }
+            }
+          }
+          var photoMeta = {};
+          var photos = place.photos
+          var categoryIndex = 2
+          if(photos.length < categoryIndex){
+            categoryIndex = photos.length
+          }
+          photoMeta.maxWidth = place.photos[categoryIndex].width;
+          photoMeta.maxHeight = place.photos[categoryIndex].height;
+          return place.photos[categoryIndex].getUrl(photoMeta);
+         
+       }catch (error){
+
+       }
+      },
+
+      _dayOrder: function(a,b){  
+        if (a.day < b.day)
+          return -1;
+        if (a.day > b.day)
+          return 1;
+        return 0;
+      },
+
+       _formatTimeStamp: function (time){
+        var timeString = ''
+        if(time){
+          var hour = time.substring(0, 2);
+          var minute = time.substring(2, 4);
+          var amPm = 'AM';
+
+          hour = parseInt(hour);
+          
+          if(hour === 0){     
+            hour = 12;
+            amPm = "AM"
+          
+          }else if(hour === 12){
+            hour = 12;
+            amPm = 'PM';
+
+          }else if(hour > 12){
+            hour = hour-12;
+            amPm = 'PM';
+          }
+
+          timeString += hour.toString()+':';
+          timeString += minute.toString()+' ';
+          timeString += amPm;
+
+          return timeString
+        }
+      },
+
+       _computeNameForUrl: function (name) {
+        if (name) {
+          name = name.replace(/\s/g, '-')
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'home'
+        }
+      },
+
+      _addBreaks: function(str){
+        if(str){
+          return str.split('\n');
+        }else{
+          return [];
+        }
+      },
+
+      _edit: function(){
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.editDialog);
+        this.$.editDialog.open();
+      },
+     
+
+      _test: function(obj){
+          console.log("TEST",obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

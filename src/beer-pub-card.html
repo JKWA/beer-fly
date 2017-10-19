@@ -1,27 +1,67 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
 
 <link rel="import" href="beer-pub-icons.html">
-<link rel="import" href="beer-pub-rating.html">
-<link rel="import" href="beer-pub-favorite.html">
+<link rel="import" href="beer-pub-banner.html">
+
 
 <dom-module id="beer-pub-card">
 
-  <template>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
-    <style>
+      :host {
+        display: block;
+        position: relative;
+        background-color: white;
+      }
 
       a{
-      color: var(--app-primary-color);
-      text-decoration: none;
-    }
+        color: var(--app-primary-color);
+        text-decoration: none;
+      }
 
-      .card{
+     
+
+      .card-wrapper{
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        
+      }
+
+      .actions{
+         width: 80px;
+         height:100%;
+         background-color: var(--app-shadow-color);
+      }
+
+      .actions-wrapper{
+         @apply --layout-vertical;
+         @apply --layout-center-justified;
+      }
+
+      .action-button{
+        /*color: white;
+        background-color: var(--app-accent-color);*/
+        margin: 10px 20px;
+      }
+
+
+      .card-information{
         padding: 10px;
         margin: 10px;
+        width: 95%;
+
       }
 
       .items > div{
@@ -40,101 +80,85 @@
         font-size: 1.0em;
         font-weight: 400;
         color: var(--app-primary-color);
+        margin:10px 0
       }
 
       .address {
         font-size: 1.0em;
         font-weight: 300;
         color: var(--app-primary-color);
+        margin:10px 0 20px 0;
       }
+      
       .distance{
         font-size: 1.0em;
         font-weight: 300;
         color: var(--app-secondary-color);
       }
 
-      .icons-wrapper{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
-        @apply(--layout-wrap);
-      }
 
       .sponsor-wrapper{
         font-size: .8em;
         font-weight: 300;
         color: var(--app-secondary-color);
-        /*visibility: hidden;*/
-        /*@apply(--layout-horizontal);
-        @apply(--layout-center-justified);*/
       }
-
-     
-      /*beer-pub-rating {
-        height: 30px;
-      }*/
-
 
 
     </style>
 
-    
+    <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
 
-      <paper-material class='card' elevation="1" animated-shadow="false">
-        <!--TEST[[photoUrl]]-->
-        <template is="dom-if" if="[[sponsor]]">
-          <div hidden$="[[!photoUrl]]">
-          <a aria-label$="[[name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
+   
+      <div class="card">
+        
+        <template is="dom-if" if="[[_isPremium]]">
+          <template is="dom-if" if="[[organization.mainImage.banner.url]]">
+         
+          <a aria-label$="[[organization.name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
             <iron-image 
                 style="width:100%; height:300px; background-color: #F8F8F8;"
                 sizing="cover" 
                 preload 
                 placeholder="[[_computedPlaceHolder]]"
                 fade
-                src="[[photoUrl]]">
+                src="[[organization.mainImage.banner.url]]">
             </iron-image>
-           
           </a>
+          </template>
+          <div  class="sponsor-wrapper">
+            <div id="sponsor">Sponsoring Organization</div>
           </div>
         </template>
-     
-        <div  class="sponsor-wrapper" >
-            <div id="sponsor" hidden$="[[sponsorHide]]">Sponsoring Organization</div>
-        </div>
-            <div class="rating">
-              <beer-pub-rating 
-                  place-id="[[placeId]]"
-                  google-rating="[[googleRating]]"
-                  login="{{login}}"
-                  address="[[address]]"
-                  name="[[name]]">
-              </beer-pub-rating>
-            </div>
-           
-           
-   
-         
+
+        <div class="card-wrapper">
+
+          <div class="card-information">
        
-          <a aria-label$="[[name]]" href$="/[[urlName]]/main?orgid=[[placeId]]">
-            <div class="items">
-                <div class="name">[[name]]</div>
-                <template is="dom-if" if="[[sponsor]]">
-                  <div class="motto">[[motto]]</div>
+              <div class="items">
+                <a aria-label$="[[organization.name]]" href$="/[[urlName]]/main?orgid=[[placeId]]&[[locationParams]]">
+                  <div class="name">[[organization.name]]</div>
+               
+                <template is="dom-if" if="[[_isPremium]]">
+                  <div class="motto">[[organization.motto]]</div>
                 </template>
-                <div class="address" hidden$="[[!address]]">[[address]]</div>
-                <!--<div class="address" hidden$="[[address]]">[[city]], [[state]]</div>-->
-                <div class="distance" hidden$="[[!distance]]">[[_computeDisplayDistance(distance)]] miles from you</div>
-            </div>
-           </a>
-            <div>
-              <beer-pub-icons
-                dogs="[[dogFriendly]]"
-                patio="[[patio]]"
-                over21="[[over21]]">
-              </beer-pub-icons>
-            </div>
-           
-      </paper-material>
- 
+                <div class="address" hidden$="[[!organization.vicinity]]">[[organization.vicinity]]</div>
+                <div class="distance" hidden$="[[!organization.distance]]">[[_computeDisplayDistance(organization.distance)]] miles from you</div>
+                </a>
+              </div>
+          </div>
+        
+      </div>
+      <!-- FAVORITE:[[organization.userData.favorite]] -->
+        
+        <beer-pub-banner
+          organization="[[organization]]"
+          place-id="[[placeId]]"
+          page="[[page]]"
+          open-crawl="{{openCrawl}}"
+          edit="[[edit]]">
+        </beer-pub-banner>
+     
+      </div>
     
   </template>
 
@@ -144,116 +168,104 @@
 
       is: 'beer-pub-card',
 
-       properties: {
+      properties: {
 
-          address:{
-            type: String
-          },
-
-          city:{
-            type: String
-          },
-
-          distance:{
-            type: Number,
-            value: false
-          },
-
-          dogFriendly:{
-            type: Boolean,
-            value: false
-          },
-
-          googleRating:{
-            type: Number
-          },
-
-          login: {
-            type: Boolean,
-            notify: true
-          },
-
-          motto:{
-            type: String
-          },
-
-          name:{
-              type: String
-          },
-
-          over21:{
-            type: Boolean,
-            value: false
-          },
-
-          patio:{
-            type: Boolean,
-            value: false
-          },
-
-          photoUrl:{
-            type: String
-          },
-
-          thumbnail:{
-            type: String
-          },
-
-          _computedPlaceHolder:{
-            type: String,
-            computed: '_computePlaceHolder(thumbnail)'
-          },
-
-          placeId:{
-            type: String
-          },
-
-          sponsor:{
-            type: Boolean,
-            value: false
-          },
-
-          sponsorHide:{
-            type: Boolean,
-            computed: '_computeSponsorHide(sponsor)',
-            value: true
-          },
-
-          state:{
-            type: String
-          },
-          
-          urlName:{
-              type: String,
-              computed: '_computeNameForUrl(name)'
-          }
-         
+        edit:{
+          type:Boolean,
+          value:false,
         },
 
-        // observers: ['_watch(sponsor)'],
+        login: {
+          type: Boolean,
+          notify: true
+        },
 
-        //  _watchforSponsor: function (sponsor){
+        openEditPubCrawl:{
+          type:Boolean,
+          notify:true
+        },
+
+        organization:{
+          type:Object
+        },
+
+        openCrawl:{
+          type:Boolean
+        },
+
+        placeId:{
+          type: String
+        },
+
+        editPlace:{
+          type:Object,
+          notify:true
+        },
+
+        locationParams:String,
+
+        page:String,
+      
+        user: {
+          type:Object
+        },
+
+        userData:{
+          type:Object
+        },
         
-        //   if(sponsor){
-        //     // console.log('sponsor', sponsor)
-        //     // this.$.sponsor.hidden = false;
-        //   }
-        // },
-
-         _computeDisplayDistance: function (distance){
-          return Math.round(distance*10)/10
+        urlName:{
+            type: String,
+            computed: '_computeNameForUrl(organization.name)'
         },
 
-        _computeSponsorHide: function (sponsor){
-          if(sponsor){
-            return false;
+        _computedPlaceHolder:{
+          type: String,
+          computed: '_computePlaceHolder(organization.mainImage.banner.thumbnail)'
+        },
+
+        _isPremium:{
+          type:Boolean,
+          value:false,
+          computed: '_computeIsPremium(organization.plan)'
+        }
+        
+      },
+
+      observers:['_watchOpenEditPubCrawl(openCrawl)'],
+    
+      _watchOpenEditPubCrawl:function(openCrawl){
+        if(openCrawl){
+          if(this.user){
+            this.openEditPubCrawl = true;
+            this.editPlace = this.organization;
           }else{
-            return true;
+            this.login = true;
           }
-        },
+          this.openCrawl = false;
+        }
+      },
 
-        _computeNameForUrl: function (name) {
-         'use strict';
+      _computeIsPremium: function (plan) {
+
+        var today = Date.now() / 1000;
+        if (plan) {
+          if (plan.current_period_end) {
+            if (plan.current_period_end > today) {
+                return true;
+            }
+          }
+        }
+        return false;
+      },
+
+
+      _computeDisplayDistance: function (distance){
+        return Math.round(distance*10)/10
+      },
+
+      _computeNameForUrl: function (name) {
+          'use strict';
           if (name) {
             name = name.replace(/\s/g, '-')
             return name.replace(/[^a-zA-Z\d\s:]/g, '');
@@ -261,10 +273,15 @@
             return 'pub-name-missing'
           }
       },
+
       _computePlaceHolder: function (thumbnail){
         if(thumbnail){
           return 'data:image/png;base64, '+thumbnail;
         }
+      },
+
+      _test: function(obj){
+          console.log("TEST",obj);
       }
 
     });

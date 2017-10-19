@@ -22,26 +22,26 @@
 
 <dom-module id="beer-login">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
 
     a{ 
-        text-decoration: none;
+        text-decoration: underline;
         color: var(--app-accent-color);
     }
 
     .buttons{
         margin: 20px 0 0 0;
-        @apply(--layout-vertical);
-        @apply(--layout-wrap);
+        @apply --layout-vertical;
+        @apply --layout-wrap;
         
     }
 
     .buttons > div{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
     }
 
 
@@ -50,7 +50,7 @@
     }
 
     .wrapper{
-        @apply(--layout-vertical);
+        @apply --layout-vertical;
         margin: 10px;
        
     }
@@ -224,7 +224,8 @@
         },
 
         email:{
-            type: String
+            type: String,
+            value:''
         },
 
         emailToggle:{
@@ -298,7 +299,11 @@
         var that = this;
         this.message = '';
         that.$.passwordResetMessage.hidden = true;
-
+        if(!this.password){
+            this.message = 'Missing password';
+            this.$.passwordResetMessage.hidden = false;
+            return;
+        }
         this.$.auth.signInWithEmailAndPassword(this.email, this.password)
          .then(function(response) {
             console.log("signed in")
@@ -311,10 +316,16 @@
           }else if(error.code === 'auth/wrong-password'){
               that.message = 'Incorrect password';
               that.$.passwordResetMessage.hidden = false;
+          }else if(error.code === 'auth/argument-error'){
+              that.message = error.message;
+              that.$.passwordResetMessage.hidden = false;
+              
           }else{
               that.message = error.message;
           }
         });
+           
+        
       },
 
       _signUpEmail: function(){

@@ -3,6 +3,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="beer-login.html">
 
@@ -18,18 +19,22 @@
 
     <style include="beer-button">
 
-
-      wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-wrap);
+      :host {
+        display: block;
+        max-width: 640px;
+        background-color: white;
       }
 
-        .item {
+      wrapper{
+         @apply --layout-horizontal;
+         @apply --layout-wrap;
+      }
+
+      .item {
         margin: 20px;
         padding: 10px;
-        height: 200px
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified; 
       }
 
       .message {
@@ -41,12 +46,6 @@
 
 
 
-      @media (max-width: 767px) {
-       
-
-
-      }
-
     </style>
     <firebase-auth  app-name="beer" user="{{user}}"></firebase-auth>
     
@@ -55,6 +54,15 @@
             <beer-login class="item"></beer-login>
       </div>
       <div class="wrapper" hidden="[[!user]]">
+
+        <div class="item message">
+          Your favorite Beer-Crawls
+         </div>
+         <div class="item">
+            <beer-button>
+              <a aria-label="My Favorite Beer Crawls" href="/home/favorite/crawl">My Favorite Beer-Crawls</a>
+            </beer-button>
+          </div>
           
          <div class="item message">
           Beers you have selected as four or five stars.
@@ -66,24 +74,14 @@
           </div>
 
           <div class="item message">
-            Breweries you have selected as four or five stars.
+            Pubs and breweries you have selected as four or five stars.
          </div>
 
           <div class="item">
-          <beer-button>
-            <a aria-label="My Favorite Breweries" href="/home/favorite/brewery">My Favorite Breweries</a>
-          </beer-button>
-        </div>
-
-        <div class="item message">
-          Pubs you have selected as four or five stars. Note that many breweries pour their beer, but most pubs do not create their own beer.
-         </div>
-
-          <div class="item">
-          <beer-button>
-            <a aria-label="My Favorite Pubs" href="/home/favorite/pub">My Favorite Pubs</a>
-          </beer-button>
-        </div>
+            <beer-button>
+              <a aria-label="My Favorite Breweries" href="/home/favorite/brewery">My Favorite Breweries</a>
+            </beer-button>
+          </div>
 
           
 

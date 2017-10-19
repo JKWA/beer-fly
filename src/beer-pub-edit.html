@@ -4,83 +4,160 @@
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+
+<!-- <link rel="import" href="../bower_components/polymerfire/firebase-document.html"> -->
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
 <link rel="import" href="../my_components/data/upload-image.html">
 <link rel="import" href="beer-pub-category.html">
 
 <dom-module id="beer-pub-edit">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
       
-
-      .item {
-        display: block;
-        text-decoration: none;
-        text-align: center;
-        margin-bottom: 40px;
+      paper-checkbox{
+        margin: 5px 10px;
       }
 
-
-      @media (max-width: 767px) {
-      
-
-        h2 {
-          margin: 24px 0;
-        }
-
+      paper-dropdown-menu{
+        margin: 20px 0 0 0;
       }
+
+      .header{
+        font-size: 1.2em;
+        font-weight: 400;
+        margin: 20px 0 10px 5px;
+      }
+
+      .wrapper{
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        @apply --layout-wrap;
+      }
+
+      .description-wrapper{
+        @apply --layout-vertical;
+        @apply --layout-justified;
+        height: 50vh; 
+      }
+
+      .description{
+        @apply --layout-flex-auto; 
+        @apply --layout-flex-6; 
+      }
+
+      .motto{
+        @apply --layout-flex-auto; 
+        margin: 20px 0 0 0; 
+      }
+
+      /* .description-wrapper > div{
+         @apply --layout-flex-auto;  
+          margin: 20px 10px 0px 10px; 
+      } */
+
+      .save-button{
+        width:100%;
+         @apply --layout-flex-auto;  
+      }
+
 
     </style>
 
-    <firebase-document 
-        id="organization"
+    <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+
+     <firebase-document 
+        id="editOrganization"
         app-name="beer" 
         path="organization/[[orgId]]"
-        data="{{organization}}">
-    </firebase-document>
+        data="{{editOrganization}}">
+    </firebase-document> 
 
-     <h3>Tags</h3>
+
+    <paper-tabs selected="{{selected}}">
+      <paper-tab>Category</paper-tab>
+      <paper-tab>Description</paper-tab>
+      <paper-tab>Image</paper-tab>
+    </paper-tabs>
+
+    <iron-pages selected="{{selected}}">
+      <section>
         <div>
-          <paper-checkbox checked="{{organization.dogFriendly}}">Dogs allowed</paper-checkbox>&nbsp
-          <paper-checkbox checked="{{organization.patio}}">Outdoor patio</paper-checkbox>&nbsp
-          <paper-checkbox checked="{{organization.over21}}">Must be 21</paper-checkbox>&nbsp
-        </div>
+          <div class="header">This is a ...</div>
+          <div class="wrapper">
+            <paper-checkbox checked="{{editOrganization.PUB}}">Pub</paper-checkbox>&nbsp
+            <paper-checkbox checked="{{editOrganization.BREWERY}}">Brewery</paper-checkbox>&nbsp
+            <paper-checkbox checked="{{editOrganization.TRUCK}}">Food Truck</paper-checkbox>&nbsp
+          </div>
 
-        <h3>Show Categories</h3>
-
+          <div class="header">Show Categories</div>
           <beer-pub-category
-            org-id="[[orgId]]">
+            org-id="[[orgId]]"
+            organization="[[editOrganization]]">
           </beer-pub-category>
 
-        <h3>Upload Banner Image</h3>
-        <upload-image org-id="[[orgId]]" type="banner" key="mainImage"></upload-image>
-        
-        <!--<iron-label>
-          <paper-checkbox checked="{{organization.crowdSource}}"></paper-checkbox>
-          <span>Allow crowd sourced data</span>
-        </iron-label>-->
+          <div class="header">Tags</div>
+          <div class="wrapper">
+            <paper-checkbox checked="{{editOrganization.dogFriendly}}">Dogs allowed</paper-checkbox>&nbsp
+            <paper-checkbox checked="{{editOrganization.patio}}">Outdoor patio</paper-checkbox>&nbsp
+            <paper-checkbox checked="{{editOrganization.over21}}">Must be 21</paper-checkbox>&nbsp
+          </div>
 
-        <paper-input label="Motto" value="{{organization.motto}}" maxlength=100 char-counter></paper-input>
-        <paper-textarea label="Description" value="{{organization.description}}" maxlength=2000 char-counter></paper-textarea>
+        </div>
+      </section>
+      <section>
+        <div>
+
+          <div class="description-wrapper">
+
+            <paper-dropdown-menu no-label-float label="Currency">
+              <paper-listbox 
+                attr-for-selected="currency"
+                slot="dropdown-content" 
+                selected="{{editOrganization.currencyCode}}">
+                <paper-item currency="USD">US Dollar</paper-item>
+                <paper-item currency="EUR">Euro</paper-item>
+                <paper-item currency="GBP">Pound sterling</paper-item>
+              </paper-listbox>
+            </paper-dropdown-menu>
+            <div class="motto">
+              <paper-input id="motto" label="Motto" value="{{motto}}" maxlength=100 char-counter></paper-input>
+            </div>
+            <div class="description">
+              <paper-textarea always-float-label id="description" label="Description" value="{{description}}" maxlength=2000 char-counter></paper-textarea>
+            </div>
         
-       
-       
+              <!-- <paper-button on-tap="_save" class="save-button">Save</paper-button> -->
+          
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div>
+          <div class="header">Upload Banner Image</div>
+          <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_MAIN_banner" key="mainImage"></upload-image>
+        </div>
+      </section>
         
-      </template>
+    </iron-pages>
+       
+    </template>
 
    
-
- 
-  
-
   <script>
 
     Polymer({
@@ -88,61 +165,126 @@
       is: 'beer-pub-edit',
       properties: {
 
-        // categories: {
-        //   type: Array,
-        //   computed: '_computeCategories(organization)'
-        // },
 
-        //  allCategories:{
-        //   type: Object,
-        // },
 
-        organization:{
+        nameUrl:{
+          type:String
+        },
+
+        editOrganization:{
           type: Object,
           // notify: true
         },
 
+        description:{
+          type:String
+        },
+
+        savedDescription:{
+          type:String
+        },
+
+        motto:{
+          type:String
+        },
+
+        savedMotto:{
+          type:String
+        },
+
         orgId:{
           type: String
+        },
+
+        organization:{
+          type:Object
+        },
+
+        selected:{
+          type:Number,
+          value:0
+        },
+
+        user:{
+          type:Object
         }
         
       },
 
+      observers:['_watchDescription(editOrganization.description)',
+                  '_watchMotto(editOrganization.motto)'],
 
-    //  _watchForNewOrganizationData: function (organization, category) {
-    //   var category = this.allCategories;
-    //   if(!organization.googleData){
-    //     if(category.BEER){
-    //       var key = Object.keys(category);
-    //       for(var i=0; i<key.length;i++){
-    //         this.categoryKey = key[i];
-    //         if(key[i]){
-    //           this.$.orgCategory.ref.child(key[i]).update(category[key[i]]);
-    //         }
-    //       }
-    //     }
-    //   }
-    // },
+      ready: function(){
+        this.$.motto.addEventListener('blur', event =>{
+          if(this.savedMotto !== this.motto){
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}`)
+              .update({motto: this.motto})
+              .then(()=>{
+                console.log('motto save');
+                this.savedMotto = this.motto;
+              })
+              .catch(error =>{
+                console.log('ERROR', error);
+              })
+          }
+        })
 
+        this.$.description.addEventListener('blur', event =>{
+          if(this.savedDescription !== this.description){
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}`)
+              .update({description: this.description})
+              .then(()=>{
+                console.log('description save');
+                this.savedDescription = this.description;
+              })
+              .catch(error =>{
+                console.log('ERROR', error);
+              })
+          }
+        })
 
-    //   _computeCategories: function(organization) {
-    //     var returnArray = [];
-    //     if(organization){
-    //       if(organization.category){
-    //         var category = organization.category;
-    //         var key = Object.keys(category);
-    //         for (var i=0; i<key.length; i++){
-    //             category[key[i]].$key = key[i];
-    //             returnArray.push(category[key[i]])
-    //         }
-    //       }
-    //     }
-    //     return returnArray.sort(function(a, b) {
-    //                               return parseFloat(a.order) - parseFloat(b.order);
-    //                           });
-    //   },
+      },
 
+      _watchDescription: function (description){
+        this.description = description;
+        this.savedDescription = description
+        
+      },
 
+      _watchMotto: function (motto){
+        this.motto = motto;
+        this.savedMotto = motto;
+      },
+
+      _save: function(event){
+
+        var obj={};
+        if(this.description){
+          obj.descriptionEdit = this.description;
+        }else{
+          obj.descriptionEdit =null;
+        }
+        if(this.motto){
+          obj.mottoEdit = this.motto;
+        }else{
+          obj.mottoEdit = null;
+        }
+        if(this.user){
+          if(this.orgId){
+          if(Object.keys(obj).length > 0){
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}`)
+              .update(obj)
+              .then(() =>{
+                console.log('saved');
+              })
+              .catch(error =>{
+                console.log('error', error);
+              })
+            }
+          }
+        }
+      },
+      
       _test: function(obj){
         console.log('TEST', obj);
       }

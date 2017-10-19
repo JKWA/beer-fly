@@ -1,0 +1,177 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="beer-icons.html">
+
+<dom-module id="beer-pub-card-favorite">
+  <template>
+    <style>
+      :host {
+        display: block;
+        position: relative;
+      }
+      :host[disabled] .foreground-rating .item {
+        cursor: default;
+      }
+      .background-rating {
+        color: var(--app-accent-color);
+      }
+
+      .google-rating {
+        color: var(--app-accent-color);
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+      
+      .item {
+        display: inline-block;
+        cursor: pointer;
+      }
+      .item-icon {
+        overflow: hidden;
+      }
+
+      .rating-wrapper{
+            @apply --layout-horizontal;
+            @apply --layout-start-justified;
+            
+        }
+
+      .rating-number{
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-secondary-color);
+        margin: 2px 0 0 10px;
+    }
+
+    </style>
+
+     
+   <template is="dom-if" if="[[_showFavorite]]">
+   <div class="rating-wrapper" hidden$="">
+    <div class="background-rating">
+     
+      <template is="dom-repeat" items="{{limitItems}}" strip-whitespace>
+        <iron-icon icon="beer-icons:favorite-border"></iron-icon>
+      </template>
+    </div>
+
+    <div class$="[[ratingStyle]]">
+      <template is="dom-repeat" items="{{limitItems}}" strip-whitespace>
+        <div class="item">
+          <div class="item-icon">
+            <iron-icon icon="beer-icons:favorite"></iron-icon>
+          </div>
+        </div>
+    </template>
+    </div>
+     <div hidden$="[[!value]]">
+            <div class="rating-number">[[numberMessage]]</div>
+    </div>
+   </div>
+   </template>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'beer-pub-card-favorite',
+      properties: {
+
+        /**
+         * The number of items to display
+         */
+        limit: {
+          type: Number,
+          value: 1,
+          observer: 'renderItems'
+        },
+
+        /**
+         * The rating items displayed on the screen
+         */
+    	  limitItems: {
+          type: Array,
+          readOnly: true
+    	  },
+
+        ratingStyle:{
+          type: String,
+          value: 'google-rating',
+          reflectToAttribute: true
+        },
+
+        total:Number,
+
+        numberMessage:{
+          type: String,
+          computed: '_computeNumberMessage(value, total)'
+        },
+
+        value: {
+          type: Number,
+          value: 0,
+          observer: 'reset'
+      },
+
+      _showFavorite:Boolean
+
+    },
+
+    observers:['_observeTotal(total)'],
+
+    _observeTotal: function (total){
+      if(total){
+        this._showFavorite = true;
+      }else{
+        this._showFavorite = false;
+      }
+
+    },
+
+      attached: function() {
+        this.async(function() {
+          this.reset();
+        }.bind(this));
+      },
+      
+      /**
+       * Refreshes the rating display to the current rating
+       */
+      reset: function() {
+        this._refreshRating(this.value);
+      },
+
+
+      /**
+       * Renders the items based on the limit
+       */
+      renderItems: function() {
+        var limitItems = [];
+        for (var i = 0; i < this.limit; i++) {
+          limitItems.push(i);
+        }
+        this._setLimitItems(limitItems);
+      },
+      _refreshRating: function(value) {
+        var items = Polymer.dom(this.root).querySelectorAll('.item-icon');
+        for (var i = 0; i < items.length; i++) {
+          items[i].style.width = Math.min(Math.max(value - i, 0), 1) * 100 + '%';
+        }
+      },
+
+      _computeNumberMessage: function (value, total){
+        if(value){
+          return `(${value*100} percent of ${total})`
+        }
+      }
+     
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,173 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/moment-element/moment-element.html">
+
+
+<dom-module id="beer-crawl-card">
+
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
+
+    :host {
+      display: block;
+      max-width: 640px;
+      background-color: white;
+    }
+
+    a{
+      color: var(--app-primary-color);
+      text-decoration: none;
+    }
+
+    .crawl-item{
+      padding:10px;
+      margin: 10px 0;
+    }
+
+    .crawl-name{
+      color: var(--app-primary-color);
+      font-size: 1.5em;
+      font-weight: 300;
+    }
+
+    .crawl-description{
+      font-size: 1em;
+      font-weight: 300;
+      color: var(--app-primary-color);
+    }
+
+    .created{
+      font-size: 1em;
+      font-weight: 500;
+      color: var(--app-primary-color);
+      margin: 8px 0;
+    }
+
+    </style>
+
+    <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+    <template is="dom-if" if="[[crawl.name]]">
+    <div>
+
+      <a href="/[[nameUrl]]/crawl[[returnParams]]&crawlId=[[crawlId]]">
+        <div class="crawl-item">
+
+          <div class="crawl-name">[[crawl.name]]</div>
+
+          <template is="dom-if" if="[[crawl.created]]">
+            <div class="created">
+              Created:
+              <moment-element
+                  datetime="[[_addMilliseconds(crawl.created)]]"
+                  output-format="MMM DD[,] YYYY">
+              </moment-element>
+            </div>
+          </template>
+        
+          
+          <div class="crawl-description">[[crawl.description]]</div>
+        </div>
+      </a>
+    
+    </div>
+    </template>
+
+
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-crawl-card',
+
+      properties:{
+
+        crawlId:{
+          type:String
+        },
+
+        crawl:{
+          type: Object,
+          value:function (){return {}}
+        },
+
+
+
+        nameUrl:String,
+        returnParams:String,
+        
+
+        userId:{
+          type:String,
+          computed: '_computeUid(user)'
+        },
+
+        user:{
+          type:Object,
+        }
+
+      },
+
+      observers: ['_getCrawlData(crawlId, userId)'],
+
+
+      _getCrawlData: function (crawlId, userId){
+        let that = this;
+        let show = false;
+
+        if(crawlId){
+          firebase.database(this.$.auth.app).ref(`/crawl/${crawlId}`)
+            .once('value')
+            .then(crawl =>{
+              if (crawl.exists()){
+                if(crawl.hasChild('public')){
+                  show = true;
+                }else{
+                if(crawl.hasChild('user_id')){
+                  if(crawl.child('user_id').val() === userId){
+                    show = true;
+                  }
+
+                }
+              }
+              if(show){
+                that.crawl = crawl.val();
+              }
+                
+              }
+            })
+        }
+
+
+      },
+
+      _addMilliseconds: function (timestamp){
+        if(timestamp){
+          return timestamp*1000
+        }
+        return false;
+      },
+
+      _computeUid: function (user){
+        if(user){
+          return user.uid;
+        }
+        return false
+      },
+
+    
+      _test: function (obj){
+        console.log(obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

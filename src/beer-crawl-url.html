@@ -1,0 +1,90 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+
+
+<link rel="import" href="beer-icons.html">
+<dom-module id="beer-crawl-url">
+
+<template strip-whitespace>
+  <style include="paper-material-styles">
+
+    a{
+      text-decoration: none;
+      font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+      
+    }
+
+    iron-icon{
+      color:var(--app-accent-color);
+      margin-right: 10px;
+    }
+
+  </style>
+  
+  <div hidden="[[!url]]">
+    <a href="[[url]]">
+    <iron-icon icon="beer-icons:directions"></iron-icon>
+    <span>Get Directions</span></a>
+  </div>
+  
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-crawl-url',
+
+      properties: {
+        organizations:Object,
+        url:{
+          type:String,
+          notify:true,
+          
+        }
+      },
+
+      observers:['_getUrl(organizations)'],
+
+    _getUrl: function (obj) {
+      
+      const pre = 'https://www.google.com/maps/dir/'
+      let componentArray = [];
+      let pubs = [];
+      if(typeof obj === 'object'){
+        let keys = Object.keys(obj);
+        for (let key of keys) {
+            pubs.push(obj[key]);
+        }
+
+        var sortedPubs = pubs.sort(this._sortByNew);
+
+        for (let pub of sortedPubs) {
+           componentArray.push(encodeURIComponent(pub.name+', '+pub.formatted_address));
+        }
+        
+      this.url = pre+componentArray.join('/');
+      }else{
+        this.url = null;
+      }
+      
+    },
+
+    _sortByNew: function(a,b){
+        if (a.created < b.created)
+          return -1;
+        if (a.created > b.created)
+          return 1;
+        return 0;
+      }
+
+    });
+
+  </script>
+
+</dom-module>

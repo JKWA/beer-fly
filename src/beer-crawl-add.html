@@ -1,0 +1,170 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="beer-icons.html">
+
+
+<dom-module id="beer-crawl-add">
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
+
+      .add-beer-crawl-button{
+        color: var(--app-accent-color);
+      }
+
+      .crawl-add-buttons{
+         @apply --layout-horizontal;
+         @apply --layout-center-justified;
+         color: var(--app-accent-color);
+         width:100%;
+      }
+
+        
+    </style>
+      <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+      
+      <div>
+        <paper-toggle-button checked="{{publicStatus}}">[[publicMessage]]</paper-toggle-button>
+        
+        <paper-input id="crawlNameInput" label="Crawl Name" required maxlength="100" char-counter value="{{addCrawlName}}"></paper-input>
+        <paper-textarea always-float-label id="crawlDescriptionInput" label="Crawl Description" required maxlength="500" char-counter value="{{addCrawlDescription}}"></paper-textarea>
+        <div class="crawl-add-buttons">
+          <paper-button id="addNewCrawlButton" on-tap="_addNewCrawl">Add New Crawl</paper-button>
+        </div>
+      </div>
+     
+  </template>
+</dom-module>
+
+<script>
+
+(function() {
+'use strict';
+
+  Polymer({
+
+    is: 'beer-crawl-add',
+
+    properties:{
+
+      addCrawlName:{
+        type:String,
+        value:''
+      },
+
+      addCrawlDescription:{
+        type:String,
+        value:''
+      },
+
+      publicStatus:{
+        type:Boolean,
+        value:false
+      },
+
+      publicMessage:{
+        type:String,
+        value:'Private',
+        computed: '_computePublicMessage(publicStatus)'
+      },
+
+      message:{
+        type:String,
+        notify:true
+      },
+
+      organization:Object,
+
+      user:Object
+
+    },
+
+    
+    _addNewCrawl(){
+      var error = false
+      var organization = this.organization;
+      var that = this;
+
+      if(this.addCrawlName.length === 0){
+        this.$.crawlNameInput.invalid = true;
+        error = true;
+      }else{
+        this.$.crawlNameInput.invalid = false;
+      }
+
+      if(this.addCrawlDescription.length === 0){
+        this.$.crawlDescriptionInput.invalid = true;
+      }else{
+        this.$.crawlDescriptionInput.invalid = false;
+      }
+
+      if(error){
+        return;
+      }
+
+      if(this.user.uid){
+
+      var obj = {
+          user_id: this.user.uid,
+          editName: this.addCrawlName,
+          editDescription: this.addCrawlDescription,
+          public: (this.publicStatus)  ? this.publicStatus : null,
+          created: Math.round(Date.now()/1000)
+        }
+        if(organization){
+          if(organization.name && organization.place_id && organization.latitude && organization.longitude && organization.formatted_address){
+            obj.organization = {}
+            obj.organization[organization.place_id] = {
+              name:organization.name,
+              place_id:organization.place_id,
+              latitude:organization.latitude,
+              longitude:organization.longitude,
+              formatted_address:organization.formatted_address,
+              created: Math.round(Date.now()/1000)
+            }
+          }
+        }
+
+      firebase.database(this.$.auth.app).ref(`crawl`)
+          .push(obj)
+          .then(() =>{
+            if(obj.organization){
+              that.message = `${this.addCrawlName} was created with ${organization.name}.`
+            }else{
+              that.message = `${this.addCrawlName} was created.`
+            }
+            that.addCrawlName = '';
+            that.addCrawlDescription = '';
+            that.publicStatus = false;
+            console.log('Added New Beer Crawl')
+          })
+          .catch(error =>{
+            console.log('ERROR_PUSH', error)
+          })
+      }
+    },
+
+    _computePublicMessage: function (publicStatus){
+      if(publicStatus){
+        return 'Public';
+      }
+      return 'Private';
+    },
+   
+
+  })
+})();
+
+</script>

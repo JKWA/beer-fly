@@ -1,23 +1,22 @@
 
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
-
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-
-
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/geo-query/geo-query.html">
+<link rel="import" href="../bower_components/geo-query/geofire-import.html">
+
 
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-beer-rating.html">
 
 <dom-module id="beer-favorite-beer-card">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
 
      a{
@@ -34,15 +33,26 @@
     }
 
 
-    /*.card{
-      padding: 10px;
+    .card{
       margin: 10px;
-    }*/
+      @apply --paper-material-elevation-1;
+      background-color: white;
+    }
+
+    .info-section{
+        padding: 20px;
+    }
+
+    .pub-section{
+        padding: 20px;
+    }
+
+
 
     .title{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        @apply --layout-wrap;
         font-size: 1em;
         font-weight: 400;
         color: var(--app-primary-color);
@@ -53,7 +63,7 @@
       }
      
       .wrapper{
-         @apply(--layout-vertical);        
+         @apply --layout-vertical;        
       }
 
       .wrapper > div{
@@ -61,7 +71,7 @@
       }
 
       .pub-wrapper{
-         @apply(--layout-vertical); 
+         @apply --layout-vertical; 
          margin: 10px 0 10px 0;
       }
 
@@ -93,10 +103,9 @@
       }
 
       .style {
-        font-size: 1.0em;
-        font-weight: 500;
+        font-size: 1.2em;
+        font-weight: 300;
         color: var(--app-primary-color);
-       
       }
 
       .description {
@@ -106,9 +115,9 @@
       }
 
       .location{
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
+        @apply --layout-wrap;
         font-size: 1em;
         font-weight: 400;
         color: var(--app-primary-color);
@@ -119,9 +128,10 @@
       }
 
       .footer-abv{
-        text-align: right;
         margin: 0 20px 0 0;
-        font-weight: 500;
+        font-weight: 300;
+        font-size: 1em;
+        color: var(--app-secondary-color);
       }
 
       .tap-title {
@@ -130,11 +140,13 @@
         color: var(--app-primary-color);
       }
 
-      .your-location {
-        font-size: .8em;
-        font-weight: 400;
-        color: var(--app-primary-color);
+      .location-title{
+        font-size: 1.2em;
+        font-weight: 300;
+        color: var(--app-accent-color);
       }
+
+     
 
 
 
@@ -150,57 +162,56 @@
     </firebase-document>
 
     
-    
-     <paper-material class='card' elevation="0" animated-shadow="false">
-          
-          <div class="title">
-            <div>
-              <beer-beer-rating 
-                  beer-id="[[beerId]]"
-                  login="{{login}}">
-              </beer-beer-rating>
-            </div> 
-          </div>
+    <div class="card">
+         
+      <div class="info-section">
+        <a aria-label$="TEST" href$="/[[nameUrl]]/description?beerId=[[beerId]]">
 
           <div class="wrapper">
             <div class="name">[[beer.name]]</div>
-            <div class="style">[[beer.styleName]]</div>
-            <div class="description">[[beer.description]]</div>       
+            <div class="style">[[beer.styleName]]</div>    
             <div class="location">
               <div>[[beer.breweryName]] - </div>
               <div>[[beer.city]],</div>
               <div>[[beer.state]]</div>
             </div>
-            <div class="footer-abv" hidden$="[[!abv]]">ABV: [[beer.abv]]</div>
-              
+            <div class="description">[[beer.description]]</div> 
+            <div class="footer-abv" hidden$="[[!beer.abv]]">ABV: [[beer.abv]]</div>
           </div>
-
-      </paper-material>
-    
-    <!--<paper-input label="beerId" value></paper-input>-->
-    
-      <div id="pubCards" >
-     
-      <template id="repeater" is="dom-repeat" 
-          items="[[pubArray]]" as="pub" 
-          initial-count="20"  sort="_sort" 
-          observe="sort distance">
-          <a aria-label$="[[pub.name]]" href$="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
-          <!--[[pub.place_id]]-->
-            <paper-material class="pub-wrapper" elevation="0">
-              <div class="pub-name">[[pub.name]]</div>
-              <div class="pub-vicinity">[[pub.vicinity]]</div>
-              <div class="pub-distance">[[_computeDisplayDistance(pub.distance)]] miles from you.</div>
-            </paper-material>
-          </a>
-
-        
-
-      </template>
+        </a>
       </div>
-    </div>
 
+      <div>
+        <beer-beer-rating 
+            beer-id="[[beerId]]"
+            login="{{login}}"
+            user-data="[[userData]]">
+        </beer-beer-rating>
+      </div>  
+
+   
+    
+    
+      <div id="pubCards" class="pub-section">
+        <div class="location-title">[[locationMessage]]</div>
+        <template id="repeater" is="dom-repeat" 
+            items="[[pubArray]]" as="pub" 
+            initial-count="20"  sort="_sort" 
+            observe="sort distance">
+            <a aria-label$="[[pub.name]]" href$="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">             
+              <div class="pub-wrapper">
+                <div class="pub-name">[[pub.name]]</div>
+                <div class="pub-vicinity">[[pub.vicinity]]</div>
+                <div class="pub-distance">[[_computeDisplayDistance(pub.distance)]] miles from you.</div>
+              </div>
+            </a>
+
+        </template>
+      </div> 
     </div>
+    
+
+    
 </template>
   <script>
 
@@ -218,15 +229,25 @@
          type:Object
        },
 
+       locationMessage:{
+         type:String,
+         computed: '_computeLocationMessage(pubArray.length)',
+         
+       },
+
        login:{
          type: Boolean,
          notify: true
        },
 
+      nameUrl:String,
+
        pubArray:{
          type: Array,
          value: function (){return [];}
-       }
+       },
+
+       userData:Object
 
       },
       observers:['_getPubs(beerId, location)'],
@@ -235,72 +256,64 @@
 
         this.pubArray = [];
 
-
         var that = this;
         var app = this.$.beer.app;
-        var firebaseRef = app.database().ref('GeoTap/'+beerId);
+        var firebaseRef = app.database().ref(`/GeoTap/${beerId}`);
         var geoFire = new GeoFire(firebaseRef);
 
         var query = {};
         var number = 0;
         var radius = 100;
 
-        query.center = [location.location.latitude, location.location.longitude];
+        query.center = [location.latitude, location.longitude];
         query.radius = radius*1.609344;
 
+        geoFire.query(query)
+          .on("key_entered", function(key, location, distance) {
+            app.database().ref(`/organization/${key}`)
+              .once('value')
+              .then( function(snapshot) {
+                var pub = snapshot.val();
+                var pubDistance = distance*0.621371;
+                pub.distance = pubDistance;
+                pub.sort = pubDistance
 
-        var locations = geoFire.query(query).on("key_entered", function(key, location, distance) {
-            // console.log('geofire', key);
-            app.database().ref('/organization/'+key).once('value').then( function(snapshot) {
-            
-            var pub = snapshot.val();
-            
-            var pubDistance = distance*0.621371;
-            pub.distance = pubDistance;
-            pub.sort = pubDistance
+                if(location){
+                    pub.latitude = location[0];
+                    pub.longitude = location[1];
+                }
 
-            if(location){
-                // console.log('geo-location', location)
-                pub.latitude = location[0];
-                pub.longitude = location[1];
-            }
+                return pub;
 
-            // if(pub.PREMIUM){
-            //         if(pubDistance <= 10){
-            //             pub.sort = pubDistance -10;
+              })
+              .then(function (pub){
+                that.push('pubArray', pub);
+              })
+        });
 
-            //         }else{
-            //             pub.sort = pubDistance;
-            //         }
-            //     }else{
-            //         pub.sort = pubDistance;
-            //     }
-
-            pub.beerfly = true;
-            pub.organization = true;
-            return pub;
-
-        }).then(function (pub){
-           
-            that.push('pubArray', pub);
-            
-            // return pub;
-
-        })
-      })
-      geoFire.query(query).on('key_exited', function(key){
-          var pubs = that.pubArray
-          if(Array.isArray(pubs)){
-            for(var i=0; i<pubs.length; i++){
-              var pub = pubs[i];
-              if(pub.place_id === key){
-                that.splice('pubArray', i, 1);
+        geoFire.query(query)
+          .on('key_exited', function(key){
+            var pubs = that.pubArray
+            if(Array.isArray(pubs)){
+              for(var i=0; i<pubs.length; i++){
+                var pub = pubs[i];
+                if(pub.place_id === key){
+                  that.splice('pubArray', i, 1);
+                }
               }
             }
-          }
-      })
+          })
         
+    },
 
+    _computeLocationMessage: function (length){
+     
+      if(length == 1){
+        return 'Location';
+      }else if(length >1){
+        return 'Locations';
+      }
+      return '';
     },
     
     _sort: function (a,b){

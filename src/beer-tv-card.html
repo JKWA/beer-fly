@@ -6,7 +6,7 @@
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
@@ -16,152 +16,114 @@
 
 
 <dom-module id="beer-tv-card">
-  <template>
-    <style>
+  <template strip-whitespace>
     
+    <style include="paper-material-styles">
 
       .card{
-        
-        margin: 5px;
-        padding: 10px;
-        height: 80px;
-        /*background-color: white;*/
-       
+        margin: 10px 20px;
+        padding:10px 20px;
+        @apply --paper-material-elevation-0;
       }
 
-       
-      .title{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
-        
-        font-weight: 400;
-        /*color: var(--app-primary-color);*/
-        height: 50px;
+      .columnWidth--1{
+        width: 90vw;
       }
 
-       .title > div{
-        padding: 0 5px 0 0;
-      }
-     
-
-
-      
-
-      .tapped{
-        color: green;
-        font-size: 2em;
+      .columnWidth--2{
+        width: 41vw;
       }
 
+      .columnWidth--3{
+        width: 25vw;
+      }
+
+      .columnWidth--4{
+        width: 18vw;
+      }
+
+      .columnWidth--5{
+        width: 13vw;
+      }
+
+      .columnWidth--6{
+        width: 10vw;
+      }
+
+      .wrapper{
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+      }
 
       .name {
-        font-size: 3vw;
-        line-height: 1.2em;
-        font-weight: 500;
+        font-size: var(--name-font-size, 2.8vw);
+        
+        font-weight: 300;
         white-space:nowrap;
         overflow: hidden;
-        /*color: var(--app-primary-color);*/
       }
 
       .style {
-        font-size: 2vw;
-        line-height: 1.5em;
+        font-size: var(--style-font-size, 1.8vw);
         font-weight: 300;
-        /*color: var(--app-primary-color);*/
+        margin: 5px 0;
+        color: var(--app-selected-color);
        
-      }
-
-      .dark{
-        background-color: #263238;
-        color: white
-      }
-
-      .light{
-        background-color: white
-        color: var(--app-primary-color);
       }
 
       .brewery {
-        font-size: 2vw;
-        line-height: 1.5em;
+        font-size: var(--style-font-size, 1.8vw);
         font-weight: 300;
-        /*color: var(--app-primary-color);*/
       }
 
-  
       .location{
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
-        @apply(--layout-wrap);
-        font-size: 2vw;
-        line-height: 1.5em;
-       
-        /*color: var(--app-primary-color);*/
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
+        @apply --layout-wrap;
+        font-size: var(--location-font-size, 1.5vw);
+        font-weight: 300;
       }
 
        .location > div{
         padding: 0 5px 0 0;
       }
-
-      .footer{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
-        font-size: 2vw;
-        line-height: 1.5em;
-        font-weight: 400;
-        /*color: var(--app-primary-color);*/
-      }
-
-
       
       .abv{
         text-align: right;
-        font-size: 2vw;
-        line-height: 1.5em;
-        margin: 0 20px 0 0;
-        font-weight: 500;
+        vertical-align: text-bottom;
+        font-size: var(--abv-font-size, 1.6vw);
+   
       }
 
 
     </style>
 
-    <firebase-document
-        app-name="beer"
-        path="beer/[[beerId]]"
-        data="{{beer}}">
-    </firebase-document>
+   
 
-
-
-
-      <paper-material class='card {{theme}}' elevation="0" animated-shadow="false">
-       
+      <div class$="card [[column]]" animated-shadow="false">
         <div>
-          <div class="title">
+          <div class="name">[[beer.name]]
+             <i>
+                <span hidden$="[[!beer.nitro]]"> - Nitro</span>
+                <span hidden$="[[!beer.cask]]"> - Cask-Conditioned</span>
+                <span hidden$="[[!beer.barrel]]"> - Barrel-Aged</span>
+              </i>
+          </div>
+          <div class="wrapper">
             <div>
-             <div class="name">[[beer.name]]</div>
+              
+              <div class="style">[[beer.styleName]] </div>
+              
+              <div class="location">
+                <div>[[beer.breweryName]] - [[beer.city]], [[beer.state]]</div> 
+              </div>
             </div>
-          </div>
-          <div class="title">
-       
-             <div class="title">
-                <div class="style">[[beer.styleName]] from [[beer.breweryName]]</div>
-                
-             </div>
-                <div class="title">
-                  <div class="location">
-                    <div>[[beer.city]], [[beer.state]]</div>
-                    
-                  </div>
-                  <div class="abv" hidden="[[!beer.abv]]">ABV: [[beer.abv]]</div>
-                </div>
-          </div>
-
-          </div>
-
-
             
-        
-      </paper-material>
+            <div class="abv" hidden="[[!beer.abv]]">ABV: [[beer.abv]]</div>
+          </div>
+        </div>
+
+      </div>
   </template>
 
   <script>
@@ -171,15 +133,69 @@
       is: 'beer-tv-card',
 
        properties: {
-        beerId:{
-          type:String
+
+        beer:{
+          type:Object
         },
 
-        theme:{
-          type:String
+        numberColumns:{
+          type:Number,
+          value:1
+        },
+
+        column:{
+          type: String,
+          value: 'columnWidth--1',
+          computed: '_computedColumnCss(numberColumns)'
+        },
+
+        textSize:{
+          type: Number,
+          value: 5
         }
+
+
+       },
+
+       observers:['_upDateFontSizes(textSize)'],
+
+       _upDateFontSizes: function(fontSize) {
+        //  var font = ((fontSize-20) * 2)/100
+
+         var font = ((fontSize -75)+100)/100;
+
+         var nameFont = 2.75 * font;
+         var styleFont = 2.25 * font;
+         var locationFont = 2 * font;
+         var abvFont = 2 * font;
+
+
+          var style = {
+            '--name-font-size': nameFont+'vw',
+            '--style-font-size': styleFont+'vw',
+            '--location-font-size': locationFont+'vw',
+            '--abv-font-size': abvFont+'vw'
+          }
+          this.updateStyles(style);
+        },
+
+       _computedColumnCss: function (numberColumns){
+
+         if(!numberColumns){
+           return 'columnWidth--1'
+         }
+
+         if(numberColumns < 1){
+           return 'columnWidth--1'
+         }
+
+         if (numberColumns > 6){
+           return 'columnWidth--6'
+         }
+
+         return 'columnWidth--'+numberColumns
        }
-      
+
  
     });
 

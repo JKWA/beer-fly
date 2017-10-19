@@ -1,0 +1,657 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="beer-icons.html">
+
+<dom-module id="beer-pub-banner">
+
+  <template>
+
+    <style include="paper-material-styles">
+
+      :host {
+        display: block;
+        max-width: 640px;
+      }
+      
+      a{
+        text-decoration: none;
+      }
+
+      .info-banner{
+        @apply --layout-horizontal; 
+        @apply --layout-justified;
+        @apply --layout-wrap;
+      }
+
+      .banner-item{
+        @apply --layout-flex-auto;
+        @apply --layout-horizontal; 
+        @apply --layout-justified;
+        border-top: 1px solid var(--app-line-color);
+        border-bottom: 1px solid var(--app-line-color);
+      }
+
+      .divider{
+        width:1px;
+        margin: 30px 5px; 
+        background-color:var(--app-line-color);  
+        border-top: 1px solid var(--app-line-color);
+        border-bottom: 1px solid var(--app-line-color);
+      }   
+
+      .info-item-wrapper{
+        padding:10px;
+        height:80px;
+        @apply --layout-vertical;
+      }
+
+      .info-icon{
+        color: var(--app-accent-color);
+        text-align: center;
+      }
+
+      .info-nonicon{
+        color: var(--app-accent-color);
+        font-size: 1em;
+        font-weight: 500;
+        margin: 11px 0;
+        text-align: center;
+      }
+
+      .info-label{
+        color: var(--app-accent-color);
+        font-size: .8em;
+        font-weight: 300;
+        @apply --layout-flex-auto;
+        text-align: center;
+      }
+
+      .open{
+        text-transform: uppercase
+      }
+
+      .rating-icon{
+        color: var(--app-secondary-color);
+        text-align: center;
+      }
+
+      .favorite-icon{
+        color: var(--app-selected-color);
+        text-align: center;
+      }
+
+      .not-favorite-icon{
+        color: var(--app-secondary-color);
+        text-align: center;
+      }
+
+    </style>
+
+  <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
+ <!-- FAVORITE [[favorite]]
+ RATING [[rating]] -->
+
+    <div class="info-banner">
+
+      
+
+      <template is="dom-if" if="[[organization.rating]]">
+        <template is="dom-if" if="[[!_hideGoogleData]]">
+          <div class="banner-item">
+            <div></div>
+            <div class="info-item-wrapper">
+              <div class="info-nonicon"> [[organization.rating]]/5</div>
+              <div class="info-label">Google users</div>
+            </div>
+            <div class="divider"></div>  
+        </div>
+        </template>
+      </template>
+
+      <template is="dom-if" if="[[organization.ratingPercent]]">
+        <div class="banner-item">
+          <div></div>
+          <div class="info-item">
+            <div class="info-item-wrapper">
+              <div class="info-nonicon"> [[organization.ratingPercent]]%</div>
+              <div class="info-label">Beer-Fly</div>
+            </div>
+          </div>
+          <div class="divider"></div> 
+        </div>
+      </template>
+
+      
+        <div class="banner-item">
+          <div></div>
+          <div class="info-item-wrapper">
+            <div class="rating-icon"> 
+              <paper-icon-button id="ratingButton" icon="beer-icons:thumb-up" on-tap="_toggleRating"></paper-icon-button>
+            </div>
+            <div class="info-label">Like</div>
+          </div>
+
+          <div class="info-item-wrapper">
+            <div class="rating-icon"> 
+              <paper-icon-button id="notRatingButton" icon="beer-icons:thumb-down" on-tap="_toggleNotRating"></paper-icon-button>
+            </div>
+            <div class="info-label">Don't Like</div>
+          </div>
+          <div class="divider"></div> 
+        </div>
+
+        <div class="banner-item">
+          <div></div>
+          <div class="info-item">
+            <div class="info-item-wrapper">
+              <div class$="[[favoriteCSS]]"> 
+                <paper-icon-button icon$="[[favoriteIcon]]" on-tap="_toggleFavorite"></paper-icon-button>
+              </div>
+              <div class="info-label">Favorite</div>
+            </div>
+          </div>
+         <div class="divider"></div> 
+        </div>
+
+        <template is="dom-if" if="[[!organization.TRUCK]]">
+        <div class="banner-item">
+          <div></div>
+          <div class="info-item">
+            <div class="info-item-wrapper">
+              <div class="info-icon"> 
+                <paper-icon-button icon="beer-icons:crawl" on-tap="_openEditPubDialog"></paper-icon-button>
+              </div>
+              <div class="info-label">Beer-Crawl</div>
+            </div>
+          </div>
+          <div class="divider"></div> 
+        </div>
+        </template> 
+      
+
+      <template is="dom-if" if="[[_showIcons]]">
+
+        <div class="banner-item">
+          <div></div>
+          <template is="dom-if" if="[[dogs]]">
+              <div class="info-item-wrapper">
+                <div class="info-icon"> 
+                  <paper-icon-button disable icon="beer-icons:dogs"></paper-icon-button>
+                </div>
+                <div class="info-label">Dog Friendly</div>
+              </div>
+            </template>
+
+            <template is="dom-if" if="[[patio]]">
+              <div class="info-item-wrapper" hidden$="[[!patio]]">
+                <div class="info-icon"> 
+                  <paper-icon-button disable icon="beer-icons:patio"></paper-icon-button>
+                </div>
+                <div class="info-label">Patio</div>
+              </div>
+            </template>
+
+            <template is="dom-if" if="[[over21]]">
+              <div class="info-item-wrapper" hidden$="[[!over21]]">
+                <div class="info-nonicon">+21</div>
+                <div class="info-label">Over 21</div>
+              </div>
+            </template>
+            <div class="divider"></div> 
+        </div>
+      </template>
+   
+      <template is="dom-if" if="[[_hasPlaceOpen]]">
+        <template is="dom-if" if="[[!_hideGoogleData]]">
+          <div class="banner-item">
+            <div></div>
+            <div class="info-item">
+              <div class="info-item-wrapper">
+                <div class="info-nonicon open">[[organization.open]]</div>
+                <div class="info-label">Currently Open/Closed</div>
+              </div>
+            </div>
+            <div></div> 
+          </div>
+        </template>
+      </template>
+
+    </div>
+    
+  </template>
+  
+
+  <script>
+
+    Polymer({
+
+      is: 'beer-pub-banner',
+
+      properties: {
+
+        organization:{
+          type: Object,
+          // notify: true
+        },
+
+        edit:{
+          type:Boolean,
+          value:false,
+          reflectToAttribute: true,
+        },
+
+        dogs:{
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+          computed: '_computeIcon(organization.dogFriendly)',
+        },
+
+        patio:{
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+          computed: '_computeIcon(organization.patio)',
+        },
+        
+        over21:{
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+          computed: '_computeIcon(organization.over21)',
+        },
+
+        placeId:{
+          type: String
+        },
+
+        favorite:{
+          type:Boolean,
+          value:false,
+          computed:'_computeFavorite(organization.userData.favorite)'
+        },
+
+        favoriteCSS:{
+          type:String,
+          computed:'_computeFavoriteCSS(favorite)'
+        },
+
+        favoriteIcon:{
+          type:String,
+          computed:'_computeFavoriteIcon(favorite)'
+        },
+
+        page:{
+          type:String,
+          value:''
+        },
+
+        _hideGoogleData:{
+          type:Boolean,
+          value:false,
+          computed: '_computeHideGoogleData(page)'
+        },
+
+        rating:{
+          type:String,
+          computed: '_computeRating(organization.userData.rating)'
+        },
+
+        openCrawl:{
+          type:Boolean,
+          value:false,
+          notify:true
+        },
+
+        userRating:{
+          type:String
+        },
+
+        user:{
+          type: Object
+        },
+
+        uid:{
+          type:String,
+          computed:'computeUid(user)'
+        },
+
+        userData:{
+          type: Object
+        },
+
+        _hasPlaceOpen:{
+          type:Boolean,
+          reflectToAttribute: true,
+          value:false,
+          computed: '_computeHasPlaceOpen(organization)'
+        },
+
+        _showIcons:{
+          type:Boolean,
+          value:false,
+          computed:"_computeShowIcons(organization)"
+        }
+      },
+
+      observers:[
+                  // '_watchRating(rating)',
+                  '_setRatingCSS(rating)'
+                  ],
+     
+      _setRatingCSS:function (rating){
+ 
+        this.userRating = rating;
+        if(this.userRating === 'yes'){
+          this.$.ratingButton.style.color = 'green';
+          this.$.notRatingButton.style.color=null;
+        }else if (this.userRating === 'no'){
+          this.$.ratingButton.style.color = null;
+          this.$.notRatingButton.style.color='red';
+        }
+        else{
+          this.$.ratingButton.style.color = null;
+          this.$.notRatingButton.style.color=null;
+        }
+
+      },
+
+      _watchRating:function (rating){
+        // console.log('rating', rating)
+        // console.log('user', this.userRating);
+        let update = false;
+        let that = this;
+        if(rating){
+          update = true;
+        }
+        if(rating === this.userRating){
+          update = false;
+        }
+
+        if(this.user){
+          if(this.organization){
+            if(this.placeId){
+              
+              
+              if(update){
+                if(this.rating === 'no'){
+                  this.favorite = null;
+                }
+                var obj={
+                  created: Math.round(Date.now()/1000),
+                  name:this.organization.name,
+                  place_id:this.placeId,
+                  rating:this.rating,
+                  favorite:this.favorite,
+                  vicinity:(this.organization.vicinity) ? this.organization.vicinity : this.organization.formatted_address.split(', ').slice(0,2).join(', '),
+                  latitude:this.organization.latitude,
+                  longitude:this.organization.longitude
+                };
+
+                console.log(`user/${this.user.uid}/favoriteOrganization/${this.placeId}`)
+                console.log(obj);
+                // firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.placeId}`)
+                //   .update(obj)
+                //   .then(() =>{
+                //     console.log('Updated rating');
+                //   })
+                //   .catch(error =>{
+                //     console.log('Rating_ERROR', error)
+                //   })
+              
+          
+
+              }else{
+                // firebase.database(this.$.auth.app).ref(`user/${this.user.uid}/favoriteOrganization/${this.placeId}`)
+                //   .remove()
+                //   .then(() =>{
+                //     console.log('Removed rating');
+                //     that.favorite = false;
+                //   })
+                //   .catch(error =>{
+                //     console.log('RATING_DELETE_ERROR', error)
+                //   })
+              }
+            }
+          }
+
+        }else{
+          this.login = true;
+        }
+      },
+
+      _watchFavorite: function (favorite){
+        if(favorite === this.userFavorite){
+
+          console.log('favorite', favorite)
+
+        }
+        
+      },
+
+      _computeFavorite: function (favorite){
+        // console.log('favorite', favorite)
+        if(favorite){
+          return true;
+        }
+        return false;
+      },
+
+      _computeRating: function (rating){
+        // console.log('rating', rating)
+        if(rating){
+          return rating;
+        }
+        return false;
+      },
+
+      _toggleFavorite: function (){
+        
+        //toggle value
+        let favorite = !this.favorite;
+        let that = this;
+        if(this.uid){
+          if(this.placeId){
+            
+            if(favorite){
+              firebase.database(this.$.auth.app).ref(`user/${this.uid}/favoriteOrganization/${this.placeId}`)
+                  .update({favorite:favorite, rating:'yes'})
+                  .then(() => {
+                    that.favorite = favorite;
+                    console.log('saved favorite');
+                  })
+                  .catch(error =>{
+                    console.log('SAVED_FAVORITE_ERROR', error)
+                  })
+
+            }else{
+               firebase.database(this.$.auth.app).ref(`user/${this.uid}/favoriteOrganization/${this.placeId}/favorite`)
+                  .remove()
+                  .then(() => {
+                    that.favorite = favorite;
+                    console.log('removed favorite');
+                  })
+                  .catch(error =>{
+                    console.log('REMOVED_FAVORITE_ERROR', error)
+                  })
+
+            }
+
+          }
+        }
+        
+      },
+
+      _toggleRating: function(){
+        console.log('toggle')
+        if(this.user){
+          if (this.rating === 'yes'){
+            this.rating = null;
+            this._removeRating();
+            console.log('remove')
+          }else{
+            this.rating = 'yes';
+            this._addRating('yes');
+            console.log('add yes')
+          }
+        }else{
+          this.login = true;
+        }
+      },
+
+      _toggleNotRating: function(){
+        if(this.user){
+          if (this.rating === 'no'){
+            this.rating = null;
+            this._removeRating()
+          }else{
+            this.rating = 'no';
+            this._addRating('no')
+          }
+        }else{
+          this.login = true;
+        }
+      },
+
+      _addRating(rating){
+        console.log('trigger add')
+        
+          if(this.uid){
+            if(this.placeId){
+              console.log('made it through')
+              let favorite = this.favorite;
+              if(rating === 'no'){
+                favorite = null;
+              }
+
+              firebase.database(this.$.auth.app).ref(`user/${this.uid}/favoriteOrganization/${this.placeId}`)
+                  .update({favorite:favorite, rating:rating})
+                  .then(() => {
+                    this.favorite = favorite;
+                    console.log('saved rating');
+                  })
+                  .catch(error =>{
+                    console.log('SAVED_RATING_ERROR', error)
+                  })
+            }
+
+          }else{
+            this.login = true;
+          }
+        
+      },
+
+      _removeRating(){
+        
+          if(this.uid){
+            if(this.placeId){
+              
+
+              firebase.database(this.$.auth.app).ref(`user/${this.uid}/favoriteOrganization/${this.placeId}`)
+                  .update({favorite:null, rating:null})
+                  .then(() => {
+                    this.favorite = false;
+                    this.rating = null;
+                    console.log('removed rating');
+                  })
+                  .catch(error =>{
+                    console.log('REMOVED_RATING_ERROR', error)
+                  })
+            }
+
+          }else{
+            this.login = true;
+          }
+        
+      },
+
+      _openEditPubDialog: function (){
+        this.openCrawl = true;
+      },
+
+
+      computeUid: function (user){
+        if(user){
+          return user.uid;
+        }
+        return false;
+      },
+
+      _computeHideGoogleData: function (page){
+        if(page){
+          if(page === 'home'){
+            
+            return true;
+          }
+        }
+        return false;
+      },
+
+      _computeFavoriteCSS: function (favorite){
+        if(favorite){
+          return 'favorite-icon';
+        }
+        return 'not-favorite-icon';
+      },
+
+      _computeFavoriteIcon: function (favorite){
+        if(favorite){
+          return 'beer-icons:favorite';
+        }
+        return 'beer-icons:favorite-border';
+      },
+
+      _computeShowIcons: function (organization){
+        if(organization){
+          if(organization.TRUCK){
+            return false;
+          }
+          if(organization.dogFriendly){
+            return true;
+          }
+          if(organization.patio){
+            return true;
+          }
+          if(organization.over21){
+            return true;
+          }
+        }
+        return false;
+      },
+
+      _computeIcon: function (icon) {
+        if (icon){
+          return true;
+        }
+          return false;
+      },
+
+      _computeHasPlaceOpen: function (organization){
+        if(organization){
+          if(organization.TRUCK){
+            return false;
+          }
+        }
+
+        if(organization){
+          if(organization.open){
+            return true;
+          }
+        }
+        return false;
+      },
+
+      _test: function(obj){
+        console.log('TEST', obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

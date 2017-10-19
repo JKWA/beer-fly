@@ -1,0 +1,282 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+
+
+<link rel="import" href="beer-icons.html">
+
+<dom-module id="beer-schedule-card-mini">
+
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
+
+     a{
+      color: var(--app-primary-color);
+      text-decoration: none;
+    }
+
+    .card{
+        margin: 10px;
+        /*padding: 10px;*/
+        text-align: center;
+        @apply --paper-material-elevation-0;
+      }
+
+      .pub-card{
+        margin: 10px;
+        /*padding: 10px;*/
+        text-align: center;
+        @apply --paper-material-elevation-0;
+      }
+
+      .day {
+        font-size: 1.5em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+        
+      }
+
+      .name{
+        font-size: 1.2em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+       
+      }
+
+      .vicinity {
+        font-size: 1.0em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .time {
+        font-size: 1.0em;
+        font-weight: 300;
+        color: var(--app-primary-color);
+      }
+
+      .seperate {
+        font-size: 2em;
+        font-weight: 500;
+        color: var(--app-accent-color);
+        text-align: center;
+      }
+
+  
+
+
+    </style>
+
+     <template 
+          is="dom-repeat" 
+          items="[[_createArray(organization.schedule)]]" 
+          as="day"
+          order="_dayOrder">
+        
+        <div class="card" hidden$="[[!day.organization]]">
+          <div class="day">[[day.label]]</div>
+
+          <template 
+              is="dom-repeat" 
+              items="[[_createArray(day.organization)]]" 
+              as="pub">
+            <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.$key]]">
+            <div class="pub-card">
+              <div class="name">[[pub.name]]</div>
+              <div class="vicinity">[[pub.vicinity]]</div>
+              <div class="time">[[_formatTimeStamp(pub.OPEN)]]-[[_formatTimeStamp(pub.CLOSE)]]</div>
+            </div>
+            </a>
+          </template>
+        </div>
+    
+        <div class="seperate" hidden$="[[!day.organization]]">
+            <iron-icon icon="beer-icons:seperate"></iron-icon>
+        </div>
+
+      </template>
+        
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-schedule-card-mini',
+
+      properties: {
+
+
+       orgId:{
+         type: String
+       },
+
+       organization:{
+         type: Object
+       },
+
+       orgId:{
+         type:String
+       },
+
+       photoUrl: {
+          type: String,
+          computed: '_computePhotoUrl(category, place)'
+        },
+
+       placeholder:{
+          type: String
+        },
+       
+
+      },
+
+
+       
+       _createArray : function (obj){
+        console.log('obj', obj)
+        var returnArray = [];
+        if(typeof obj ==='object'){
+          var key = Object.keys(obj);
+          for (var i=0; i<key.length; i++){
+            obj[key[i]]['$key'] = key[i];
+            returnArray.push(obj[key[i]]);
+          }
+        }
+        return returnArray
+      },
+
+      _formatTimeStamp: function (time){
+        var timeString = ''
+        if(time){
+          var hour = time.substring(0, 2);
+          var minute = time.substring(2, 4);
+          var amPm = 'AM';
+
+          hour = parseInt(hour);
+          
+          if(hour === 0){     
+            hour = 12;
+            amPm = "AM"
+          
+          }else if(hour === 12){
+            hour = 12;
+            amPm = 'PM';
+
+          }else if(hour > 12){
+            hour = hour-12;
+            amPm = 'PM';
+          }
+
+          timeString += hour.toString()+':';
+          timeString += minute.toString()+' ';
+          timeString += amPm;
+
+          return timeString
+        }
+      },
+
+      
+      _sortOpenTime: function(a,b){
+        if (a.open < b.open)
+          return -1;
+        if (a.open > b.open)
+          return 1;
+        return 0;
+      },
+
+      _computeNameForUrl: function (name) {
+        'use strict';
+        if (name) {
+          name = name.replace(/\s/g, '-')
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'home'
+        }
+      },
+
+      _computePhotoUrl: function (category, place) {
+         try{
+          if(category.image){
+            if(category.image.banner){
+              if(category.image.banner.url){
+                return category.image.banner.url;
+              }
+            }
+          }
+          var photoMeta = {};
+          var photos = place.photos
+          var categoryIndex = 3
+          if(photos.length < categoryIndex){
+            categoryIndex = photos.length
+          }
+          photoMeta.maxWidth = place.photos[categoryIndex].width;
+          photoMeta.maxHeight = place.photos[categoryIndex].height;
+          return place.photos[categoryIndex].getUrl(photoMeta);
+         
+       }catch (error){
+
+       }
+      },
+
+      _dayOrder: function(a,b){  
+        if (a.day < b.day)
+          return -1;
+        if (a.day > b.day)
+          return 1;
+        return 0;
+      },
+
+       _formatTimeStamp: function (time){
+        var timeString = ''
+        if(time){
+          var hour = time.substring(0, 2);
+          var minute = time.substring(2, 4);
+          var amPm = 'AM';
+
+          hour = parseInt(hour);
+          
+          if(hour === 0){     
+            hour = 12;
+            amPm = "AM"
+          
+          }else if(hour === 12){
+            hour = 12;
+            amPm = 'PM';
+
+          }else if(hour > 12){
+            hour = hour-12;
+            amPm = 'PM';
+          }
+
+          timeString += hour.toString()+':';
+          timeString += minute.toString()+' ';
+          timeString += amPm;
+
+          return timeString
+        }
+      },
+
+       _computeNameForUrl: function (name) {
+        'use strict';
+        if (name) {
+          name = name.replace(/\s/g, '-')
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'home'
+        }
+      },
+     
+
+      _test: function(obj){
+          console.log("TEST",obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

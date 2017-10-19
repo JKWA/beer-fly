@@ -1,0 +1,863 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-down-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/moment-element/moment-element.html">
+
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-location.html">
+<link rel="import" href="beer-crawl-favorite.html">
+<link rel="import" href="beer-crawl-url.html">
+<link rel="import" href="beer-crawl-edit.html">
+
+<link rel="import" href="beer-dialog.html">
+
+
+
+<dom-module id="beer-crawl">
+
+<template strip-whitespace>
+  <style include="paper-material-styles">
+
+    a{
+      text-decoration: none;
+    }
+
+    a > iron-icon {
+      text-decoration: none;
+      color: var(--app-accent-color);
+    }
+
+    ol{
+      list-style-type: none;
+    }
+
+    li{
+      @apply --layout-horizontal;
+      padding: 10px;
+      border-bottom: 1px solid var(--app-secondary-color);
+    }
+
+    li:first-child{
+      border-top: 1px solid var(--app-secondary-color);
+    }
+
+
+    li > div {
+      margin: 0 10px 0 0;
+      font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+    }
+
+    .add-icon{
+      color: var(--app-accent-color);
+    }
+
+    .edit-icon{
+      color: var(--app-secondary-color);
+    }
+
+    .link-icon{
+      color: var(--app-accent-color);
+    }
+
+    .card{
+      padding: 10px;
+      margin: 10px;
+      @apply --paper-material-elevation-1;
+      background-color: white;
+    }
+
+    .title-wrapper{
+       @apply --layout-horizontal;
+       @apply --layout-justified;
+    }
+
+    .icon-wrapper{
+      @apply --layout-horizontal;
+      @apply --layout-justified;
+      font-size: 1em;
+    }
+
+    .organization-wrapper{
+      @apply --layout-horizontal;
+      @apply --layout-justified;
+      width: 100%;
+    }
+
+    .name{
+      font-size: 1.5em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+    }
+
+    .description{
+      font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 300;
+      margin: 10px 0 20px 0;
+    }
+
+    .distance{
+      font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+    }
+
+    .edit-message{
+      font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 300;
+    }
+
+    .footer{
+      @apply --layout-horizontal;
+      @apply --layout-justified;
+      margin: 15px;
+    }
+
+     .toast-wrapper{
+      @apply --layout-vertical; 
+      
+    }
+    .toast-button-wrapper{
+      @apply --layout-horizontal; 
+      @apply --layout-justified; 
+      color: var(--app-selected-color);
+    }
+
+  </style> 
+
+  <firebase-auth id="auth" app-name="beer" status-known="[[statusKnown]]"user="{{user}}"></firebase-auth>
+
+    <!-- <div class="card" hidden$="[[!user]]"> -->
+      <template is="dom-if" if="[[!crawlId]]">
+       <div class="card" hidden="[[!user]]">
+        <iron-label>
+          <paper-icon-button class="add-icon" icon="beer-icons:crawl" on-tap="_toggleOwnerData"></paper-icon-button>
+          <span class="edit-message">[[toggleMessage]]</span>
+        </iron-label>
+      </div> 
+      </template>
+   
+      
+       <template is="dom-if" if="[[crawlId]]">
+        <div class="card">
+          <a href="/[[nameUrl]]/crawl[[returnParam]]">
+            <iron-label>
+              <paper-icon-button class="add-icon" icon="beer-icons:view-all" on-tap="_resetLocation"></paper-icon-button>
+              <span class="edit-message">Show All Beer-Crawls</span>
+            </iron-label>
+          </a>
+        </div>
+      </template> 
+
+    <!-- </div> -->
+
+    <template is="dom-if" if="[[!crawlId]]">
+      <div hidden$="[[showOwnerData]]">
+    
+        <beer-location
+          location={{location}}>
+        </beer-location>
+    
+      </div>
+    </template>
+
+
+    <template is="dom-if" if="[[crawlId]]">
+      <div class="card">
+        <template is="dom-if" if="[[crawl.deleted]]">
+          <div>Beer-Cawl has been deleted.</div>
+        </template>
+        <div class="title-wrapper"> 
+          <div class="name">[[crawl.name]]</div>
+          <div class="icon-wrapper">
+
+            
+            <template is="dom-if" if="[[_isOwner]]">
+              <paper-icon-button class="edit-icon" crawl="[[crawl]]" icon="beer-icons:edit" on-tap="_openEditor"></paper-icon-button>
+            </template>
+            
+            <div>
+              <beer-crawl-favorite
+                crawl-id="[[crawl.crawl_id]]">
+              </beer-crawl-favorite>
+            </div>
+          </div>
+        </div>
+        <div>
+          <template is="dom-if" if="[[crawl.created]]">
+            Created:
+            <moment-element
+                datetime="[[_addMilliseconds(crawl.created)]]"
+                output-format="MMM DD[,] YYYY">
+            </moment-element>
+          </template>
+        </div>
+         <template is="dom-repeat" items="[[_addBreaks(crawl.description)]]" as="description">
+            <div class="description">[[description]]</div>
+         </template>
+        <ol>
+        <template is="dom-repeat" items="[[_organizationArray(crawl.organization)]]" as="pub">
+          <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]][[locationParams]]">
+            <li> 
+    
+            <div class="organization-wrapper">
+                <div>
+                  <div>[[pub.name]]</div>
+                  <div>[[pub.formatted_address]]</div>
+                </div>
+                <div> 
+                  
+                </div>
+            </div>
+            </li>
+          </a>
+        </template>
+        </ol>
+        <div class="footer">
+          <div>
+            <beer-crawl-url organizations="[[crawl.organization]]">
+            </beer-crawl-url>
+          </div>
+           <div class="distance">Begins [[distance]] miles from you.</div> 
+        </div>
+      </div>
+    
+    </template>
+
+    <template is="dom-if" if="[[!crawlId]]">
+
+    <template is="dom-repeat" items="[[crawlData]]" as="crawl" sort="_sortByNew" filter="_filter" observe="created show">
+       <!-- SHOW: [[crawl.show]]  -->
+      <div class="card">
+        <div class="title-wrapper"> 
+          <a href="/[[nameUrl]]/crawl[[returnParam]]&crawlId=[[crawl.crawl_id]]">
+          <div class="name">[[crawl.name]]</div>
+          </a>
+          <div class="icon-wrapper">
+
+            <div hidden$="[[!crawl.owner]]"> 
+              <paper-icon-button class="edit-icon" crawl="[[crawl]]" icon="beer-icons:edit" on-tap="_openEditor"></paper-icon-button>
+            </div> 
+            
+            <div>
+              <beer-crawl-favorite
+                crawl-id="[[crawl.crawl_id]]">
+              </beer-crawl-favorite>
+            </div>
+          </div>
+        </div>
+        <div>
+          <!-- CREATED[[crawl.created]] -->
+          <moment-element
+              datetime="[[crawl.timestamp]]"
+              output-format="MMM DD[,] YYYY">
+          </moment-element>
+        </div>
+        
+         <template is="dom-repeat" items="[[_addBreaks(crawl.description)]]" as="description">
+            <div class="description">[[description]]</div>
+         </template>
+        <ol>
+        <template is="dom-repeat" items="[[_organizationArray(crawl.organization)]]" as="pub">
+          <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]][[locationParams]]">
+            <li> 
+    
+            <div class="organization-wrapper">
+                <div>
+                  <div>[[pub.name]]</div>
+                  <div>[[pub.formatted_address]]</div>
+                </div>
+                <div> 
+                  
+                </div>
+            </div>
+            </li>
+          </a>
+        </template>
+        </ol>
+        <div class="footer">
+          <div>
+            <beer-crawl-url organizations="[[crawl.organization]]">
+            </beer-crawl-url>
+          </div>
+          <div class="distance">Begins [[crawl.distance]] miles from you.</div>
+        </div>
+      </div>
+    </template>
+
+    </template>
+   
+    <beer-dialog
+      id="crawlEditDialog"
+      entry-animation="slide-from-bottom-animation"
+      exit-animation="slide-down-animation"
+      with-backdrop>
+      <beer-crawl-edit
+        crawl-id="[[editCrawlId]]"
+        deleted-crawl="{{deletedCrawl}}">
+      </beer-crawl-edit>
+    </beer-dialog>
+
+     <paper-toast 
+        id="toast" 
+        duration="0"
+        horizontal-align="right"
+        horizontal-offset="50"
+        vertical-offset="100">
+        <div class="toast-wrapper">
+          <div>[[deletedCrawl.name]] was deleted.</div>
+          <div class="toast-button-wrapper">
+            <paper-button crawl="[[deletedCrawl]]" on-tap="_restoreCrawl" class="button">Restore</paper-button>
+            <paper-button crawl="[[deletedCrawl]]" on-tap="_closeToast" class="button">Close</paper-button>
+          </div>
+        </div>
+        
+      </paper-toast>
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-crawl',
+
+      properties: {
+
+         crawlData:{
+          type: Array,
+          value: function (){
+            return [];
+          }
+        },
+
+        crawlDataLocation:{
+          type: Object,
+          value: function (){
+            return {};
+          }
+        },
+
+        crawl:{
+          type:Object,
+          value: function () {return {};}
+        },
+
+        crawlId:String,
+        crawlUrl:String,
+        distance:{
+          type:Number,
+          computed: '_computeDistance(location, crawl)'
+        },
+        editCrawl:Object,
+        editCrawlId:String,
+        deletedCrawl:Object,
+
+        location:{
+          type:Object,
+          notify:true
+        },
+        // latitude:Number,
+        // longitude:Number,
+
+        nameUrl:String,
+        returnParam:String,
+        
+        showOwnerData:{
+          type:Boolean,
+          value:false
+        },
+
+        sortedLocationHistory:{
+          type:Array
+        },
+
+        toggleMessage:{
+          type:String,
+        },
+
+        urlParameter:String,
+
+        locationParams:{
+          type:String,
+          // computed: '_computeLocationParamsUrl(location)'
+        },
+       
+        user:{
+          type: Object
+        },
+
+        userId:{
+          type:String,
+          computed: '_computeUserId(user)'
+        },
+        
+        userData:{
+          type: Object
+        },
+
+        _isOwner: {
+          type: Boolean,
+          computed: '_computeIsOwner(crawl.user_id, userId)',
+          value:false
+        },
+      },
+
+      ready: function (){
+        var body = document.querySelector('body');
+          Polymer.dom(body).appendChild(this.$.crawlEditDialog);
+          // this.$.crawlEditDialog.open();
+      },
+
+      observers:[
+                //  '_setGeoData(location)',
+                //  '_setToOwnerData(showOwnerData)',
+                 '_watchShowOwnerData(showOwnerData)',
+                 '_watchCrawlId(crawlId)',
+                 '_watchIfOwner(user, crawl)',
+                 '_setData(location, showOwnerData, user)',
+                 '_setUrlPrams(location, crawlId)',
+                 '_watchForDeletedCrawl(deletedCrawl)',
+                 '_updateDocumentName(location, crawl)'
+                 ],
+
+      _watchShowOwnerData: function (showOwnerData){
+        if(showOwnerData){
+          this.toggleMessage='Show near-by Beer-Crawls'
+        }else{
+          this.toggleMessage='Show all my Beer-Crawls'
+        }
+      },
+
+      _watchForDeletedCrawl(crawl){
+        console.log('deleteCrawl', crawl);
+        var that = this;
+        that.$.toast.open();
+      },
+
+      _setData: function (location, showOwnerData, user){
+        //clear
+        this.splice('crawlData', 0, this.crawlData.length);
+        this.set(`crawlDataLocation`, {});
+
+        if(showOwnerData){
+          if(user){
+            if(user.uid){
+              this._setToOwnerData(user.uid)
+            }
+          }else{
+
+          }
+          
+        }else{
+          if(location){
+            if(location.latitude && location.longitude){
+              this._setGeoData(location)
+            }
+          }
+        }
+      },
+
+      _setUrlPrams: function (location){
+        // var params = [];
+          // if(location || crawlId){
+          //   param +='?'
+          // }
+
+        if(location){
+          if(location.latitude && location.longitude && location.address){
+            var address = encodeURIComponent(location.address); 
+            var geo = encodeURIComponent(`${location.latitude} ${location.longitude}`);
+            this.locationParams =`&location=${geo}&locationAddress=${address}`;
+          } 
+        }
+
+        // if(crawlId){
+        //    params.push(`crawlId=${crawlId}`)
+        // }
+
+        // if(params.length ===0){
+        //   this.locationParams='';
+        // }else{
+        //   this.locationParams = '?'+params.join('&');
+        // }
+         
+      },
+
+      _updateDocumentName: function (location, crawl){
+        let setCrawl = false;
+
+        if(crawl){
+          if(crawl.name){
+            setCrawl = true;
+          }
+        }
+
+        if(setCrawl){
+          document.title = `Beer-Crawl: ${crawl.name}`;
+
+        }else{
+          if(location){
+            // console.log('test this', location)
+            document.title = `Beer-Crawls: ${location.address}`;
+          }else{
+            document.title = `Beer-Crawls`
+          }
+        }
+      },
+
+      _watchCrawlId: function (crawlId){
+        if(crawlId){
+          var that = this;
+          firebase.database(this.$.auth.app).ref(`/crawl/${crawlId}`)
+          .on('value', snapshot =>{
+            if(snapshot.exists){
+              var obj = snapshot.val();
+              obj.crawl_id = snapshot.key;
+              that.crawl = obj
+            }
+          })
+        }
+    
+      },
+
+
+
+
+      _setGeoData: function (location){
+   
+        var that = this;
+        
+        var app = this.$.auth.app;
+        var firebaseRef = app.database().ref('GeoCrawl');
+        var geoFire = new GeoFire(firebaseRef);
+  
+        var query = {};
+        if(location.latitude && location.longitude){
+        
+        query.center = [Number(location.latitude), Number(location.longitude)];
+        query.radius = 30*1.609344;
+
+        geoFire.query(query)
+          .on('key_entered', function(key, location, distance) {
+            
+            app.database().ref(`/crawl/${key}`)
+              .on('value', snapshot => {
+                var crawl = snapshot.val();
+                
+                crawl.timestamp = snapshot.child('created').val()*1000;
+                crawl.distance = Math.round((distance*0.621371)*10)/10;
+                crawl.crawl_id = key;
+                crawl.show = false;
+
+                if(that.user){
+                  if(snapshot.child('user_id').val() === that.user.uid){
+                    crawl.owner = true;
+                  }
+                }
+                
+                if (snapshot.child('public').exists()){
+                  crawl.show=true;
+                }
+
+                if (snapshot.child('deleted').exists()){
+                  crawl.show=false;
+                }
+                  
+                  if (!that.crawlDataLocation[key]){
+                    // console.log('push');
+                    // console.log(crawl);
+                    var arrayLocation = that.push('crawlData', crawl);
+                    that.crawlDataLocation[key] = {arrayLocation:arrayLocation}
+                    crawl.arrayLocation = arrayLocation;
+                    that.set(`crawlDataLocation.${key}`, crawl);
+                  }else{
+                    // console.log('set')
+                    var existingLocation = that.crawlDataLocation[key].arrayLocation-1;
+                    that.set(`crawlData.${existingLocation}`, crawl);
+                    that.notifyPath(`crawlData.${existingLocation}.show`)
+
+                  }
+              
+              })
+          })
+
+        geoFire.query(query)
+          .on('key_exited', function(key){
+            if(that.crawlDataLocation[key]){
+              console.log(that.crawlDataLocation[key])
+              let location = that.crawlDataLocation[key].arrayLocation-1;
+              
+              that.set(`crawlDataLocation.${key}.${location}.show`, false)
+            }
+          })
+        }
+      },
+
+      _setToOwnerData: function (userId){
+
+        var that = this;
+        firebase.database(this.$.auth.app).ref('/crawl')
+        .orderByChild('user_id').equalTo(userId)
+        .on('value', function(snapshot) {
+
+          snapshot.forEach(crawl => {
+            let data = crawl.val();
+              data.crawl_id = crawl.key;
+              data.show = true;
+              data.owner=false;
+              data.timestamp = crawl.child('created').val()*1000
+
+
+              if(crawl.child('deleted').exists()){
+                data.show=false;
+              }
+
+              if(crawl.child('user_id').val() === that.user.uid){
+                data.owner =true;
+              }
+
+              if(crawl.child('organization').exists()){
+
+                // console.log(that.location);
+                data.distance = that._computeDistance(that.location, data);
+              }
+              
+              if (!that.crawlDataLocation[crawl.key]){
+                let arrayLocation = that.push('crawlData', data);
+                data.arrayLocation = arrayLocation;
+
+                that.set(`crawlDataLocation.${crawl.key}`, data);
+                // console.log(that.crawlDataLocation)
+              }else{
+                console.log(that.crawlDataLocation[crawl.key])
+                let existingLocation = that.crawlDataLocation[crawl.key].arrayLocation-1;
+                that.set(`crawlData.${existingLocation}`, data);
+                that.notifyPath(`crawlData.${existingLocation}.show`)
+              }
+          })
+        })
+      },
+
+      _resetLocation: function (){
+        this._setGeoData(this.location);
+      },
+
+      _restoreCrawl: function (event){
+        var crawl = event.currentTarget.crawl;
+        // console.log(crawl)
+
+        if(crawl.crawl_id){
+          
+          firebase.database(this.$.auth.app).ref(`/crawl/${crawl.crawl_id}`)
+          .update({deleted: null,
+                   user_id: this.user.uid})
+          .then(()=>{
+            console.log('Restored crawl');
+            this.$.toast.close()
+          })
+          .catch(error =>{
+            console.log('RESTORE_ERROR', error)
+          })
+        }
+  
+      },
+
+      _closeToast(){
+        this.$.toast.close()
+      },
+
+      _openEditor(event){
+        console.log('worked')
+        var crawl = event.currentTarget.crawl;
+        this.editCrawlId = crawl.crawl_id;
+        this.$.crawlEditDialog.open();
+      },
+
+
+      _computeUserId(user){
+        if(user){
+          return user.uid
+        }
+        return false
+      },
+
+    
+
+      _computeIsOwner: function (crawlUserId, userId){
+        if(!userId){
+          return false;
+        }
+        if(crawlUserId === userId){
+          return true;
+        }
+        return false;
+      },
+
+      _organizationArray: function (obj){
+
+        var returnArray = [];
+        if(typeof obj ==='object'){
+  
+          for (let key of Object.keys(obj)){
+            if(!obj[key].permanently_closed){
+              returnArray.push(obj[key])
+            }
+          }
+        }
+        return returnArray.sort(this._sortByCreated);
+      },
+
+      _sortByCreated: function(a,b){
+
+        if (a.created < b.created)
+          return -1;
+        if (a.created > b.created)
+          return 1;
+        return 0;
+      },
+
+      _sortByNew: function(a,b){
+        if (a.created > b.created)
+          return -1;
+        if (a.created < b.created)
+          return 1;
+        return 0;
+      },
+      
+      _filter: function (item){
+       
+      return item.show == true 
+
+      },
+
+      _addBreaks: function(str){
+        'use strict';
+        if(str){
+          return str.split('\n');
+        }else{
+          return [];
+        }
+      },
+
+      _showNearByCrawlMessage: function (crawlId, showOwnerData){
+        if(!showOwnerData){
+          return true;
+        }
+        return false;
+      },
+
+      _computeNameForUrl: function (name) {
+        'use strict';
+        if (name) {
+          name = name.replace(/\s/g, '-')
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'home'
+        }
+      },
+
+      _computeDistance: function (location, crawl){
+        
+        if(location && crawl){
+          // console.log(crawl);
+          if(typeof crawl.organization ==='object'){
+            let orgArray = []
+            for (let org of Object.keys(crawl.organization)){
+              orgArray.push(crawl.organization[org]);
+            }
+            let earliestCreated = orgArray.sort(this._sortByCreated).shift();
+            console.log('earliestCreated', earliestCreated);
+
+            if(location.latitude && location.longitude && earliestCreated.latitude && earliestCreated.longitude){
+              return Math.round(this._distance (location.latitude, location.longitude, earliestCreated.latitude, earliestCreated.longitude)*10)/10
+            }
+          }
+        }
+      },
+
+       _distance: function (myLat, myLng, pubLat, pubLng){
+          var R = 3959; 
+          var dLat = this.deg2rad(pubLat-myLat);  
+          var dLon = this.deg2rad(pubLng-myLng); 
+          var a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(myLat)) * Math.cos(this.deg2rad(pubLat)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+
+          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+          var d = R * c; 
+          return d
+       },
+
+       deg2rad: function (deg) {
+              return deg * (Math.PI/180)
+       },
+
+      _addMilliseconds: function (timestamp){
+        if(timestamp){
+          return timestamp*1000
+        }
+        return false;
+      },
+
+      _watchIfOwner: function (owner, crawl){
+        if(!owner){
+          return false;
+        }
+        if(!crawl){
+          return false;
+        }
+        if(owner.uid === crawl.user_id){
+          return true
+        }
+        return false;
+
+      },
+
+   
+      _toggleOwnerData: function (){
+        this.showOwnerData = !this.showOwnerData
+        console.log(this.showOwnerData);
+      },
+
+      _computeLocationParamsUrl: function (location) {
+        // console.log(location)
+        if(!location){
+          return null
+        }
+        if(location.latitude && location.longitude && location.address){
+          var address = encodeURIComponent(location.address); 
+          var geo = encodeURIComponent(`${location.latitude} ${location.longitude}`);
+          return `?location=${geo}&locationAddress=${address}`;
+        }
+          
+        return null;
+      },
+
+      _test: function(obj){
+          console.log(obj);
+
+      }
+
+    });
+
+  </script>
+
+</dom-module>

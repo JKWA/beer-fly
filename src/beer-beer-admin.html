@@ -3,30 +3,28 @@
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 
-<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
 
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-database-behavior.html">
 
 
 
 <dom-module id="beer-beer-admin">
-  <template>
-    <style>
+ <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
 
       .tap-wrapper{
-        @apply(--layout-horizontal);
-        @apply(--layout-around-justified);
+        @apply --layout-horizontal;
+        @apply --layout-around-justified;
       }
 
       .tap-wrapper > div{
@@ -34,13 +32,13 @@
       }
 
       .status-wrapper{
-        @apply(--layout-horizontal);
-         @apply(--layout-start-justified);
+        @apply --layout-horizontal;
+         @apply --layout-start-justified;
       }
 
       .tap-toggle{
-        @apply(--layout-horizontal);
-         @apply(--layout-end-justified);
+        @apply --layout-horizontal;
+         @apply --layout-end-justified;
          padding: 0 40px 0 0;
       }
 
@@ -74,20 +72,18 @@
 
     </style>
 
-      <firebase-document
-        app-name="beer"
-        id="orgData"
-        path="organization/[[placeId]]">
-     </firebase-document>
+        <firebase-auth id="auth" app-name="beer"></firebase-auth>
+
    
 
       <div id="statusMessage" >
         <iron-label class="status-wrapper">
-          <toggle-icon
-                icon="beer-icons:[[icon]]"
-                checked="{{toggle}}"
-                noink>
-          </toggle-icon>
+ 
+
+          <paper-icon-button icon="beer-icons:[[icon]]" noink on-tap="_toggle"></paper-icon-button>
+
+
+
           <span class="tap-status-shown">[[statusMessage]]</span>
         </iron-label>
       </div>
@@ -105,15 +101,6 @@
                 <div class="tap-status">Verify</div>
               </div>
             </paper-item>
-
-           
-
-            <!--<paper-item id="not_verified" hidden$="[[_hideChoice(status, 'not_verified')]]" statusMessage="not_verified">
-              <div class="not_verified status-wrapper">
-                <div><iron-icon icon="beer-icons:warning"></iron-icon></div>
-                <div class="tap-status">Un-Verify</div>
-              </div>
-            </paper-item>-->
 
 
             <paper-item id="deleted" hidden$="[[_hideChoice(status, 'deleted')]]" status="deleted">
@@ -144,6 +131,8 @@
           type: String,
           computed: '_computeIcon(status)'
         },
+
+        placeId:String,
 
         status:{
           type: String
@@ -219,162 +208,28 @@
 
       _updateStatus: function (statusData){
        
-         var obj = {};
+        //  var obj = {};
 
-         if(statusData === 'deleted'){
-           obj['onTap/'+this.beerId] = null;
+        //  if(statusData === 'deleted'){
+        //    obj['onTap/'+this.beerId] = null;
 
-         }
+        //  }
 
-          obj['brewBeer/'+this.beerId+'/status'] = statusData;
-          obj['beerLastUpdated'] = Date.now();
-         
-        //  console.log('SAVE_STATUS', obj);
-
-          
-          this.$.orgData.ref.update(obj, function (error){
-            if(error){
+          // obj['brewBeer/'+this.beerId+'/status'] = statusData;
+          // obj['beerLastUpdated'] = Date.now();
+         if(this.placeId && this.beerId){
+          firebase.database(this.$.auth.app).ref(`/organization/${this.placeId}/brewBeer/${this.beerId}`)
+            .update({status:statusData})
+            .then(()=>{
+              console.log('SAVED_STATUS');
+            })
+            .catch(error =>{
               console.error('VERIFY_ERROR', error)
-            }else{
-              console.log('SAVED');
-            }
-          })
-
-
+            })
+         }
 
       },
 
-      //  _watchForStatusChange: function (status){
-        
-      //   // if(oldData){
-      //     // console.log('oldData', oldData);
-      //     // if(!this.intialStatusLoaded){
-      //     //   this.intialStatusLoaded = true;
-      //     // }else{
-      //     console.log('status', status);
-
-      //     // if(oldData != newData){
-      //       // console.log('changed for real');
-      //     // }
-      //     var obj = {};
-      //     obj.status = status;
-
-      //     // }
-      //     this.$.verifyBeer.ref.update(obj, function (error){
-      //       if(error){
-      //         console.error('VERIFY_ERROR', error)
-      //       }else{
-      //         console.log('verified');
-      //       }
-      //     })
-      //   // }
-      //     // }
-      // },
-
-   
-      // updateTappedInformation: function (tapped){
-
-      //   this.message = 'working'
-      //     var beer = {};
-      //     var org = {};
-      //     var obj = {};
-      //     var beer = this.$.beer.data;
-      //     var pub = this.$.pub.data;
-      //     if(this.user){
-      //     var orgPre = this.beerId;
-
-      //     if(tapped === 'REMOVE'){
-      //       console.log('DELETE');
-
-      //       obj[orgPre] = null;
-      //       this.$.TAPPED.hidden = false;
-      //       this.$.not_verified.hidden = false;
-      //       this.$.ON_DECK.hidden = false;
-      //       this.$.REMOVE.hidden = true;
-
-      //     }else{
-
-
-      //       if(tapped){
-      //         obj[orgPre+'/tapped'] = tapped;
-      //       }
-            
-      //       if(beer.abv){
-      //         obj[orgPre+'/abv'] = Number(beer.abv);
-      //       }
-      //       if(beer.category){
-      //         obj[orgPre+'/category'] = beer.category;
-      //       }
-      //       if(beer.categoryName){
-      //         obj[orgPre+'/categoryName'] = beer.categoryName;
-      //       }
-      //       if(beer.categoryTitle){
-      //         obj[orgPre+'/categoryTitle'] = beer.categoryTitle;
-      //       }
-      //       if(beer.order){
-      //         obj[orgPre+'/order'] = Number(beer.order);
-      //       }
-      //       if(beer.description){
-      //         obj[orgPre+'/description'] = beer.description;
-      //       }
-      //       if(pub.latitude){
-      //         obj[orgPre+'/latitude'] = pub.latitude;
-      //       }
-      //       if(pub.longitude){
-      //         obj[orgPre+'/longitude'] = pub.longitude;
-      //       }
-      //       if(beer.id){
-      //         obj[orgPre+'/id'] = beer.id;
-      //       }
-
-      //       if(beer.name){
-      //           obj[orgPre+'/name'] = beer.name;
-      //       }
-    
-      //       if(beer.styleId){
-      //         obj[orgPre+'/styleId'] = Number(beer.styleId);
-      //       }
-      //       if(beer.styleName){
-      //         obj[orgPre+'/styleName'] = beer.styleName; 
-      //       }
-
-      //       if(beer.breweryId){
-      //         obj[orgPre+'/breweryId'] = beer.breweryId; 
-      //       }
-      //       if(beer.breweryName){
-      //         obj[orgPre+'/breweryName'] = beer.breweryName; 
-      //       }else{
-      //         if(pub.name){
-      //           obj[orgPre+'/breweryName'] = pub.name; 
-      //         }
-      //       }
-      //       if(beer.city){
-      //         obj[orgPre+'/city'] = beer.city; 
-      //       }
-  
-      //       if(beer.place_id){
-      //         obj[orgPre+'/place_id'] = beer.place_id; 
-      //       }
-      //       if(beer.state){
-      //         obj[orgPre+'/state'] = beer.state; 
-      //       }
-      //       if(beer.stateAbbreviation){
-      //         obj[orgPre+'/stateAbbreviation'] = beer.stateAbbreviation; 
-      //       }
-      //     }
-        
-      //     var that = this;
-      //       this.$.saveTapp.ref.update(obj, function(error) {
-      //       if (error){
-      //         console.log("Error" + error);
-      //         that.toggle = false;
-      //       }else{
-      //         console.log("Saved");
-      //       }
-      //     });
-      //     }
-
-      // },
 
       _hideChoice: function (tap, choice){
         if(tap === choice){
@@ -384,15 +239,10 @@
        }
       },
 
-      // _computeIfToggle: function (toggle, owner){
-      //   if(owner){
-          
-      //     return toggle;
-      //   }else{
-      //     return false
-      //   }
-       
-      // },
+      _toggle: function (){
+        this.toggle = !this.toggle;
+      },
+
       _test: function (obj){
         console.log(obj)
       }

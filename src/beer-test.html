@@ -1,0 +1,50 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+
+<dom-module id="beer-test">
+
+  <template>
+
+   
+
+    <style>
+
+
+    </style>
+[[test]]
+
+  </template>
+
+  <script>
+
+    class BeerTest extends Polymer.Element {
+      // static get template(){
+      //   return 'beer-test'
+      // }
+      static get is() {return 'beer-test'}
+      static get properties(){
+        return {
+          test:{
+            type:String,
+            value: "TESTING THIS"
+          }
+
+        }
+      }
+      constructor () {
+        super();
+        //initial stuff
+      }
+      // static get observedAttributes(){
+      //   return ['selected'];
+      // }
+      
+      
+    }
+
+    customElements.define(BeerTest.is, BeerTest);
+   
+
+  </script>
+
+</dom-module>

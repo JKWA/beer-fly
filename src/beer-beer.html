@@ -1,43 +1,77 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
 
 <link rel="import" href="beer-beer-card.html">
 
 <link rel="import" href="../my_components/data/upload-image.html">
 <link rel="import" href="beer-fab.html">
+<link rel="import" href="beer-dialog.html">
+<link rel="import" href="beer-beer-edit.html">
+<link rel="import" href="beer-beer-admin.html">
+
+
+
+<link rel="import" href="beer-banner.html">
+
 
 
 
 <dom-module id="beer-beer">
 
-  <template>
+ <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
-    <style>
+     
+      
+      :host {
+        display: block;
+        max-width: 640px;
+        background-color: var(--app-background-color);
+
+      }
+      
 
       a{
         color: var(--app-accent-color);
         text-decoration: none;
         }
 
+        /*paper-material {
+           
+        }*/
+
       .card{
         margin: 10px;
-        padding: 20px;
+        padding: 20px; 
+        @apply --paper-material-elevation-1;
+        background-color: white;
+
       }
 
+      .title{
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        @apply --layout-wrap;
+        font-size: 1em;
+        font-weight: 400;
+        color: var(--app-primary-color);
+      }
 
-      .motto {
-        font-size: 2.0em;
-        font-weight: 500;
-        margin: 40px 5px 0 20px;
+       .title > div{
+        padding: 0 5px 0 0;
       }
 
       .description {
@@ -48,62 +82,110 @@
 
     </style>
 
-    <firebase-auth  app-name="beer" user="{{user}}"></firebase-auth>
+    <firebase-auth  id="auth" app-name="beer" user="{{user}}"></firebase-auth>
 
-    <iron-image 
-        style="width:100%; height:300px; background-color: #F8F8F8;"
-        sizing="cover" 
-        preload 
-        placeholder="[[placeholder]]"
-        fade
-        src="[[photoUrl]]">
-    </iron-image>
+    <!-- <beer-banner
+      google-photo="[[place.photos]]"
+      photo-index="2"
+      photo="[[category.image]]"
+      org-id="[[orgId]]">
+    </beer-banner> -->
+
+    <beer-banner
+      google-photo-url="[[organization.googlePhoto.BEER.url]]"
+      photo="[[category.image.banner]]"
+      org-id="[[orgId]]">
+    </beer-banner>
     
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
 
-    <div class="motto">
-        [[category.motto]]
-    </div>
+    <!-- OWNER:[[owner]] -->
 
    <template is="dom-repeat" items="[[_addBreaks(category.description)]]" as="description">
+      <div class="description">
+          [[description]]
+      </div>
+   </template>
 
-    <div class="description">
-        [[description]]
+   <template is="dom-if" if="[[owner]]">
+    <div class="card" elevation="1">
+      <iron-label>
+          <paper-icon-button icon="beer-icons:add" on-tap="_toggleAddBeer"></paper-icon-button>
+          Add a beer
+      </iron-label>
+      
+      <iron-collapse id="collapse" opened="[[toggleAddBeer]]">
+         <paper-input 
+            always-float-label
+            id="beerName"
+            label="Beer Name" 
+            char-counter 
+            maxlength="100" 
+            error-message="Required"
+            value="{{addBeerName}}">
+          </paper-input> 
+          
+          <paper-button raised on-tap="_addNewBeer">Add Beer</paper-button>
+          
+      </iron-collapse>
+      
     </div>
    </template>
 
-   
-    <paper-material class="card" elevation="1">
-      <iron-label>
-        <a aria-label$="TEST" href$="/[[nameUrl]]/beer-edit?orgid=[[orgId]]">
-          <paper-icon-button icon="beer-icons:add"></paper-icon-button>
-          Add a beer</a>
-      </iron-label>
-    </paper-material>
-  
-
+   <!-- EDIT-ID: [[editBeerId]] -->
     
     <template is="dom-repeat" items="[[_getArray(organization.brewBeer)]]" sort="_sortOrder" as="beer" filter="[[_filterBeers(owner)]]">
-      <beer-beer-card 
-          beer-id="[[beer.id]]"
-          beer-name="[[beer.name]]"
-          beer-description="[[beer.description]]"
-          status="[[beer.status]]"
-          brewery-name="[[place.name]]"
-          brewery-city="[[organization.city]]"
-          brewery-state="[[organization.stateAbbreviation]]"
-          style-name="[[beer.styleName]]"
-          abv="[[beer.abv]]"
-          place-id="[[place.place_id]]"
-          crowd-source="[[organization.crowdSource]]"
-          owner="[[owner]]" 
-          uid="[[user.uid]]"
-          edit-beer-id="{{editBeerId}}"
-          name-url="[[nameUrl]]"
-          login="{{login}}">
-      </beer-beer-card>
+      
+      <div class="card">
+
+
+        <template is="dom-if"  if="[[owner]]">
+          <div class="title">
+            <div>
+               <beer-beer-admin
+                  place-id="[[orgId]]"
+                  beer-id="[[beer.$key]]"
+                  status="[[beer.status]]">
+              </beer-beer-admin> 
+            </div>
+            <div>
+              <paper-icon-button icon="beer-icons:edit" beer="[[beer]]" on-tap="_changeBeerEditId"></paper-icon-button>
+
+              <!-- <a aria-label$="TEST" href$="/[[nameUrl]]/beer-edit?orgid=[[placeId]]&beerId=[[beerId]]">
+                <paper-icon-button icon="beer-icons:edit"></paper-icon-button>
+                Edit
+              </a> -->
+            </div>
+          </div>
+        </template> 
+
+
+        
+        <beer-beer-card 
+            beer="[[beer]]"
+            organization="[[organization]]"
+            owner="[[owner]]"
+            name-url="[[nameUrl]]"
+            user-data="[[userData]]"
+            login="{{login}}">
+        </beer-beer-card>
+      </div>
+
     </template>
 
+
+
+    <beer-dialog 
+        id="beerEditDialog"
+        with-backdrop
+        entry-animation="scale-up-animation"
+        exit-animation="fade-out-animation">
+      <beer-beer-edit
+        org-id="[[orgId]]"
+        beer-id="[[editBeerId]]"
+        beer-name="[[editBeerName]]">
+      </beer-beer-edit>
+    </beer-dialog>
 
     <paper-dialog 
         id="editDialog"
@@ -112,16 +194,15 @@
         entry-animation="slide-from-right-animation"
         exit-animation="slide-right-animation">
             
-      <div > 
+      <div> 
           <h3>[[category.title]]</h3>
       </div>
     
         <paper-dialog-scrollable>
-          <upload-image org-id="[[orgId]]" type="banner" key="category/BEER/image"></upload-image>   
-          <paper-input label="Motto" value="{{category.motto}}"maxlength=100 char-counter></paper-input>
-          <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
+          <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_BEER_banner" key="category/BEER/image"></upload-image>   
+          <paper-textarea always-float-label label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
         </paper-dialog-scrollable>
-      </template>
+    
       <div>
         <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
       </div>
@@ -138,41 +219,55 @@
       is: 'beer-beer',
 
       properties:{
-        photoUrl: {
-          type: String,
-          computed: '_computePhotoUrl(category, place)'
+
+        addBeerName:String,
+
+        dialogOpen:{
+          type:Boolean
+        },
+        nameUrl:{
+          type: String
+        },
+        
+        orgId:{
+          type:String
         },
 
-       dialogOpen:{
-          type:Boolean
-       },
-       nameUrl:{
-         type: String
-       },
-       owner:{
-         type: Boolean
-       },
-       crowdSource:{
-         type: Boolean
-       },
-   
-       beer:{
-         type: Object
-       },
+        owner:{
+          type: Boolean
+        },
+        organization:{
+          type: Object
+        },
 
-       login: {
-         type: Boolean,
-         notify: true
-       },
+
+        crowdSource:{
+          type: Boolean
+        },
+    
+        beer:{
+          type: Object
+        },
+
+        editBeerId:{
+          type:String
+        },
+
+        editBeerName:String,
+
+        login: {
+          type: Boolean,
+          notify: true
+        },
 
         owner:{
           type: Boolean,
           value: false
         },
 
-        placeholder: {
-          type: String,
-          computed: '_computePhotoPlaceholder(organization, place)'
+        toggleAddBeer:{
+          type:Boolean,
+          value:false
         },
 
         user: {
@@ -182,25 +277,71 @@
           }
         },
 
-        editBeerId:{
-          type: String
-        }
+        userData:{
+          type:Object
+        },
         
+      },
+
+      ready: function(){
+
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.beerEditDialog);
+
       },
     
 
 
      _edit: function(){
-        'use strict';
         
         var body = document.querySelector('body');
           Polymer.dom(body).appendChild(this.$.editDialog);
           this.$.editDialog.open()
        
       },
+
+      _changeBeerEditId(event){
+        let target = event.currentTarget;
+        let beer = target.beer;
+        // console.log(beer);
+        this.editBeerId = beer.$key;
+        this.editBeerName = beer.name;
+        
+        this.$.beerEditDialog.open();
+      },
+
+      _addNewBeer(){
+        if(this.addBeerName){
+          if(this.orgId){
+            
+            const db = firebase.database(this.$.auth.app);
+            const that = this;
+
+            console.log(this.addBeerName);
+            console.log(this.orgId);
+
+            var id = firebase.database(this.$.auth.app).ref('beer').push().key;
+            console.log(id);
+
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/brewBeer/${id}`)
+              .update({name:this.addBeerName})
+              .then(() =>{
+                console.log('added new beer')
+                that.addBeerName = '';
+                that.$.beerEditDialog.open();
+                that.editBeerId = id;
+                that.toggleAddBeer = false;
+              })
+              .catch(error =>{
+                console.error(error);
+              })
+          }
+      
+        }
+      },
       
       _addBreaks: function(str){
-        'use strict';
+   
         if(str){
           return str.split('\n');
         }else{
@@ -209,7 +350,7 @@
       },
 
        _getArray: function(obj){
-        'use strict';
+
         if(obj){
           var returnArray = [];
           var key = Object.keys(obj);
@@ -222,7 +363,7 @@
       },
 
       _sortOrder: function(a,b){
-        'use strict';
+
         if (a.order < b.order)
           return -1;
         if (a.order > b.order)
@@ -230,47 +371,7 @@
         return 0;
       },
 
-       _computePhotoUrl: function (category, place) {
-         try{
-          if(category.image){
-            if(category.image.banner){
-              if(category.image.banner.url){
-                return category.image.banner.url;
-              }
-            }
-          }
-          var photoMeta = {};
-          var photos = place.photos
-          var categoryIndex = 2
-          if(photos.length < categoryIndex){
-            categoryIndex = photos.length
-          }
-          photoMeta.maxWidth = place.photos[categoryIndex].width;
-          photoMeta.maxHeight = place.photos[categoryIndex].height;
-          return place.photos[categoryIndex].getUrl(photoMeta);
-         
-       }catch (error){
-
-       }
-      },
-
-       _computePhotoPlaceholder: function (category, place) {
-        try{
-          if(category.image){
-            if(category.image.banner){
-              if(category.image.banner.thumbnail){
-                return 'data:image/png;base64, '+category.image.banner.thumbnail;
-              }
-            }
-          }
-          // var photoMeta = {};
-          // photoMeta.maxWidth = place.photos[0].width;
-          // photoMeta.maxHeight = place.photos[0].height;
-          // return place.photos[0].getUrl(photoMeta);
-        }catch (error){
-
-       }
-      },
+      
 
       _filterBeers: function (owner){
         // console.log(beer);
@@ -288,6 +389,10 @@
           }
           return true;
         };
+      },
+
+      _toggleAddBeer: function (){
+        this.toggleAddBeer = !this.toggleAddBeer
       },
 
       _test: function (obj) {

@@ -3,13 +3,13 @@
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 
-<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
 
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
@@ -24,38 +24,14 @@
 
 
 <dom-module id="beer-beer-tap">
-  <template>
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
-      /*a{
-        color: var(--app-accent-color);
-        text-decoration: none;
-        }
-
-      .card{
-        
-        margin: 10px;
-        padding: 20px;
-      }
-
-       
-      .title{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
-        @apply(--layout-wrap);
-        font-size: 1em;
-        font-weight: 400;
-        color: var(--app-primary-color);
-      }
-
-       .title > div{
-        padding: 0 5px 0 0;
-      }
-     */
 
       .tap-wrapper{
-        @apply(--layout-horizontal);
-        @apply(--layout-around-justified);
+        @apply --layout-horizontal;
+        @apply --layout-around-justified;
       }
 
       .tap-wrapper > div{
@@ -63,13 +39,13 @@
       }
 
       .tap-status-wrapper{
-        @apply(--layout-horizontal);
-         @apply(--layout-start-justified);
+        @apply --layout-horizontal;
+         @apply --layout-start-justified;
       }
 
       .tap-toggle{
-        @apply(--layout-horizontal);
-         @apply(--layout-end-justified);
+        @apply --layout-horizontal;
+         @apply --layout-end-justified;
          padding: 0 40px 0 0;
       }
 
@@ -87,14 +63,7 @@
       .tap-status-wrapper > div{
         padding: 0 10px 0 0
       }
-/*
-      .wrapper{
-         @apply(--layout-vertical);        
-      }
 
-      .wrapper > div{
-        padding: 10px 0 5px 0
-      }*/
 
       .tapped{
         color: green;
@@ -147,15 +116,13 @@
         path="organization/[[orgId]]">
     </firebase-document>
 
-   <!--Beer Id: [[beerId]]-->
 
       <div id="tapStatusMessage" >
         <iron-label class="tap-status-wrapper">
-          <toggle-icon
-                icon="beer-icons:[[icon]]"
-                checked="{{toggle}}"
-                noink>
-          </toggle-icon>
+       
+          <paper-icon-button icon="beer-icons:[[icon]]" noink on-tap="_toggle"></paper-icon-button>
+
+          
           <span class="tap-status-shown">[[tapStatus]]</span>
         </iron-label>
       </div>
@@ -195,11 +162,7 @@
               </div>
             </paper-item>
 
-            <!--<paper-item id="NOT_AVAILABLE"  tapstatus="NOT_AVAILABLE">
-              
-                <div>NOT_AVAILABLE</div>
 
-            </paper-item>-->
 
           </paper-listbox>
 
@@ -263,6 +226,10 @@
         },
 
         tapSelected:{
+          type: String
+        },
+
+        tappedData:{
           type: String
         },
 
@@ -492,6 +459,10 @@
         }
        
       },
+      _toggle: function (){
+        this.toggle = !this.toggle;
+      },
+
       _test: function (obj){
         console.log(obj)
       }

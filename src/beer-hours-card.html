@@ -1,44 +1,51 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 
 
 <dom-module id="beer-hours-card">
 
-  <template>
-
-    <style>
-
+  <template strip-whitespace>
     
+    <style include="paper-material-styles">
 
-      .hours-text{
+      .open-text{
+        color: var(--app-primary-color);
+        font-size: 1.25em;
+        line-height: 1.4em;
+        font-weight: 400;
+        margin:10px 0;
+        text-align: center;
+      }
+
+      .hour-wrapper{
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+      }
+
+       .hours-text{
         color: var(--app-primary-color);
         font-size: 1.12em;
         line-height: 1.4em;
-      font-weight: 300;
+        font-weight: 300;
       }
 
      
 
-
-      @media (max-width: 767px) {
-       
-
-        h3 {
-          margin: 24px 0;
-        }
-
-      }
-
     </style>
 
-    <paper-material elevation="0" animated-shadow="false">
-       
-        <template is="dom-repeat" items="[[_toArray(organization.opening_hours.weekday_text)]]" as="hours">
-            <div class="hours-text">[[hours]]</div>
-        </template>
-    </paper-material>
+    <div hidden$="[[!organization]]">
+      
+
+        <div class="hour-wrapper">
+          <div>
+            <template is="dom-repeat" items="[[_toArray(organization.opening_hours.weekday_text)]]" as="hours">
+              <div class="hours-text">[[hours]]</div>
+            </template>
+          </div>
+        </div>
+    </div>
   </template>
 
 

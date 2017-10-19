@@ -7,18 +7,17 @@
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<link rel="import" href="../bower_components/paper-time-input/paper-time-input.html">
 
 
 <link rel="import" href="beer-icons.html">
 
 <dom-module id="beer-foodtruck-schedule">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
      a{
       color: var(--app-primary-color);
@@ -29,6 +28,7 @@
         margin: 10px;
         padding: 10px;
         text-align: center;
+        @apply --paper-material-elevation-0;
       }
 
       .day {
@@ -64,16 +64,16 @@
 
      <template is="dom-repeat" items="[[_createArray(days)]]" as="day">
         
-      <paper-material class='card' elevation="0" animated-shadow="false">
+      <div class='card' animated-shadow="false">
           <div class="day">[[day.label]]</div>
           
           <template is="dom-repeat" items="[[day.trucks]]" as="truck" sort="_sortOpenTime">
             
             <a href="/[[nameUrl]]/foodtruck?orgid=[[orgId]]&truckId=[[truck.id]]">
-              <paper-material elevation="0">
+              <div>
                 <div class="name">[[truck.name]]</div>
                 <div class="date">[[_formatTimeStamp(truck.open)]]-[[_formatTimeStamp(truck.close)]]</div>
-              </paper-material>
+              </div>
             </a>
 
             
@@ -86,7 +86,7 @@
           </div>
 
 
-      </paper-material>
+      </div>
 
       </template>
         
@@ -136,12 +136,16 @@
        _getFoodTruckSchedule: function (truckObj){
          var data = [];
          var obj = {};
+         
         if(typeof truckObj ==='object'){
           var key = Object.keys(truckObj);
+
           for (var i=0; i<key.length; i++){
             var truck = truckObj[key[i]];
+            
            if(truck){
             if(truck.period){
+              
                 var periods = truck.period;
                 if(typeof periods ==='object'){
                   var periodKey = Object.keys(periods);
@@ -150,13 +154,14 @@
                     if(!obj[period.day]){
                       obj[period.day] = this._createNewDay(period, truck.name, key[i])
                     }else{
-                      var truckObj = {}
+                      var truckObjAdd = {}
                     
-                      truckObj.open = period.OPEN;
-                      truckObj.close = period.CLOSE;
-                      truckObj.name = truck.name;
-                      truckObj.id = key[i]
-                      obj[period.day].trucks.push(truckObj)
+                      truckObjAdd.open = period.OPEN;
+                      truckObjAdd.close = period.CLOSE;
+                      truckObjAdd.name = truck.name;
+                      truckObjAdd.id = key[i]
+                      // truckObjAdd.timestamp = Date.now();
+                      obj[period.day].trucks.push(truckObjAdd)
                     }
                     
                   }
@@ -180,13 +185,11 @@
         truck.id = id;
         truck.open = period.OPEN;
         truck.close = period.CLOSE;
-        console.log(truck)
         obj.trucks.push(truck);
         return obj;
       },
 
        _createArray : function (obj){
-        console.log('obj', obj)
         var returnArray = [];
         if(typeof obj ==='object'){
           var key = Object.keys(obj);
@@ -209,6 +212,11 @@
           if(hour === 0){     
             hour = 12;
             amPm = "AM"
+          
+          }else if(hour === 12){
+            hour = 12;
+            amPm = 'PM';
+
           }else if(hour > 12){
             hour = hour-12;
             amPm = 'PM';
@@ -231,17 +239,7 @@
         return 0;
       },
 
-      _computeNameForUrl: function (name) {
-        'use strict';
-        if (name) {
-          name = name.replace(/\s/g, '-')
-          return name.replace(/[^a-zA-Z\d\s:]/g, '');
-        } else {
-          return 'home'
-        }
-      },
-
-
+     
      
 
       _test: function(obj){

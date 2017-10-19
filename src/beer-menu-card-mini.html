@@ -1,14 +1,16 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+
 
 
 <dom-module id="beer-menu-card-mini">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
       a{
         text-decoration: none;
       }
@@ -16,62 +18,13 @@
       .card{
         margin: 10px;
         padding: 20px;
+        @apply --paper-material-elevation-0;
       }
-
-      .menu-card{
-        /*margin: 10px;*/
-       
-      }
-
-       /*.menu{
-         @apply(--layout-vertical);         
-      }
-
-      .category{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
-      }
-
-
-      .menu-items {
-         @apply(--layout-vertical);
-         margin: 0 0 0 20px;
-         min-width: 400px;
-      }
-
-      .menu-item {
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
-      }
-
-      .category-title{
-        font-size: 1.5em;
-        font-weight: 200;
-        min-width: 400px;
-        color: var(--app-accent-color);
-        @apply(--layout-horizontal);
-        @apply(--layout-end-justified);
-        @apply(--layout-center);
-      }
-
-
-
-      .menu-title{
-        color: var(--app-primary-color);
-        font-size: 1em;
-        font-weight: 400;
-      }
-
-      .menu-price{
-        font-size: 1em;
-        font-weight: 300;
-        color: var(--app-secondary-color);
-        margin: 0 0 0 10px
-      }*/
+     
 
       .menu-wrapper{
-         @apply(--layout-vertical);
-         @apply(--layout-center-justified);
+         @apply --layout-vertical;
+         @apply --layout-center-justified;
       }
 
       .menu-wrapper > div{
@@ -102,9 +55,9 @@
       }
 
       .price-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-around-justified);
-         @apply(--layout-wrap);
+         @apply --layout-horizontal;
+         @apply --layout-around-justified;
+         @apply --layout-wrap;
          color: var(--app-primary-color);
          font-size: 1em;
          font-weight: 300;
@@ -114,19 +67,18 @@
         font-size: 2em;
         font-weight: 500;
         color: var(--app-accent-color);
-       
       }
 
 
     </style>
 <div>
-  <paper-material class="card" elevation="0" animated-shadow="false">
+  <div class="card" animated-shadow="false">
     <div class="menu-wrapper">
       <div class="category-name">[[categoryName]]</div>
       
       <template is="dom-repeat" items="[[_toArray(menuItems)]]" as="menuItem">
         <a href="[[anchorHref]]&menuItem=[[menuItem.id]]">
-        <paper-material class="menu-card" elevation="0" animated-shadow="false">
+        <div class="menu-card" animated-shadow="false">
 
         <div class="menu-item">
           <div class="menu-title">[[menuItem.name]]</div>
@@ -141,7 +93,7 @@
           </template>
           </div>-->
         </div>
-         </paper-material>
+         </div>
         </a>
       </template>
      
@@ -149,7 +101,7 @@
         <iron-icon icon="beer-icons:seperate"></iron-icon>
       </div>
     </div>
-  </paper-material>
+  </div>
   
 </div>
   

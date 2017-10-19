@@ -1,11 +1,10 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
@@ -16,12 +15,21 @@
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-foodtruck-card.html">
+<link rel="import" href="beer-banner.html">
+
 
 <dom-module id="beer-foodtruck">
 
-  <template> 
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
-    <style>
+      :host {
+        display: block;
+        max-width: 640px;
+        background-color: var(--app-background-color);
+      }
+      
       a{
         color: var(--app-accent-color);
         text-decoration: none;
@@ -35,6 +43,9 @@
       .card{
         margin: 10px;
         padding: 20px;
+        @apply --paper-material-elevation-1;
+        background-color: white;
+
       }
 
       .motto {
@@ -53,7 +64,7 @@
      
 
       .menu{
-         @apply(--layout-vertical);
+         @apply --layout-vertical;
       }
 
       .category-title{
@@ -67,19 +78,19 @@
         font-size: 1em;
         font-weight: 300;
         text-align: center;
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
       }
 
 
       .menu-category{
-         @apply(--layout-horizontal);
-         @apply(--layout-center-justified);
+         @apply --layout-horizontal;
+         @apply --layout-center-justified;
       }
 
       .menu-title{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
         color: var(--app-primary-color);
         font-size: 1.2em;
         font-weight: 400;
@@ -87,8 +98,8 @@
       }
 
       .menu-description{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
         font-size: .9em;
         font-weight: 300;
         color: var(--app-secondary-color);
@@ -104,9 +115,9 @@
       }
 
       .price-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-around-justified);
-         @apply(--layout-wrap);
+         @apply --layout-horizontal;
+         @apply --layout-around-justified;
+         @apply --layout-wrap;
          color: var(--app-primary-color);
          font-size: 1em;
          font-weight: 300;
@@ -121,14 +132,11 @@
         user="{{user}}">
     </firebase-auth>
 
-    <iron-image 
-        style="width:100%; height:300px; background-color: #F8F8F8;"
-        sizing="cover" 
-        preload 
-        placeholder="[[placeholder]]"
-        fade
-        src="[[photoUrl]]">
-    </iron-image>
+    <beer-banner
+      google-photo-url="[[organization.googlePhoto.FOOD_TRUCK.url]]"
+      photo="[[category.image.banner]]"
+      org-id="[[orgId]]">
+    </beer-banner>
 
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
 
@@ -141,13 +149,13 @@
     </div>
 
      <template is="dom-if" if="[[owner]]">
-        <paper-material class="card"  elevation="1">
+        <div class="card"  elevation="1">
          <iron-label>
             <a aria-label$="TEST" href$="/[[nameUrl]]/foodtruck-edit?orgid=[[orgId]]">
               <paper-icon-button icon="beer-icons:add"></paper-icon-button>
               Edit food trucks</a>
           </iron-label>
-        </paper-material>
+        </div>
       </template>
       <template is="dom-if" if="[[truckId]]">
         <beer-foodtruck-card
@@ -204,10 +212,7 @@
       is: 'beer-foodtruck',
       properties: {
 
-        photoUrl: {
-          type: String,
-          computed: '_computePhotoUrl(category, place)'
-        },
+       
 
         category:{
           type: Object
@@ -234,6 +239,7 @@
           type: Boolean
         },
 
+
         truckId:{
           type:String
           
@@ -254,7 +260,6 @@
         }
       },
 
-      // observer:['_watchFoodTrucks(organization.foodTruck)'],
 
     _watchFoodTrucks: function (truck){
 
@@ -275,8 +280,10 @@
           var key = Object.keys(obj);
           
           for (var i=0; i<key.length; i++){
-            obj[key[i]].$key = key[i];
-            returnArray.push(obj[key[i]]);
+            if(obj[key[i]].period){
+              obj[key[i]].$key = key[i];
+              returnArray.push(obj[key[i]]);
+            }
           }
         }
         return returnArray;
@@ -298,8 +305,6 @@
         }
       },
 
-     
-
       _addBreaks: function(str){
         'use strict';
         if(str){
@@ -307,32 +312,6 @@
         }else{
           return [];
         }
-      },
-
-      _computePhotoUrl: function (category, place) {
-         try{
-          if(category.image){
-            if(category.image.banner){
-              if(category.image.banner.url){
-                return category.image.banner.url;
-              }
-            }
-          }
-          var photoMeta = {};
-          var photos = place.photos
-          console.log('photos', photos);
-          var categoryIndex = 2
-          if(photos.length < categoryIndex){
-            categoryIndex = photos.length
-          }
-          photoMeta.maxWidth = place.photos[categoryIndex].width;
-          photoMeta.maxHeight = place.photos[categoryIndex].height;
-
-          return place.photos[categoryIndex].getUrl(photoMeta);
-         
-       }catch (error){
-
-       }
       },
 
       _sortByName: function(a,b){

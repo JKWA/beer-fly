@@ -1,5 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
@@ -7,7 +7,8 @@
 <link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
@@ -19,12 +20,26 @@
 
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-banner.html">
+<link rel="import" href="beer-dialog.html">
+<link rel="import" href="beer-menu-category-delete.html">
+
+
+
 
 <dom-module id="beer-menu">
 
-  <template>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
-    <style>
+      :host {
+        display: block;
+        max-width: 640px; 
+      }
+
+     
+      
       a{
         color: var(--app-accent-color);
         text-decoration: none;
@@ -42,13 +57,8 @@
       .card{
         margin: 10px;
         padding: 20px;
-      }
-
-      .motto {
-        font-size: 2.0em;
-        font-weight: 500;
-        margin: 0 5px 0 20px;
-        color: var(--app-primary-color);
+        @apply --paper-material-elevation-1;
+        background-color: white;
       }
 
       .description {
@@ -64,12 +74,12 @@
       }
 
       .edit-button-wrapper{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
+        @apply --layout-horizontal;
+        @apply --layout-justified;
       }
 
       .menu{
-         @apply(--layout-vertical);
+         @apply --layout-vertical;
       }
 
       .category-title{
@@ -83,19 +93,19 @@
         font-size: 1em;
         font-weight: 300;
         text-align: center;
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
       }
 
 
       .menu-category{
-         @apply(--layout-horizontal);
-         @apply(--layout-center-justified);
+         @apply --layout-horizontal;
+         @apply --layout-center-justified;
       }
 
       .menu-title{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
         color: var(--app-primary-color);
         font-size: 1.2em;
         font-weight: 400;
@@ -103,8 +113,8 @@
       }
 
       .menu-description{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
         font-size: .9em;
         font-weight: 300;
         color: var(--app-secondary-color);
@@ -120,13 +130,14 @@
       }
 
       .price-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-around-justified);
-         @apply(--layout-wrap);
+         @apply --layout-horizontal;
+         @apply --layout-around-justified;
+         @apply --layout-wrap;
          color: var(--app-primary-color);
          font-size: 1em;
          font-weight: 300;
       }
+
 
 
     </style>
@@ -138,29 +149,26 @@
     </firebase-auth>
 
 
-    <iron-image 
-        style="width:100%; height:300px; background-color: #F8F8F8;"
-        sizing="cover" 
-        preload 
-        placeholder="[[placeholder]]"
-        fade
-        src="[[photoUrl]]">
-    </iron-image>
+    <beer-banner
+      google-photo-url="[[organization.googlePhoto.MENU.url]]"
+      photo="[[category.image.banner]]"
+      org-id="[[orgId]]">
+    </beer-banner>
 
-    <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
+    <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab> 
 
-    <div class="motto">
-        [[category.motto]]
-    </div>
-    <div class="description">
-        [[category.description]]
-    </div>
+
+    <template is="dom-repeat" items="[[_addBreaks(category.description)]]" as="description">
+      <div class="description">
+          [[description]]
+      </div>
+   </template>
 
 
     <div class="menu">
 
       <template is="dom-if" if="[[owner]]">
-        <paper-material class="card"  elevation="1">
+        <div class="card"  elevation="1">
           <iron-label  class="add">
               <paper-icon-button 
                     icon="beer-icons:add" 
@@ -168,12 +176,13 @@
               </paper-icon-button>
             Add Category
           </iron-label>
-        </paper-material>
+        </div>
       </template>
 
 
-    <template is="dom-repeat" items="[[_toArray(organization.menu)]]" as="menu" sort="_categoryOrder">
-      <paper-material class="card" elevation="1">
+    <template is="dom-repeat" items="[[_toCategoryArray(organization.menu)]]" as="menu" sort="_categoryOrder">
+      <div class="card">
+      
       <template is="dom-if" if="[[owner]]">
         <div class="edit-button-wrapper">
           <div>
@@ -185,7 +194,7 @@
           </div>
           <div>
             <iron-label class="remove">
-              <paper-icon-button icon="beer-icons:delete" menu="[[menu]]" on-tap="_openDeleteDialog"></paper-icon-button>
+              <paper-icon-button icon="beer-icons:delete" category="[[menu]]" on-tap="_openDeleteDialog"></paper-icon-button>
               Delete
             </iron-label>
           </div>
@@ -193,14 +202,11 @@
       </template>
     
         <div class="category">
-          <div class=" menu-category category-title">[[menu.name]]</div>
-          
+          <div class=" menu-category category-title">[[menu.name]]</div> 
           
             <template is="dom-repeat" items="[[_addBreaks(menu.description)]]" as="categoryDescription">
               <div class="category-description">[[categoryDescription]]</div>
             </template>
-          
-          
 
             <template is="dom-repeat" items="[[_toArray(menu.item)]]" as="menuItem">
               <!--[[menuItem.id]]-->
@@ -212,17 +218,16 @@
                   </template>
 
                   <div class="price-wrapper">
-                    <template is="dom-repeat" items="[[_toArray(menuItem.price)]]" as="price">
+                    <template is="dom-repeat" items="[[_toPriceArray(menuItem.price)]]" as="price">
                       <div class="price-wrapper">
                         <div hidden="[[!price.size]]" class="price-size">[[price.size]]:&nbsp</div> 
-                        <div class="price-cost">$[[price.cost]]</div> 
+                        <div class="price-cost">$[[price.price]]</div> 
                       </div>
                     </template>
                   </div>
 
                 </div>
             </template>
-          
           
         <div>
     </template>
@@ -239,35 +244,35 @@
       <div class=""> 
           <h3>[[category.title]]</h3>
       </div>
-      <template is="dom-if" if="[[owner]]">
-      <paper-dialog-scrollable >
-       
-      </paper-dialog-scrollable>
-      </template>
 
-      <div class="">
+        <paper-dialog-scrollable>
+            <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_MENU_banner" key="category/MENU/image"></upload-image>   
+            <paper-textarea always-float-label label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
+          </paper-dialog-scrollable>
+
+      <div>
         <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
       </div>
     </paper-dialog>
 
-    <paper-dialog 
+
+
+    <beer-dialog 
         id="deleteDialog"
         with-backdrop
         entry-animation="scale-up-animation"
         exit-animation="fade-out-animation">
-      
-        <div>
-          Delete category named <b>[[deleteCategoryName]]</b> and all of its menu items.
-        </div>
-      
-        <paper-button dialog-dismiss category="[[deleteId]]" on-tap="_deleteCategory">DELETE</paper-button>
-        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
-      
-    </paper-dialog>
+      <beer-menu-category-delete
+        org-id="[[orgId]]"
+        category="[[deleteCategory]]">
+      </beer-menu-category-delete>
+    </beer-dialog>
 
      <paper-toast 
         id="toast" 
-        duration="0" 
+        duration="0"
+        horizontal-align="right"
+        horizontal-offset="50"
         vertical-offset="100">
         <div>
           <a class="edit-link" href="/[[editLink]]" on-tap="_closeToast"> 
@@ -288,21 +293,12 @@
       is: 'beer-menu',
       properties: {
 
-        photoUrl: {
-          type: String,
-          computed: '_computePhotoUrl(category, place)'
-        },
-
         category:{
           type: Object
         },
 
-        deleteCategoryName:{
-          type: String
-        },
-
-        deleteId:{
-          type:String
+        deleteCategory:{
+          type: Object
         },
 
         editLink:{
@@ -338,6 +334,11 @@
         }
       },
 
+      ready: function (){
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.deleteDialog);
+      },
+
       observers:['_watchMenuItemId(menuItemId, category.item)'],
 
 
@@ -352,7 +353,7 @@
          var key = database.push().key;
          var that = this;
          var obj = {};
-          obj.order = 99;
+          obj.order = 0;
           obj.id = key;
 
           database.child(key).update(obj)
@@ -367,7 +368,6 @@
       },
       
      _edit: function(){
-        'use strict';
         var body = document.querySelector('body');
         Polymer.dom(body).appendChild(this.$.editDialog);
         this.$.editDialog.open();
@@ -375,28 +375,27 @@
 
       _openDeleteDialog: function (event){
         var target = event.currentTarget;
-        var menu = target.menu;
-        if(menu.name){
-          this.deleteCategoryName = menu.name;
-        }else{
-          this.deleteCategoryName = 'No name assigned';
-        }
-        
+        var category = target.category;
+       
+        this.deleteCategory = category;
+       
         this.$.deleteDialog.open();
-        this.deleteId = menu.$key;
+        
 
       },
 
       _deleteCategory: function (){
 
         console.log('delete', this.deleteId);
+        var that = this;
         if(this.deleteId){
           if(this.orgId){
+            console.log(`/organization/${this.orgId}/menu/${this.deleteId}`)
 
-            firebase.database(this.$.auth.app).ref('organization')
-              .child(this.orgId).child('menu').child(this.deleteId)
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/menu/${this.deleteId}`)
               .remove()
               .then(function (){
+                // that.$.deleteDialog.close();
                 console.log('DELETED_CATEGORY')
               })
               .catch(function(error){
@@ -422,8 +421,51 @@
         return returnArray;
       },
 
+      _toCategoryArray: function (obj) {
+        var returnArray = [];
+        if(obj){
+          var key = Object.keys(obj);
+          
+          for (var i=0; i<key.length; i++){
+            obj[key[i]].category_id = key[i];
+            if(!obj[key[i]].name){
+              obj[key[i]].name = 'New Menu Category'
+            }
+            returnArray.push(obj[key[i]]);
+          }
+        }
+        return returnArray;
+      },
+
+       _toPriceArray: function (obj){
+        const returnArray=[];
+        if(typeof obj ==='object'){
+          for(let key of Object.keys(obj)){
+            let item = obj[key];
+            let units = '';
+            let nanos = '';
+
+            if(item.units){
+              units = item.units.toString();
+            }
+            item.price = item.price
+            if(item.nanos){
+               nanos = item.nanos/10000000;
+              if(nanos < 10){
+                nanos = `.0${nanos}`
+              }else{
+                nanos = `.${nanos}`
+              }
+            }
+            item.price = units+nanos;
+            returnArray.push(item);
+          }
+        } 
+       return returnArray;
+      },
+
       _categoryOrder: function(a,b){  
-        'use strict';
+
         if(!a.order)
         return 0;
         if (a.order < b.order)
@@ -431,6 +473,26 @@
         if (a.order > b.order)
           return 1;
         return 0;
+      },
+
+      _addBreaks: function(str){
+
+        if(str){
+          return str.split('\n');
+        }else{
+          return [];
+        }
+      },
+
+
+      _scrollTag: function (menuItem, menuItemId){
+          if(menuItem === menuItemId){
+            
+          }
+      },
+
+      _closeToast: function (obj){
+        this.$.toast.close();
       },
 
       _addBreaks: function(str){
@@ -442,39 +504,6 @@
         }
       },
 
-      _computePhotoUrl: function (category, place) {
-         try{
-          if(category.image){
-            if(category.image.banner){
-              if(category.image.banner.url){
-                return category.image.banner.url;
-              }
-            }
-          }
-          var photoMeta = {};
-          var photos = place.photos
-          var categoryIndex = 2
-          if(photos.length < categoryIndex){
-            categoryIndex = photos.length
-          }
-          photoMeta.maxWidth = place.photos[categoryIndex].width;
-          photoMeta.maxHeight = place.photos[categoryIndex].height;
-          return place.photos[categoryIndex].getUrl(photoMeta);
-         
-       }catch (error){
-
-       }
-      },
-
-      _scrollTag: function (menuItem, menuItemId){
-          if(menuItem === menuItemId){
-            
-          }
-      },
-
-      _closeToast: function (obj){
-        this.$.toast.close();
-      },
 
       _test: function (obj){
         console.log(obj);

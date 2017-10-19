@@ -104,7 +104,7 @@
 
     geocode: function(location, onComplete) {
 
-         var geocoder = this._geocoder = this._geocoder || new google.maps.Geocoder();
+         var geocoder = this._geocoder || new google.maps.Geocoder();
 
             geocoder.geocode(location, function(results, status) {
 

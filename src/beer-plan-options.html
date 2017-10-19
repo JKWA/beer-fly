@@ -1,0 +1,306 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/moment-element/moment-element.html">
+
+<link rel="import" href="beer-pub-icons.html">
+
+
+
+<dom-module id="beer-plan-options">
+
+  <template strip-whitespace>
+
+      <style include="paper-material-styles">
+
+      :host {
+        display: block;
+        max-width: 640px;
+      }
+
+
+
+      table{          
+        width: 500px;
+        border-collapse:collapse;
+      }
+
+      
+
+      tr:not(:first-child):not(:last-child) {
+        border-bottom: 1px solid var(--app-secondary-color);
+        line-height: 50px;
+      }
+
+      .plan-box{
+        color: white;
+        height: 50px;
+        width: 130px;
+        line-height: 50px;
+        text-align: center;
+        font-size: 1.2em;
+        font-weight: 400;
+        margin: auto;
+        background-color: var(--app-selected-color);      
+      }
+
+      .basic-box{
+        outline:3px solid var(--basic-box-outline);
+        border: 5px solid white;
+        background-clip: padding-box;
+        opacity: var(--basic-opacity);
+      }
+
+      .standard-box{
+        outline:3px solid var(--standard-box-outline);
+        border: 5px solid white;
+        background-clip: padding-box;
+        opacity: var(--standard-opacity);
+      }
+
+      .basic{
+        color: var(--basic-color);
+        opacity: var(--basic-opacity);
+      }
+
+      .standard{
+        color: var(--standard-color);
+        opacity: var(--standard-opacity);
+      }
+
+      .item{
+        text-align: left;
+        color: var(--app-secondary-color); 
+      }
+
+      .selection{
+          text-align: center;
+      }
+
+      .price{
+          height: 50px;
+      }
+
+      
+
+      </style>
+      <div hidden$="[[!datetime]]">
+        <moment-element
+            datetime="[[datetime]]"
+            output-format="MMM DD[,] YYYY">
+        </moment-element>
+      </div>
+    
+      <table>
+          <tr class="box-row">
+              <td></td>
+              <td class="box-row" on-tap="_basic">
+                 
+                  <div class="plan-box basic-box">Basic</div>
+                  
+              </td>
+              <td class="box-row" on-tap="_standard">
+                  <div class="plan-box standard-box">Standard</div>
+              </td>
+          </tr>
+          <tr>
+              <td></td>
+              <td class="selection basic price" on-tap="_basic">Free</td>
+              <th class="selection standard price" on-tap="_standard">$10</th>
+          </tr>
+
+          <template is="dom-repeat" items="[[planItems]]">
+              <tr>
+                <td class="item">[[item.item]]</td>
+
+                <td class="selection basic" on-tap="_basic">
+                    <iron-icon class="yes" icon="beer-icons:[[_icon(item.BASIC)]]"></iron-icon>
+                </td>
+
+                <td class="selection standard" on-tap="_standard">
+                    <iron-icon class="yes" icon="beer-icons:[[_icon(item.STANDARD)]]"></iron-icon>
+                </td>
+              </tr>
+          </template>
+          <tr>
+            <td></td>
+            <td>
+                <!--<div class="selection basic" hidden$="[[!_hideStandardPurchaseButton]]">
+                <paper-button id="basicPurchaseButton" on-tap="_downgrade">Downgrade</paper-button>
+                </div>-->
+            </td>
+            <td>
+                <div class="selection standard" hidden$="[[_hideStandardPurchaseButton]]">
+                <paper-button id="standardPurchaseButton" on-tap="_purchase">PURCHASE</paper-button>
+                </div>
+            </td>
+          </tr>
+      </table>
+      
+   
+  </template>
+    <script>
+
+    Polymer({
+
+      is: 'beer-plan-options',
+      properties: {
+
+        currentPlan:String,
+        datetime: String,
+        organization:Object,
+
+        disablePlan:{
+            type:Boolean,
+            value:false
+        },
+
+        plan: {
+            type: String,
+            value: "BASIC",
+            notify: true,
+        },
+      
+        planItems:{
+            type: Array,
+            value: function (){
+                return [
+                    {item: 'Edit banner images', BASIC:true, STANDARD:true},
+                    {item: 'Edit tap list', BASIC:true, STANDARD:true},
+                    {item: 'Edit beer list', BASIC:true, STANDARD:true},
+                    {item: 'Edit food menu', BASIC:true, STANDARD:true},
+                    {item: 'Edit food trucks', BASIC:true, STANDARD:true},
+                    {item: 'Priority listing', BASIC:false, STANDARD:true}
+                ];
+            }
+        },
+
+        purchase:{
+            type:Boolean,
+            notify:true,
+            value:false
+        },
+
+        _hideStandardPurchaseButton:Boolean
+
+
+      },
+
+
+      observers:[
+          '_watchPlan(plan)',
+          '_watchOrganizationPlan(organization.plan)',
+          '_watchPlanPeriodEnd(organization.plan.current_period_end)'
+      ],
+
+      _purchase: function (){
+        this.purchase = true;
+      },
+
+      _watchOrganizationPlan: function (plan){
+          var orgPlan = 'BASIC';
+          if(plan){
+            if(plan.current_period_end){
+                console.log('current_period_end', plan.current_period_end)
+                console.log('now', Date.now())
+                if(plan.current_period_end >= (Date.now()/1000)){
+                    if(plan.name === 'STANDARD_MONTHLY'){
+                        orgPlan = 'STANDARD'
+                    }
+                }
+            }
+          }
+          if(orgPlan === 'STANDARD'){
+              this.disablePlan = true;
+              this._hideStandardPurchaseButton = true;
+          }else{
+              this._hideStandardPurchaseButton = false;
+          }
+          this.plan = orgPlan;
+          this.currentPlan = orgPlan;
+      },
+
+      _watchPlan: function (plan) {
+          console.log(plan)
+        if(plan === 'STANDARD'){
+
+            var style = {
+                '--basic-color': 'var(--app-secondary-color)',
+                '--standard-color': 'var(--app-selected-color)',
+                '--basic-box-outline': 'white',
+                '--standard-box-outline': 'var(--app-selected-color)',
+                '--basic-opacity': '.6',
+                '--standard-opacity': '1'
+            }
+            this.$.standardPurchaseButton.disabled = false;
+
+           
+          }else{
+
+              var style = {
+                '--basic-color': 'var(--app-selected-color)',
+                '--standard-color': 'var(--app-secondary-color)',
+                '--basic-box-outline': 'var(--app-selected-color)',
+                '--standard-box-outline': 'white',
+                '--basic-opacity': '1',
+                '--standard-opacity': '.6'
+            }
+            this.$.standardPurchaseButton.disabled = true;
+             
+          }
+
+          this.updateStyles(style);
+          
+        
+      },
+
+      _watchPlanPeriodEnd: function (timeEnd){
+          
+        this.datetime = timeEnd*1000
+        
+      },
+
+      _icon(plan){
+          if(plan){
+              return "checked"
+          }else{
+              return "clear"
+          }
+      },
+
+      _submit(){
+          var obj = {};
+          
+      },
+
+      _basic: function (){
+          if(!this.disablePlan){
+          this.plan = 'BASIC';
+          }
+      },
+
+      _standard: function (){
+          this.plan = 'STANDARD';
+      },
+
+    
+
+
+     _test: function(obj){
+          console.log("TEST",obj);
+      }
+
+    });
+
+  </script>
+
+</dom-module>

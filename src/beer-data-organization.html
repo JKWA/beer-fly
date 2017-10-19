@@ -1,0 +1,230 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+
+
+<dom-module id="beer-data-organization">
+
+  <template>
+
+    <firebase-auth id="auth" app-name="beer"></firebase-auth>
+    <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-data-organization',
+
+      properties: {
+
+        allObject:{
+          type:Object,
+          value: function(){return {}},
+          notify:true
+        },
+
+        allArray:{
+          type:Array,
+          notify:true
+        },
+
+        organization: {
+          type: Object,
+          notify:true
+        },
+
+        orgId:{
+          type: String
+        },
+
+        online:{
+          type:Boolean,
+          value:true
+        },
+
+        mapHasLoaded:{
+          type: Boolean,
+          value: false
+        },
+
+        userData:{
+          type:Object
+        }
+
+      },
+
+      listeners: {'api-load':'_mapHasLoaded' },
+      observers:['_getOrganizationData(orgId, mapHasLoaded, online)',
+                 '_updateUserData(userData.favoriteOrganization, orgId)'],
+
+
+      _mapHasLoaded: function () {
+          this.mapHasLoaded = true;
+      },
+
+      _getOrganizationData: function (orgId, mapHasLoaded, online){
+        const defaultOrg = {mainImage:{banner:{}}};
+        const that = this;
+
+        if(orgId){
+          if(orgId !='home'){
+
+            console.log(this.allObject[orgId]);
+            if(!this.allObject[orgId]){
+              const cache = (window.localStorage.getItem(`organization_${orgId}`)) ? JSON.parse(window.localStorage.getItem(`organization_${orgId}`)) : {};
+              this.set('organization', cache);
+              // this.push()
+              // console.log('organization from cache');
+
+            }else{
+              
+              this.set('organization', this.allObject[orgId]);
+              // console.log('no cache')
+            }
+
+            if(mapHasLoaded){
+
+              firebase.database(this.$.auth.app).ref(`/organization/${orgId}`)
+              .on('value', snapshot =>{
+                if(!snapshot.exists()){
+                  this.organization = null;
+                }else{
+                  var organization = snapshot.val();
+
+                  organization.cacheTimestamp = Date.now();
+                  organization.organization = true;
+                  organization.ratingTotal = 0;
+                  organization.ratingYes = 0;
+                  organization.ratingNo = 0;
+                  organization.ratingPercent=null;
+
+                if(snapshot.child('favorite').exists()){
+                  snapshot.child('favorite').forEach(rating =>{
+                    organization.ratingTotal ++
+                    // console.log(rating);
+                    if(rating.child('rating').val() === 'yes'){
+                      organization.ratingYes++
+                    }else if(rating.child('rating').val() === 'no'){
+                      organization.ratingNo++
+                    }
+
+                  })
+                }
+                if(organization.ratingTotal > 0){
+                  organization.ratingPercent = Math.round((organization.ratingYes/organization.ratingTotal)*1000)/10;
+                }
+
+                this.set('organization', Object.assign({}, this.organization, organization));
+
+                
+
+                organization.organization = true;
+
+                
+                let cached = window.localStorage.getItem(`organization_${organization.place_id}`) ? JSON.parse(window.localStorage.getItem(`organization_${organization.place_id}`)) : {};
+                window.localStorage.setItem(`organization_${organization.place_id}`, JSON.stringify(Object.assign({}, cached, this.organization)))
+                // console.log('cached', this.organization);
+
+                }
+              })
+          
+              
+              var places = new google.maps.places.PlacesService(this.$.map);
+              places.getDetails({placeId: orgId}, function (result, status){
+               
+                if(result){
+                  if(result.opening_hours){
+                    if(result.opening_hours.open_now){
+                      result.open = 'open'
+                    }else{
+                      result.open='closed'
+                    }
+                  }
+                  if(result.permanently_closed){
+                    result.open="permanently closed"
+
+                  }
+                  result.organization = true;
+                  result.cacheTimestamp = Date.now();
+                  if(result.geometry){
+                    if(result.geometry.location){
+                      result.latitude = result.geometry.location.lat();
+                      result.longitude = result.geometry.location.lng();
+                    }
+                  }
+
+                  if(result.photos){                
+                    
+                    const categoryTypes = ['MAIN', 'TAP', 'BEER', 'CONTACT', 'FOOD_TRUCK', 'MENU', 'REVIEW', 'SCHEDULE']
+                    
+                    result.googlePhoto = {};
+                  
+                    for (let i=0; i<result.photos.length; i++){
+                      let photo = result.photos[i];
+                      
+                      let categoryItem = categoryTypes[i];
+                      if(categoryItem){
+                        result.googlePhoto[categoryItem] = {url:photo.getUrl({maxWidth: photo.width, maxHeight:photo.height})};
+                      }
+
+                    }
+
+                  }
+                  
+                  result.cacheTimestamp = Date.now();
+                  result.organization = true;
+                  delete result.adr_address;
+                  delete result.address_components;
+                  delete result.geometry;
+                  delete result.icon;
+                  delete result.id;
+                  delete result.photos;
+                  delete result.reference;
+                  delete result.scope;
+                  delete result.types;
+                  delete result.utc_offset;
+
+                  // console.log(Object.assign({}, that.organization, result))
+
+
+                  that.set('organization', Object.assign({}, defaultOrg, that.organization, result));
+                  
+
+                  let cached = window.localStorage.getItem(`organization_${result.place_id}`) ? JSON.parse(window.localStorage.getItem(`organization_${result.place_id}`)) : {};
+                  window.localStorage.setItem(`organization_${result.place_id}`, JSON.stringify(Object.assign({}, cached, result)))
+                  // console.log('cached', result);
+                  
+
+                }
+
+              })
+            }
+            
+          }
+        }  
+      },
+
+      _updateUserData:function (favorite, orgId){
+        if(favorite[orgId]){
+          this.set(`organization.userData`, favorite[orgId]);
+          // console.log('test', this.organization)
+        }else{
+          this.set(`organization.userData`, {});
+
+        }
+      },
+
+      _test: function (obj){
+        console.log('TEST', obj);
+      }
+
+
+    });
+
+  </script>
+
+</dom-module>

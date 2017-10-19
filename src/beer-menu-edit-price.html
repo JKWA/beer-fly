@@ -1,26 +1,25 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-list/iron-list.html">
-<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<!-- TODO update nano so .8 returns 80 rather than 8 -->
 
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
 <link rel="import" href="beer-icons.html">
 
-
 <dom-module id="beer-menu-edit-price">
 
-  <template>
-
-    <style>
-
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       .price-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-justified);
-         @apply(--layout-wrap);
+         @apply --layout-horizontal;
+         @apply --layout-justified;
+         @apply --layout-wrap;
       }
 
       .price{
@@ -28,6 +27,7 @@
         font-weight: 300;
         width:80px;
       }
+
       .price-size{
         font-size: 1em;
         font-weight: 300;
@@ -38,69 +38,54 @@
          font-size: .8em;
          margin: 10px 0 0 0;
          padding: 10px 0 0 0;
-         
       }
 
+  </style>
+
+    <firebase-auth id="auth" app-name="beer"></firebase-auth>
 
 
 
-    </style>
+    
 
-    <firebase-query
-          id="priceItem"
-          app-name="beer"
-          path="organization/[[orgId]]/menu/[[categoryId]]/item/[[menuId]]/price"
-          data="{{priceItems}}">
-    </firebase-query>
+    <div class="price-wrapper">
+      <div>
+        <paper-input 
+          id="priceSize"
+          class="price-size"
+          label="Size (optional)" 
+          value="{{size}}"
+          maxlength=100>
+        </paper-input>
+      </div>
 
-         <template is="dom-repeat" items="{{priceItems}}" as="priceItem">
+      <div>
+        <paper-input 
+          id="price"
+          class="price" 
+          label="Price" 
+          value="{{price}}"
+          maxlength=6 
+          auto-validate 
+          allowed-pattern="[0-9.,]"
+          error-message="Must be a number">
+          <div slot="prefix">[[currencySign]]</div>
+          </paper-input>
+      </div>
+      
+      <div class="clear">
+        <paper-icon-button 
+            id="[[priceItem.id]]"
+            suffix 
+            on-tap="_deletePriceOption" 
+            icon="beer-icons:clear" 
+            alt="clear" 
+            title="clear">
+        </paper-icon-button>
+      </div>
+    </div>
 
-            <div class="price-wrapper">
-              <div>
-                <paper-input 
-                    class="price-size"
-                    label="Size (optional)" 
-                    value="{{priceItem.size}}"
-                    maxlength=100>
-                    
-                </paper-input>
-              </div>
-
-              <div>
-                <paper-input 
-                    class="price" 
-                    label="Price" 
-                    value="{{priceItem.cost}}"
-                    maxlength=6 
-                    auto-validate 
-                    allowed-pattern="[0-9.,]"
-                    error-message="Must be a number">
-                    <div prefix>$</div>
-                  </paper-input>
-              </div>
-              
-              <div class="clear">
-                <paper-icon-button 
-                      id="[[priceItem.id]]"
-                       
-                      suffix 
-                      on-tap="clearPriceOption" 
-                      icon="beer-icons:clear" 
-                      alt="clear" 
-                      title="clear">
-                  </paper-icon-button>
-              </div>
-            </div>
-
-         </template>
-
-         <iron-label  class="add">
-            <paper-icon-button 
-                  icon="beer-icons:add" 
-                  on-tap="_addPriceItem">
-            </paper-icon-button>
-          Add price option
-         </iron-label>
+        
 
 
   </template>
@@ -121,6 +106,22 @@
           type: String
         },
 
+        currencyCode:{
+          type:String,
+          value: 'USD'
+        },
+
+
+        currencySign:{
+          type: String,
+          computed:'_computeCurrencySign(currencyCode)'
+        },
+
+        size:String,
+        editSize:String,
+        price:String,
+        editPrice:String,
+
         menuId:{
           type: String
         },
@@ -129,52 +130,111 @@
           type: String
         },
 
-        priceItems:{
+        priceItem:{
           type: Object
+        },
+
+        priceItemId:{
+          type:String,
+          computed: '_computePriceItemString(priceItem)',
+          observer: 'resetData'
         },
 
         toggle:{
           type: Boolean
         }
-       },
-
-      _addPriceItem: function (){
-
-        var key = this.$.priceItem.ref.push().key;
-        // console.log(key)
-        var obj = {};
-        obj.id = key;
-
-        this.$.priceItem.ref.child(key).update(obj)
-          .then(function(){
-            console.log('NEW_PRICE_ADDED');
-            }
-          ).catch(function(error){
-            console.log('NEW_PRICE_ADDED_ERROR', error)
-          })
-          
-
-
-        // var category = this.category;
-        // console.log(category);
-        // var obj = {};
-
-        // if(category.category) {obj.category = category.category};
-        // if(category.title) {obj.categoryTitle = category.title};
-        // if(category.name) {obj.categoryName = category.name};
-        // if(category.order) {obj.categoryOrder = category.order};
-      
-        //   obj.type = 'menu-item';
-        //   this.$.menu.ref.push(obj);
       },
 
-      // _deletepriceItem:function (e){
-      //   var target = e.currentTarget;
-      //   var key = target.priceItemKey;
-      //    this.$.menu.ref.child(key).remove();
-      // },
+   
 
-      _sortOrder: function(a,b){  
+      ready: function (){
+
+        this.$.priceSize.addEventListener('blur', event =>{
+
+          if(this.size !== this.editSize){
+            
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/menu/${this.categoryId}/item/${this.menuId}/price/${this.priceItem.id}`)
+              .update({editSize: (this.size) ? this.size : null})
+              .then(()=>{
+                this.editSize = this.size;
+                console.log('size save');
+              })
+              .catch(error =>{
+                console.log('ERROR', error);
+              })
+          }
+        })
+
+        
+        this.$.price.addEventListener('blur', event =>{
+
+          if(this.price !== this.editPrice){
+            const price = (this.price) ? this.price.toString() : null;
+            console.log(price);
+            let units = null;
+            let nanos = null;
+            if(price){
+              if(price.indexOf('.') > -1){
+                let split = price.split('.')
+                units = parseInt(split[0]);
+                nanos = parseInt(split[1])*10000000;
+              }else if(price.indexOf(',') > -1){
+                let split = price.split(',')
+                units = parseInt(split[0]);
+                nanos = parseInt(split[1])*10000000;
+              }else{
+                units = parseInt(price);
+              }
+            }
+            console.log({units:units, nanos:nanos, currencyCode: this.currencyCode})
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/menu/${this.categoryId}/item/${this.menuId}/price/${this.priceItem.id}`)
+              .update({units:units, nanos:nanos, currencyCode: this.currencyCode})
+              .then(()=>{
+                this.editPrice = this.price;
+                console.log('cost save');
+              })
+              .catch(error =>{
+                console.log('ERROR', error);
+              })
+            }
+        })
+      },
+
+      _computePriceItemString: function (priceItem){
+        if(priceItem){
+          return priceItem.id
+        }
+      },
+
+      _computeCurrencySign: function (currencyCode){
+        switch (currencyCode){
+          case 'USD':
+            return '$';
+          case 'GBP':
+            return '£';
+            break;
+          case 'EUR':
+            return '€';
+            break;
+          default:
+            return '';
+        }
+        
+      },
+
+      resetData: function (newId, oldId){
+        console.log(newId, oldId)
+        if(newId != oldId){
+          this.price = this.priceItem.price;
+          this.editPrice = this.price;
+          this.size = this.priceItem.size;
+          this.editSize = this.size;
+        }
+
+      },
+
+
+    _sortOrder: function(a,b){  
       'use strict';
       if (a.order < b.order)
         return -1;
@@ -183,24 +243,31 @@
       return 0;
     },
 
-    clearPriceOption: function (e){
-        var id = e.currentTarget.id;
-       console.log(id);
-        var obj = {};
-        obj.test = 'test';
+    _deletePriceOption: function (){
+      // console.log(`/organization/${this.orgId}/menu/${this.categoryId}/item/${this.menuId}/price/${this.priceItem.id}`)
+      firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/menu/${this.categoryId}/item/${this.menuId}/price/${this.priceItem.id}`)
+        .remove()
+        .then(function(){
+          console.log('PRICE_REMOVED');
+          }
+        ).catch(function(error){
+          console.log('PRICE_REMOVED_ERROR', error)
+        })
 
-        var path = this.$.priceItem.ref.child(id).path;
-        console.log(path);
+      },
 
-        this.$.priceItem.ref.child(id).remove()
-          .then(function(){
-            console.log('PRICE_REMOVED');
-            }
-          ).catch(function(error){
-            console.log('PRICE_REMOVED_ERROR', error)
-          })
-
-    },
+      _toArray: function (obj){
+        var returnArray=[];
+        if(obj){
+          var key = Object.keys(obj);
+          for (var i=0; i<key.length; i++){
+          
+            returnArray.push(obj[key[i]]);
+            
+          }
+          return returnArray;
+        }
+      },
 
       _test: function (obj) {
         console.log('ITEMS', obj);

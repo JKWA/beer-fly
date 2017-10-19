@@ -6,16 +6,27 @@
       ".indexOn": ["brewId","domain","locationId","beerLastUpdated", "latitude"],
 
       "$orgId":{
-				".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+        "BREWERY": {
+             ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+						 ".validate": "newData.isBoolean()"
+          },
+        "PUB": {
+             ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+						 ".validate": "newData.isBoolean()"
+          },
+        "TRUCK": {
+             ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+						 ".validate": "newData.isBoolean()"
+          },
+
         "beerLastUpdated":{
-          ".write": "auth.email_verified == true", 
           ".validate": "newData.isNumber()"      
         },
         "brewBeer": {
- 					".write": "auth.email_verified == true", 
           "$orgBeerId": {
             "abv": {
-              ".validate": "newData.isNumber()"
+              ".validate": "newData.isNumber()",
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
             },
             "category": {
               ".validate": "newData.isString() "
@@ -27,19 +38,27 @@
               ".validate": "newData.isString()"
             },
             "description": {
-              ".validate": "newData.isString() && newData.val().length >= 1 && !newData.val().matches(/shit/i) && !newData.val().matches(/fuck/i)"
+              ".validate": "newData.isString() && newData.val().length >= 1",
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
             },
+
             "id": {
               ".validate": "newData.isString()"
             },
             "name": {
-              ".validate": "newData.isString() && newData.val().length >= 1 && !newData.val().matches(/shit/i) && !newData.val().matches(/fuck/i)"
+              ".validate": "newData.isString() && newData.val().length >= 1",
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
             },
             "order": {
               ".validate": "newData.isNumber()"
             },
+            "status": {
+              ".validate": "newData.isString()",
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
+            },
             "styleId": {
-              ".validate": "newData.isNumber()"
+              ".validate": "newData.isNumber()",
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
             },
             "styleName": {
               ".validate": "newData.isString()"
@@ -47,6 +66,7 @@
           }
         },
           "category":{
+            ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
             "REVIEW":{
               "display": {
                 ".validate": "newData.val() === true"
@@ -59,24 +79,120 @@
             }
           },
           "crowdSource": {
+             ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
 						 ".validate": "newData.isBoolean()"
           },
+          
+          "currencyCode": {
+            	".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+              ".validate": "newData.isString()"
+          },
+            
+          "description": {
+            	".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+              ".validate": "newData.isString()"
+          },
           "dogFriendly": {
-               ".validate": "newData.isBoolean()"
+            	".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+              ".validate": "newData.isBoolean()"
+          },
+          "foodTruck":{
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
           },
           "mainImage": {
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
+          },
+          "menu": {
+            "$categoryId":{
+              ".write": "!newData.exists() && (auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val()))",
+
+              "id":{
+                ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+              	".validate": "newData.isString()"
+              },
+              "editDescription":{
+                ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+              	".validate": "newData.isString()"
+              },
+
+              "editName": {
+                ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+              	".validate": "newData.isString()"
+              },
+              "order":{
+                ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+                ".validate": "newData.isNumber()"
+              },
+              "item":{
+    
+              	"$itemId":{
+                    ".write": "!newData.exists() && (auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val()))",
+
+                  "id":{
+                    ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+                    ".validate": "newData.isString()"
+                  },
+                  "editDescription":{
+                    ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+                    ".validate": "newData.isString()"
+                  },
+
+                  "editName": {
+                    ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+                    ".validate": "newData.isString()"
+                  },
+                  "sort":{
+                    ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+                    ".validate": "newData.isNumber()"
+                  },
+                  "price":{
+                    "$priceId":{
+                      ".write": "!newData.exists() && (auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val()))",
+                      "id":{
+                        ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+                        ".validate": "newData.isString()"
+                      },
+                    	"editSize": {
+                     		".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+                        ".validate": "newData.isString()"
+                     	},
+                      "currencyCode": {
+                        ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+                        ".validate": "newData.isString()"
+                      },
+                      "units": {
+                        ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+                        ".validate": "newData.isNumber()"
+                      },
+                      "nanos": {
+												".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+                        ".validate": "newData.isNumber()"
+                      }
+                      
+                    }
+                  }
+                }
+              }
+            }
           },
           "motto": {
-               ".validate": "newData.isString()"
+            	".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+              ".validate": "newData.isString()"
           },
           "onTap": {
+            	".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
           },
           "over21": {
-               ".validate": "newData.isBoolean()"
+            	".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
+              ".validate": "newData.isBoolean()"
           },
           "patio": {
+             ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())",
              ".validate": "newData.isBoolean()"
-          }    
+          },
+          "schedule":{
+              ".write": "auth.email_verified == true && root.child('user').child(auth.uid).child('ADMIN').val() == true || root.child('organization').child($orgId).child('domain').val().contains(root.child('user').child(auth.uid).child('domain').val())"
+          }
         }
       },
     "breweryDB": {
@@ -85,7 +201,28 @@
     },
     "category": {
       ".read": "true"
+      
       },
+    "crawl":{
+      ".read": "true",
+      "$crawlid":{
+        "created":{".validate": "newData.isNumber()"},
+        "deleted":{".validate": "newData.isBoolean()"},
+        "editDescription":{".validate": "newData.isString()"},
+        "editName":{".validate": "newData.isString()"},
+        "organization":{
+          "place_id":{".validate": "newData.isString()"},
+          ".indexOn": "created"
+        },
+          
+        "public":{".validate": "newData.isBoolean()"},
+        "user_id":{".validate": "newData.isString()"},
+        "$other": { ".validate": false },
+        ".write": "newData.child('user_id').val() == auth.uid",
+        ".indexOn": "created"
+      },
+      ".indexOn": "user_id"
+    },
     "beerStyle": {
       ".read": "true"
       },
@@ -101,7 +238,11 @@
       ".read": "true"
     },
     "newOrg":{
-      ".write": "auth.email_verified == true"
+      "$orgId":{
+        "domain":{
+      		".write": "auth != null"
+        }
+      }
     },
 
     "rating": {
@@ -120,6 +261,22 @@
       	}          
       }
     },
+
+    "favoriteCrawl": {
+      ".read": "true",
+        "$crawlId":{
+          "$uid":{
+            ".write": "$uid==auth.uid",
+            "favorite":{".validate": "newData.isBoolean()"},
+            "$other": { ".validate": false }
+      	}          
+      }
+    },
+      
+    "GeoCrawl": {
+      ".read": "true",
+      ".indexOn": "g"  
+    },
     "GeoTap": {
       ".read": "true",
         "$beerId":{
@@ -133,9 +290,72 @@
     "user": {
         "$uid":{
           ".read": "$uid==auth.uid",
+          ".indexOn": "location",
+          "displayName" :{
+              ".write": "$uid==auth.uid"
+          },
+          "email":{
+            ".read": "true"
+          },
           "favorite":{
      		  	".write": "$uid==auth.uid"
           },
+          "favoriteCrawl":{
+            "$crawlId":{
+              ".write": "$uid==auth.uid",
+             	"favorite":{".validate": "newData.isBoolean()"},
+             	"$other": { ".validate": false }
+          	}
+          },
+          "favoriteBeer":{
+            "$beerId":{
+              ".write": "$uid==auth.uid",
+              "created":{".validate": "newData.isNumber()"},
+              "favorite":{".validate": "newData.isBoolean()"},
+              "beer_id":{".validate": "newData.isString()"},
+              "rating":{".validate": "newData.isString()"},
+              "$other": { ".validate": false }
+            }
+          },
+          "favoriteOrganization":{
+            "$placeId":{
+              ".write": "$uid==auth.uid",
+              "created":{".validate": "newData.isNumber()"},
+              "favorite":{".validate": "newData.isBoolean()"},
+              "latitude":{".validate": "newData.isNumber()"},
+              "longitude":{".validate": "newData.isNumber()"},
+              "name":{".validate": "newData.isString()"},
+              "place_id":{".validate": "newData.isString()"},
+              "rating":{".validate": "newData.isString()"},
+              "vicinity":{".validate": "newData.isString()"},
+              "$other": { ".validate": false }
+            }
+          },
+          "stripe":{
+            "organization":{
+              "$stripOrgId":{
+                "charges":{
+                  "$chargeId":{
+                    ".write": "$uid==auth.uid",
+                     "plan": { ".validate": "newData.val() === 'STANDARD_MONTHLY'" },
+                     "token": { ".validate": "newData.isString()" },
+                     "delete":{".validate": "newData.isBoolean()"},
+                     "$other": { ".validate": false }
+                  }
+                }
+              }
+            }
+          },
+          "crawl":{
+            ".write": "$uid==auth.uid",
+            ".read": "true"
+          },
+            
+          "location":{
+            ".write": "$uid==auth.uid",
+            ".read": "$uid==auth.uid"
+          },
+            
           "rating":{
      		  	".write": "$uid==auth.uid"
           }

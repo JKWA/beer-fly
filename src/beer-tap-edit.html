@@ -2,14 +2,13 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../my_components/data/upload-image.html">
@@ -22,9 +21,15 @@
 
 <dom-module id="beer-tap-edit">
 
-  <template>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
-    <style>
+      :host {
+        display: block;
+        max-width: 640px;
+      }
+      
       .add{
         color: green;
       }
@@ -47,9 +52,9 @@
 
       
       .menu-category{
-         @apply(--layout-vertical);
-         @apply(--layout-start-justified);
-         /*@apply(--layout-wrap);*/
+         @apply --layout-vertical;
+         @apply --layout-start-justified;
+         /*@apply --layout-wrap;*/
          padding: 5px;
          margin: 5px 5px 15px 5px;
       }
@@ -96,7 +101,7 @@
       </template>
 
        <paper-input label="Motto" value="{{category.motto}}"maxlength=100 char-counter></paper-input>
-      <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
+      <paper-textarea always-float-label label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
   
   </template>
   <script>

@@ -4,20 +4,15 @@
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
-
-
 <link rel="import" href="../bower_components/google-apis/google-maps-api.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-
-
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
 
 <link rel="import" href="beer-icons.html">
 
@@ -26,9 +21,15 @@
 
 <dom-module id="beer-search">
 
-  <template>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
-    <style>
+      :host {
+        display: block;
+        max-width: 640px;
+        
+      }
 
      a{
       color: var(--app-primary-color);
@@ -38,6 +39,8 @@
     .card{
       padding: 10px;
       margin: 10px;
+      @apply --paper-material-elevation-1;
+      background-color: white;
     }
 
    
@@ -65,12 +68,22 @@
         color:red;
       }
 
+      .flip{
+      -webkit-transform: scale(1, -1);
+      transform: scale(1, -1);
+      }
+
       .pub-wrapper{
-         @apply(--layout-vertical); 
+         @apply --layout-vertical; 
+         @apply --paper-material-elevation-1;
+         margin: 10px 0;
+         padding: 10px;
       }
 
       .pub-wrapper > div{
-        padding: 7px 0 0 0
+        padding: 7px 0 0 0;
+        
+        
       }
 
       .pub-name {
@@ -94,26 +107,23 @@
 
     <google-maps-api id="map" api-key="AIzaSyBPa6XlVFjF48fEyNT3qtnkFTZ0_dGMAzI" version="3.exp"></google-maps-api>
 
+    
+
     <beer-location
-      location={{location}} 
-      search-string="{{searchString}}" 
-      sorted-location-history="[[sortedLocationHistory]]">
+      location={{location}}>
     </beer-location>
 
-    <paper-material class="card" elevation="0">
-    
+    <div class="card">
+
       <paper-input label="Search for [[searchMessage]]" value="{{queryString}}">
-        <iron-icon icon="beer-icons:search" prefix></iron-icon>
-          <paper-icon-button class="clear" suffix on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
+        <iron-icon icon="beer-icons:search" slot="prefix"></iron-icon>
+        <paper-icon-button class="clear" slot="suffix" on-tap="clearInput" icon="beer-icons:clear" alt="clear" title="clear">
       </paper-input>
 
       <iron-label class="tap-status-wrapper">
-            <toggle-icon
-                  animation="flip-vertical" 
-                  icon="beer-icons:expand-more"
-                  checked="{{toggleSearchType}}"
-                  noink>
-            </toggle-icon>
+          
+           <paper-icon-button class$="[[toggleClass]]" noink icon="beer-icons:expand-more" on-tap="_toggle"></paper-icon-button>
+
             <span class="tap-status-shown">[[searchMessage]]</span>
         </iron-label>
 
@@ -134,7 +144,7 @@
           </paper-listbox>
       </iron-collapse>
             
-    </paper-material>
+   
 
 
        <template id="repeater" is="dom-repeat" 
@@ -143,13 +153,14 @@
           observe="sort distance">
           <a aria-label$="[[pub.name]]" href$="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
          
-            <paper-material class="pub-wrapper card" elevation="1">
+            <div class="pub-wrapper" elevation="1">
               <div class="pub-name">[[pub.name]]</div>
               <div class="pub-vicinity">[[pub.vicinity]]</div>
               <div class="pub-distance">[[_computeDisplayDistance(pub.distance)]] miles from you.</div>
-            </paper-material>
+            </div>
           </a>
       </template>
+     </div>
 
     
  
@@ -200,6 +211,11 @@
        toggle:{
          type: Boolean
        },
+
+       toggleClass:{
+          type: String
+        },
+
        toggleSearchType:{
          type: Boolean
        }
@@ -222,8 +238,8 @@
           request.query = queryString+' '+searchMessage;
           // request.location = this.location.location.latitude.toString()+','+this.location.location.longitude.toString();
           request.location = {};
-          request.location.lat = this.location.location.latitude;
-          request.location.lng = this.location.location.longitude;
+          request.location.lat = this.location.latitude;
+          request.location.lng = this.location.longitude;
           request.radius = 50000;
           // console.log('request', request);
           
@@ -241,7 +257,7 @@
                   result[i].vicinity = result[i].formatted_address;
                 }
                 var resultLocation = result[i].geometry.location;
-                  result[i].distance = that._distance (that.location.location.latitude, that.location.location.longitude, resultLocation.lat(), resultLocation.lng())
+                  result[i].distance = that._distance (that.location.latitude, that.location.longitude, resultLocation.lat(), resultLocation.lng())
                 console.log(result[i]);
                 if(!that.allPub[result[i].place_id]){
                   that.push('data', result[i]);
@@ -308,7 +324,7 @@
           case 'BREWERY':
             searchMessage = 'Brewery'
             break;
-          case 'Beer':
+          case 'BEER':
             searchMessage = 'Beer'
             break;
           case 'CIDERY':
@@ -322,6 +338,15 @@
             break;
         }
         return searchMessage;
+      },
+
+      _toggle: function (){
+        this.toggleSearchType = !this.toggleSearchType
+        if(this.toggleSearchType){
+          this.toggleClass = 'flip'
+        }else{
+          this.toggleClass = '';
+        }
       },
 
 

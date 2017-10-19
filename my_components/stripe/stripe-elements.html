@@ -1,0 +1,262 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+
+<dom-module id="stripe-elements">
+  <template>
+    <style>
+      :host {
+        @apply --layout;
+      }
+
+      .StripeElement {
+        background-color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        border: 1px solid transparent;
+        box-shadow: 0 1px 3px 0 #e6ebf1;
+        -webkit-transition: box-shadow 150ms ease;
+        transition: box-shadow 150ms ease;
+        width: 100%;
+        @apply --stripe-elements-element;
+      }
+
+      .StripeElement--focus {
+        box-shadow: 0 1px 3px 0 #cfd7df;
+        @apply --stripe-elements-element-focus;
+      }
+
+      .StripeElement--invalid {
+        border-color: #fa755a;
+        @apply --stripe-elements-element-invalid;
+      }
+
+      .StripeElement--webkit-autofill {
+        background-color: #fefde5 !important;
+        @apply --stripe-elements-element-webkit-autofill;
+      }
+
+      paper-toast {
+        margin: 0;
+      }
+
+      form {
+        @apply --layout;
+        @apply --layout-wrap;
+        @apply --layout-flex;
+      }
+    </style>
+
+    <!--<script src="https://js.stripe.com/v3/"></script>-->
+
+    <form action="/charge" method="post" id="paymentForm">
+      <div class="form-row">
+        <label for="card-element">
+          Credit or debit card
+        </label>
+        <div id="cardElement">
+          <!-- a Stripe Element will be inserted here. -->
+        </div>
+
+        <!-- Used to display form errors -->
+        <div id="card-errors" role="alert"></div>
+      </div>
+      <div>
+      <button>Submit Payment</button>
+      <div>
+    </form>
+
+  </template>
+  <script>
+    Polymer({
+      is: 'stripe-elements',
+      properties: {
+        /**
+         * Stripe Publishable Key. EG. pk_test_XXXXXXXXXXXXXXXXXXXXXXXX
+         */
+        publishableKey: {
+          type: String,
+          value:'pk_test_zmATksgUmcB5NyGKp6cyjNOM'
+        },
+
+        /**
+         * Whether or not to hide the postal code field.
+         * Useful when you gather shipping info elsewhere.
+         */
+        hidePostalCode: {
+          type: Boolean,
+          value: false,
+        },
+
+        /**
+         * Whether to hide icons in the Stripe form.
+         */
+        hideIcon: {
+          type: Boolean,
+          value: false,
+        },
+
+        /**
+         * Stripe icon style. 'solid' or 'default'.
+         */
+        iconStyle: {
+          type: Object,
+          value: 'default',
+        },
+
+        /**
+         * Prefilled values for form. Example {postalCode: '90210'}
+         */
+        value: {
+          type: Object,
+          value: {},
+        },
+
+        /**
+         * Error message from Stripe.
+         */
+        error: {
+          type: String,
+          notify: true,
+          readOnly: true,
+        },
+
+        /**
+         * Stripe token
+         */
+        token: {
+          type: Object,
+          notify: true,
+          readOnly: true,
+        },
+
+        /**
+         * Whether the submit button is disabled
+         */
+        disabled: {
+          type: Boolean,
+          notify: true,
+          value: false,
+        },
+
+        /**
+         * The URL to the form action. Example '/charges'.
+         * If blank or undefined will not submit charges immediately.
+         * @type {Object}
+         */
+        action: {
+          type: String,
+        },
+
+        _stripe: Object,
+        _elements: Object,
+        _card: Object,
+
+        _allowedStyles: {
+          type: Array,
+          readOnly: true,
+          value: [
+            'color',
+            'fontFamily',
+            'fontSize',
+            'fontStyle',
+            'fontSmoothing',
+            'fontVariant',
+            'iconColor',
+            'lineHeight',
+            'letterSpacing',
+            'textDecoration',
+            'textShadow',
+            'textTransform',
+          ],
+        },
+
+      },
+
+      listeners: {
+        'change': '_handleChange',
+      },
+
+      /**
+       * LIFECYCLE CALLBACKS
+       */
+
+      ready: function() {
+        // Create a Stripe client
+        var stripe = Stripe('pk_test_zmATksgUmcB5NyGKp6cyjNOM');
+
+        // Create an instance of Elements
+        var elements = stripe.elements();
+
+        // Custom styling can be passed to options when creating an Element.
+        // (Note that this demo uses a wider set of styles than the guide below.)
+        var style = {
+          base: {
+            color: '#32325d',
+            lineHeight: '24px',
+            fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+            fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            '::placeholder': {
+              color: '#aab7c4'
+            }
+          },
+          invalid: {
+            color: '#fa755a',
+            iconColor: '#fa755a'
+          }
+        };
+
+        // Create an instance of the card Element
+        var card = elements.create('card', {style: style});
+        // console.log('card', card);
+
+        // Add an instance of the card Element into the `card-element` <div>
+        card.mount(this.$.cardElement);
+
+        // Handle real-time validation errors from the card Element.
+        // card.addEventListener('change', function(event) {
+        //   var displayError = document.getElementById('card-errors');
+        //   if (event.error) {
+        //     displayError.textContent = event.error.message;
+        //   } else {
+        //     displayError.textContent = '';
+        //   }
+        // });
+
+        // Handle form submission
+        var form = this.$.paymentForm;
+        form.addEventListener('submit', function(event) {
+          event.preventDefault();
+          console.log('card', card);
+          // stripe.createToken(card)
+          //   .then(function(result) {
+          //   // console.log(result)
+          //   // if (result.error) {
+          //   //   // Inform the user if there was an error
+          //   //   console.log(error);
+          //   //   // var errorElement = document.getElementById('card-errors');
+          //   //   // errorElement.textContent = result.error.message;
+          //   // } else {
+          //   //   // Send the token to your server
+          //   //   console.log(result)
+          //   //   // console.log(result.token)
+          //   //   // this.stripeTokenHandler(result.token);
+          //   // }
+          // });
+        });
+      },
+
+      stripeTokenHandler: function (token){
+        console.log(token)
+      }
+
+     
+
+    });
+ 
+  </script>
+</dom-module>

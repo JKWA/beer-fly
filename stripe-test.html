@@ -1,0 +1,161 @@
+
+
+
+<html class="mdl-js"><head>
+    <meta charset="utf-8">
+    <title>Firestripe!!!!111oneoneone</title>
+    <script src="https://apis.google.com/_/scs/apps-static/_/js/k=oz.gapi.en.1V5wxOvLBv8.O/m=gapi_iframes/rt=j/sv=1/d=1/ed=1/am=AQ/rs=AGLTcCMr7U2u-7yixNK9ADCsYrFnCGRJpQ/cb=gapi.loaded_0" async=""></script><script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js"></script>
+    <script src="https://cdn.firebase.com/libs/firebaseui/1.0.0/firebaseui.js"></script>
+    <script src="https://js.stripe.com/v2/"></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+
+
+    <link rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/1.0.0/firebaseui.css">
+  
+  
+  
+  <script type="text/javascript" charset="UTF-8" src="https://apis.google.com/js/api.js?onload=__iframefcb223661" gapi_processed="true"></script></head>
+  
+  
+  <body>
+    <div class="container">
+      <div id="app"><div id="firebaseui-auth-container"></div> <div id="loader" style="display: none;">…</div> <div><h2>Hello joe@beer-fly.com,</h2> <button>Sign out</button> <!----> <div><h3>Credit Cards</h3> <ul></ul> <div><h4>New</h4> <div><label>
+                  Number <input></label></div> <div><label>
+                  CCV <input></label></div> <div><label>
+                  Exp
+                  <input size="2"> /
+                  <input size="4"></label></div> <div><label>
+                  Zip <input></label></div> <div><button>Add</button>
+                
+              </div></div> <h3>Charges</h3> <ul></ul> <h4>New</h4> <div><label>
+                Card
+                <select></select></label></div> <div><label>
+                Amount <input></label></div> <div><button>Charge</button>
+              
+            </div></div></div></div>
+    </div>
+    <script>
+      firebase.initializeApp({
+        apiKey: "AIzaSyB-sdKJrAjUZQIq3m76dr-HILIqw5ClFKs",
+        authDomain: "payforallthethings.firebaseapp.com",
+        databaseURL: "https://payforallthethings.firebaseio.com",
+        storageBucket: "payforallthethings.appspot.com",
+        messagingSenderId: "189248044550"
+      });
+      Stripe.setPublishableKey('pk_test_T9S6rbPBww9EfEeCH9MgiMcH');
+      var firebaseUI = new firebaseui.auth.AuthUI(firebase.auth());
+      var firebaseAuthOptions = {
+        callbacks: {
+          signInSuccess: (currentUser, credential, redirectUrl) => { return false; },
+          uiShown: () => { document.getElementById('loader').style.display = 'none'; }
+        },
+        signInFlow: 'popup',
+        signInSuccessUrl: '/',
+        signInOptions: [ firebase.auth.GoogleAuthProvider.PROVIDER_ID ],
+        tosUrl: '/'
+      };
+
+      firebase.auth().onAuthStateChanged(firebaseUser => {
+        if (firebaseUser) {
+          document.getElementById('loader').style.display = 'none';
+          app.currentUser = firebaseUser;
+          app.listen();
+        } else {
+          firebaseUI.start('#firebaseui-auth-container', firebaseAuthOptions);
+          app.currentUser = null;
+        }
+      });
+
+      
+      var app = new Vue({
+        el: '#app',
+        data: {
+          stripeBalance: null,
+          currentUser: null,
+          creditCards: {},
+          stripeCustomerInitialized: false,
+          newCreditCard: {
+            number: '4242424242424242',
+            cvc: '111',
+            exp_month: 1,
+            exp_year: 2020,
+            address_zip: '00000'
+          },
+          charges: {},
+          newCharge: {
+            amount: 2000
+          }
+        },
+        ready: () => {
+        },
+        methods: {
+          listen: function() {
+            firebase.database().ref(`/users/${this.currentUser.uid}/admin`).on('value', snapshot => {
+              if (snapshot.val() === null) {
+                this.stripeBalance = null;
+              } else {
+                firebase.database().ref(`/stripe/balance`).on('value', snapshot => {
+                  this.stripeBalance = snapshot.val();
+                }, () => {
+                  this.stripeBalance = null;
+                });
+              }
+            }, () => {
+              this.stripeBalance = null;
+            });
+            firebase.database().ref(`/users/${this.currentUser.uid}/stripe_id`).on('value', snapshot => {
+              this.stripeCustomerInitialized = (snapshot.val() !== null);
+            }, () => {
+              this.stripeCustomerInitialized = false;
+            });
+            firebase.database().ref(`/users/${this.currentUser.uid}/credit_cards`).on('value', snapshot => {
+              this.creditCards = snapshot.val();
+            }, () => {
+              this.creditCards = {};
+            });
+            firebase.database().ref(`/users/${this.currentUser.uid}/charges`).on('value', snapshot => {
+              this.charges = snapshot.val();
+            }, () => {
+              this.charges = {};
+            });
+            // HACK until auth is supported in functions
+            firebase.database().ref(`/users/${this.currentUser.uid}/email`).set(this.currentUser.email);
+          },
+          submitNewCreditCard: function() {
+            Stripe.card.createToken({
+              number: this.newCreditCard.number,
+              cvc: this.newCreditCard.cvc,
+              exp_month: this.newCreditCard.exp_month,
+              exp_year: this.newCreditCard.exp_year,
+              address_zip: this.newCreditCard.address_zip
+            }, (status, response) => {
+              if (response.error) {
+                this.newCreditCard.error = response.error.message;
+              } else {
+                firebase.database().ref(`/users/${this.currentUser.uid}/credit_cards`).push({token: response.id}).then(() => {
+                  this.newCreditCard = {
+                    number: '',
+                    cvc: '',
+                    exp_month: 1,
+                    exp_year: 2017,
+                    address_zip: ''
+                  };
+                });
+              }
+            });
+          },
+          submitNewCharge: function() {
+            firebase.database().ref(`/users/${this.currentUser.uid}/charges`).push({
+              source: this.newCharge.source,
+              amount: this.newCharge.amount
+            });
+          },
+          signOut: function() {
+            firebase.auth().signOut()
+          }
+        }
+      });
+    </script>
+  
+
+<iframe name="stripeXDM_default900292_provider" id="stripeXDM_default900292_provider" aria-hidden="true" src="https://js.stripe.com/v2/channel.html?stripe_xdm_e=https%3A%2F%2Fpayforallthethings.firebaseapp.com&amp;stripe_xdm_c=default900292&amp;stripe_xdm_p=1#__stripe_transport__" frameborder="0" style="position: absolute; top: -2000px; left: 0px;"></iframe><iframe src="https://js.stripe.com/v2/m/outer.html#referrer=https%3A%2F%2Ffirebase.google.com%2Fdocs%2Fuse-cases%2Fpayments&amp;title=Firestripe!!!!111oneoneone&amp;url=https%3A%2F%2Fpayforallthethings.firebaseapp.com%2F&amp;muid=b813a837-c19a-406f-959e-d0d651a941d4&amp;sid=52bfe6e3-ce94-418b-97d2-4db7d1545dc3&amp;preview=false&amp;" frameborder="0" allowtransparency="true" scrolling="no" tabindex="-1" aria-hidden="true" style="width: 1px !important; height: 1px !important; position: fixed !important; visibility: hidden !important; pointer-events: none !important;"></iframe><iframe ng-non-bindable="" frameborder="0" hspace="0" marginheight="0" marginwidth="0" scrolling="no" tabindex="0" vspace="0" width="100%" id="I0_1498175280769" name="I0_1498175280769" src="https://payforallthethings.firebaseapp.com/__/auth/iframe?apiKey=AIzaSyB-sdKJrAjUZQIq3m76dr-HILIqw5ClFKs&amp;appName=%5BDEFAULT%5D-firebaseui-temp&amp;v=3.6.4&amp;usegapi=1&amp;jsh=m%3B%2F_%2Fscs%2Fapps-static%2F_%2Fjs%2Fk%3Doz.gapi.en.1V5wxOvLBv8.O%2Fm%3D__features__%2Fam%3DAQ%2Frt%3Dj%2Fd%3D1%2Frs%3DAGLTcCMr7U2u-7yixNK9ADCsYrFnCGRJpQ#id=I0_1498175280769&amp;parent=https%3A%2F%2Fpayforallthethings.firebaseapp.com&amp;pfname=&amp;rpctoken=22507516" style="position: absolute; top: -100px; width: 1px; height: 1px;"></iframe></body></html>

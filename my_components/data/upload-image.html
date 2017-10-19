@@ -7,11 +7,8 @@
 <link rel="import" href="../../bower_components/polymerfire/firebase-auth.html">
 
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
-
-<!--<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">-->
 <link rel="import" href="../../bower_components/iron-label/iron-label.html">
 <link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
-<link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 
 <link rel="import" href="../../src/beer-button.html">
@@ -37,7 +34,7 @@
     }
     .message-box{
       margin: 0 10px 10px 10px ;
-       @apply(--layout-horizontal);
+       @apply --layout-horizontal;
     }
     .message-icon{
       margin: 0 5px 0 5px;
@@ -81,7 +78,7 @@
   
   
   <div>
-  <paper-card elevation="0" animated-shadow="false">
+  <div animated-shadow="false">
 
      <paper-progress 
           class="uploader-progress"
@@ -117,7 +114,7 @@
  
      
 
-  </paper-card>
+  </div>
   </div>
   
 </template>
@@ -136,8 +133,9 @@
 
     fileName: {
       type: String,
-      value: ''
+      value: 'default_file_name'
     },
+
     fileProgress:{
       type: Number
     },
@@ -161,10 +159,12 @@
     uploadProgress:{
       type: Number,
     },
+
     fileComplete: {
       type:Boolean,
       value: true,
     },
+
     fileError: {
       type: Boolean,
       value: false
@@ -203,7 +203,7 @@
       obj.url = url;
       obj.timestamp = Date.now();
 
-        this.$.image.ref.child(this.type).update(obj);
+        // this.$.image.ref.child(this.type).update(obj);
 
    }
 
@@ -229,6 +229,7 @@
     this.updateStyles();
     // console.log(this.uploader);
     // console.log(uploadValue);
+    // this.fileName = 'test_file_name.jpeg'
     this.fileName = this.$.uploader.files[0].name;
 
     this.initiateUpload();
@@ -264,7 +265,7 @@
     'use strict';
   
     var app = this.$.image.app;
-    var storageRef = app.storage().ref('organization/'+this.orgId+'/'+this.key+'/'+this.type+'/'+file.name);
+    var storageRef = app.storage().ref('organization/'+this.orgId+'/'+this.key+'/'+this.type+'/'+this.fileName);
     var task = storageRef.put(file);
     var that = this;
     task.on('state_changed', 

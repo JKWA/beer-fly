@@ -1,6 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/iron-image/iron-image.html">
 
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
@@ -14,23 +13,33 @@
 <link rel="import" href="../my_components/data/upload-image.html">
 
 <link rel="import" href="beer-fab.html">
-<link rel="import" href="beer-fab-search.html">
 <link rel="import" href="beer-contact-card.html">
 <link rel="import" href="beer-hours-card.html">
+<link rel="import" href="beer-banner.html">
+
 
 <dom-module id="beer-contact">
 
-  <template>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
-    <style>
-      .wrapper{
-        @apply(--layout-vertical);
-        
-        @apply(--layout-center-justified);
+      :host {
+        display: block;
+        max-width: 640px;
+        background-color: white;
       }
+
+      
+      
+      .wrapper{
+        @apply --layout-vertical;
+        @apply --layout-center-justified;
+      }
+
       .item{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
         margin: 10px;
       }
 
@@ -45,42 +54,36 @@
         font-weight: 300;
         margin: 10px 5px 0 20px;
       }
-      /*.address2{
-         @apply(--layout-horizontal);
-         @apply(--layout-start-justified);
-         @apply(--layout-wrap);
-      }*/
 
 
 
     </style>
     <firebase-auth app-name="beer" user="{{user}}"></firebase-auth>
 
-    <iron-image 
-        style="width:100%; height:300px; background-color: #F8F8F8;"
-        sizing="cover" 
-        preload 
-        fade
-        src="[[photoUrl]]">
-    </iron-image>
+    <beer-banner
+      google-photo-url="[[organization.googlePhoto.CONTACT.url]]"
+      photo="[[category.image.banner]]"
+      org-id="[[orgId]]">
+    </beer-banner>
     
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
-
-    <div class="motto">
-        [[organization.siteName]]
-    </div>
-    <div class="wrapper">
-      <div class="item">
-      <beer-hours-card 
-          class=" category-item"
-          organization="[[place]]">
-      </beer-hours-card>
+    <div class="card">
+      <div class="motto">
+          [[organization.siteName]]
       </div>
-      <div class="item">
+      <div class="wrapper">
+        <div class="item">
+        <beer-hours-card 
+            class=" category-item"
+            organization="[[organization]]">
+        </beer-hours-card>
+        </div>
+        <div class="item">
 
-       <beer-contact-card 
-           place="[[place]]">
-       </beer-contact-card>
+        <beer-contact-card 
+          organization="[[organization]]">
+        </beer-contact-card>
+        </div>
       </div>
     </div>
 
@@ -98,20 +101,9 @@
           <h3>[[category.title]]</h3>
       </div>
       <paper-dialog-scrollable>
-        <template is="dom-if" if="[[owner]]">
-          <upload-image org-id="[[orgId]]" type="banner" key="category/CONTACT/image"></upload-image>   
-          <paper-input label="Site Name" value="{{organization.siteName}}"maxlength=100></paper-input>
-          <paper-input label="Street" value="{{organization.street}}"maxlength=100></paper-input>
-          <div class="address2">
-              <paper-input style="width:200px; margin-right:20px;" label="City" value="{{organization.city}}"maxlength=100></paper-input>
-              <paper-input style="width:50px; margin-right: 20px;" label="State" value="{{organization.state}}"maxlength=100></paper-input>
-              <paper-input style="width:100px;" label="Zipcode" value="{{organization.zip}}"></paper-input>
-          </div>
-          <paper-input style="width:170px;" label="Phone" value="{{organization.phone}}"></paper-input>
-          <paper-input label="Email" value="{{organization.emial}}"></paper-input>
-          <paper-textarea label="Directions" value="{{category.directions}}" maxlength=2000 char-counter></paper-textarea>
-        </template>
-      </paper-dialog-scrollable>  
+          <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_CONTACT_banner" key="category/CONTACT/image"></upload-image>   
+          <paper-textarea always-float-label label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
+        </paper-dialog-scrollable>
 
       <div class="">
         <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
@@ -132,6 +124,14 @@
           type: Object
         },
 
+        nameUrl:{
+          type: String
+        },
+
+        orgId:{
+          type: String
+        },
+
         organization:{
           type: Object
         },
@@ -140,45 +140,10 @@
           type: Boolean
         },
 
-        place:{
-          type: Object
-        },
-
-        photoUrl: {
-          type: String,
-          computed: '_computePhotoUrl(category, place)'
-        },
         user:{
           type: Object
         }
       },
-
-      
-
-      _computePhotoUrl: function (category, place) {
-        try{
-          if(category.image){
-            if(category.image.banner){
-              if(category.image.banner.url){
-                return category.image.banner.url;
-              }
-            }
-          }
-          var photoMeta = {};
-          var photos = place.photos
-          var categoryIndex = 3
-          if(photos.length < categoryIndex){
-            categoryIndex = photos.length
-          }
-          photoMeta.maxWidth = place.photos[categoryIndex].width;
-          photoMeta.maxHeight = place.photos[categoryIndex].height;
-          return place.photos[categoryIndex].getUrl(photoMeta);
-        }catch (error){
-
-       }
-      },
-
-
 
 
      _edit: function(){
@@ -187,6 +152,8 @@
         Polymer.dom(body).appendChild(this.$.editDialog);
         this.$.editDialog.open()
       },
+
+      
 
       _test: function (obj){
         console.log(obj);

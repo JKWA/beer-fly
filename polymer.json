@@ -2,15 +2,26 @@
   "entrypoint": "index.html",
   "shell": "src/beer-app.html",
   "fragments": [
+    "src/beer-account.html",
     "src/beer-beer.html",
     "src/beer-beer-edit.html",
-    "src/beer-home2.html",
     "src/beer-contact.html",
+    "src/beer-crawl.html",
+    "src/beer-favorite.html",
+    "src/beer-foodtruck.html",
+    "src/beer-foodtruck-edit.html",
+    "src/beer-home.html",
     "src/beer-menu.html",
+    "src/beer-menu-edit.html",
     "src/beer-pub.html",
+    "src/beer-schedule.html",
+    "src/beer-schedule-edit.html",
     "src/beer-tap.html",
     "src/beer-tv.html",
     "src/beer-tap-edit.html",
+    "src/beer-plan.html",
+    "src/beer-plan-options.html",
+    "src/beer-plan-cart.html",
     "src/lazy-resources.html"
   ],
   "sources": [
@@ -22,9 +33,19 @@
     "manifest.json",
     "bower_components/webcomponentsjs/webcomponents-lite.min.js"
   ],
+
+  "builds": [{
+    "name": "bundled",
+    "bundled": true,
+    "js": {"minify": true},
+    "css": {"minify": true},
+    "html": {"minify": true},
+    "addServiceWorker": true,
+    "addPushManifest": true,
+    "insertPrefetchLinks": true
+  }],
   
   "lint": {
-    "rules": ["polymer-1"]
+    "rules": ["polymer-2-hybrid"]
   }
-
 }

@@ -15,9 +15,9 @@
 <dom-module id="beer-beer-add">
 
 
-  <template>
+ <template strip-whitespace>
+  <style include="paper-material-styles">
 
-    <style>
 
       a{
         font-size: 16px;
@@ -36,10 +36,7 @@
         left: 50%;
       }
 
-      .card{
-        margin: 10px;
-        padding: 20px;
-      }
+   
 
       .abv {
         width: 100px;
@@ -108,13 +105,13 @@
       }
 
       .action-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-justified);
+         @apply --layout-horizontal;
+         @apply --layout-justified;
       }
 
       .message-wrapper{
-         @apply(--layout-horizontal);
-         @apply(--layout-end-justified);
+         @apply --layout-horizontal;
+         @apply --layout-end-justified;
       }
 
     </style>
@@ -159,33 +156,6 @@
         data="[[userDomain]]">
     </firebase-document>
 
-    <!--<firebase-document
-        app-name="beer"
-        id="saveBeer"
-        path="organization/[[orgId]]/brewBeer">
-    </firebase-document>-->
-
-
-
-    <!--<firebase-document
-        app-name="beer"
-        id="onTap"
-        path="organization/[[orgId]]/onTap/[[beerId]]">
-    </firebase-document>-->
-
-    <!--<firebase-document
-        app-name="beer"
-        id="allData"
-        path="">
-    </firebase-document>-->
-
-     <!--<firebase-document
-        app-name="beer"
-        id="beer"
-        disabled
-        path="beer/[[beerId]]"
-        data="{{beer}}">
-    </firebase-document>-->
 
     <firebase-document
         app-name="beer"
@@ -194,10 +164,6 @@
         data="{{beer}}">
     </firebase-document>
 
-    <!--THIS "beer/[[beerId]]" [[beer.name]]-->
-
-    <!--TEST [[beerId]]-->
-    <!--<paper-spinner-lite active id="spinner"></paper-spinner-lite>-->
 
     <div id="editCard" >
 
@@ -208,8 +174,8 @@
           [[returnName]]</a>
       </iron-label>
       </div>
-  TEST
-    <paper-material  class="card"  elevation="0">
+
+    <div  class="card" >
 
       <div>
         <div class="brewery-name">[[organization.name]]</div>
@@ -231,6 +197,7 @@
 
         <paper-textarea 
           id="description"
+          always-float-label
           label="Beer Description" 
           char-counter 
           maxlength="500" 
@@ -277,10 +244,16 @@
    
           </div>
     
-    </paper-material>
+    </div>
     </div>
 
-    <paper-toast class="toast" id="savedToast" duration="5000" vertical-offset="150">
+    <paper-toast 
+        class="toast" 
+        id="savedToast" 
+        duration="5000"
+        horizontal-align="right"
+        horizontal-offset="50"
+        vertical-offset="100">
       <div> 
         Saved [[name]]
         <br>

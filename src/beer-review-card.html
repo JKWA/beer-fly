@@ -1,5 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="beer-rating-card.html">
@@ -7,9 +7,9 @@
 
 <dom-module id="beer-review-card">
 
-  <template>
-
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
     a{
       color: var(--app-primary-color);
@@ -19,27 +19,28 @@
       .card{
         width: 100%;
         margin: 0 0 20px 0;
+        @apply --paper-material-elevation-0;
       }
 
        .menu{
-         @apply(--layout-vertical);         
+         @apply --layout-vertical;         
       }
 
       .category{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
       }
 
 
       .menu-items {
-         @apply(--layout-vertical);
+         @apply --layout-vertical;
          margin: 0 0 0 20px;
          min-width: 400px;
       }
 
       .menu-item {
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
       }
 
       .category-title{
@@ -47,9 +48,9 @@
         font-weight: 200;
         min-width: 400px;
         color: var(--app-accent-color);
-        @apply(--layout-horizontal);
-        @apply(--layout-end-justified);
-        @apply(--layout-center);
+        @apply --layout-horizontal;
+        @apply --layout-end-justified;
+        @apply --layout-center;
       }
 
 
@@ -109,10 +110,10 @@
 
     </style>
     <div>
-        <paper-material elevation="0" animated-shadow="false">
-            <!--<div class="review-title">Reviews</div>     -->
+        <div animated-shadow="false">
+
             <template is="dom-repeat" items="[[_toArray(organization.reviews)]]" as="review">
-                <paper-material class="review" elevation="0" animated-shadow="false">
+                <div class="review" animated-shadow="false">
                   <div>
                     <beer-rating-card rating="[[review.rating]]">
                     </beer-rating-card>
@@ -121,9 +122,10 @@
                   <a href="[[review.author_url]]" target="_blank">
                   <div class="review-author">[[review.author_name]]</div>
                   </a>
-                </paper-material>
+                </div>
             </template>
-        </paper-material>
+            
+        </div>
     </div>
   </template>
 
@@ -133,6 +135,14 @@
     Polymer({
 
       is: 'beer-review-card',
+
+      properties:{
+
+        organization: {
+          type:Object
+        }
+
+      },
 
     
        _toArray: function (obj) {

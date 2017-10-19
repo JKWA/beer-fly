@@ -1,8 +1,7 @@
-
+<!-- TODO update crawl with public status changes -->
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
@@ -16,19 +15,23 @@
 
 
 <link rel="import" href="../my_components/data/upload-image.html">
-
+<link rel="import" href="beer-crawl-dialog.html">
+<link rel="import" href="beer-dialog.html">
 <link rel="import" href="beer-pub-edit.html">
 <link rel="import" href="beer-pub-icons.html">
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-menu-card-mini.html">
+<link rel="import" href="beer-schedule-card-mini.html">
 <link rel="import" href="beer-contact-card.html">
 <link rel="import" href="beer-hours-card.html">
 <link rel="import" href="beer-review-card-mini.html">
-<link rel="import" href="beer-rating-card.html">
 <link rel="import" href="beer-beer-card-mini.html">
-<link rel="import" href="beer-pub-favorite.html">
-<link rel="import" href="beer-pub-rating.html">
 <link rel="import" href="beer-foodtruck-schedule.html">
+<link rel="import" href="beer-banner.html">
+<link rel="import" href="beer-pub-banner.html"> 
+<link rel="import" href="beer-button.html"> 
+<link rel="import" href="beer-crawl-card.html">
+
 
 
 <link rel="import" href="beer-button.html">
@@ -38,10 +41,27 @@
   <template>
 
     <style include="beer-button">
+
+      :host {
+        display: block;
+        max-width: 640px;
+        background-color: white;
+
+      }
+      
       a{
         text-decoration: none;
       }
 
+      .icon{
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+        @apply --layout-flex-8;
+      }
+
+       .crawl{
+        @apply --layout-flex-auto;
+      }
 
       .item {
         display: block;
@@ -51,50 +71,59 @@
       }
 
        .menu{
-         @apply(--layout-vertical);         
+         @apply --layout-vertical;         
       }
 
-      
-
       .category-wrapper{
-         /*@apply(--layout-horizontal);
-        @apply(--layout-center);*/
-        @apply(--layout-vertical); 
-         
+        @apply --layout-vertical; 
       }
 
       .category{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+        border-top: 1px solid var(--app-line-color);        
+        padding:20px 0;
       }
 
       .category-item{
-        @apply(--layout-horizontal);
-        @apply(--layout-wrap);
-        @apply(--layout-center-justified);
-         display: block;
+        @apply --layout-horizontal;
+        @apply --layout-wrap;
+        @apply --layout-center-justified;
+        display: block;
         text-decoration: none;
-        /*text-align: center;*/
         margin-bottom: 40px;
       }
 
       .category-button{
-        @apply(--layout-horizontal);
-        @apply(--layout-wrap);
-        @apply(--layout-center-justified);
-        
+        @apply --layout-horizontal;
+        @apply --layout-wrap;
+        @apply --layout-center-justified;
         text-decoration: none;
-        /*text-align: center;*/
         margin: 20px 0 0 0;
       }
 
-    .category-title{
+      .category-title{
         font-size: 1.7em;
         font-weight: 500;
-        margin: 44px 0 10px 0;
+        margin: 10px 0;
         text-align: center;
         color: var(--app-primary-color);
-    }
+      }
+
+      .hours-wrapper{
+        @apply --layout-vertical;
+        margin: 10px;
+        padding:10px;
+      }
+
+      .crawl-wrapper{
+        @apply --layout-vertical;
+        color: var(--app-primary-color);
+        border-top: 1px solid var(--app-line-color);  
+        margin: 10px
+      }
+
+      
 
 
       .title {
@@ -109,89 +138,69 @@
         margin: 40px 5px 0 20px;
       }
 
-      .history {
+      .description {
         font-size: 1.2em;
         font-weight: 300;
-        margin: 10px 5px 0 20px;
+        margin: 10px;
+        color: var(--app-primary-color);
+        
       }
 
-      .rating-wrapper{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
-        @apply(--layout-wrap);
+      .description > div {
+         margin: 10px;
+         
       }
 
-
-      @media (max-width: 767px) {
       
 
-        h2 {
-          margin: 24px 0;
-        }
-
-      }
 
     </style>
 
   <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
 
- 
-    <div hidden="[[!online]]">
-      <iron-image 
-          style="width:100%; height:300px; background-color: #F8F8F8;"
-          sizing="cover" 
-          placeholder="[[placeholder]]"
-          preload 
-          fade
-          src="[[photoUrl]]">
-      </iron-image>
-
-    </div>
-    <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
+  <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
   
-    <div class="rating-wrapper">
-        <div>
-          <beer-pub-rating 
-            google-rating="[[place.rating]]" 
-            place-id="[[place.place_id]]"
-            name="[[place.name]]"
-            address="[[place.vicinity]]"
-            login="{{login}}">
-        </beer-pub-rating>
-        </div>
-      
-        <div>
+    <div>
 
-          <beer-pub-icons
-              dogs="[[!dogs]]"
-              patio="[[!patio]]"
-              over21="[[!over21]]"
-              crowd-source="[[!crowdSource]]">
-          </beer-pub-icons>
-        </div>
-        
+      <beer-banner
+        google-photo-url="[[organization.googlePhoto.MAIN.url]]"
+        photo="[[organization.mainImage.banner]]"
+        org-id="[[orgId]]">
+      </beer-banner>
+
+
     </div>
 
-      <div class="motto">
-        [[organization.motto]]
-      </div>
 
-     <template is="dom-repeat" items="[[_addBreaks(organization.description)]]" as="description">
-          <div class="history">
-            [[description]]
-          </div>
+     <beer-pub-banner
+      organization="[[organization]]"
+      place-id="[[orgId]]"
+      open-crawl="{{pubDialogOpened}}"
+      edit>
+    </beer-pub-banner> 
+    
+
+    <div class="motto">[[organization.motto]]</div>
+
+    <div class="description">
+      <template is="dom-repeat" items="[[_addBreaks(organization.description)]]" as="description">
+        <div>[[description]]</div>
       </template>
+    </div>
 
       <div class="category-item-wrapper">
-        <div class="category">
-          <div>
-            <div class="category-title">Hours</div>
-            <beer-hours-card 
-                class=" category-item"
-                organization="[[place]]">
-            </beer-hours-card>
+
+        <template is="dom-if" if="[[organization.opening_hours]]">
+          <div class="hours-wrapper">
+            <div>
+              <div class="category-title">Hours</div>
+              <beer-hours-card 
+                  class=" category-item"
+                  organization="[[organization]]">
+              </beer-hours-card>
+            </div>
           </div>
-        </div>
+        </template>
 
         <template is="dom-repeat" items="[[categories]]" strip-whitespace>
           
@@ -215,7 +224,7 @@
                           brewery-state="[[tap.stateAbbreviation]]"
                           abv="[[tap.abv]]"
                           owner="[[owner]]"
-                          beer-id="[[tap.id]]"
+                          beer-id="[[tap.$key]]"
                           name-url="[[nameUrl]]">
                       </beer-beer-card-mini>
                     </template>
@@ -229,7 +238,7 @@
                           style-name="[[beer.styleName]]"
                           abv="[[beer.abv]]"
                           owner="[[owner]]"
-                          beer-id="[[beer.id]]"
+                          beer-id="[[beer.$key]]"
                           name-url="[[nameUrl]]">
                       </beer-beer-card-mini>
                     </template>
@@ -247,6 +256,15 @@
                  
                   </template>
 
+                  <template is="dom-if" if="[[_isSchedule(item.$key)]]"> 
+                    
+                      <beer-schedule-card-mini 
+                         organization="[[organization]]">
+                      </beer-schedule-card-mini>
+                    
+                 
+                  </template>
+
                   <template is="dom-if" if="[[_isTruck(item.$key)]]"> 
 
                     <beer-foodtruck-schedule
@@ -258,13 +276,13 @@
 
                   <template is="dom-if" if="[[_isContact(item.$key)]]"> 
                     <beer-contact-card 
-                        place="[[place]]">
+                    organization="[[organization]]">
                     </beer-contact-card>
                   </template>
 
                   <template is="dom-if" if="[[_isReview(item.$key)]]"> 
                     <beer-review-card-mini
-                       organization="[[place]]">
+                       organization="[[organization]]">
                      </beer-review-card-mini>
                   </template>
 
@@ -279,32 +297,54 @@
              </div>
             </div>
           </template>
+          
         </template>
 
+        <template is="dom-if" if="[[organization.crawl]]">
+          <div class="crawl-wrapper">
+            <div class="category-title">Beer-Crawls</div>
+            <template is="dom-repeat" items="[[_getArray(organization.crawl)]]" as="crawl" observe="public" sort="_sortCrawlCreated">
+             
+              <beer-crawl-card
+                crawl-id="[[crawl.$key]]"
+                name-url="[[nameUrl]]"
+                return-params="[[returnParams]]">
+              </beer-crawl-card>
 
-     <paper-dialog 
-        id="editDialog"
-        with-backdrop
-        style="width: 90vw;"
-        entry-animation="slide-from-right-animation"
-        exit-animation="slide-right-animation">
-            
-      <div> 
-          <h3>[[organization.name]]</h3>
-      </div>
-      <paper-dialog-scrollable>
-        <beer-pub-edit org-id="[[orgId]]" owner="[[owner]]">
-        </beer-pub-edit>
-      </paper-dialog-scrollable>
-    
+            </template>
+          </div>
+        </template>
         
-      </paper-dialog-scrollable>
-     
-
-      <div>
-        <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
       </div>
-    </paper-dialog>
+
+     <beer-dialog
+      id="pubDialogEditor"
+      entry-animation="slide-from-bottom-animation"
+      exit-animation="slide-down-animation"
+      with-backdrop
+      opened="{{pubDialogOpened}}">
+      
+      <beer-crawl-dialog
+        edit-place="[[organization]]"
+        crawl-data="{{crawlData}}">
+      </beer-crawl-dialog>
+
+    </beer-dialog>
+
+    <beer-dialog 
+      id="editDialog"
+      entry-animation="slide-from-bottom-animation"
+      exit-animation="slide-down-animation"
+      with-backdrop>
+            
+        <beer-pub-edit 
+          org-id="[[orgId]]"
+          name-url="[[nameUrl]]" 
+          owner="[[owner]]"
+          organization="[[organization]]">
+        </beer-pub-edit>
+    </beer-dialog>
+     
 
   </template>
   
@@ -316,8 +356,20 @@
       is: 'beer-pub',
 
       properties: {
+
+        allCrawls:{
+          type:Array,
+          value: function (){return [];}
+        },
+
+        crawlObj:{
+          type:Object,
+          value: function (){return {};}
+        },
+
         organization:{
-          type: Object
+          type: Object,
+          value: function (){return {};}
         },
 
         categoryKey:{
@@ -333,33 +385,21 @@
           computed: '_computeCategories(organization)'
         },
 
+        crawlData:{
+          type: Object
+        },
+
         organization:{
           type: Object,
           notify: true
         },
 
-        dogs:{
-          type: Boolean,
-          value: false,
-          computed: '_computeDogs(organization)',
+        returnParams:{
+          type:String
         },
 
-        patio:{
-          type: Boolean,
-          value: false,
-          computed: '_computePatio(organization)',
-        },
-        
-        over21:{
-          type: Boolean,
-          value: false,
-          computed: '_computeOver21(organization)',
-        },
-
-        crowdSource:{
-          type: Boolean,
-          value: false,
-          computed: '_computeCrowdSource(organization)',
+        userFavorite:{
+          type:String
         },
 
         login: {
@@ -381,48 +421,105 @@
 
        owner:{
          type: Boolean
-       },
-        
-        photoUrl: {
-          type: String,
-          computed: '_computePhotoUrl(organization, place)'
+       }, 
+
+        permenentlyClosed:{
+          type:Boolean,
+          value:false,
+          computed: '_computePermanentlyClosed(organization)'
         },
 
-        place:{
-          type: Object
+        pubDialogOpened:{
+          type:Boolean,
+          value:false
         },
 
-        placeholder: {
-          type: String,
-          computed: '_computePhotoPlaceholder(organization, place)'
-        },
         user:{
           type: Object
-        }
+        },
+
+        userData:{
+          type: Object
+        },
+
       },
 
-      observers:['_addNewOrg(orgId, user)'],
+      observers:['_addNewOrg(organization, user)',
+                  '_closeLocation(permenentlyClosed, user)',
+                  // '_watchForCrawls(organization.crawl)'          
+                  ],
 
-      _addNewOrg: function (orgId, user){
+      ready: function (){
+        var body = document.querySelector('body');
+          Polymer.dom(body).appendChild(this.$.pubDialogEditor);
+          Polymer.dom(body).appendChild(this.$.editDialog);
+      },
+
+     
+      _addNewOrg: function (organization, user){
         if(user){
           if(user.emailVerified){
-            if(orgId){
-                var obj = {};
-                obj['user/'+user.uid] = {};
-                obj['user/'+user.uid].uid = this.user.uid;
-                obj['user/'+user.uid].timestamp = Date.now();
-                firebase.database(this.$.auth.app).ref('newOrg/'+orgId).update(obj)
-                  .then(function (){
-                    console.log('SAVED_NEW_PUB')
-                  })
-                  .catch(function (error){
-                    console.log('SAVED_NEW_PUB_ERROR', error);
-                  })
+            if(organization){
+              if(organization.place_id){
+                var domain = this._getDomain(organization.website);
+                if(domain){
+                  
+                  
+                  firebase.database(this.$.auth.app).ref(`/newOrg/${organization.place_id}`)
+                    .update({domain:domain})
+                    .then(function (){
+                      console.log('SAVED_NEW_PUB')
+                    })
+                    .catch(function (error){
+                      console.log('SAVED_NEW_PUB_ERROR', error);
+                    })
+                  }
                 }
+              }
             }
           }
         
       },
+
+      _closeLocation: function (closed, user){
+        
+        if(closed){
+          if(user){
+            console.log('closed', `/newOrg/${this.organization.place_id}`)
+            firebase.database(this.$.auth.app).ref(`/newOrg/${this.organization.place_id}`)
+              .update({domain:'permenently_closed'})
+              .then(function (){
+                console.log('SUBMIT_CLOSED')
+              })
+              .catch(function (error){
+                console.log('SUBMIT_CLOSED_ERROR', error);
+              })
+            }
+        }
+      },
+
+      _getDomain: function (website){
+        if(website){
+          var ignore = ['wordpress', 'facebook']
+          var domainSide = website.split('//')[1];
+          var domainArray = domainSide.split('/')[0];
+          var domain = domainArray.replace('www.','');
+          for(var i=0; i<ignore.length; i++){
+            
+            if(domain.indexOf(ignore[i]) !== -1){
+              return null;
+            } 
+          }
+          return domain;
+        }else{
+          return null;
+        }
+      },
+
+      _openEditPubDialog:function (event){
+        this.pubDialogOpened = !this.pubDialogOpened
+      },
+
 
       _computeCategories: function(organization) {
         var returnArray = [];
@@ -446,11 +543,10 @@
         'use strict';
         // console.log('tapped');
         if(this.user){
-          var body = document.querySelector('body');
-          Polymer.dom(body).appendChild(this.$.editDialog);
+         
+          
           this.$.editDialog.open();
         }
-
       },
 
       _addBreaks: function(str){
@@ -488,6 +584,14 @@
 
       _isTruck: function (type){
         if(type === 'FOOD_TRUCK'){
+          return true;
+        }else{
+          return false;
+        }
+      },
+
+      _isSchedule: function (type){
+        if(type === 'SCHEDULE'){
           return true;
         }else{
           return false;
@@ -533,8 +637,16 @@
 
       },
 
+      _filterCrawl: function (crawl){
+        console.log('crawl', crawl)
+        if(crawl.public){
+          return true
+        }
+        return false;
+      },
+
       _sortOrder: function(a,b){
-        'use strict';
+     
         if (a.order < b.order)
           return -1;
         if (a.order > b.order)
@@ -542,91 +654,35 @@
         return 0;
       },
 
+      _sortCrawlCreated: function(a,b){
+      
+        if (a.created < b.created)
+          return -1;
+        if (a.created > b.created)
+          return 1;
+        return 0;
+      },
 
 
-      _computeDogs: function (organization) {
-        if (organization){
-          if(organization.dogFriendly){
-            return true;
-          }else{
-            return false;
-          }
-        }else{
-          return false;
+
+      _computeIcon: function (icon) {
+        if (icon){
+          return true;
         }
-      },
-
-       _computePatio: function (organization) {
-        if (organization){
-          if(organization.patio){
-            return true;
-          }else{
-            return false;
-          }
-        }else{
           return false;
+      },
+
+    
+
+      _computePermanentlyClosed: function (organization){
+      if(organization){
+        if(organization.permanently_closed){
+          return true;
         }
+      }
+        return false;
       },
 
-       _computeOver21: function (organization) {
-        if (organization){
-          if(organization.over21){
-            return true;
-          }else{
-            return false;
-          }
-        }else{
-          return false;
-        }
-      },
-
-      _computeCrowdSource: function (organization) {
-        if (organization){
-          if(organization.crowdSource){
-            return true;
-          }else{
-            return false;
-          }
-        }else{
-          return false;
-        }
-      },
-
-      _computePhotoUrl: function (organization, place) {
-        try{
-          if(organization.mainImage){
-            if(organization.mainImage.banner){
-              if(organization.mainImage.banner.url){
-                return organization.mainImage.banner.url;
-              }
-            }
-          }
-          var photoMeta = {};
-          photoMeta.maxWidth = place.photos[0].width;
-          photoMeta.maxHeight = place.photos[0].height;
-          return place.photos[0].getUrl(photoMeta);
-        }catch (error){
-
-       }
-      },
-
-      _computePhotoPlaceholder: function (organization, place) {
-        try{
-          if(organization.mainImage){
-            if(organization.mainImage.banner){
-              if(organization.mainImage.banner.thumbnail){
-                return 'data:image/png;base64, '+organization.mainImage.banner.thumbnail;
-              }
-            }
-          }
-          // var photoMeta = {};
-          // photoMeta.maxWidth = place.photos[0].width;
-          // photoMeta.maxHeight = place.photos[0].height;
-          // return place.photos[0].getUrl(photoMeta);
-        }catch (error){
-
-       }
-      },
 
       _filterBeer: function (beer){
 
@@ -640,8 +696,6 @@
           }
         }
       },
-
-
 
       _test: function(obj){
         console.log('TEST', obj);

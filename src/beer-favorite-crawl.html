@@ -1,0 +1,330 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/moment-element/moment-element.html">
+
+<link rel="import" href="beer-icons.html">
+<link rel="import" href="beer-location.html">
+<link rel="import" href="beer-crawl-favorite.html">
+<link rel="import" href="beer-crawl-url.html">
+
+<link rel="import" href="beer-login.html">
+
+
+<dom-module id="beer-favorite-crawl">
+
+<template strip-whitespace>
+  <style include="paper-material-styles">
+
+    a{
+      text-decoration: none;
+    }
+
+    a > iron-icon {
+      text-decoration: none;
+      color: var(--app-accent-color);
+    }
+
+    ol{
+      list-style-type: none;
+    }
+
+    li{
+      @apply --layout-horizontal;
+      padding: 10px;
+      border-bottom: 1px solid var(--app-secondary-color);
+    }
+
+    li:first-child{
+      border-top: 1px solid var(--app-secondary-color);
+    }
+
+
+    li > div {
+      margin: 0 10px 0 0;
+      font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+    }
+
+    .add-icon{
+      color: var(--app-accent-color);
+    }
+
+    .card{
+      padding: 12px;
+      margin: 15px;
+      @apply --paper-material-elevation-1;
+      background-color: white;
+    }
+
+    .title-wrapper{
+       @apply --layout-horizontal;
+       @apply --layout-justified;
+    }
+
+    .icon-wrapper{
+      @apply --layout-horizontal;
+      @apply --layout-justified;
+      font-size: 1em;
+    }
+
+    .organization-wrapper{
+      @apply --layout-horizontal;
+      @apply --layout-justified;
+      width: 100%;
+    }
+
+    .name{
+      font-size: 1.5em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+    }
+
+    .description{
+      font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 300;
+      margin: 10px 0 20px 0;
+    }
+
+    .distance{
+      font-size: .9em;
+      color: var(--app-primary-color);
+      font-weight: 300;
+    }
+
+    .crawl-message{
+      font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 300;
+    }
+
+    .notice{
+      font-size: 1.5em;
+      color: var(--app-primary-color);
+      font-weight: 300;
+    }
+
+  </style>
+
+  <firebase-auth id="auth" app-name="beer" status-known="[[statusKnown]]"user="{{user}}"></firebase-auth>
+  
+
+  <div hidden="[[user]]">
+    <div class="card">
+      <a href="/home/crawl">
+      <iron-label>
+        <paper-icon-button class="add-icon" icon="beer-icons:crawl"></paper-icon-button>
+        <span class="crawl-message">Go to Beer-Crawls</span>
+      </iron-label>
+    </a>
+    </div>
+    <div class="card">
+      <div class="notice">Sign in to view your favorite Beer-Crawls.</div>
+     <beer-login></beer-login>
+    </div>
+     
+  </div>
+
+
+  <div hidden="[[!user]]">
+    <div class="card">
+      <div>
+        <a href="/home/crawl">
+          <iron-label>
+            <paper-icon-button class="add-icon" icon="beer-icons:crawl"></paper-icon-button>
+            <span class="crawl-message">Go to Beer-Crawls</span>
+          </iron-label>
+        </a>
+      </div>
+    </div>
+
+       <template is="dom-repeat" items="[[crawlData]]" as="crawl" sort="_sortByNew" observe="created">
+      <div class="card">
+        
+        <div class="title-wrapper"> 
+          <div class="name">[[crawl.name]]</div>
+          <div class="icon-wrapper">
+            <div>
+              <beer-crawl-favorite
+                crawl-id="[[crawl.crawl_id]]">
+              </beer-crawl-favorite>
+            </div>
+          </div>
+        </div>
+        
+         <template is="dom-repeat" items="[[_addBreaks(crawl.description)]]" as="description">
+            <div class="description">[[description]]</div>
+         </template>
+        <ol>
+        <template is="dom-repeat" items="[[_organizationArray(crawl.organization)]]" as="pub">
+          <a href="/[[_computeNameForUrl(pub.name)]]/main?orgid=[[pub.place_id]]">
+            <li> 
+    
+            <div class="organization-wrapper">
+                <div>
+                  <div>[[pub.name]]</div>
+                  <div>[[pub.formatted_address]]</div>
+                </div>
+                <div> 
+                  
+                </div>
+            </div>
+            </li>
+          </a>
+        </template>
+        </ol>
+        <div class="footer">
+          <div>
+            <beer-crawl-url organizations="[[crawl.organization]]">
+            </beer-crawl-url>
+          </div>
+          <!--<div class="distance">Begins [[crawl.distance]] miles from you.</div>-->
+        </div>
+      </div>
+    </template>
+  </div>
+    
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-favorite-crawl',
+
+      properties: {
+
+         crawlData:{
+          type: Array,
+          value: function (){
+            return [];
+          }
+        },
+
+        location:Object,
+
+        sortedLocationHistory:{
+          type:Array
+        },
+       
+        user:{
+          type: Object
+        },
+        
+        userData:{
+          type: Object
+        },
+        
+      },
+
+      observers:['_getData(user.uid)'],
+
+
+      _getData: function (userId){
+        
+
+        var that = this;
+        var app = this.$.auth.app;
+        var db = firebase.database(this.$.auth.app);
+      
+
+        db.ref(`user/${userId}/favoriteCrawl`)
+        .on('value', snapshot=>{
+          that.splice("crawlData", 0, this.crawlData.length)
+          console.log('change')
+          snapshot.forEach(crawl => {
+            db.ref(`crawl/${crawl.key}`)
+            .once('value')
+            .then(crawlObj => {
+              var returnCrawl = crawlObj.val();
+              returnCrawl.crawl_id = crawlObj.key;
+              that.push('crawlData', returnCrawl)
+            })
+          })
+        })
+      },
+
+        _organizationArray: function (obj){
+        var returnArray = [];
+        if(typeof obj ==='object'){
+          var key = Object.keys(obj);
+          for (let value of key){
+           returnArray.push(obj[value])
+          }
+        }
+        return returnArray.sort(this._sortByCreated);
+      },
+
+      _sortByCreated: function(a,b){
+
+        if (a.created < b.created)
+          return -1;
+        if (a.created > b.created)
+          return 1;
+        return 0;
+      },
+
+      _sortByNew: function(a,b){
+        if (a.created > b.created)
+          return -1;
+        if (a.created < b.created)
+          return 1;
+        return 0;
+      },
+
+      
+
+      _addBreaks: function(str){
+        'use strict';
+        if(str){
+          return str.split('\n');
+        }else{
+          return [];
+        }
+      },
+
+      _computeNameForUrl: function (name) {
+        'use strict';
+        if (name) {
+          name = name.replace(/\s/g, '-')
+          return name.replace(/[^a-zA-Z\d\s:]/g, '');
+        } else {
+          return 'home'
+        }
+      },
+
+      _sortByNew: function(a,b){
+        if (a.created > b.created)
+          return -1;
+        if (a.created < b.created)
+          return 1;
+        return 0;
+      },
+
+   
+      
+
+      _test: function(obj){
+          console.log(obj);
+
+      }
+
+    });
+
+  </script>
+
+</dom-module>

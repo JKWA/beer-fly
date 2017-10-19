@@ -9,63 +9,36 @@
 
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
-
 
 
 <link rel="import" href="beer-beer-rating.html">
 <link rel="import" href="beer-beer-tap.html">
-<link rel="import" href="beer-beer-admin.html">
 
 
 
 
 <dom-module id="beer-beer-card">
-  <template>
-    <style>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
       a{
         color: var(--app-accent-color);
         text-decoration: none;
         }
 
-      .card{
-        margin: 10px;
-        padding: 20px;
-      }
-
-      .verify{
-        --toggle-icon: {
-          color: red;
-        };
-        --toggle-icon-active: {
-          color: green;
-        };
-      }
+     
       
-
-       
-      .title{
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
-        @apply(--layout-wrap);
-        font-size: 1em;
-        font-weight: 400;
-        color: var(--app-primary-color);
-      }
-
-       .title > div{
-        padding: 0 5px 0 0;
-      }
+      
      
       .wrapper{
-         @apply(--layout-vertical);        
+         @apply --layout-vertical;        
       }
 
       .wrapper > div{
@@ -79,10 +52,9 @@
       }
 
       .style {
-        font-size: 1.0em;
-        font-weight: 500;
+        font-size: 1.2em;
+        font-weight: 300;
         color: var(--app-primary-color);
-       
       }
 
       .description {
@@ -92,9 +64,9 @@
       }
 
       .location{
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
+        @apply --layout-wrap;
         font-size: 1em;
         font-weight: 400;
         color: var(--app-primary-color);
@@ -105,9 +77,10 @@
       }
 
       .footer-abv{
-        text-align: right;
         margin: 0 20px 0 0;
-        font-weight: 500;
+        font-weight: 300;
+        font-size: 1em;
+        color: var(--app-secondary-color);
       }
 
 
@@ -122,101 +95,45 @@
     </style>
      
 
-      <paper-material class='card' elevation="1" animated-shadow="false">
-          
-          <template is="dom-if"  if="[[!owner]]">
-            <div>
-              <beer-beer-rating 
-                  beer-id="[[beerId]]"
-                  login="{{login}}">
-              </beer-beer-rating>
-            </div>
-          </template>
-            
-          
-          <template is="dom-if"  if="[[owner]]">
-            <div class="title">
-              <div>
-                <beer-beer-admin
-                    place-id="[[placeId]]"
-                    beer-id="[[beerId]]"
-                    status="[[status]]">
-                </beer-beer-admin>
-              </div>
-              <div>
-                <a aria-label$="TEST" href$="/[[nameUrl]]/beer-edit?orgid=[[placeId]]&beerId=[[beerId]]">
-                  <paper-icon-button icon="beer-icons:edit"></paper-icon-button>
-                  Edit
-                </a>
-              </div>
-            </div>
-          </template>
+      <div class='card' elevation="1" animated-shadow="false">
+          <div class="info-section">
+         
           
           <!--BeerId: [[beerId]]-->
           <div>
             <beer-beer-tap
               org-id="[[placeId]]"
               beer-id="[[beerId]]"
-              owner="[[owner]]"
-              crowd-source="[[crowdSource]]">
+              owner="[[owner]]">
             </beer-beer-tap>
           </div>
            
-
-          <div class="wrapper">
-            <div class="name">[[beerName]]</div>
-            <div class="style">[[styleName]]</div>
-            <div class="description">[[beerDescription]]</div>       
-            <div class="location">
-              <div>[[breweryName]] - </div>
-              <div>[[breweryCity]],</div>
-              <div>[[breweryState]]</div>
+          <a aria-label$="TEST" href$="/[[nameUrl]]/description?orgid=[[placeId]]&beerId=[[beerId]]">
+            <div class="wrapper">
+              <div class="name">[[beerName]]</div>
+              <div class="style">[[styleName]]</div>
+              <div class="location">
+                <div>[[breweryName]] - </div>
+                <div>[[breweryCity]],</div>
+                <div>[[breweryState]]</div>
+              </div>
+              <div class="description">[[beerDescription]]</div>       
+              <div class="footer-abv" hidden$="[[!abv]]">ABV: [[abv]]</div>   
             </div>
-            <div class="footer-abv" hidden$="[[!abv]]">ABV: [[abv]]</div>
-              
+          </a>
+
           </div>
-
-          
-            <!--<div>
-              <div id="verify" hidden$="[[verified]]">
-                <iron-label>
-                    <paper-checkbox id="status" checked="{{verifiedCheck}}"></paper-checkbox>
-                    Verify beer
-                  </iron-label>
-              </div>
+          <template is="dom-if"  if="[[!owner]]">
+            <div>
+              <beer-beer-rating 
+                  beer-id="[[beerId]]"
+                  user-data="[[userData]]"
+                  login="{{login}}">
+              </beer-beer-rating>
             </div>
-            <div>-->
-              <!--<div>
-                <iron-label>
-                  <toggle-icon 
-                      class="verify" 
-                      icon="beer-icons:warning" 
-                      icon-active="beer-icons:checked"
-                      active="{{verified}}">
-                  </toggle-icon>
-                  <span>[[verifiedLabel]]</span>
-                </iron-label>
-
-              </div>
-              <div>
-                <iron-label>
-                  <toggle-icon icon="beer-icons:delete"></toggle-icon>
-                  <span>Remove</span>
-                </iron-label>
-              </div>-->
-              <!--<paper-icon-button icon="beer-icons:delete"></paper-icon-button>-->
-              
-            <!--</div>-->
-          
-           
-
-        
-
-    
-
-        
-      
-      </paper-material>
+          </template>
+   
+      </div>
   </template>
 
   <script>
@@ -227,38 +144,49 @@
       properties:{
 
         abv:{
-          type: Number
+          type: Number,
+          computed: '_computeItem(beer.abv)'
+        },
+
+        beer:{
+          type:Object
         },
 
         beerDescription:{
-          type: String
+          type: String,
+          computed: '_computeItem(beer.description)'
         },
 
-         beerId: {
-          type: String
+        beerId: {
+          type: String,
+          computed: '_computeItem(beer.id)'
         },
 
          beerName:{
-          type: String
+          type: String,
+          computed: '_computeItem(beer.name)'
         },
 
         breweryCity:{
-          type: String
+          type: String,
+          computed: '_computeItem(organization.city)'
         },
 
         breweryName:{
-          type: String
+          type: String,
+          computed: '_computeItem(organization.name)'
         },
 
         breweryState:{
-          type: String
+          type: String,
+          computed: '_computeItem(organization.stateAbbreviation)'
         },
 
         crowdSource:{
           type: Boolean
         },
 
-         edit:{
+        edit:{
           type: Boolean,
           value: false
         },
@@ -269,82 +197,62 @@
         },
 
         login: {
-        type: Boolean,
-        notify: true
+          type: Boolean,
+          notify: true
+        },
+
+        organization:{
+          type:Object
         },
 
         owner:{
           type: Boolean
         },
+        
+    
 
         placeId:{
-          type: String
+          type: String,
+          computed: '_computeItem(organization.place_id)'
         },
 
         status:{
           type:String,
-          // observer:'_watchForStatusChange'
-        },
-
-        intialStatusLoaded:{
-          type:Boolean,
-          value: false
+           computed: '_computeItem(beer.status)'
         },
         
         styleName:{
-          type: String
+          type: String,  
+          computed: '_computeItem(beer.styleName)'
         },
-        // verified:{
-        //   type:String
-          
-        // },
 
-        // verifiedCheck:{
-        //   type:Boolean,
-        //   observer:'_watchForStatusChange'
-        // },
+        nameUrl:String,
 
-        // verifiedLabel:{
-        //   type:String
-        // }
+        userBeerData:{
+          type:Object,
+          computed: '_computeUserBeerData(userData.favoriteBeer, beerId)'
+        },
+
+        userData:Object
        
       },
-      observers:[
-        // '_watchForStatusChange(status)'
-                ],
-      
-      // _updateVerifiedStatus: function (status){
 
-      //   if(status){
-      //     if(status === 'verified'){
-      //       this.verified = true;
-      //       this.verifiedLabel = "Verified"
-      //     }else{
-      //       this.verified  = false;
-      //       this.verifiedLabel = "Not Verified"
-      //     }
-      //   }else{
-      //     this.verified  = false;
-      //     this.verifiedLabel = "Not Verified"
+      _computeItem: function (item){
+        if(item){
+          return item
+        }
+        return null;
+      },
 
-      //   }
-       
-      // },
+      _computeUserBeerData: function (userBeers, beerId){
+        if(userBeers, beerId) {
+          if (userBeers[beerId]){
+            return userBeers[beerId]
+          }
+        }
+        return {};
+      },
 
-     
-
-      // changeEditId: function (){
-      //   this.editBeerId = this.beerId;
-      // },
-
-      // _computeVerified: function (status){
-      //   // console.log('test')
-      //   if(status === 'verified'){
-      //     return true;
-      //   }else{
-      //     return false;
-      //   }
-      // },
 
       _test: function (obj){
         console.log(obj);

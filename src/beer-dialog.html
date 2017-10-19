@@ -1,0 +1,134 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/neon-animation/neon-animation-runner-behavior.html">
+<link rel="import" href="../bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+
+
+<dom-module id="beer-dialog">
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
+      
+    :host {
+        width: 100vw; 
+        height: 100vh;
+      }
+
+    
+
+     .dialog {
+       width: 94vw; 
+       height: 75vh;
+       position:fixed;
+       padding:0;
+       margin:0 3vw;
+       bottom:0;
+       left:0;
+       background-color: transparent;
+       
+     }
+
+
+     .dialog > div{
+       margin:10px auto;
+       padding: 10px;
+       background-color: white;
+       max-width: 400px;
+     }
+
+     .edit{
+       height: 55vh;
+       overflow-x: hidden;
+       overflow-y: auto;
+       /* @apply --layout-vertical;  */
+       /* @apply --layout-flex-auto; */
+     }
+
+     .edit > div{
+       max-width: 500px;
+       margin: 3vh auto;
+     }
+
+      .close-button{
+        width: 100%
+      }
+        
+    </style>
+
+    <div class="dialog">
+      <div class="edit">
+         <slot></slot> 
+      </div>
+    
+      <div>
+        <paper-button class="close-button" dialog-dismiss autofocus>Close</paper-button>
+      </div>
+      
+
+    </div>
+   
+    
+     
+  </template>
+</dom-module>
+
+<script>
+
+(function() {
+'use strict';
+
+  Polymer({
+
+    is: 'beer-dialog',
+
+    properties:{
+      // opened:Boolean
+      entryAnimation:String,
+      exitAnimation:String,
+      opened:Boolean,
+      
+    }, 
+
+    behaviors: [
+      Polymer.PaperDialogBehavior,
+      Polymer.NeonAnimationRunnerBehavior
+    ],
+
+    listeners: {
+      'neon-animation-finish': '_onNeonAnimationFinish'
+    },
+
+    observers:['_watchOpened(opened)'],
+
+    _watchOpened: function (opened){
+      console.log('testing')
+    },
+    _renderOpened: function() {
+      console.log('open2')
+      this.cancelAnimation();
+      this.playAnimation('entry');
+
+    },
+    _renderClosed: function() {
+      this.cancelAnimation();
+      this.playAnimation('exit');
+    },
+    _onNeonAnimationFinish: function() {
+      console.log('open', this.opened)
+      if (this.opened) {
+        this._finishRenderOpened();
+      } else {
+        this._finishRenderClosed();
+      }
+    }
+ 
+  });
+
+})
+();
+
+</script>

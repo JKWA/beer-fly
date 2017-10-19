@@ -1,67 +1,115 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-list/iron-list.html">
+<!-- <link rel="import" href="../bower_components/iron-list/iron-list.html"> -->
 <link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../bower_components/toggle-icon/toggle-icon.html">
-
 
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-button.html">
 <link rel="import" href="beer-menu-edit-price.html">
 
-
-
 <dom-module id="beer-menu-edit-item">
 
-  <template>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
-    <style>
-    .card{
+      .card{
         margin: 10px;
+        
+        @apply --paper-material-elevation-1;
+        background-color: white;
+      }
+
+      .menu-item{
         padding: 10px;
       }
-    </style>
 
+      .remove-wrapper{
+        @apply --layout-horizontal;
+        @apply --layout-end-justified;
+        font-size: 1em;
+        font-weight: 400;
+        color: red;
+      }
 
-      <firebase-document
-            id="menuItem"
-            app-name="beer"
-            path="organization/[[orgId]]/menu/[[categoryId]]/item/[[menuId]]"
-            data="{{menuItem}}">
-      </firebase-document>
+      .delete-message-wrapper{
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+        
+        color: white;
+        background-color: red;
+      }
 
-         <paper-material elevation="1" class="card">
+      .delete-message{
+        font-size: 1em;
+        font-weight: 300;
+        margin: 10px;
+      }
+   </style>
+
+    <firebase-auth id="auth" app-name="beer"></firebase-auth>
+
+      <div class="card">
+
+        <iron-collapse opened="[[toggleDelete]]">
+          <div class="delete-message-wrapper">
+            <div class="delete-message">Delete item [[menuItem.name]]?</div>
+            <paper-button on-tap="_deleteMenuItem">Yes</paper-button>
+            <paper-button on-tap="_toggleDelete">No</paper-button>
+          </div>
+        </iron-collapse>
+
+        <div class="menu-item">
+
+          <div class="remove-wrapper">
+            <paper-icon-button icon="beer-icons:delete" on-tap="_toggleDelete"></paper-icon-button> 
+          </div>
             
-            <paper-input 
-                label="Item Name" 
-                value="{{menuItem.name}}"
-                maxlength=100 >
-            </paper-input>
+          <paper-input 
+              id="name"
+              label="Item Name" 
+              value="{{menuName}}"
+              maxlength=100>
+          </paper-input>
 
-            <paper-textarea 
-              label="Description" 
-              value="{{menuItem.description}}"
-              maxlength=1000 >
-            </paper-textarea>
+          <paper-textarea 
+            id="description"
+            label="Description" 
+            always-float-label
+            value="{{description}}" 
+            maxlength=1000 >
+          </paper-textarea>
 
-
+          <template is="dom-repeat" items="[[_toArray(menuItem.price)]]" as="price">
             <beer-menu-edit-price
                 org-id="[[orgId]]"
                 category-id="[[categoryId]]"
-                menu-id="[[menuId]]">
+                menu-id="[[menuId]]"
+                price-item="[[price]]"
+                currency-code="[[organization.currencyCode]]">
             </beer-menu-edit-price>
+          </template>
+
+          <iron-label class="add">
+            <paper-icon-button 
+              icon="beer-icons:add" 
+              on-tap="_addPriceItem">
+            </paper-icon-button>
+          Add price option
+         </iron-label> 
                   
-          </div>
-        </paper-material>  
-      
-  </div>
+        </div>
+      </div>
+          
+   
 
   </template>
 
@@ -81,22 +129,124 @@
           type: String
         },
 
+        menuName:String,
+        savedMenuName:String,
+        description:String,
+        savedDescription:String,
+
         menuId:{
-          type: String
+          type: String,
+          computed: '_computeMenuId(menuItem)',
+          observer:'_menuIdChanged'
         },
 
-        menuItems:{
-          type: Object
+        menuItem:{
+          type:Object
         },
 
         orgId:{
           type: String
         },
 
+        organization:{
+          type:Object
+        },
+
+        toggleDelete:{
+          type:Boolean,
+          value:false
+        },
+
         toggle:{
           type: Boolean
         }
        },
+
+       observers:[
+                    // '_watchMenuItem(menuItem)'
+                ],
+
+      ready: function (){
+
+        // this.name = this.menuItem.name;
+        // this.description = this.menuItem.description;
+
+        this.$.name.addEventListener('blur', event =>{
+
+          if(this.menuName !== this.savedMenuName){
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/menu/${this.categoryId}/item/${this.menuId}`)
+              .update({editName: this.menuName})
+              .then(()=>{
+                this.savedMenuName = this.menuName;
+                console.log('name save');
+              })
+              .catch(error =>{
+                console.log('ERROR', error);
+              })
+          }
+        })
+
+        
+        this.$.description.addEventListener('blur', event =>{
+
+          if(this.description !== this.savedDescription){
+            firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/menu/${this.categoryId}/item/${this.menuId}`)
+              .update({editDescription: this.description})
+              .then(()=>{
+              
+                console.log('description save');
+                this.savedDescription = this.description
+              })
+              .catch(error =>{
+                console.log('ERROR', error);
+              })
+            }
+        })
+      },
+
+      _menuIdChanged: function (newId, oldId){
+        console.log(newId, oldId);
+        if(newId !== oldId){
+          console.log(this.menuItem)
+          if(this.menuItem){
+            console.log('test')
+            this.menuName = this.menuItem.name;
+            this.savedMenuName = this.menuName;
+            this.description = this.menuItem.description;
+            this.savedDescription = this.description;
+          }
+        }
+      },
+
+      _computeMenuId: function (menuItem){
+        if(menuItem){
+          return menuItem.id
+        }
+      },
+
+
+      // _saveName:function (event){
+      //   console.log(event);
+      //   let target = event.currentTarget;
+      //   console.log(target)
+      // },
+
+      //  _setItem: function (orgId, categoryId, menuId){
+      //    console.log(`organization/${orgId}/menu/${categoryId}/item/${menuId}`)
+      //   if(menuId){
+      //     if(this.orgId){
+      //       firebase.database(this.$.auth.app).ref(`organization/${orgId}/menu/${categoryId}/item/${menuId}`)
+      //       .once('value', snapshot =>{
+      //         if(!snapshot.exists()){
+      //           this.menuItem = {};
+      //           console.log('none')
+      //         }else{
+      //           this.menuItem = snapshot.val()
+      //         }
+      //       })
+      //     }
+      //   }
+      // },
 
       _addMenuItem: function (){
         
@@ -106,17 +256,72 @@
 
         if(category.category) {obj.category = category.category};
         if(category.title) {obj.categoryTitle = category.title};
-        if(category.name) {obj.categoryName = category.name};
+        if(category.name) {obj.menuName = category.name};
         if(category.order) {obj.categoryOrder = category.order};
       
           obj.type = 'menu-item';
           this.$.menu.ref.push(obj);
       },
 
-      _deleteMenuItem:function (e){
-        var target = e.currentTarget;
-        var key = target.menuItemKey;
-         this.$.menu.ref.child(key).remove();
+      _toggleDelete(){
+        this.toggleDelete = !this.toggleDelete
+      },
+
+      _deleteMenuItem:function (){
+        if(this.menuId){
+          firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/menu/${this.categoryId}/item/${this.menuId}`)
+            .remove()
+            .then(() =>{
+              console.log('Removed')
+            })
+            .catch(error =>{
+              console.log('REMOVED_ERROR', error)
+            })
+        }
+      },
+
+      _addPriceItem: function (){
+
+        console.log(`/organization/${this.orgId}/menu/${this.categoryId}/item/${this.menuId}/price`)
+        let db =  firebase.database(this.$.auth.app).ref(`/organization/${this.orgId}/menu/${this.categoryId}/item/${this.menuId}/price`)
+        let key = db.push().key;
+
+        db.child(key).update({id:key})
+          .then(function(){
+            console.log('NEW_PRICE_ADDED');
+            }
+          ).catch(function(error){
+            console.log('NEW_PRICE_ADDED_ERROR', error)
+          })
+      },
+
+      _toArray: function (obj){
+      const returnArray=[];
+        if(typeof obj ==='object'){
+          for(let key of Object.keys(obj)){
+            let item = obj[key];
+            let units = '';
+            let nanos = '';
+
+            if(item.units){
+              units = item.units.toString();
+            }
+            item.price = item.price
+
+            if(item.nanos){
+               nanos = item.nanos/10000000;
+              if(nanos < 10){
+                nanos = `.0${nanos}`
+              }else{
+                nanos = `.${nanos}`
+              }
+            }
+
+            item.price = units+nanos;
+            returnArray.push(item);
+          }
+        } 
+       return returnArray;
       },
 
       _sortOrder: function(a,b){  
@@ -126,6 +331,8 @@
           return 1;
         return 0;
       },
+
+      
 
       _test: function (obj) {
         console.log('ITEMS', obj);

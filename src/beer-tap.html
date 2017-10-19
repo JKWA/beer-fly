@@ -1,11 +1,12 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-from-right-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/slide-right-animation.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
@@ -18,29 +19,59 @@
 <link rel="import" href="beer-fab.html">
 <link rel="import" href="beer-beer-tap.html">
 <link rel="import" href="beer-beer-rating.html">
+<link rel="import" href="beer-banner.html">
+
 
 
 
 <dom-module id="beer-tap">
 
-  <template>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
-    <style>
+      :host {
+        display: block;
+        max-width: 640px;
+        background-color: var(--app-background-color);
 
-    a{
+      }
+
+      a{
         text-decoration: none;
         font-size: 1em;
         font-weight: 300;
         color: var(--app-primary-color); 
       }
 
-    .card{
+      .card{
+        @apply --paper-material-elevation-1;
+        background-color: white;
         margin: 10px;
+      }
+
+      .tv-card{
+        @apply --paper-material-elevation-1;
+        background-color: white;
+        margin: 10px;
+        padding: 10px;
+      }
+
+      .info-section{
         padding: 20px;
       }
 
+      .checkbox-wrapper{
+        @apply --layout-horizontal; 
+        @apply --layout-start-justified;
+      }
+
+      .checkbox-wrapper > div{
+        margin: 0 20px 0 0 ;
+      }
+
       .wrapper{
-         @apply(--layout-vertical);        
+         @apply --layout-vertical;        
       }
 
       .wrapper > div{
@@ -66,8 +97,8 @@
       }
 
       .style {
-        font-size: 1.0em;
-        font-weight: 500;
+        font-size: 1.2em;
+        font-weight: 300;
         color: var(--app-primary-color);
        
       }
@@ -79,11 +110,11 @@
       }
 
       .location{
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
+        @apply --layout-wrap;
         font-size: 1em;
-        font-weight: 400;
+        font-weight: 500;
         color: var(--app-primary-color);
       }
 
@@ -92,22 +123,23 @@
       }
 
       .footer-abv{
-        text-align: right;
         margin: 0 20px 0 0;
-        font-weight: 500;
+        font-weight: 300;
+        font-size: 1em;
+        color: var(--app-secondary-color);
       }
 
     </style>
 
-    <iron-image 
-        style="width:100%; height:300px; background-color: #F8F8F8;"
-        sizing="cover" 
-        preload 
-        fade
-        src="[[photoUrl]]">
-    </iron-image>
+  <firebase-auth  app-name="beer" id="auth"></firebase-auth>
 
-    
+
+  <beer-banner
+    google-photo-url="[[organization.googlePhoto.TAP.url]]"
+    photo="[[category.image.banner]]"
+    org-id="[[orgId]]">
+  </beer-banner>
+
     
     <beer-fab owner="[[owner]]" on-tap="_edit"></beer-fab>
 
@@ -122,77 +154,92 @@
     </div>
    </template>
 
-   <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
+   <iron-media-query query="max-width: 640px" query-matches="{{smallScreen}}"></iron-media-query>
    <div hidden="[[smallScreen]]">
-   <paper-material class="card" elevation="1">
+   <div class="tv-card">
     <a aria-label$="Cast to Television" href$="/[[nameUrl]]/tv?orgid=[[orgId]]" target="_blank">
      <iron-icon icon="beer-icons:cast"></iron-icon>
      Cast to Television
     </a>
-   </paper-material>
+   </div>
    </div>
    <template is="dom-if" if="[[owner]]">
-      <paper-material class="card" elevation="1">
+      <div class="card" elevation="1">
         <iron-label>
             <a aria-label$="TEST" href$="/[[nameUrl]]/tap-add?orgid=[[orgId]]">
               <paper-icon-button icon="beer-icons:add"></paper-icon-button>
               Add a beer on tap</a>
           </iron-label>
-      </paper-material>
+      </div>
    </template>
    
 
     <template is="dom-repeat" items="[[_getArray(organization.onTap)]]" sort="_sortOrder" as="beer">
-      <paper-material class="card" elevation="1">
+      <div class="card" elevation="1">
+        <div class="info-section">
+          <div>
+              <beer-beer-tap
+                org-id="[[orgId]]"
+                beer-id="[[beer.$key]]"
+                owner="[[owner]]">
+              </beer-beer-tap>
+            </div>
+            
+            <a aria-label$="TEST" href$="/[[nameUrl]]/description?orgid=[[organization.place_id]]&beerId=[[beer.$key]]">
+              <div class="wrapper">
+                <div class="name">[[beer.name]]
+                  <i>
+                    <span hidden$="[[!beer.nitro]]"> - Nitro</span>
+                    <span hidden$="[[!beer.cask]]"> - Cask-Conditioned</span>
+                    <span hidden$="[[!beer.barrel]]"> - Barrel-Aged</span>
+                  </i>
+                </div>
+                <div class="style">[[beer.styleName]]</div>
+                <div class="location">
+                  <div>[[beer.breweryName]] - </div>
+                  <div>[[beer.city]],</div>
+                  <div>[[beer.stateAbbreviation]]</div>
+                </div>
+                <div class="beer-description">[[beer.description]]</div>       
 
-        <template is="dom-if"  if="[[!owner]]">
+                <div class="footer-abv" hidden$="[[!beer.abv]]">ABV: [[beer.abv]]</div>
+              </div>
+            </a>
+            <template is="dom-if" if="[[owner]]">
+              <div class="checkbox-wrapper">
+                <div>
+                  <iron-label>
+                      <paper-checkbox beer-id="[[beer.$key]]" checked={{beer.nitro}} on-change="_updateNitro"></paper-checkbox>
+                      <span>Nitro</span>
+                  </iron-label>
+                </div>
+                <div>
+                  <iron-label>
+                      <paper-checkbox beer-id="[[beer.$key]]" checked={{beer.cask}} on-change="_updateCask"></paper-checkbox>
+                      <span>Cask-Conditioned</span>
+                  </iron-label>
+                </div>
+                <div>
+                  <iron-label>
+                      <paper-checkbox beer-id="[[beer.$key]]" checked={{beer.barrel}} on-change="_updateBarrel"></paper-checkbox>
+                      <span>Barrel-Aged</span>
+                  </iron-label>
+                </div>
+              </div>
+            </template>
+          </div>
+          <template is="dom-if" if="[[!owner]]">   
             <div>
+
               <beer-beer-rating 
-                  beer-id="[[beer.id]]"
-                  login="{{login}}">
+                  beer-id="[[beer.$key]]"
+                  login="{{login}}"
+                  user-data="[[userData]]">
               </beer-beer-rating>
             </div>
         </template>
 
-        <div>
-            <beer-beer-tap
-              org-id="[[orgId]]"
-              beer-id="[[beer.id]]"
-              owner="[[owner]]">
-            </beer-beer-tap>
-          </div>
-           
-
-          <div class="wrapper">
-            <div class="name">[[beer.name]]</div>
-            <div class="style">[[beer.styleName]]</div>
-            <div class="beer-description">[[beer.description]]</div>       
-            <div class="location">
-              <div>[[beer.breweryName]] - </div>
-              <div>[[beer.city]],</div>
-              <div>[[beer.stateAbbreviation]]</div>
-            </div>
-            <div class="footer-abv" hidden$="[[!beer.abv]]">ABV: [[beer.abv]]</div>
-              
-          </div>
-     <!--<beer-beer-card 
-          beer-id="[[beer.id]]"
-          beer-name="[[beer.name]]"
-          beer-description="[[beer.description]]"
-          brewery-name="[[beer.breweryName]]"
-          brewery-city="[[beer.city]]"
-          brewery-state="[[beer.stateAbbreviation]]"
-          style-name="[[beer.styleName]]"
-          abv="[[beer.abv]]"
-          place-id="[[place.place_id]]"
-          crowd-source="[[organization.crowdSource]]"
-          owner="[[owner]]"
-          uid="[[user.uid]]"
-          edit="[[canEdit]]"
-          edit-beer-id="{{editBeerId}}"
-          login="{{login}}">
-      </beer-beer-card>-->
-      </paper-material>
+      </div>
     </template>
 
 
@@ -208,10 +255,12 @@
       </div>
     
         <paper-dialog-scrollable>
-          <upload-image org-id="[[orgId]]" type="banner" key="category/TAP/image"></upload-image>   
-          <paper-input label="Motto" value="{{category.motto}}"maxlength=100 char-counter></paper-input>
-          <paper-textarea label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
+          <upload-image org-id="[[orgId]]" type="banner" file-name="[[nameUrl]]_TAP_banner" key="category/TAP/image"></upload-image>   
+          <paper-textarea always-float-label label="Description" value="{{category.description}}" maxlength=2000 char-counter></paper-textarea>
         </paper-dialog-scrollable>
+        <div>
+          <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
+        </div>
       </template>
       <div class="">
         <paper-button dialog-dismiss autofocus>CLOSE</paper-button>
@@ -238,7 +287,7 @@
 
         category:{
          type: Object
-       },
+        },
 
         editBeerId:{
           type: String
@@ -247,28 +296,25 @@
         login: {
          type: Boolean,
          notify: true
-       },
+        },
 
-       nameUrl:{
-         type: String
-       },
+        nameUrl:{
+          type: String
+        },
 
-       organization:{
-         type: Object
-       },
+        organization:{
+          type: Object
+        },
 
-       orgId:{
-         type: String
-       },
+        orgId:{
+          type: String
+        },
 
-       owner:{
-         type: Boolean
-       },
-       
-        photoUrl: {
-          type: String,
-          computed: '_computePhotoUrl(category, place)'
-        }
+        owner:{
+          type: Boolean
+        },
+
+        userData:Object
      
     },
 
@@ -324,27 +370,73 @@
         return 0;
       },
 
-      _computePhotoUrl: function (category, place) {
-        try{
-          if(category.image){
-            if(category.image.banner){
-              if(category.image.banner.url){
-                return category.image.banner.url;
-              }
-            }
-          }
-          var photoMeta = {};
-          var photos = place.photos
-          var categoryIndex = 1
-          if(photos.length < categoryIndex){
-            categoryIndex = photos.length
-          }
-          photoMeta.maxWidth = place.photos[categoryIndex].width;
-          photoMeta.maxHeight = place.photos[categoryIndex].height;
-          return place.photos[categoryIndex].getUrl(photoMeta);
-        }catch (error){
+      _updateCask: function (event){
+        var target =  event.currentTarget
+        var beerId = target.beerId;
+        var checked = target.checked;
+        var obj = {};
+        obj.cask = checked;
 
-       }
+        if(this.orgId){
+          if(beerId){
+        
+            firebase.database(this.$.auth.app).ref('organization')
+              .child(this.orgId).child('onTap').child(beerId)
+              .update(obj)
+              .then(function(){
+                console.log('SAVED_CASK');
+              })
+              .catch(function(error){
+                console.log('SAVED_CASK_ERROR', error);
+              })
+          }
+        }
+      },
+
+      _updateNitro: function (event){
+        var target =  event.currentTarget
+        var beerId = target.beerId;
+        var checked = target.checked;
+        var obj = {};
+        obj.nitro = checked;
+
+        if(this.orgId){
+          if(beerId){
+        
+            firebase.database(this.$.auth.app).ref('organization')
+              .child(this.orgId).child('onTap').child(beerId)
+              .update(obj)
+              .then(function(){
+                console.log('SAVED_NITRO');
+              })
+              .catch(function(error){
+                console.log('SAVED_NITRO_ERROR', error);
+              })
+          }
+        }
+      },
+
+       _updateBarrel: function (event){
+        var target =  event.currentTarget
+        var beerId = target.beerId;
+        var checked = target.checked;
+        var obj = {};
+        obj.barrel = checked;
+
+        if(this.orgId){
+          if(beerId){
+        
+            firebase.database(this.$.auth.app).ref('organization')
+              .child(this.orgId).child('onTap').child(beerId)
+              .update(obj)
+              .then(function(){
+                console.log('SAVED_NITRO');
+              })
+              .catch(function(error){
+                console.log('SAVED_NITRO_ERROR', error);
+              })
+          }
+        }
       },
 
       _test: function (obj) {

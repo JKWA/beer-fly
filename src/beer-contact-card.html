@@ -1,14 +1,20 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 
 
 <dom-module id="beer-contact-card">
 
-  <template>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
-    <style>
+    :host {
+      display: block;
+      max-width: 640px;
+      background-color: white;
+    }
 
     a{
       color: var(--app-primary-color);
@@ -20,96 +26,38 @@
       color: var(--app-primary-color);
       font-size: 1.12em;
       font-weight: 300;
-
-
     }
-
-      /*.card{
-        width: 100%;
-        margin: 0 0 20px 0;
-      }
-
-       .menu{
-         @apply(--layout-vertical);         
-      }
-
-      .category{
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
-      }
-
-
-      .menu-items {
-         @apply(--layout-vertical);
-         margin: 0 0 0 20px;
-         min-width: 400px;
-      }
-
-      .menu-item {
-        @apply(--layout-horizontal);
-        @apply(--layout-start-justified);
-      }
-
-      .category-title{
-        font-size: 1.5em;
-        font-weight: 200;
-        min-width: 400px;
-        color: var(--app-accent-color);
-        @apply(--layout-horizontal);
-        @apply(--layout-end-justified);
-        @apply(--layout-center);
-      }
-
-
-
-      .menu-title{
-        color: var(--app-primary-color);
-        font-size: 1em;
-        font-weight: 400;
-      }
-
-      .menu-price{
-        font-size: 1em;
-        font-weight: 300;
-        color: var(--app-secondary-color);
-        margin: 0 0 0 10px
-      }*/
-      
-
-
-      @media (max-width: 767px) {
-        
-
-        h3 {
-          margin: 24px 0;
-        }
-
-      }
 
     </style>
 
-  <paper-material elevation="0" animated-shadow="false">
+  <div animated-shadow="false">
     <div class="contact">
-      <div>[[place.name]]</div>
+      <div>[[organization.name]]</div>
       <div>
-        <a href="[[place.url]]">
-            [[place.formatted_address]]
+        <a href="[[organization.url]]">
+            [[organization.formatted_address]]
         </a>
         </div>
       <div>
-          <a href="tel:[[place.formatted_phone_number]]">
-            [[place.formatted_phone_number]]
+          <a href="tel:[[organization.formatted_phone_number]]">
+            [[organization.formatted_phone_number]]
           </a>
       </div>
       
       <div>
-        <a href="[[place.website]]">
-          [[place.website]]
+        <a href="[[organization.website]]">
+          [[organization.website]]
+        </a>
+      </div>
+
+      <div>
+        <a href="[[organization.url]]">
+          Map
         </a>
       </div>
 
     </div>
-  </paper-material>
+  </div>
   </template>
 
 
@@ -119,10 +67,13 @@
     Polymer({
 
       is: 'beer-contact-card',
+      properties:{
 
+        organization:{
+          type: Object
+        }
+      },
     
-     
-     
       _test: function (obj){
         console.log(obj);
       }

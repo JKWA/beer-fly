@@ -1,0 +1,909 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<!--<link rel="import" href="../bower_components/polymerfire/firebase-query.html">-->
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+
+<link rel="import" href="beer-account-plan-options.html">
+<link rel="import" href="beer-icons.html">
+<!--<link rel="import" href="beer-login.html">-->
+
+
+<dom-module id="beer-question">
+
+<template strip-whitespace>
+  <style include="paper-material-styles">
+
+    a{
+      color: var(--app-accent-color);
+    }
+
+    a > iron-icon {
+      text-decoration: none;
+    }
+
+    ol{
+      list-style-type: none;
+    }
+
+    li{
+      @apply --layout-horizontal;
+      padding: 10px;
+    }
+
+    li > div {
+      margin: 0 10px 0 0;
+      font-size: 1em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+    }
+
+    paper-fab{
+      background-color: var(--app-accent-color);
+    }
+
+    iron-icon{
+      color: var(--app-accent-color);
+    }
+
+    .question{
+      padding: 12px;
+      margin: 15px;
+      @apply --paper-material-elevation-1;
+      background-color: white;
+    }
+
+    .question-header{
+      font-size: 1.5em;
+      color: var(--app-primary-color);
+      font-weight: 400;
+    }
+
+    .question-body-list{
+      @apply --layout-vertical;
+    }
+    .question-body-list > div:not(:first-child){
+      margin: 10px 0 0 0;
+    }
+
+    .description {
+      @apply --layout-horizontal;
+      padding: 10px 10px 0 10px;
+      margin: 10px 10px 0 10px;
+    }
+
+    .description > div {
+      margin: 0 10px 0 0;
+      color: var(--app-primary-color);
+      font-weight: 400;
+      font-size: 1em;
+    }
+
+    .description-can {
+      color: var(--app-accent-color);
+      font-weight: 400;
+      font-size: 1.2em;
+      margin: 20px 0 0 20px;
+    }
+
+    .plan {
+      margin: 20px 0;
+      @apply --layout-horizontal;
+      @apply --layout-center-justified;
+    }
+
+  </style>
+
+  <firebase-auth id="auth" app-name="beer" status-known="[[statusKnown]]"user="{{user}}"></firebase-auth>
+  <firebase-document
+      app-name="beer"
+      id="userData"
+      disabled
+      path="user/[[user.uid]]"
+      data="{{userData}}">
+  </firebase-document>
+
+  <div class="question-wrapper">
+
+    <div class="question">
+      <div class="question-header">
+        What is Beer-Fly?
+      </div>
+      <div class="description">
+        <div>
+          <iron-image src="/images/beer-icon-44.png"></iron-image>
+        </div>
+        <div>
+          <div>
+            Beer-Fly is a web application connecting beer-lovers with craft beers and food trucks.
+          </div>
+        </div>
+       </div>
+       <div class="description-can">
+          With Beer-Fly you can:
+        </div>
+      <div class="question-body">
+        <ol>
+
+          <li>
+            <div>
+              <a href="#home_screen">
+              <iron-icon icon="beer-icons:exit-to-app"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#home_screen">Add Beer-Fly to your home screen.</a>
+            </div>
+          </li>
+
+          <li>
+            <div>
+              <a href="#beer_crawl">
+              <iron-icon icon="beer-icons:crawl"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#beer_crawl">Find and create Beer-Crawls.</a>
+            </div>
+          </li>
+          
+          <li>
+            <div>
+              <a href="#near_me">
+              <iron-icon icon="beer-icons:gps-fixed"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#near_me">Find nearby pubs and breweries.</a>
+            </div>
+          </li>
+
+          <li>
+            <div>
+              <a href="#share_information">
+              <iron-icon icon="beer-icons:send"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#share_information">Share information with friends.</a>
+            </div>
+          </li>
+
+          <li>
+            <div>
+              <a href="#find_beers">
+              <iron-icon icon="beer-icons:near-me"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#find_beers">Find your favorite beers on tap.</a>
+            </div>
+          </li>
+          <li>
+            <div>
+              <a href="#rate_beers">
+              <iron-icon icon="beer-icons:star"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#rate_beers">Rate beers, pubs, breweries, and food-trucks.</a>
+            </div>
+          </li>
+          <li>
+            <div>
+              <a href="#save_beers">
+              <iron-icon icon="beer-icons:favorite"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#save_beers">Save your favorite beers, pubs, breweries, and food-trucks.</a>
+            </div>
+          </li>
+          
+          <li>
+            <div>
+              <a href="#edit_organization">
+                <iron-icon icon="beer-icons:edit"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#edit_organization">
+                Edit your organization's beers, taplist, menu, and food truck schedule.
+              </a>
+            </div>
+          </li>
+
+          <li>
+            <div>
+              <a href="#cast_taplist"> 
+              <iron-icon icon="beer-icons:tv"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#cast_taplist">
+                <div>Display a tap list on televisions or large monitors.</div>
+              </a>
+            </div>
+          </li>
+
+          <li>
+            <div>
+              <a href="#export_data">
+                <iron-icon icon="beer-icons:open-in-browser"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#export_data">
+                Display Beer-Fly's beer and tap lists on your website.
+              </a>
+            </div>
+          </li>
+
+
+          
+          <li>
+            <div>
+              <a href="#upgrade_plan">
+                <iron-icon icon="beer-icons:settings"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#upgrade_plan">
+                Upgrade your brewery or pub's plan.
+              </a>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- exit-to-app -->
+
+    <div id="home_screen" class="question">
+      <div class="question-header">Add to your home screen</div>
+      <div class="question-body">
+        <ol>
+          <li>
+            <div>
+              <iron-icon icon="beer-icons:exit-to-app"></iron-icon>
+            </div>
+            <div>Beer-Fly is natively runs in the browser and does not need to be downloaded. See directions for your browser to quickly add Beer-Fly to your home screen.</div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <div id="beer_crawl" class="question">
+      <div class="question-header">Create Beer-Crawls</div>
+      <div class="question-body">
+        <ol>
+          <li>
+            <a href="/home/crawl">
+              <iron-icon icon="beer-icons:crawl"></iron-icon>
+              </a>
+            <div>
+            </div>
+            <div>Find Beer-Crawls close to you at <a href="/home/crawl">/home/crawl</a></div>
+          </li>
+          <li>
+            <a href="/home/crawl">
+              <iron-icon icon="beer-icons:edit"></iron-icon>
+              </a>
+            <div>
+            </div>
+            <div>Edit your Beer-Crawls at <a href="/home/crawl">/home/crawl</a></div>
+          </li>
+          <li>
+            <a href="/home">
+              <iron-icon icon="beer-icons:gps-fixed"></iron-icon>
+              </a>
+            <div>
+            </div>
+            <div>Create a Beer-Crawl and add pubs from Near-me at <a href="/home">/home</a></div>
+          </li>
+          <li>
+            <div>
+              <iron-icon icon="beer-icons:crawl"></iron-icon>
+            </div>
+            <div>Create a Beer-Crawl and add the pub from a pub's home page.</div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <div id="near_me" class="question">
+      <div class="question-header">
+        Find a pub, brewery, or food truck
+      </div>
+        
+      <div class="question-body">
+        <ol>
+          <li>
+            <div>
+              <a href="/home/home">
+              <iron-icon icon="beer-icons:gps-fixed"></iron-icon>
+              </a>
+            </div>
+            <div>Find pubs or breweries near a location at <a href="/home">/home</a></div>
+          </li>
+           <li>
+            <div>
+              <a href="/home/search">
+              <iron-icon icon="beer-icons:search"></iron-icon>
+              </a>
+            </div>
+            <div>Search for pubs, breweries, or food trucks at <a href="/home/search">/home/search</a></div>
+          </li>
+          <li>
+            <div>
+              <a href="/home/account">
+              <iron-icon icon="beer-icons:account"></iron-icon>
+              </a>
+            </div>
+            <div>Sign in with a verified email and find your pub or brewery at <a href="/home/account">/home/account</a></div>
+          </li>
+
+          <li>
+            <div>
+              <a href="https://www.google.com/business">
+              <iron-icon icon="beer-icons:add"></iron-icon>
+              </a>
+            </div>
+            <div>Add your missing business using <a href="https://www.google.com/business">Google Business</a>.</div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <div id="share_information" class="question">
+      <div class="question-header">
+        Share beers, locations, pubs, and Beer-Crawls with others.
+      </div>
+        
+      <div class="question-body">
+        <ol>
+          <li>
+            <div>
+              <a href="/home/home">
+              <iron-icon icon="beer-icons:send"></iron-icon>
+              </a>
+            </div>
+            <div>Copy the url or use the browser's share button to send friends page you are viewing.</div>
+          </li>
+           
+        </ol>
+      </div>
+    </div>
+
+
+    <div class="question">
+      <div class="question-header">
+        Ranking for "Near me" searchs
+      </div>
+      <div class="question-body">
+        <ol>
+          <li>
+            <div>
+              <a href="/home">
+              <iron-icon icon="beer-icons:gps-fixed"></iron-icon>
+              </a>
+            </div>
+            <div>Standard Plans are ranked first within 5 miles, then the results are orderd by distance. </div>
+          </li>
+           <li>
+            <div>
+              <a href="#upgrade_plan">
+                <iron-icon icon="beer-icons:settings"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <a href="#upgrade_plan">
+                Upgrade your brewery or pub's plan.
+              </a>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <div id="find_beers" class="question">
+      <div class="question-header">
+        Find your favorite beers on tap
+      </div>
+        
+      <div class="question-body">
+        <ol>
+          <li>
+            <div>
+              <a href="/home/home">
+              <iron-icon icon="beer-icons:gps-fixed"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <div>Find the brewery on at&nbsp<a href="/home">/home</a></div>
+              <div>Go to their beer page and tap the beer.</div>
+            </div>
+          </li>
+           <li>
+            <div>
+              <a href="/home/search">
+              <iron-icon icon="beer-icons:search"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <div>Search for the brewery at&nbsp<a href="/home/search">/home/search</a></div>
+              <div>Go to their beer page and tap the beer.</div>
+            </div>
+          </li>
+          <li>
+            <div>
+              <a href="/home/search">
+              <iron-icon icon="beer-icons:search"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <div>Search by beer name at&nbsp<a href="/home/search">/home/search</a></div>
+              <div>Go to the brewery's beer page and tap the beer.</div>
+            </div>
+          </li>
+          <li>
+            <div>
+              <a href="home/favorite/beer">
+              <iron-icon icon="beer-icons:favorite"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <div>Go to your favorite beers at&nbsp<a href="home/favorite/beer">home/favorite/beer</a></div>
+              <div>Tap the beer.</div>
+            </div>
+          </li>
+
+          <li>
+            <div>    
+              <iron-icon icon="beer-icons:browse"></iron-icon>
+            </div>
+            <div>Tap a beer while browsing to see other locations.</div>
+          </li>
+
+        </ol>
+      </div>
+    </div>
+
+    <div id="rate_beers" class="question">
+      <div class="question-header">
+        Rate beers, breweries, and food trucks.
+      </div>
+      <div class="question-body">
+        <ol>
+          <template is="dom-if" if="[[!user]]">
+            <li>
+              <div>
+                <a href="/home/account">
+                <iron-icon icon="beer-icons:account"></iron-icon>
+                </a>
+              </div>
+              <div>Sign in at&nbsp<a href="/home/account">/home/account</a></div>
+            </li>
+          </template>
+          <li>
+            <div>
+              <iron-icon icon="beer-icons:star"></iron-icon>
+            </div>
+            <div>Rate beers and pubs by tapping on a star rating.</div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <div id="save_beers" class="question">
+      <div class="question-header">
+        Save your favorite beers and breweries
+      </div>
+        
+      <div class="question-body">
+        <ol>
+          <template is="dom-if" if="[[!user]]">
+            <li>
+              <div>
+                <a href="/home/account">
+                <iron-icon icon="beer-icons:account"></iron-icon>
+                </a>
+              </div>
+              <div>Sign in at&nbsp<a href="/home/account">/home/account</a></div>
+            </li>
+          </template>
+          <li>
+            <div>
+              <iron-icon icon="beer-icons:star"></iron-icon>
+            </div>
+            <div>Identify your favorite beers and pubs by giving a star rating of four or above.</div>
+          </li>
+          <li>
+            <div>
+              <a href="/home/favorite">
+              <iron-icon icon="beer-icons:favorite"></iron-icon>
+              </a>
+            </div>
+            <div>Find your saved favorites at&nbsp<a href="/home/favorite">/home/favorite</a></div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    
+
+    <div class="question">
+      <div class="question-header">
+        Social verses Email login
+      </div>
+      <div class="question-body">
+        <ol>
+          <li>
+            <div><iron-icon icon="beer-icons:encrypted"></iron-icon></div>
+            <div>
+              <div>Signing in through social accounts takes advantage of Google and Facebook's login security measures.&nbsp;
+                   This is used to manage the login, it does not join or link your social account to Beer-Fly.</div>
+              <div>A Google or Facebook account can be created with just about any email.</div>
+            </div>
+
+          </li>
+          <li>
+            <div><iron-icon icon="beer-icons:email"></iron-icon></div>
+            <div>
+              <div>Beer-fly's email signin uses Google’s infrastructure to keep your password secure.</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    
+
+    
+
+    
+
+    <div id="edit_organization" class="question">
+      <div class="question-header">
+        Edit your brewery, pub, or food truck
+      </div>
+        
+      <div class="question-body">
+         <ol>
+          <template is="dom-if" if="[[!user]]">
+            <li>
+              <div>
+                <a href="/home/account">
+                <iron-icon icon="beer-icons:account"></iron-icon>
+                </a>
+              </div>
+              <div>Sign in at&nbsp<a href="/home/account">/home/account</a></div>
+            </li>
+          </template>
+          <template is="dom-if" if="[[!user.emailVerified]]">
+            <li>
+              <div>
+                <a href="/home/account">
+                <iron-icon icon="beer-icons:email"></iron-icon>
+                </a>
+              </div>
+              <div>Verify your email at&nbsp<a href="/home/account">/home/account</a></div>
+            </li>
+          </template>
+          <li>
+            <div><iron-icon icon="beer-icons:email"></iron-icon></div>
+            <div>
+              You have permission to edit organizations that match your verified email domain
+              <span hidden$="[[!userData.domain]]">([[userData.domain]])</span>
+            </div>
+          </li>
+          <li>
+            <div>
+              <a href="/home/account">
+              <iron-icon icon="beer-icons:account"></iron-icon>
+              </a>
+            </div>
+            <div>Find your pub or brewery at <a href="/home/account">/home/account</a></div>
+          </li>
+          <li>
+            <div><paper-fab mini icon="beer-icons:edit"></paper-fab></div>
+            <div>Start at the /main page and use the edit button to update metadata and edit the /main page banner image. </div> 
+          </li>
+
+          <li>
+            <div><paper-fab mini icon="beer-icons:edit"></paper-fab></div>
+            <div>Go to subareas such as /beer and /menu and use the edit button to edit page banner images. </div> 
+          </li>
+          <li>
+            <div><iron-icon icon="beer-icons:edit"></iron-icon></div>
+            <div>Use edit icons on the subarea pages to edit page content.</div>
+          </li>
+          <li>
+            <div>
+              <a href="https://www.google.com/business">
+              <iron-icon icon="beer-icons:add"></iron-icon>
+              </a>
+            </div>
+            <div>Edit your business name, location, phone number, or website (domain) using <a href="https://www.google.com/business">Google Business</a>.</div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-header">
+        Add your brewery or pub to "Near me"
+      </div>
+      <div class="question-body">
+        <ol>
+          <template is="dom-if" if="[[!user]]">
+            <li>
+              <div>
+                <a href="/home/account">
+                <iron-icon icon="beer-icons:account"></iron-icon>
+                </a>
+              </div>
+              <div>Sign in at&nbsp<a href="/home/account">/home/account</a></div>
+            </li>
+          </template>
+          <template is="dom-if" if="[[!user.emailVerified]]">
+            <li>
+              <div>
+                <a href="/home/account">
+                <iron-icon icon="beer-icons:email"></iron-icon>
+                </a>
+              </div>
+              <div>Verify your email at&nbsp<a href="/home/account">/home/account</a></div>
+            </li>
+          </template>
+          <li>
+            <div><iron-icon icon="beer-icons:edit"></iron-icon></div>
+            <div>The quickest way to add your pub or brewery to the "Near me" results is by adding tap or beer information.</div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-header">
+      Respond to a review
+      </div>
+      <div class="question-body">
+        <ol>
+          <li>
+            <div><iron-icon icon="beer-icons:review"></iron-icon></div>
+            <div>
+              <div>Beer-fly encorporates Google reviews.  Respond to a review using <a href="https://www.google.com/business">Google Business</a>.</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <div id="cast_taplist" class="question">
+      <div class="question-header">
+      Cast taplist to television or large monitor
+      </div>
+      <div class="question-body">
+        <ol>
+          <li>
+            <div><iron-icon icon="beer-icons:beer"></iron-icon></div>
+            <div>
+              <div>Start your organization's taplist page</div>
+            </div>
+          </li>
+          <li>
+            <div><iron-icon icon="beer-icons:cast"></iron-icon></div>
+            <div>
+              <div>Tap the cast button to open the television page in a new browser tab.</div>
+            </div>
+          </li>
+          <li>
+            <div><iron-icon icon="beer-icons:tv"></iron-icon></div>
+            <div class="question-body-list">
+              <div>Monitors vary in size, resolution, and distance from patrons.</div>
+              <div>Select a theme, then adjust text-size, number of beers to display per page, and the page change speed.</div>
+              <div>Tap the start button.</div>
+              <div>Using the setting for your computer and/or browser, display the page on a large monitor or television (e.g. use Chrome browser and ChromeCast).</div>
+              <div>If using multiple montors, open a new tab per page and select a single page for each tab.</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <div id="export_data" class="question">
+      <div class="question-header">
+      Display Beer-Fly beer and tap data to your site
+      </div>
+      <div class="question-body">
+        <ol>
+          <template is="dom-if" if="[[!user]]">
+            <li>
+              <div>
+                <a href="/home/account">
+                <iron-icon icon="beer-icons:account"></iron-icon>
+                </a>
+              </div>
+              <div>Sign in at&nbsp<a href="/home/account">/home/account</a></div>
+            </li>
+          </template>
+          <template is="dom-if" if="[[!user.emailVerified]]">
+            <li>
+              <div>
+                <a href="/home/account">
+                <iron-icon icon="beer-icons:email"></iron-icon>
+                </a>
+              </div>
+              <div>Verify your email at&nbsp<a href="/home/account">/home/account</a></div>
+            </li>
+          </template>
+         <li>
+            <div>
+              <a href="/home/account">
+              <iron-icon icon="beer-icons:account"></iron-icon>
+              </a>
+            </div>
+            <div class="question-body-list">
+              <div>Upgrade the location to the standard plan <a href="/home/account">/home/account</a></div>
+              <div>Tap - <i>Add Beer-Fly's taplist and beer information to your site.</i></div>
+            </div>
+          </li>
+          <li>
+            <div>
+              <iron-icon icon="beer-icons:settings"></iron-icon>
+            </div>
+            <div class="question-body-list">
+              <div>Select HTML or JSON.</div>
+              <div>HTML is the quickest solution, match your site's colors and size and copy the iframe snippet to your site.</div>
+              <div>JSON is is used to incorporate the data into your site using javascript.</div>
+            </div>
+          </li>
+
+            
+        </ol>
+      </div>
+    </div>
+
+
+
+
+
+
+
+    <div id="upgrade_plan" class="question">
+      <div class="question-header">
+      Manage your organization plans
+      </div>
+      <div class="question-body">
+        <ol>
+          <template is="dom-if" if="[[!user]]">
+            <li>
+              <div>
+                <a href="/home/account">
+                <iron-icon icon="beer-icons:account"></iron-icon>
+                </a>
+              </div>
+              <div>Sign in at&nbsp<a href="/home/account">/home/account</a></div>
+            </li>
+          </template>
+          <template is="dom-if" if="[[!user.emailVerified]]">
+            <li>
+              <div>
+                <a href="/home/account">
+                <iron-icon icon="beer-icons:email"></iron-icon>
+                </a>
+              </div>
+              <div>Verify your email at&nbsp<a href="/home/account">/home/account</a></div>
+            </li>
+          </template>
+          <li>
+            <div>
+              <a href="/home/account">
+                <iron-icon icon="beer-icons:settings"></iron-icon>
+              </a>
+            </div>
+            <div>
+              <div>Manage the Beer-Fly plan for your organization at <a href="/home/account">/home/account</a>.</div>
+            </div>
+          </li>
+        </ol>
+         <div class="plan">
+          <beer-account-plan-options>
+          </beer-account-plan-options>
+        </div>
+      </div>
+    </div>
+
+
+
+  </div>
+
+        
+      
+
+</template>
+  <script>
+
+    Polymer({
+
+      is: 'beer-question',
+
+      properties: {
+        anchor:String,
+        user:{
+          type: Object
+        },
+        
+        userData:{
+          type: Object
+        },
+        _pageReady:{
+          type:Boolean,
+          value:false
+        }
+      },
+
+      observers:['_watchUser(user)',
+                '_watchAnchor(anchor, _pageReady)'],
+
+      ready: function (){
+        this._pageReady = true;
+      },
+
+      _watchUser: function (user){
+        if(user){
+          if(user.uid){
+            this.$.userData.disabled = false;
+          }else{
+            this.$.userData.disabled = true;
+          }
+        }else{
+          this.$.userData.disabled = true;
+        }
+      },
+
+      _watchAnchor: function (anchor, pageReady){
+        if(anchor){
+          if(pageReady){
+            console.log(anchor);
+
+            var target = this.$$(`#${anchor}`)
+            // var target = this.$[anchor]
+            if(target)
+            target.scrollIntoView(true);
+            // window.scroll(0, scrolledY - yourHeight);
+            var scrolledY = window.scrollY;
+
+            if(scrolledY){
+              Polymer.AppLayout.scroll({ top: scrolledY-80, behavior: 'silent' })
+            }
+          }
+        }
+      },
+
+      _onTapAnchor: function(event) {
+        // event.preventDefault();
+        // var anchor = event.currentTarget.attributes.href.value;
+        // this.$$(anchor).scrollIntoView();
+      },
+
+      
+
+      _test: function(obj){
+          console.log(obj);
+
+      }
+
+    });
+
+  </script>
+
+</dom-module>

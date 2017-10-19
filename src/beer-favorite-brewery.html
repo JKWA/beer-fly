@@ -1,52 +1,70 @@
+<!-- TODO: Update firebase from once to on, update to change on sign out -->
+
+
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 
 <link rel="import" href="beer-icons.html">
 <link rel="import" href="beer-pub-card.html">
+<link rel="import" href="beer-location.html">
+<link rel="import" href="beer-dialog.html">
+<link rel="import" href="beer-crawl-dialog.html">
 
 
 <dom-module id="beer-favorite-brewery">
   
 
-  <template>
+  <template strip-whitespace>
+    
+    <style include="paper-material-styles">
 
-    <style>
+      :host {
+        display: block;
+        max-width: 640px;
+        background-color: var(--app-background-color);
+      }
+
+      .card{
+        padding: 10px;
+        margin: 15px 10px;
+        @apply --paper-material-elevation-1;
+        background-color: white;
+      }
 
     </style>
 
-    <firebase-auth 
-        id="auth" 
-        app-name="beer"
-        user="{{user}}" 
-        status-known="{{statusKnown}}"
-        on-error="handleError">
-    </firebase-auth>
+    <firebase-auth id="auth" app-name="beer" user="{{user}}"></firebase-auth>
 
-    <firebase-document
-        id="favorite"
-        app-name="beer"
-        disabled
-        path="user/[[user.uid]]/favorite"
-        data="{{favorite}}">
-    </firebase-document>
+    <beer-location
+      location="{{location}}">
+    </beer-location>
 
+    <template is="dom-repeat" items=[[allData]] as="pub" observe="distance" sort="_sortByDistance">
 
-
-    <template is="dom-repeat" items=[[_toArray(favorite)]] as="pub" sort="_sortByRating">
-      
-      <beer-pub-card 
-            place-id="[[pub.place_id]]"
-            name="[[pub.name]]"
-            address="[[pub.vicinity]]"
-            dog-friendly="[[!pub.dogFriendly]]"
-            patio="[[!pub.patio]]"
-            over21="[[!pub.over21]]">
+      <beer-pub-card class="card"
+        place-id="[[pub.$key]]"
+        organization="[[pub]]"
+        permen
+        user-data="[[userData]]"
+        open-edit-pub-crawl="{{crawlDialogOpened}}"
+        edit-place="{{editPlace}}">
       </beer-pub-card>
 
-
     </template>
+
+    <beer-dialog
+      id="favoriteCrawlEditor"
+      entry-animation="slide-from-bottom-animation"
+      exit-animation="slide-down-animation"
+      with-backdrop
+      opened="{{crawlDialogOpened}}">
+      
+      <beer-crawl-dialog
+        edit-place="[[editPlace]]"
+        crawl-data="{{crawlData}}">
+      </beer-crawl-dialog>
+
+    </beer-dialog>
 
 
   </template>
@@ -57,51 +75,152 @@
     is: 'beer-favorite-brewery',
 
      properties: {
+
+      crawlData:{
+        type:Object
+      },
+       crawlDialogOpened:{
+         type:Boolean,
+         value:false
+       },
+
+       editPlace:{
+         type:Object
+       },
+
         user:{
           type: Object
         },
+
+        location:{
+          type:Object
+        },
+
+        userData:{
+          type:Object
+        },
+
+        allData:{
+          type: Array,
+          value: function (){return [];}
+        }
       },
 
-     observers:['_watchUserStatus(statusKnown)'],
+     observers:[
+                '_setData(userData)',
+                '_recalculateDistance(location)'
+                ],
 
-    _watchUserStatus: function (statusKnown) {
-      // console.log(statusKnown)
-      if(statusKnown){
-        this.$.favorite.disabled = false;
-        
-      }else{
-        this.$.favorite.disabled = true;
+    ready: function (){
+        var body = document.querySelector('body');
+          Polymer.dom(body).appendChild(this.$.favoriteCrawlEditor);
+       
+        // this.$.favoriteCrawlEditor.open()
+      },
+
+
+    _setData: function (userData){
+      const that = this;
+     
+      if(userData){
+        if(typeof userData.favoriteOrganization === 'object'){
+          for (let key of Object.keys(userData.favoriteOrganization)){
+            let pub = userData.favoriteOrganization[key];
+            if(pub.favorite){
+              firebase.database(this.$.auth.app).ref(`/organization/${key}`)
+                .once('value')
+                .then(snapshot => {
+                  let obj = snapshot.val();
+                  obj.$key = snapshot.key;
+                  obj.favoriteTotal = 0;
+                  obj.favoriteYes = 0;
+                  obj.favoriteNo = 0;
+                  obj.favoritePercent=null;
+
+                  if(snapshot.exists()){
+                    if(!snapshot.child('permanently_closed').exists()){
+                    
+                      if(this.location){
+                        if(this.location.latitude && this.location.longitude && obj.latitude && obj.longitude){
+                          obj.distance = this._distance(this.location.latitude, this.location.longitude, obj.latitude, obj.longitude)
+                        }
+                      }
+
+                      if(snapshot.child('favorite').exists()){
+                        snapshot.child('favorite').forEach(favorite =>{
+                          obj.favoriteTotal ++
+                          if(favorite.child('favorite').val() === 'yes'){
+                            obj.favoriteYes++
+                          }else if(favorite.child('favorite').val() === 'no'){
+                            obj.favoriteNo++
+                          }
+                        })
+                      }
+
+                      if(obj.favoriteTotal >0){
+                        obj.favoritePercent = Math.round((obj.favoriteYes/obj.favoriteTotal)*1000)/10;
+                      }
+                      
+                      that.push(`allData`, obj)
+                    }
+                  }
+                })
+            }
+          }
+        }
       }
     },
 
-  _toArray: function (obj){
-    
-    if(obj){
-      var returnArray=[];
-      var key = Object.keys(obj);
-      for (var i=0; i<key.length; i++){
-        var pub = obj[key[i]];
-        
-        pub.dogFriendly = false;
-        pub.patio = false;
-        pub.over21=false;
-        // beer.id = key[i];
-        // beer.name = obj[key[i]].name;
-        // beer.rating = obj[key[i]].rating;
-        returnArray.push(pub);
-      }
-      return returnArray.sort(this._sortByName);
-    }
-  },
+    _recalculateDistance(location){
+      let data = this.allData
+      if(location){
+          for (let i=0; i<data.length; i++){
+            let pub = data[i];
 
-  _sortByRating: function(a,b){
+          if(location.latitude && location.longitude && pub.latitude && pub.longitude){
+            let distance = this._distance(location.latitude, location.longitude, pub.latitude, pub.longitude);
+            this.set(`allData.${i}.distance`, distance);
+          }
+        }
+      }
+
+    },
+
+
+    _distance: function (myLat, myLng, pubLat, pubLng){
+      var R = 3959; 
+      var dLat = this.deg2rad(pubLat-myLat);  
+      var dLon = this.deg2rad(pubLng-myLng); 
+      var a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(this.deg2rad(myLat)) * Math.cos(this.deg2rad(pubLat)) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+      var d = R * c; 
+      return d
+    },
+
+    deg2rad: function (deg) {
+          return deg * (Math.PI/180)
+    },
+
+
+    _sortByDistance: function(a,b){
       'use strict';
-      if (a.rating > b.rating)
+      if (a.distance < b.distance)
         return -1;
-      if (a.rating < b.rating)
+      if (a.distance > b.distance)
         return 1;
       return 0;
     },
+
+    // _filter: function (item){
+    //   if(item.)
+    //   return (item){
+    //     if(item)
+    //   }
+    // },
     
     _sortByName: function(a,b){
       'use strict';
@@ -111,6 +230,7 @@
         return 1;
       return 0;
     },
+
     _test: function (obj){
       console.log("RATING", obj);
     }
